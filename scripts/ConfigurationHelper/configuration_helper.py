@@ -22,10 +22,14 @@ def main():
 
         stream = OdasStream(args.odasPath, args.configPath)
         stream.start()
+        
         sys.exit(0)
     
     except Exception as e:
         print('Exception : ', e)
+        if stream.subProcess:
+            stream.stop()
+
         sys.exit(-1)
 
 
