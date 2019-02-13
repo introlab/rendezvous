@@ -1,2 +1,5 @@
-env
-.vscode
+env/
+.vscode/
+__pycache__/
+scripts/ConfigurationHelper/test_separated.raw
+scripts/ConfigurationHelper/test_postfiltered.raw
