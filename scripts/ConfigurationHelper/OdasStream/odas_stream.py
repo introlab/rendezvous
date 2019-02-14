@@ -9,9 +9,10 @@ import numpy
 
 class OdasStream:
 
-    def __init__(self, odasPath, configPath):
+    def __init__(self, odasPath, configPath, sleepTime):
         self.odasPath = odasPath
         self.configPath = configPath
+        self.sleepTime = sleepTime
 
 
     # Create and start thread for capturing odas stream
@@ -32,7 +33,7 @@ class OdasStream:
             raise Exception('odasPath and configPath cannot be null or empty')
 
         print('ODAS stream starting...')
-        self.subProcess = sp.Popen([self.odasPath, '-c', self.configPath], shell=False, stdout=sp.PIPE)
+        self.subProcess = sp.Popen([self.odasPath, '-c', self.configPath], shell=False, stdout=sp.PIPE, stderr=sp.PIPE)
         sp.call([self.odasPath, '-c', self.configPath])
 
 
@@ -43,8 +44,10 @@ class OdasStream:
 
         # Need to check if device detected
         while True:
+            print(self.subProcess.returncode)
             line = self.subProcess.stdout.readline().decode('UTF-8')
-            stdoutobj.append(line)
+            if line:
+                stdoutobj.append(line)
             if len(stdoutobj) > 8:
                 stdout.extend(stdoutobj)
                 stdoutobj.clear()
@@ -52,8 +55,9 @@ class OdasStream:
                 textoutput = '\n'.join(stdout)
                 self.__parseJsonStream(textoutput)
                 stdout.clear()
+
             
-            sleep(0.01) # sleep for 1ms
+            sleep(self.sleepTime)
 
 
     def __parseJsonStream(self, jsonText):

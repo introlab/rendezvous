@@ -1,5 +1,6 @@
 import sys
 import argparse
+import re
 
 from OdasStream.odas_stream import OdasStream
 
@@ -12,22 +13,36 @@ def createParser():
 
     return parser
 
+def getLineFromFile(filePath, startsWith):
+    with open(filePath, 'r') as fi:
+        for line in fi:
+            stripedLine = line.replace(' ', '')
+            if stripedLine.startswith(startsWith):
+                return stripedLine
+
 
 def main():
     try:
+        stream = None
         print('configuration_helper starting...')
 
         parser = createParser()
         args = parser.parse_args()
 
-        stream = OdasStream(args.odasPath, args.configPath)
+        # read the config file to get the sample rate
+        line = getLineFromFile(args.configPath, 'fS')
+        sampleTime = int(re.sub('[^0-9]', '', line.split('=')[1]))
+        sleepTime = 1 / sampleTime
+
+
+        stream = OdasStream(args.odasPath, args.configPath, sleepTime)
         stream.start()
-        
+
         sys.exit(0)
     
     except Exception as e:
         print('Exception : ', e)
-        if stream.subProcess:
+        if stream and stream.subProcess:
             stream.stop()
 
         sys.exit(-1)
