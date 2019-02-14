@@ -42,7 +42,7 @@ def main():
     
     except Exception as e:
         print('Exception : ', e)
-        if stream and stream.subProcess:
+        if stream and stream.subProcess and stream.isRunning :
             stream.stop()
 
         sys.exit(-1)

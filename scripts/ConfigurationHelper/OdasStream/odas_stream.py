@@ -13,6 +13,7 @@ class OdasStream:
         self.odasPath = odasPath
         self.configPath = configPath
         self.sleepTime = sleepTime
+        self.isRunning = False
 
 
     # Create and start thread for capturing odas stream
@@ -26,6 +27,10 @@ class OdasStream:
         print('Stopping odas stream...')
         self.subProcess.terminate()
         print('odas stream stopped.')
+        self.isRunning = False
+
+        if self.subProcess.returncode != 0:
+            raise Exception('ODAS exited with exit code {exitCode}'.format(exitCode=self.subProcess.returncode))
 
 
     def __spawnOdasProcess(self):
@@ -36,6 +41,8 @@ class OdasStream:
         self.subProcess = sp.Popen([self.odasPath, '-c', self.configPath], shell=False, stdout=sp.PIPE, stderr=sp.PIPE)
         sp.call([self.odasPath, '-c', self.configPath])
 
+        self.isRunning = True
+
 
     def __processOdasOutput(self):
 
@@ -44,7 +51,9 @@ class OdasStream:
 
         # Need to check if device detected
         while True:
-            print(self.subProcess.returncode)
+            if self.subProcess.poll():
+                self.stop()
+
             line = self.subProcess.stdout.readline().decode('UTF-8')
             if line:
                 stdoutobj.append(line)
