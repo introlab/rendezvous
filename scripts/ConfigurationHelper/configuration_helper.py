@@ -3,6 +3,7 @@ import argparse
 import re
 
 from OdasStream.odas_stream import OdasStream
+from FileParser.file_parser import FileParser
 
 
 def createParser():
@@ -13,13 +14,6 @@ def createParser():
 
     return parser
 
-def getLineFromFile(filePath, startsWith):
-    with open(filePath, 'r') as fi:
-        for line in fi:
-            stripedLine = line.replace(' ', '')
-            if stripedLine.startswith(startsWith):
-                return stripedLine
-
 
 def main():
     try:
@@ -29,8 +23,8 @@ def main():
         parser = createParser()
         args = parser.parse_args()
 
-        # read the config file to get the sample rate
-        line = getLineFromFile(args.configPath, 'fS')
+        # read config file to get sample rate for while True sleepTime
+        line = FileParser.getLineFromFile(args.configPath, 'fS')
         sampleTime = int(re.sub('[^0-9]', '', line.split('=')[1]))
         sleepTime = 1 / sampleTime
 

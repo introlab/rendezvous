@@ -47,7 +47,6 @@ class OdasStream:
     def __processOdasOutput(self):
 
         stdout = []
-        stdoutobj = []
 
         # Need to check if device detected
         while True:
@@ -56,11 +55,8 @@ class OdasStream:
 
             line = self.subProcess.stdout.readline().decode('UTF-8')
             if line:
-                stdoutobj.append(line)
-            if len(stdoutobj) > 8:
-                stdout.extend(stdoutobj)
-                stdoutobj.clear()
-            if stdout:
+                stdout.append(line)
+            if len(stdout) > 8: # 8 because an object is 9 lines long.
                 textoutput = '\n'.join(stdout)
                 self.__parseJsonStream(textoutput)
                 stdout.clear()
