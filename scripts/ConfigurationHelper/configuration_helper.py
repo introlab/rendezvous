@@ -9,8 +9,8 @@ from FileParser.file_parser import FileParser
 def createParser():
     parser = argparse.ArgumentParser(description='Helping with 16SoundUSB configurations')
 
-    parser.add_argument('--cfgPath', dest='configPath', action='store', help='Path to the config file for ODAS', required=True)
-    parser.add_argument('--odasPath', dest='odasPath', action='store', help='Path to odaslive program', required=True)
+    parser.add_argument('--cfgpath', dest='configPath', action='store', help='Path to the config file for ODAS', required=True)
+    parser.add_argument('--odaspath', dest='odasPath', action='store', help='Path to odaslive program', required=True)
 
     return parser
 
