@@ -2,9 +2,14 @@ import subprocess as sp
 import json
 import math
 from time import sleep
+import os
+import sys
 
 import numpy
 
+from FileHandler.file_handler import FileHandler
+
+workingDirectory = os.path.dirname(os.path.realpath(sys.argv[0]))
 
 class OdasStream:
 
@@ -14,6 +19,7 @@ class OdasStream:
         self.sleepTime = sleepTime
         self.isRunning = False
         self.data = []
+        self.backupCounter = 0
 
 
     # Create and start thread for capturing odas stream
@@ -71,3 +77,12 @@ class OdasStream:
         print(jsonText)
         parsed_json = json.loads(jsonText)
         self.data.append([parsed_json])
+        self.backupCounter += 1
+
+        # backup of events every 500 events.
+        if (self.backupCounter > 500):
+            if self.data:
+                fileName = 'ODASOutput.json'
+                streamOutputPath = os.path.join(workingDirectory, fileName)
+                FileHandler.writeJsonToFile(streamOutputPath, self.data)
+                self.backupCounter = 0

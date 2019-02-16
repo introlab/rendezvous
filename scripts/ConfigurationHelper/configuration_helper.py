@@ -20,14 +20,13 @@ def createParser():
     return parser
 
 
-def stopCommand(event, exitCode=0):
+def signalHandling(event, frameObject):
+    stopCommand()
+
+def stopCommand(exitCode=0):
+    print('gracefull exit...')
     if stream and stream.subProcess and stream.isRunning:
         stream.stop()
-    
-    if stream:
-        fileName = 'ODASOutput.json'
-        streamOutputPath = os.path.join(workingDirectory, fileName)
-        FileHandler.writeJsonToFile(streamOutputPath, stream.data)
 
     sys.exit(exitCode)
 
@@ -36,8 +35,8 @@ def main():
     try:
         global stream
         stream = None
-        signal.signal(signal.SIGINT, stopCommand)
-        signal.signal(signal.SIGTERM, stopCommand)
+        signal.signal(signal.SIGINT, signalHandling)
+        signal.signal(signal.SIGTERM, signalHandling)
 
         print('configuration_helper starting...')
 
@@ -56,7 +55,12 @@ def main():
     
     except Exception as e:
         print('Exception : ', e)
-        stopCommand(-1)
+
+        exitCode = 0
+        if stream and stream.subProcess and stream.subProcess.returncode:
+            exitCode = stream.subProcess.returncode
+
+        stopCommand(exitCode)
 
 
 if __name__ == '__main__':
