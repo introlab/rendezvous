@@ -1,11 +1,8 @@
 import subprocess as sp
 import json
-import math
 from time import sleep
 import os
 import sys
-
-import numpy
 
 from FileHandler.file_handler import FileHandler
 
@@ -13,22 +10,23 @@ workingDirectory = os.path.dirname(os.path.realpath(sys.argv[0]))
 
 class OdasStream:
 
-    def __init__(self, odasPath, configPath, sleepTime):
+    def __init__(self, odasPath, configPath, options={}):
         self.odasPath = odasPath
         self.configPath = configPath
-        self.sleepTime = sleepTime
+        self.sleepTime = options['sleepTime']
+        self.maxChunkSize = options['chunkSize']
         self.isRunning = False
         self.data = []
-        self.backupCounter = 0
+        self.currentChunkSize = 0
 
 
-    # Create and start thread for capturing odas stream
+    # public function to start the stream
     def start(self):
         self.__spawnSubProcess()
         self.__processOutput()
 
 
-    # Stop odas Thread
+    # public function to stop the stream
     def stop(self):
         print('Stopping odas stream...')
         self.subProcess.kill()
@@ -39,6 +37,7 @@ class OdasStream:
             raise Exception('ODAS exited with exit code {exitCode}'.format(exitCode=self.subProcess.returncode))
 
 
+    # spawn a sub process that execute odaslive.
     def __spawnSubProcess(self):
         if (not self.odasPath and not self.configPath):
             raise Exception('odasPath and configPath cannot be null or empty')
@@ -50,8 +49,8 @@ class OdasStream:
         self.isRunning = True
 
 
+    #  get odas' events and store it in self.data
     def __processOutput(self):
-
         stdout = []
 
         # Need to check if device detected
@@ -66,23 +65,28 @@ class OdasStream:
             if len(stdout) > 8: # 8 because an object is 9 lines long.
                 textoutput = '\n'.join(stdout)
                 self.__parseJsonStream(textoutput)
-                stdout.clear()
+                
+                # backup of events for each chunk of events defined in self.chunkSize
+                if (self.currentChunkSize > self.maxChunkSize):
+                    self.__backupEvents()
 
+                stdout.clear()
             
             sleep(self.sleepTime)
 
 
-    def __parseJsonStream(self, jsonText):
+    # backup of events in ODASOutput.json
+    def __backupEvents(self):
+        if self.data:
+            fileName = 'ODASOutput.json'
+            streamOutputPath = os.path.join(workingDirectory, fileName)
+            FileHandler.writeJsonToFile(streamOutputPath, self.data)
+            self.currentChunkSize = 0
 
+
+    # parse every event in object and store it.
+    def __parseJsonStream(self, jsonText):
         print(jsonText)
         parsed_json = json.loads(jsonText)
         self.data.append([parsed_json])
-        self.backupCounter += 1
-
-        # backup of events every 500 events.
-        if (self.backupCounter > 500):
-            if self.data:
-                fileName = 'ODASOutput.json'
-                streamOutputPath = os.path.join(workingDirectory, fileName)
-                FileHandler.writeJsonToFile(streamOutputPath, self.data)
-                self.backupCounter = 0
+        self.currentChunkSize += 1
