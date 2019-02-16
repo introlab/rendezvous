@@ -3,3 +3,5 @@ env/
 __pycache__/
 test_separated.raw
 test_postfiltered.raw
+scripts/ConfigurationHelper/ODASOutput.json
+*.pyc

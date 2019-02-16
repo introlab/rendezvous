@@ -1,9 +1,14 @@
 import sys
 import argparse
 import re
+import signal
+import os
 
 from OdasStream.odas_stream import OdasStream
-from FileParser.file_parser import FileParser
+from FileHandler.file_handler import FileHandler
+
+
+workingDirectory = os.path.dirname(os.path.realpath(__file__))
 
 
 def createParser():
@@ -15,33 +20,43 @@ def createParser():
     return parser
 
 
+def stopCommand(event, exitCode=0):
+    if stream and stream.subProcess and stream.isRunning:
+        stream.stop()
+    
+    if stream:
+        fileName = 'ODASOutput.json'
+        streamOutputPath = os.path.join(workingDirectory, fileName)
+        FileHandler.writeJsonToFile(streamOutputPath, stream.data)
+
+    sys.exit(exitCode)
+
+
 def main():
     try:
+        global stream
         stream = None
+        signal.signal(signal.SIGINT, stopCommand)
+        signal.signal(signal.SIGTERM, stopCommand)
+
         print('configuration_helper starting...')
 
         parser = createParser()
         args = parser.parse_args()
 
         # read config file to get sample rate for while True sleepTime
-        line = FileParser.getLineFromFile(args.configPath, 'fS')
+        line = FileHandler.getLineFromFile(args.configPath, 'fS')
         # extract the sample rate from the string and convert to an Integer
         sampleRate = int(re.sub('[^0-9]', '', line.split('=')[1]))
         sleepTime = 1 / sampleRate
 
-
         stream = OdasStream(args.odasPath, args.configPath, sleepTime)
         stream.start()
 
-        sys.exit(0)
     
     except Exception as e:
         print('Exception : ', e)
-        if stream and stream.subProcess and stream.isRunning :
-            stream.stop()
-
-        sys.exit(-1)
-
+        stopCommand(-1)
 
 
 if __name__ == '__main__':
