@@ -25,8 +25,9 @@ def main():
 
         # read config file to get sample rate for while True sleepTime
         line = FileParser.getLineFromFile(args.configPath, 'fS')
-        sampleTime = int(re.sub('[^0-9]', '', line.split('=')[1]))
-        sleepTime = 1 / sampleTime
+        # extract the sample rate from the string and convert to an Integer
+        sampleRate = int(re.sub('[^0-9]', '', line.split('=')[1]))
+        sleepTime = 1 / sampleRate
 
 
         stream = OdasStream(args.odasPath, args.configPath, sleepTime)
