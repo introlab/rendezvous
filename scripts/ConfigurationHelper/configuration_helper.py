@@ -59,8 +59,8 @@ def main():
         sleepTime = 1 / sampleRate
 
         # start the stream
-        options = {'sleepTime' : sleepTime, 'chunkSize' : args.chunkSize}
-        stream = OdasStream(args.odasPath, args.configPath, options)
+        options = {'chunkSize' : args.chunkSize}
+        stream = OdasStream(args.odasPath, args.configPath, sleepTime, options)
         stream.start()
     
     except Exception as e:
