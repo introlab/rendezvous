@@ -10,10 +10,10 @@ workingDirectory = os.path.dirname(os.path.realpath(sys.argv[0]))
 
 class OdasStream:
 
-    def __init__(self, odasPath, configPath, options={}):
+    def __init__(self, odasPath, configPath, sleepTime, options={}):
         self.odasPath = odasPath
         self.configPath = configPath
-        self.sleepTime = options['sleepTime']
+        self.sleepTime = sleepTime
         self.maxChunkSize = options['chunkSize']
         self.isRunning = False
         self.data = []
