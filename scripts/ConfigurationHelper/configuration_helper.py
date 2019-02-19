@@ -59,7 +59,7 @@ def main():
         # ODAS stream
         else:
             # delete output file
-            if os._exists(outputFilePath):
+            if os.path.exists(outputFilePath):
                 os.remove(outputFilePath)
 
             signal.signal(signal.SIGINT, signalCallback)
