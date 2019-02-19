@@ -6,17 +6,28 @@ class Indicators:
         self.events = events
         self.config = config
         self.eventsPerSrc = [0, 0, 0, 0]
-        self.azimuth = {'sum' : [0, 0, 0, 0], 'average' : [0, 0, 0, 0], 'rms' : [0, 0, 0, 0]}
-        self.elevation = {'sum' : [0, 0, 0, 0], 'average' : [0, 0, 0, 0], 'rms' : [0, 0, 0, 0]}
+        self.azimuth = {
+            'values' : {'0' : [], '1' : [], '2' : [], '3' : []},
+            'sum' : [0, 0, 0, 0],
+            'average' : [0, 0, 0, 0],
+            'rms' : [0, 0, 0, 0]
+        }
+        self.elevation = {
+            'values' : {'0' : [], '1' : [], '2' : [], '3' : []},
+            'sum' : [0, 0, 0, 0],
+            'average' : [0, 0, 0, 0],
+            'rms' : [0, 0, 0, 0]
+        }
         self.configSources = []
+
 
     def indicatorsCalculation(self):
         self.__initializeConfigSources()
         self.__processEvents()
-        #self.__rmsCalculation(0,0)
         self.__averageCalculation()
+        self.__rmsCalculation()
 
-
+        
     def __initializeConfigSources(self):
         detectionArea = self.config['DetectionArea']
         width = detectionArea['Width']
@@ -49,6 +60,8 @@ class Indicators:
             sources = event[0]['src']
             for key, source in sources.items():
                 sourceId = int(key)
+                indexStr = str(sourceId - 1)
+
                 self.eventsPerSrc[sourceId - 1] += 1
                 x = source['x']
                 y = source['y']
@@ -56,8 +69,11 @@ class Indicators:
                 xyHypotenuse = math.sqrt(y**2 + x**2)
                 azimuth = self.__azimuthCalculation(y, x)
                 elevation = self.__elevationCalculation(z, xyHypotenuse)
+
                 self.azimuth['sum'][sourceId - 1] += azimuth
+                self.azimuth['values'][indexStr].append(azimuth)
                 self.elevation['sum'][sourceId - 1] += elevation
+                self.elevation['values'][indexStr].append(elevation)
 
 
     def __averageCalculation(self):
@@ -67,15 +83,41 @@ class Indicators:
             if self.eventsPerSrc[index] != 0:
                 avgAzimuth = azimuthSum / self.eventsPerSrc[index]
                 self.azimuth['average'][index] = avgAzimuth
-                print('source {sourceNumber} : {azimuth}'.format(sourceNumber=(index + 1), azimuth=avgAzimuth))
+                avgAzimuthDegree = (avgAzimuth * 180 / math.pi) % 360
+                print('source {sourceNumber} : {azimuth}'.format(sourceNumber=(index + 1), azimuth=(avgAzimuthDegree)))
 
         # average elevation for each source
         print('\n\nElevation for each source (degree) :\n')
         for index, elevationSum in enumerate(self.elevation['sum']):
             if self.eventsPerSrc[index] != 0:
                 avgElevation = elevationSum / self.eventsPerSrc[index]
-                self.elevation['average'][index] = avgElevation 
-                print('source {sourceNumber} : {elevation}'.format(sourceNumber=(index + 1), elevation=avgElevation))
+                self.elevation['average'][index] = avgElevation
+                avgElevationDegree = (avgElevation * 180 / math.pi) % 360
+                print('source {sourceNumber} : {elevation}'.format(sourceNumber=(index + 1), elevation=avgElevationDegree))
+
+
+    def __rmsCalculation(self):
+        print('\n\nAzimuth RMS for each source :\n')
+        for key, azimuthValues in self.azimuth['values'].items():
+            if azimuthValues != [] and self.config['Sources'][int(key)]:
+                x = self.config['Sources'][int(key)]['x']
+                y = self.config['Sources'][int(key)]['y']
+                azimuthOfReference = self.__azimuthCalculation(y, x)
+                rms = self.__rms(azimuthOfReference, azimuthValues)
+                self.azimuth['rms'][int(key)] = rms
+                print('source {sourceNumber} : {rms}'.format(sourceNumber=(int(key) + 1), rms=rms))
+
+        print('\n\nElevation RMS for each source :\n')
+        for key, elevationValues in self.elevation['values'].items():
+            if elevationValues != [] and self.config['Sources'][int(key)]:
+                x = self.config['Sources'][int(key)]['x']
+                y = self.config['Sources'][int(key)]['y']
+                z = self.config['Sources'][int(key)]['z']
+                xyHypotenuse = math.sqrt(x**2 + y**2 + z**2)
+                elevationOfReference = self.__azimuthCalculation(z, xyHypotenuse)
+                rms = self.__rms(elevationOfReference, elevationValues)
+                self.elevation['rms'][int(key)] = rms
+                print('source {sourceNumber} : {rms}'.format(sourceNumber=(int(key) + 1), rms=rms))
 
 
     def __azimuthCalculation(self, y, x):
@@ -88,8 +130,13 @@ class Indicators:
         return elevation
 
 
-    def __rmsCalculation(self, valueOfReference, values=[]):
+    def __rms(self, valueOfReference, values=[]):
         sumOfSquare = 0
+        rms = 0
+
+        if (values == []):
+            raise Exception("can't calculate rms without values ;)")
+
         for value in values:
             sumOfSquare += (valueOfReference - value)**2
 
