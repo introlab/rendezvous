@@ -16,20 +16,19 @@ class Indicators:
 
     def __sumCalculation(self):
         # calculate indicators for each events
-            for event in self.events:
-                sources = event[0]['src']
-
-                for key, source in sources.items():
-                    sourceId = int(key)
-                    self.eventsPerSrc[sourceId - 1] += 1
-                    x = source['x']
-                    y = source['y']
-                    z = source['z']
-                    xyHypotenuse = math.sqrt(y**2 + x**2)
-                    azimuth = (math.atan2(y, x) * 360 / 2*math.pi) % 360 
-                    elevation = (math.atan2(z, xyHypotenuse) * 360 / 2*math.pi) % 360
-                    self.azimuth['sum'][sourceId - 1] += azimuth
-                    self.elevation['sum'][sourceId - 1] += elevation
+        for event in self.events:
+            sources = event[0]['src']
+            for key, source in sources.items():
+                sourceId = int(key)
+                self.eventsPerSrc[sourceId - 1] += 1
+                x = source['x']
+                y = source['y']
+                z = source['z']
+                xyHypotenuse = math.sqrt(y**2 + x**2)
+                azimuth = (math.atan2(y, x) * 360 / 2*math.pi) % 360 
+                elevation = (math.atan2(z, xyHypotenuse) * 360 / 2*math.pi) % 360
+                self.azimuth['sum'][sourceId - 1] += azimuth
+                self.elevation['sum'][sourceId - 1] += elevation
 
 
     def __averageCalculation(self):
