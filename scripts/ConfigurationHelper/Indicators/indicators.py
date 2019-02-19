@@ -6,6 +6,7 @@ class Indicators:
         self.events = events
         self.config = config
         self.eventsPerSrc = [0, 0, 0, 0]
+        self.positionTest = {'inBounds' : [0, 0, 0, 0], 'total' : [0, 0, 0, 0]}
         self.azimuth = {
             'values' : {'0' : [], '1' : [], '2' : [], '3' : []},
             'sum' : [0, 0, 0, 0],
@@ -70,6 +71,17 @@ class Indicators:
                 azimuth = self.__azimuthCalculation(y, x)
                 elevation = self.__elevationCalculation(z, xyHypotenuse)
 
+                # Check if the detected source match one of the configuration sources
+                for configSource in self.configSources:
+                    azimuthBounds = configSource['azimuthBounds']
+                    elevationBounds = configSource['elevationBounds']
+
+                    if azimuth >= azimuthBounds['min'] and azimuth <= azimuthBounds['max'] and \
+                       elevation >= elevationBounds['min'] and elevation <= elevationBounds['max'] :
+                        self.positionTest['inBounds'][sourceId - 1] += 1
+                        break
+                        
+                self.positionTest['total'][sourceId - 1] += 1
                 self.azimuth['sum'][sourceId - 1] += azimuth
                 self.azimuth['values'][indexStr].append(azimuth)
                 self.elevation['sum'][sourceId - 1] += elevation
@@ -118,6 +130,13 @@ class Indicators:
                 rms = self.__rms(elevationOfReference, elevationValues)
                 self.elevation['rms'][int(key)] = rms
                 print('source {sourceNumber} : {rms}'.format(sourceNumber=(int(key) + 1), rms=rms))
+
+        # Rate of detection in bounds per source
+        print('\n\nIn bounds detection rate (%) :\n')
+        for index, total in enumerate(self.positionTest['total']):
+            if self.eventsPerSrc[index] != 0:
+                detectionRate = self.positionTest['inBounds'][index] / total
+                print('source {sourceNumber} : {rate}'.format(sourceNumber=(index + 1), rate=detectionRate))
 
 
     def __azimuthCalculation(self, y, x):
