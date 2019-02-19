@@ -47,6 +47,8 @@ class OdasStream:
 
 
     def __alarmCallback(self, signum, frame):
+        # to be sure events are saved in a file.
+        self.__backupEvents()
         self.stop()
         raise AlarmException('Execution Timeout')
 
