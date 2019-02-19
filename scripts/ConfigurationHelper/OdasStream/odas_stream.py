@@ -28,13 +28,14 @@ class OdasStream:
 
     # public function to stop the stream
     def stop(self):
-        print('Stopping odas stream...')
-        self.subProcess.kill()
-        print('odas stream stopped.')
-        self.isRunning = False
+        if self.subProcess:
+            print('Stopping odas stream...')
+            self.subProcess.kill()
+            print('odas stream stopped.')
+            self.isRunning = False
 
-        if self.subProcess and self.subProcess.returncode and self.subProcess.returncode != 0:
-            raise Exception('ODAS exited with exit code {exitCode}'.format(exitCode=self.subProcess.returncode))
+            if self.subProcess.returncode and self.subProcess.returncode != 0:
+                raise Exception('ODAS exited with exit code {exitCode}'.format(exitCode=self.subProcess.returncode))
 
 
     # spawn a sub process that execute odaslive.
