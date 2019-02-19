@@ -2,22 +2,45 @@ import math
 
 class Indicators:
 
-    def __init__(self, events):
+    def __init__(self, events, config):
         self.events = events
+        self.config = config
         self.eventsPerSrc = [0, 0, 0, 0]
-
-        # TODO: change it : x,y,z with favreau's code
-        self.x = 0
-        self.y = 0
-        self.z = 0
         self.azimuth = {'sum' : [0, 0, 0, 0], 'average' : [0, 0, 0, 0], 'rms' : [0, 0, 0, 0]}
         self.elevation = {'sum' : [0, 0, 0, 0], 'average' : [0, 0, 0, 0], 'rms' : [0, 0, 0, 0]}
-
+        self.configSources = []
 
     def indicatorsCalculation(self):
+        self.__initializeConfigSources()
         self.__processEvents()
         #self.__rmsCalculation(0,0)
         self.__averageCalculation()
+
+
+    def __initializeConfigSources(self):
+        detectionArea = self.config['DetectionArea']
+        width = detectionArea['Width']
+        height = detectionArea['Height']
+
+        for source in self.config['Sources']:
+            x = source['x']
+            y = source['y']
+            z = source['z']
+
+            # Calculate the acceptable range of the azimuth angle
+            xyHypotenuse = math.sqrt(x**2 + y**2)
+            dThetaAz = math.sin(width / (2 * xyHypotenuse))
+            azimuth = self.__azimuthCalculation(y, x)
+            azimuthBounds = { 'min' : azimuth - dThetaAz, 'max' : azimuth + dThetaAz }
+
+            # Calculate the acceptable range of the elevation angle
+            xyzHypotenuse = math.sqrt(x**2 + y**2 + z**2)
+            dThetaEl = math.sin(height / (2* xyzHypotenuse))
+            elevation = self.__elevationCalculation(z, xyHypotenuse)
+            elevationBounds = { 'min' : elevation - dThetaEl, 'max' : elevation + dThetaEl }
+
+            self.configSources.append({'x' : x, 'y' : y, 'z' : z, 
+                'azimuthBounds' : azimuthBounds, 'elevationBounds' : elevationBounds})
 
 
     def __processEvents(self):
@@ -56,12 +79,12 @@ class Indicators:
 
 
     def __azimuthCalculation(self, y, x):
-        azimuth = (math.atan2(y, x) * 180 / math.pi) % 360
+        azimuth = math.atan2(y, x) % (2 * math.pi)
         return azimuth
 
 
     def __elevationCalculation(self, z, xyHypotenuse):
-        elevation = (math.atan2(z, xyHypotenuse) * 180 / math.pi) % 360
+        elevation = math.atan2(z, xyHypotenuse) % (2 * math.pi)
         return elevation
 
 
