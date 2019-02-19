@@ -18,9 +18,19 @@ class FileHandler:
 
 
     @staticmethod
-    def writeJsonToFile(filePath, jsonData):
+    def writeJsonFile(filePath, jsonData):
         if os.path.exists(filePath):
             os.remove(filePath)
 
         with open(filePath, mode='w', encoding='utf-8') as jsonFile:
             json.dump(jsonData, jsonFile)
+
+
+    @staticmethod
+    def readJsonFile(filePath):
+        if not os.path.exists(filePath):
+            raise Exception('no file found at : {path}'.format(path=filePath))
+        
+        with open(filePath, mode='r', encoding='utf-8') as jsonFile:
+            data = json.load(jsonFile)
+            return data

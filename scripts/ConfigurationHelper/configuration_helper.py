@@ -1,28 +1,19 @@
 import sys
-import argparse
 import re
 import signal
 import os
 
 from OdasStream.odas_stream import OdasStream
 from FileHandler.file_handler import FileHandler
+from ArgsParser.args_parser import ArgsParser
+from Indicators.indicators import Indicators
 
 workingDirectory = os.path.dirname(os.path.realpath(sys.argv[0]))
 
-# arguments parser, all possible arguments are defined here. 
-def createParser():
-    parser = argparse.ArgumentParser(description='Helping with 16SoundUSB configurations')
 
-    parser.add_argument('--cpath', dest='configPath', action='store', help='Path to the config file for ODAS', required=True)
-    parser.add_argument('--opath', dest='odasPath', action='store', help='Path to odaslive program', required=True)
-    parser.add_argument('--cs', dest='chunkSize', action='store', default=500, type=int, help='backup every chunk of that size, min value = 500, default value = 500', required=False)
-
-    return parser
-
-
-def validateArgs(args):
-    if (args.chunkSize < 500):
-        raise argparse.ArgumentTypeError('minimal value for --cs is 500')
+# odas stream instance
+global stream
+stream = None
 
 
 # handling for sigterm, sigint, etc.
@@ -33,8 +24,12 @@ def signalCallback(event, frameObject):
 # gracefull exit function.
 def exit(exitCode=0):
     print('gracefull exit...')
-    if stream and stream.subProcess and stream.isRunning:
-        stream.stop()
+    if stream and stream.subProcess:
+        if stream.isRunning:
+            stream.stop()
+
+        if stream.subProcess.returncode:
+            exitCode = stream.subProcess.returncode
 
     sys.exit(exitCode)
 
@@ -42,35 +37,42 @@ def exit(exitCode=0):
 def main():
     try:
         print('configuration_helper starting...')
-        global stream
-        stream = None
-        signal.signal(signal.SIGINT, signalCallback)
-        signal.signal(signal.SIGTERM, signalCallback)
 
-        # get arguments and validate them.
-        parser = createParser()
-        args = parser.parse_args()
-        validateArgs(args)
+        # get terminal arguments.
+        parser = ArgsParser()
+        args = parser.args
 
-        # read config file to get sample rate for while True sleepTime
-        line = FileHandler.getLineFromFile(args.configPath, 'fS')
-        # extract the sample rate from the string and convert to an Integer
-        sampleRate = int(re.sub('[^0-9]', '', line.split('=')[1]))
-        sleepTime = 1 / sampleRate
+        # quality evaluation of the last saved odas data.
+        if args.isEvalConf:
+            print('indicators evalution starting...')
 
-        # start the stream
-        options = {'chunkSize' : args.chunkSize}
-        stream = OdasStream(args.odasPath, args.configPath, sleepTime, options)
-        stream.start()
+            # get last saved odas data
+            outputFilePath = os.path.join(workingDirectory, 'ODASOutput.json')
+            events = FileHandler.readJsonFile(outputFilePath)
+
+            # calculate indicators
+            indicators = Indicators(events)
+            indicators.indicatorsCalculation()
+
+
+        # ODAS stream
+        else:
+            signal.signal(signal.SIGINT, signalCallback)
+            signal.signal(signal.SIGTERM, signalCallback)
+            # read config file to get sample rate for while True sleepTime
+            line = FileHandler.getLineFromFile(args.configPath, 'fS')
+            # extract the sample rate from the string and convert to an Integer
+            sampleRate = int(re.sub('[^0-9]', '', line.split('=')[1]))
+            sleepTime = 1 / sampleRate
+
+            # start the stream
+            options = {'chunkSize' : args.chunkSize}
+            stream = OdasStream(args.odasPath, args.configPath, sleepTime, options)
+            stream.start()
     
     except Exception as e:
         print('Exception : ', e)
-
-        exitCode = -1
-        if stream and stream.subProcess and stream.subProcess.returncode:
-            exitCode = stream.subProcess.returncode
-
-        exit(exitCode)
+        exit(-1)
 
 
 if __name__ == '__main__':

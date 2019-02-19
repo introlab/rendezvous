@@ -80,7 +80,7 @@ class OdasStream:
         if self.data:
             fileName = 'ODASOutput.json'
             streamOutputPath = os.path.join(workingDirectory, fileName)
-            FileHandler.writeJsonToFile(streamOutputPath, self.data)
+            FileHandler.writeJsonFile(streamOutputPath, self.data)
             self.currentChunkSize = 0
 
 
