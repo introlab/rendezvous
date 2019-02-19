@@ -8,6 +8,7 @@ class Indicators:
         self.eventsPerSrc = [0, 0, 0, 0]
         self.azimuth = {'sum' : [0, 0, 0, 0], 'average' : [0, 0, 0, 0], 'rms' : [0, 0, 0, 0]}
         self.elevation = {'sum' : [0, 0, 0, 0], 'average' : [0, 0, 0, 0], 'rms' : [0, 0, 0, 0]}
+        self.positionTest = {'inBounds' : [0, 0, 0, 0], 'total' : [0, 0, 0, 0]}
         self.configSources = []
 
     def indicatorsCalculation(self):
@@ -56,6 +57,18 @@ class Indicators:
                 xyHypotenuse = math.sqrt(y**2 + x**2)
                 azimuth = self.__azimuthCalculation(y, x)
                 elevation = self.__elevationCalculation(z, xyHypotenuse)
+
+                # Check if the detected source match one of the configuration sources
+                for configSource in self.configSources:
+                    azimuthBounds = configSource['azimuthBounds']
+                    elevationBounds = configSource['elevationBounds']
+
+                    if azimuth >= azimuthBounds['min'] and azimuth <= azimuthBounds['max'] and \
+                       elevation >= elevationBounds['min'] and elevation <= elevationBounds['max'] :
+                        self.positionTest['inBounds'][sourceId - 1] += 1
+                        break
+                        
+                self.positionTest['total'][sourceId - 1] += 1
                 self.azimuth['sum'][sourceId - 1] += azimuth
                 self.elevation['sum'][sourceId - 1] += elevation
 
@@ -76,6 +89,13 @@ class Indicators:
                 avgElevation = elevationSum / self.eventsPerSrc[index]
                 self.elevation['average'][index] = avgElevation 
                 print('source {sourceNumber} : {elevation}'.format(sourceNumber=(index + 1), elevation=avgElevation))
+
+        # Rate of detection in bounds per source
+        print('\n\nIn bounds detection rate (%) :\n')
+        for index, total in enumerate(self.positionTest['total']):
+            if self.eventsPerSrc[index] != 0:
+                detectionRate = self.positionTest['inBounds'][index] / total
+                print('source {sourceNumber} : {rate}'.format(sourceNumber=(index + 1), rate=detectionRate))
 
 
     def __azimuthCalculation(self, y, x):
