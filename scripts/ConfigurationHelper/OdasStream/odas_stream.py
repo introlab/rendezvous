@@ -3,10 +3,14 @@ import json
 from time import sleep
 import os
 import sys
+import signal
 
 from FileHandler.file_handler import FileHandler
 
 workingDirectory = os.path.dirname(os.path.realpath(sys.argv[0]))
+
+class AlarmException(Exception):
+    pass
 
 class OdasStream:
 
@@ -21,10 +25,14 @@ class OdasStream:
 
 
     # public function to start the stream
-    def start(self):
+    def start(self, executionTime=-1):
+        if (executionTime != -1):
+            signal.signal(signal.SIGALRM, self.__alarmCallback)
+            # signal.alarm function takes time in seconds.
+            signal.alarm(executionTime * 60)
+
         self.__spawnSubProcess()
         self.__processOutput()
-
 
     # public function to stop the stream
     def stop(self):
@@ -36,6 +44,13 @@ class OdasStream:
 
             if self.subProcess.returncode and self.subProcess.returncode != 0:
                 raise Exception('ODAS exited with exit code {exitCode}'.format(exitCode=self.subProcess.returncode))
+
+
+    def __alarmCallback(self, signum, frame):
+        # to be sure events are saved in a file.
+        self.__backupEvents()
+        self.stop()
+        raise AlarmException('Execution Timeout')
 
 
     # spawn a sub process that execute odaslive.
