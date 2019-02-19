@@ -89,5 +89,16 @@ class OdasStream:
     def __parseJsonStream(self, jsonText):
         print(jsonText)
         parsed_json = json.loads(jsonText)
-        self.data.append([parsed_json])
-        self.currentChunkSize += 1
+
+        src = parsed_json['src']
+        timestamp = parsed_json['timeStamp']
+        activeSources = {'timestamp' : timestamp, 'src' : {}}
+        for index, source in enumerate(src):
+            # if id equals zero that means the source is innactive.
+            if source['id'] != 0:
+                activeSources['src'][index + 1] = source
+
+        # if there is an active source in the event.
+        if activeSources['src'] != {}:
+            self.data.append([activeSources])
+            self.currentChunkSize += 1
