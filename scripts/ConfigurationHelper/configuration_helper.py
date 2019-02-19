@@ -49,7 +49,6 @@ def main():
             print('indicators evalution starting...')
 
             # get last saved odas data
-            outputFilePath = os.path.join(workingDirectory, 'ODASOutput.json')
             evalFilePath = os.path.join(workingDirectory, 'testConfig.json')
             events = FileHandler.readJsonFile(outputFilePath)
             evalConfigs = FileHandler.readJsonFile(evalFilePath)
