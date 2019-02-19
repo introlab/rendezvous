@@ -4,11 +4,13 @@ import signal
 import os
 
 from OdasStream.odas_stream import OdasStream
+from OdasStream.odas_stream import AlarmException
 from FileHandler.file_handler import FileHandler
 from ArgsParser.args_parser import ArgsParser
 from Indicators.indicators import Indicators
 
 workingDirectory = os.path.dirname(os.path.realpath(sys.argv[0]))
+outputFilePath = os.path.join(workingDirectory, 'ODASOutput.json')
 
 
 # odas stream instance
@@ -47,7 +49,6 @@ def main():
             print('indicators evalution starting...')
 
             # get last saved odas data
-            outputFilePath = os.path.join(workingDirectory, 'ODASOutput.json')
             events = FileHandler.readJsonFile(outputFilePath)
 
             # calculate indicators
@@ -57,6 +58,9 @@ def main():
 
         # ODAS stream
         else:
+            # delete output file
+            os.remove(outputFilePath)
+
             signal.signal(signal.SIGINT, signalCallback)
             signal.signal(signal.SIGTERM, signalCallback)
             # read config file to get sample rate for while True sleepTime
@@ -68,8 +72,12 @@ def main():
             # start the stream
             options = {'chunkSize' : args.chunkSize}
             stream = OdasStream(args.odasPath, args.configPath, sleepTime, options)
-            stream.start()
+            stream.start(args.executionTime)
     
+    except AlarmException as e:
+        print('Execution Timeout')
+        exit(0)
+
     except Exception as e:
         print('Exception : ', e)
         exit(-1)
