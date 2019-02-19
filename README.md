@@ -32,7 +32,7 @@
 
 - To deactivate the activated environment type : 
 
-        $ deactivate
+      $ deactivate
 
 8- Install the folowing dependencies:
 
