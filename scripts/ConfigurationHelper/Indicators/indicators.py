@@ -5,16 +5,22 @@ class Indicators:
     def __init__(self, events):
         self.events = events
         self.eventsPerSrc = [0, 0, 0, 0]
-        self.azimuth = {'sum' : [0, 0, 0, 0], 'average' : [0, 0, 0, 0]}
-        self.elevation = {'sum' : [0, 0, 0, 0], 'average' : [0, 0, 0, 0]}
+
+        # TODO: change it : x,y,z with favreau's code
+        self.x = 0
+        self.y = 0
+        self.z = 0
+        self.azimuth = {'sum' : [0, 0, 0, 0], 'average' : [0, 0, 0, 0], 'rms' : [0, 0, 0, 0]}
+        self.elevation = {'sum' : [0, 0, 0, 0], 'average' : [0, 0, 0, 0], 'rms' : [0, 0, 0, 0]}
 
 
     def indicatorsCalculation(self):
-        self.__sumCalculation()
+        self.__processEvents()
+        #self.__rmsCalculation(0,0)
         self.__averageCalculation()
 
 
-    def __sumCalculation(self):
+    def __processEvents(self):
         # calculate indicators for each events
         for event in self.events:
             sources = event[0]['src']
@@ -25,8 +31,8 @@ class Indicators:
                 y = source['y']
                 z = source['z']
                 xyHypotenuse = math.sqrt(y**2 + x**2)
-                azimuth = (math.atan2(y, x) * 180 / math.pi) % 360 
-                elevation = (math.atan2(z, xyHypotenuse) * 180 / math.pi) % 360
+                azimuth = self.__azimuthCalculation(y, x)
+                elevation = self.__elevationCalculation(z, xyHypotenuse)
                 self.azimuth['sum'][sourceId - 1] += azimuth
                 self.elevation['sum'][sourceId - 1] += elevation
 
@@ -47,3 +53,24 @@ class Indicators:
                 avgElevation = elevationSum / self.eventsPerSrc[index]
                 self.elevation['average'][index] = avgElevation 
                 print('source {sourceNumber} : {elevation}'.format(sourceNumber=(index + 1), elevation=avgElevation))
+
+
+    def __azimuthCalculation(self, y, x):
+        azimuth = (math.atan2(y, x) * 180 / math.pi) % 360
+        return azimuth
+
+
+    def __elevationCalculation(self, z, xyHypotenuse):
+        elevation = (math.atan2(z, xyHypotenuse) * 180 / math.pi) % 360
+        return elevation
+
+
+    def __rmsCalculation(self, valueOfReference, values=[]):
+        sumOfSquare = 0
+        for value in values:
+            sumOfSquare += (valueOfReference - value)**2
+
+        n = len(values)
+        rms = math.sqrt(sumOfSquare / n)
+
+        return rms
