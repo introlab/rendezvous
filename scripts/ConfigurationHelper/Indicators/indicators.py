@@ -23,8 +23,8 @@ class Indicators:
                     y = source['y']
                     z = source['z']
                     xyHypotenuse = math.sqrt(y**2 + x**2)
-                    azimuth = math.atan2(y, x)
-                    elevation = math.atan2(z, xyHypotenuse)
+                    azimuth = math.atan2(y, x) * 360 / 2*math.pi
+                    elevation = math.atan2(z, xyHypotenuse) * 360 / 2*math.pi
                     self.azimuth['sum'][index] += azimuth
                     self.elevation['sum'][index] += elevation
 
@@ -34,13 +34,13 @@ class Indicators:
         # average azimuth for each source
         print('\n\nAzimuth for each source (degree) :\n')
         for index, azimuthSum in enumerate(self.azimuth['sum']):
-            avgAzimuth = azimuthSum / eventsLength * 360 / 2*math.pi
+            avgAzimuth = azimuthSum / eventsLength
             self.azimuth['average'][index] = avgAzimuth
             print('source {sourceNumber} : {azimuth}'.format(sourceNumber=(index + 1), azimuth=avgAzimuth))
 
         # average elevation for each source
         print('\n\nElevation for each source (degree) :\n')
         for index, elevationSum in enumerate(self.elevation['sum']):
-            avgElevation = elevationSum / eventsLength * 360 / 2*math.pi
+            avgElevation = elevationSum / eventsLength
             self.elevation['average'][index] = avgElevation 
             print('source {sourceNumber} : {elevation}'.format(sourceNumber=(index + 1), elevation=avgElevation))
