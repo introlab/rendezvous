@@ -28,13 +28,14 @@ class OdasStream:
 
     # public function to stop the stream
     def stop(self):
-        print('Stopping odas stream...')
-        self.subProcess.kill()
-        print('odas stream stopped.')
-        self.isRunning = False
+        if self.subProcess:
+            print('Stopping odas stream...')
+            self.subProcess.kill()
+            print('odas stream stopped.')
+            self.isRunning = False
 
-        if self.subProcess and self.subProcess.returncode and self.subProcess.returncode != 0:
-            raise Exception('ODAS exited with exit code {exitCode}'.format(exitCode=self.subProcess.returncode))
+            if self.subProcess.returncode and self.subProcess.returncode != 0:
+                raise Exception('ODAS exited with exit code {exitCode}'.format(exitCode=self.subProcess.returncode))
 
 
     # spawn a sub process that execute odaslive.
@@ -88,5 +89,16 @@ class OdasStream:
     def __parseJsonStream(self, jsonText):
         print(jsonText)
         parsed_json = json.loads(jsonText)
-        self.data.append([parsed_json])
-        self.currentChunkSize += 1
+
+        src = parsed_json['src']
+        timestamp = parsed_json['timeStamp']
+        activeSources = {'timestamp' : timestamp, 'src' : {}}
+        for index, source in enumerate(src):
+            # if id equals zero that means the source is innactive.
+            if source['id'] != 0:
+                activeSources['src'][index + 1] = source
+
+        # if there is an active source in the event.
+        if activeSources['src'] != {}:
+            self.data.append([activeSources])
+            self.currentChunkSize += 1
