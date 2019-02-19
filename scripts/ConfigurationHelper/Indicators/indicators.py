@@ -2,8 +2,9 @@ import math
 
 class Indicators:
 
-    def __init__(self, events):
+    def __init__(self, events, config):
         self.events = events
+        self.config = config
         self.azimuth = {'sum' : [0, 0, 0, 0], 'average' : [0, 0, 0, 0]}
         self.elevation = {'sum' : [0, 0, 0, 0], 'average' : [0, 0, 0, 0]}
 
