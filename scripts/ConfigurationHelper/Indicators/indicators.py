@@ -26,10 +26,18 @@ class Indicators:
         self.__initializeConfigSources()
         self.__processEvents()
         self.__averageCalculation()
+        self.__rateDetectionInBounds()
+        self.__falseDetectionRate()
         self.__rmsCalculation()
 
         
     def __initializeConfigSources(self):
+        if not 'Sources' in self.config or len(self.config['Sources']) == 0:
+            raise Exception('Missing sources in config')
+
+        if not 'DetectionArea' in self.config:
+            raise Exception('Missing detection area in config')
+
         detectionArea = self.config['DetectionArea']
         width = detectionArea['Width']
         height = detectionArea['Height']
@@ -60,10 +68,11 @@ class Indicators:
         for event in self.events:
             sources = event[0]['src']
             for key, source in sources.items():
-                sourceId = int(key)
-                indexStr = str(sourceId - 1)
 
-                self.eventsPerSrc[sourceId - 1] += 1
+                index = self.__getConfigSourceIndex(source)
+                indexStr = str(index)
+
+                self.eventsPerSrc[index] += 1
                 x = source['x']
                 y = source['y']
                 z = source['z']
@@ -71,21 +80,34 @@ class Indicators:
                 azimuth = self.__azimuthCalculation(y, x)
                 elevation = self.__elevationCalculation(z, xyHypotenuse)
 
-                # Check if the detected source match one of the configuration sources
-                for configSource in self.configSources:
-                    azimuthBounds = configSource['azimuthBounds']
-                    elevationBounds = configSource['elevationBounds']
+                azimuthBounds = self.configSources[index]['azimuthBounds']
+                elevationBounds = self.configSources[index]['elevationBounds']
 
-                    if azimuth >= azimuthBounds['min'] and azimuth <= azimuthBounds['max'] and \
-                       elevation >= elevationBounds['min'] and elevation <= elevationBounds['max'] :
-                        self.positionTest['inBounds'][sourceId - 1] += 1
-                        break
+                # Check if source position is inside the configured source bounds
+                if azimuth >= azimuthBounds['min'] and azimuth <= azimuthBounds['max'] and \
+                    elevation >= elevationBounds['min'] and elevation <= elevationBounds['max'] :
+                    self.positionTest['inBounds'][index] += 1
                         
-                self.positionTest['total'][sourceId - 1] += 1
-                self.azimuth['sum'][sourceId - 1] += azimuth
+                self.positionTest['total'][index] += 1
+                self.azimuth['sum'][index] += azimuth
                 self.azimuth['values'][indexStr].append(azimuth)
-                self.elevation['sum'][sourceId - 1] += elevation
+                self.elevation['sum'][index] += elevation
                 self.elevation['values'][indexStr].append(elevation)
+
+    def __getConfigSourceIndex(self, source):
+        minDistance = -1
+
+        for configSource in self.configSources:
+            dx = configSource['x'] - source['x']
+            dy = configSource['y'] - source['y']
+            dz = configSource['z'] - source['z']
+            distance = math.sqrt(dx**2 + dy**2 + dz**2)
+
+            if distance < minDistance or minDistance == -1:
+                minDistance = distance
+                index = self.configSources.index(configSource)
+
+        return index
 
 
     def __averageCalculation(self):
@@ -107,12 +129,20 @@ class Indicators:
                 avgElevationDegree = (avgElevation * 180 / math.pi) % 360
                 print('source {sourceNumber} : {elevation}'.format(sourceNumber=(index + 1), elevation=avgElevationDegree))
 
-        # Rate of detection in bounds per source
+    def __rateDetectionInBounds(self):
         print('\n\nIn bounds detection rate (%) :\n')
         for index, total in enumerate(self.positionTest['total']):
             if self.eventsPerSrc[index] != 0:
                 detectionRate = self.positionTest['inBounds'][index] / total
                 print('source {sourceNumber} : {rate}'.format(sourceNumber=(index + 1), rate=detectionRate))
+
+    def __falseDetectionRate(self):
+        print('\n\nRate of failed detections:\n')
+        firstEventNb = self.events[0][0]['timestamp']
+        lastEventNb = self.events[-1][0]['timestamp']
+        totalEvents = lastEventNb - firstEventNb + 1
+        for index, nbEvents in  enumerate(self.eventsPerSrc):
+            print('source {sourceNumber} : {rate}'.format(sourceNumber=(index + 1), rate=(totalEvents - nbEvents) / totalEvents))
 
 
     def __rmsCalculation(self):
