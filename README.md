@@ -34,7 +34,7 @@
 
       $ deactivate
 
-8- Install the folowing dependencies:
+8- Install the following dependencies:
 
 -
 
