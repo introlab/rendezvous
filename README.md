@@ -6,7 +6,7 @@
 
 1- Get the repository.
 
-2- Go to the projet working directory.
+2- Go to the project working directory.
     
     $ cd rendezvous
 
