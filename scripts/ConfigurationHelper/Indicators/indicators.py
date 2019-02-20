@@ -107,6 +107,13 @@ class Indicators:
                 avgElevationDegree = (avgElevation * 180 / math.pi) % 360
                 print('source {sourceNumber} : {elevation}'.format(sourceNumber=(index + 1), elevation=avgElevationDegree))
 
+        # Rate of detection in bounds per source
+        print('\n\nIn bounds detection rate (%) :\n')
+        for index, total in enumerate(self.positionTest['total']):
+            if self.eventsPerSrc[index] != 0:
+                detectionRate = self.positionTest['inBounds'][index] / total
+                print('source {sourceNumber} : {rate}'.format(sourceNumber=(index + 1), rate=detectionRate))
+
 
     def __rmsCalculation(self):
         print('\n\nAzimuth RMS for each source :\n')
@@ -130,13 +137,6 @@ class Indicators:
                 rms = self.__rms(elevationOfReference, elevationValues)
                 self.elevation['rms'][int(key)] = rms
                 print('source {sourceNumber} : {rms}'.format(sourceNumber=(int(key) + 1), rms=rms))
-
-        # Rate of detection in bounds per source
-        print('\n\nIn bounds detection rate (%) :\n')
-        for index, total in enumerate(self.positionTest['total']):
-            if self.eventsPerSrc[index] != 0:
-                detectionRate = self.positionTest['inBounds'][index] / total
-                print('source {sourceNumber} : {rate}'.format(sourceNumber=(index + 1), rate=detectionRate))
 
 
     def __azimuthCalculation(self, y, x):
