@@ -67,9 +67,12 @@ class Indicators:
         # calculate indicators for each events
         for event in self.events:
             sources = event[0]['src']
-            for key, source in sources.items():
+            for _, source in sources.items():
 
                 index = self.__getConfigSourceIndex(source)
+                if index == None:
+                    raise Exception("can't associate this ODAS source with a real source")
+
                 indexStr = str(index)
 
                 self.eventsPerSrc[index] += 1
@@ -94,8 +97,10 @@ class Indicators:
                 self.elevation['sum'][index] += elevation
                 self.elevation['values'][indexStr].append(elevation)
 
+
     def __getConfigSourceIndex(self, source):
         minDistance = -1
+        index = None
 
         for configSource in self.configSources:
             dx = configSource['x'] - source['x']
@@ -129,12 +134,14 @@ class Indicators:
                 avgElevationDegree = (avgElevation * 180 / math.pi) % 360
                 print('source {sourceNumber} : {elevation}'.format(sourceNumber=(index + 1), elevation=avgElevationDegree))
 
+
     def __rateDetectionInBounds(self):
         print('\n\nIn bounds detection rate (%) :\n')
         for index, total in enumerate(self.positionTest['total']):
             if self.eventsPerSrc[index] != 0:
                 detectionRate = self.positionTest['inBounds'][index] / total
                 print('source {sourceNumber} : {rate}'.format(sourceNumber=(index + 1), rate=detectionRate))
+
 
     def __falseDetectionRate(self):
         print('\n\nRate of failed detections:\n')
