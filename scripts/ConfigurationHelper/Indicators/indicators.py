@@ -142,7 +142,8 @@ class Indicators:
         lastEventNb = self.events[-1][0]['timestamp']
         totalEvents = lastEventNb - firstEventNb + 1
         for index, nbEvents in  enumerate(self.eventsPerSrc):
-            print('source {sourceNumber} : {rate}'.format(sourceNumber=(index + 1), rate=(totalEvents - nbEvents) / totalEvents))
+            if index < len(self.configSources) :
+                print('source {sourceNumber} : {rate}'.format(sourceNumber=(index + 1), rate=(totalEvents - nbEvents) / totalEvents))
 
 
     def __rmsCalculation(self):
