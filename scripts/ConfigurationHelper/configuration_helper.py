@@ -49,12 +49,11 @@ def main():
             print('indicators evalution starting...')
 
             # get last saved odas data
-            evalFilePath = os.path.join(workingDirectory, 'testConfig.json')
             events = FileHandler.readJsonFile(outputFilePath)
-            evalConfigs = FileHandler.readJsonFile(evalFilePath)
+            sourceConfigs = FileHandler.readJsonFile(args.sourceConfigPath)
 
             # calculate indicators
-            indicators = Indicators(events, evalConfigs)
+            indicators = Indicators(events, sourceConfigs)
             indicators.indicatorsCalculation()
 
 

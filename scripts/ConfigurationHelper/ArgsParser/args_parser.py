@@ -16,6 +16,7 @@ class ArgsParser:
         parser.add_argument('--evalconf', dest='isEvalConf', action='store_true', help='Activate the validation of configuration.')
         parser.add_argument('--cpath', dest='configPath', action='store', help='Path to the config file for ODAS, required if evalconf is not present.')
         parser.add_argument('--opath', dest='odasPath', action='store', help='Path to odaslive program, required if evalconf is not present.')
+        parser.add_argument('--srccpath', dest='sourceConfigPath', action='store', help='Path to the config file for sources positions, required if evalconf is present.')
         parser.add_argument('--cs', dest='chunkSize', action='store', default=500, type=int, help='Backup every chunk of that size usefull if evalconf is present, min value = 500, default value = 500.', required=False)
         parser.add_argument('--time', dest='executionTime', action='store', type=int, default=-1, help='Stream execution time in minutes, please put the time in integers.', required=False)
 
@@ -32,3 +33,6 @@ class ArgsParser:
 
             if self.args.chunkSize < 500:
                 raise argparse.ArgumentTypeError('minimal value for --cs is 500')
+        else:
+            if not self.args.sourceConfigPath:
+                raise self.__parser.error('--srccpath is required when --evalconf is set to true')
