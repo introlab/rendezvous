@@ -118,7 +118,7 @@ class Indicators:
     def __rmsCalculation(self):
         print('\n\nAzimuth RMS for each source :\n')
         for key, azimuthValues in self.azimuth['values'].items():
-            if azimuthValues != [] and self.config['Sources'][int(key)]:
+            if azimuthValues != [] and int(key) < len(self.config['Sources']):
                 x = self.config['Sources'][int(key)]['x']
                 y = self.config['Sources'][int(key)]['y']
                 azimuthOfReference = self.__azimuthCalculation(y, x)
@@ -128,7 +128,7 @@ class Indicators:
 
         print('\n\nElevation RMS for each source :\n')
         for key, elevationValues in self.elevation['values'].items():
-            if elevationValues != [] and self.config['Sources'][int(key)]:
+            if elevationValues != [] and int(key) < len(self.config['Sources']):
                 x = self.config['Sources'][int(key)]['x']
                 y = self.config['Sources'][int(key)]['y']
                 z = self.config['Sources'][int(key)]['z']
