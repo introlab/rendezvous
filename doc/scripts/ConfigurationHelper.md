@@ -22,12 +22,24 @@ The source location config files are situated in config/testcnfigs/sources
 
 1 - Record data with the microphone matrice
 
-TODO
+To record ODAS tracking data use :
+
+    python3 configuration_helper.py --cpath CONFIGPATH --opath ODASPATH
+
+CONFIGPATH is the path to the ODAS configuration file to use and ODASPATH is the path to the odaslive program.
+
+In addition you can change the number of ODAS events required before they are saved (default is 500) :
+
+    --cs CHUNKSIZE
+
+Finally, you can set how long you want the data gathering to last with this parameter (in minutes) :
+
+    --time EXECUTIONTIME
 
 2 - Analyse saved data
 
 To analyse the previously saved data use :
 
-    python3 configuration_helper.py --evalconf --srccpath CONFIGFILE
+    python3 configuration_helper.py --evalconf --srccpath SOURCECONFIGFPATH
 
 Note the sources must be constantly emitting during the whole test and not move in order for the data to be relevent.
