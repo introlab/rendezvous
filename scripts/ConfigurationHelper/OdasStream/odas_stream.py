@@ -60,7 +60,6 @@ class OdasStream:
 
         print('ODAS stream starting...')
         self.subProcess = sp.Popen([self.odasPath, '-c', self.configPath], shell=False, stdout=sp.PIPE, stderr=sp.PIPE)
-        sp.call([self.odasPath, '-c', self.configPath])
 
         self.isRunning = True
 
@@ -102,7 +101,6 @@ class OdasStream:
 
     # parse every event in object and store it.
     def __parseJsonStream(self, jsonText):
-        print(jsonText)
         parsed_json = json.loads(jsonText)
 
         src = parsed_json['src']
