@@ -30,6 +30,32 @@ class Indicators:
         self.__falseDetectionRate()
         self.__rmsCalculation()
 
+    
+    def azimuthCalculation(self, y, x):
+        azimuth = math.atan2(y, x) % (2 * math.pi)
+        return azimuth
+
+
+    def elevationCalculation(self, z, xyHypotenuse):
+        elevation = math.atan2(z, xyHypotenuse) % (2 * math.pi)
+        return elevation
+
+
+    def rms(self, valueOfReference, values=[]):
+        sumOfSquare = 0
+        rms = 0
+
+        if (values == []):
+            raise Exception("can't calculate rms without values ;)")
+
+        for value in values:
+            sumOfSquare += (valueOfReference - value)**2
+
+        n = len(values)
+        rms = math.sqrt(sumOfSquare / n)
+
+        return rms
+
         
     def __initializeConfigSources(self):
         if not 'Sources' in self.config or len(self.config['Sources']) == 0:
@@ -99,40 +125,26 @@ class Indicators:
 
 
     def __getConfigSourceIndex(self, source):
-        # minAzimuthDelta = -1
-        # minElevationDelta = -1
-        # index = None
-
-        # for configSource in self.configSources:
-        #     dx = configSource['x'] - source['x']
-        #     dy = configSource['y'] - source['y']
-        #     dz = configSource['z'] - source['z']
-
-        #     azimuthDelta = self.__azimuthCalculation(dy, dx)
-        #     XYhypotenuseDelta = math.sqrt(dy**2 + dx**2)
-        #     elevationDelta = self.__elevationCalculation(dz, XYhypotenuseDelta)
-
-        #     if \
-        #     (minAzimuthDelta == -1 and minElevationDelta == -1) or \
-        #     (azimuthDelta < minAzimuthDelta and elevationDelta < minElevationDelta):
-
-        #         index = self.configSources.index(configSource)
-        #         minAzimuthDelta = azimuthDelta
-        #         minElevationDelta = elevationDelta
-
-
-        minDistance = -1
+        minAzimuthDelta = -1
+        minElevationDelta = -1
         index = None
 
         for configSource in self.configSources:
             dx = configSource['x'] - source['x']
             dy = configSource['y'] - source['y']
             dz = configSource['z'] - source['z']
-            distance = math.sqrt(dx**2 + dy**2 + dz**2)
 
-            if distance < minDistance or minDistance == -1:
-                minDistance = distance
+            azimuthDelta = self.azimuthCalculation(dy, dx)
+            XYhypotenuseDelta = math.sqrt(dy**2 + dx**2)
+            elevationDelta = self.elevationCalculation(dz, XYhypotenuseDelta)
+
+            if \
+            (minAzimuthDelta == -1 and minElevationDelta == -1) or \
+            (azimuthDelta < minAzimuthDelta and elevationDelta < minElevationDelta):
+
                 index = self.configSources.index(configSource)
+                minAzimuthDelta = azimuthDelta
+                minElevationDelta = elevationDelta
 
         return index
 
@@ -197,29 +209,3 @@ class Indicators:
                 rms = self.rms(elevationOfReference, elevationValues)
                 self.elevation['rms'][int(key)] = rms
                 print('source {sourceNumber} : {rms}'.format(sourceNumber=(int(key) + 1), rms=rms))
-
-
-    def azimuthCalculation(self, y, x):
-        azimuth = math.atan2(y, x) % (2 * math.pi)
-        return azimuth
-
-
-    def elevationCalculation(self, z, xyHypotenuse):
-        elevation = math.atan2(z, xyHypotenuse) % (2 * math.pi)
-        return elevation
-
-
-    def rms(self, valueOfReference, values=[]):
-        sumOfSquare = 0
-        rms = 0
-
-        if (values == []):
-            raise Exception("can't calculate rms without values ;)")
-
-        for value in values:
-            sumOfSquare += (valueOfReference - value)**2
-
-        n = len(values)
-        rms = math.sqrt(sumOfSquare / n)
-
-        return rms
