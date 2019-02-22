@@ -46,7 +46,7 @@
 all unit tests goes in "tests" folder and the command to execute them is:
 
     $ cd rendezvous/ 
-    $ python -m unittest discover -s tests/
+    $ pytest --cov=./ tests/
 
 All tests files you add must follow this rule "test*.py".
 
