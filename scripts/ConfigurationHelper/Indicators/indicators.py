@@ -99,6 +99,28 @@ class Indicators:
 
 
     def __getConfigSourceIndex(self, source):
+        # minAzimuthDelta = -1
+        # minElevationDelta = -1
+        # index = None
+
+        # for configSource in self.configSources:
+        #     dx = configSource['x'] - source['x']
+        #     dy = configSource['y'] - source['y']
+        #     dz = configSource['z'] - source['z']
+
+        #     azimuthDelta = self.__azimuthCalculation(dy, dx)
+        #     XYhypotenuseDelta = math.sqrt(dy**2 + dx**2)
+        #     elevationDelta = self.__elevationCalculation(dz, XYhypotenuseDelta)
+
+        #     if \
+        #     (minAzimuthDelta == -1 and minElevationDelta == -1) or \
+        #     (azimuthDelta < minAzimuthDelta and elevationDelta < minElevationDelta):
+
+        #         index = self.configSources.index(configSource)
+        #         minAzimuthDelta = azimuthDelta
+        #         minElevationDelta = elevationDelta
+
+
         minDistance = -1
         index = None
 
