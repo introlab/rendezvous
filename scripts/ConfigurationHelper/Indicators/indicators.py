@@ -42,7 +42,8 @@ class Indicators:
         width = detectionArea['Width']
         height = detectionArea['Height']
 
-        for source in self.config['Sources']:
+        print('\nReel angles for each sources (degree) : \n')
+        for index, source in enumerate(self.config['Sources']):
             x = source['x']
             y = source['y']
             z = source['z']
@@ -51,12 +52,14 @@ class Indicators:
             xyHypotenuse = math.sqrt(x**2 + y**2)
             dThetaAz = math.sin(width / (2 * xyHypotenuse))
             azimuth = self.__azimuthCalculation(y, x)
+            print('Reel azimuth for source {source} equals = {azimuth}'.format(source=index+1, azimuth=azimuth * 180 / math.pi))
             azimuthBounds = { 'min' : azimuth - dThetaAz, 'max' : azimuth + dThetaAz }
 
             # Calculate the acceptable range of the elevation angle
             xyzHypotenuse = math.sqrt(x**2 + y**2 + z**2)
             dThetaEl = math.sin(height / (2* xyzHypotenuse))
             elevation = self.__elevationCalculation(z, xyHypotenuse)
+            print('Reel elevation for source {source} equals = {elevation}'.format(source=index+1, elevation=elevation * 180 / math.pi))
             elevationBounds = { 'min' : elevation - dThetaEl, 'max' : elevation + dThetaEl }
 
             self.configSources.append({'x' : x, 'y' : y, 'z' : z, 
