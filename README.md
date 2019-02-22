@@ -38,7 +38,7 @@
 
     $ pip install -r requirements.txt
 
-9 - If you add dependencies run the following command to add your dependency to requirements.txt:
+9 - If you add dependencies run the following command to add your new dependencies to requirements.txt:
     
     $ pip freeze > requirements.txt
 
