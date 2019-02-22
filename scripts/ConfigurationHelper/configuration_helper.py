@@ -36,7 +36,7 @@ def exit(exitCode=0):
     sys.exit(exitCode)
 
 
-def main()
+def main():
     try:
         print('configuration_helper starting...')
 
