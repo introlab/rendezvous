@@ -34,9 +34,13 @@
 
       $ deactivate
 
-8- Install the following dependencies:
+8- Install dependencies by running:
 
--
+    $ pip install -r requirements.txt
+
+9 - If you add dependencies run the following command to add your dependency to requirements.txt:
+    
+    $ pip freeze > requirements.txt
 
 ## Project Structure
 
