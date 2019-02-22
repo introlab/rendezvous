@@ -21,6 +21,3 @@ class TestIndicators(unittest.TestCase):
     def test_azimuthCalculation(self):
         azimuth = self.indicators.azimuthCalculation(0, 0)
         self.assertEqual(azimuth, 0)
-
-    def test_2(self):
-        self.assertFalse('hehe')
