@@ -5,3 +5,4 @@ test_separated.raw
 test_postfiltered.raw
 scripts/ConfigurationHelper/ODASOutput.json
 *.pyc
+.coverage
