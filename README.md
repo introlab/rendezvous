@@ -1,4 +1,4 @@
-# RendezVoUS
+# RendezVoUS [![Build Status](https://travis-ci.org/introlab/rendezvous.svg?branch=master)](https://travis-ci.org/introlab/rendezvous)
 
 ## Presentation
 
@@ -34,9 +34,21 @@
 
       $ deactivate
 
-8- Install the following dependencies:
+8- Install dependencies by running:
 
--
+    $ pip install -r requirements.txt
+
+9 - If you add dependencies run the following command to add your new dependencies to requirements.txt:
+    
+    $ pip freeze > requirements.txt
+
+## Testing
+all unit tests goes in "tests" folder and the command to execute them is:
+
+    $ cd rendezvous/ 
+    $ pytest --cov=./ tests/
+
+All tests files you add must follow this rule "test*.py".
 
 ## Project Structure
 
