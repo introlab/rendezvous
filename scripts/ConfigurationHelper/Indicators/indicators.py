@@ -50,13 +50,13 @@ class Indicators:
             # Calculate the acceptable range of the azimuth angle
             xyHypotenuse = math.sqrt(x**2 + y**2)
             dThetaAz = math.sin(width / (2 * xyHypotenuse))
-            azimuth = self.__azimuthCalculation(y, x)
+            azimuth = self.azimuthCalculation(y, x)
             azimuthBounds = { 'min' : azimuth - dThetaAz, 'max' : azimuth + dThetaAz }
 
             # Calculate the acceptable range of the elevation angle
             xyzHypotenuse = math.sqrt(x**2 + y**2 + z**2)
             dThetaEl = math.sin(height / (2* xyzHypotenuse))
-            elevation = self.__elevationCalculation(z, xyHypotenuse)
+            elevation = self.elevationCalculation(z, xyHypotenuse)
             elevationBounds = { 'min' : elevation - dThetaEl, 'max' : elevation + dThetaEl }
 
             self.configSources.append({'x' : x, 'y' : y, 'z' : z, 
@@ -80,8 +80,8 @@ class Indicators:
                 y = source['y']
                 z = source['z']
                 xyHypotenuse = math.sqrt(y**2 + x**2)
-                azimuth = self.__azimuthCalculation(y, x)
-                elevation = self.__elevationCalculation(z, xyHypotenuse)
+                azimuth = self.azimuthCalculation(y, x)
+                elevation = self.elevationCalculation(z, xyHypotenuse)
 
                 azimuthBounds = self.configSources[index]['azimuthBounds']
                 elevationBounds = self.configSources[index]['elevationBounds']
@@ -159,8 +159,8 @@ class Indicators:
             if azimuthValues != [] and int(key) < len(self.config['Sources']):
                 x = self.config['Sources'][int(key)]['x']
                 y = self.config['Sources'][int(key)]['y']
-                azimuthOfReference = self.__azimuthCalculation(y, x)
-                rms = self.__rms(azimuthOfReference, azimuthValues)
+                azimuthOfReference = self.azimuthCalculation(y, x)
+                rms = self.rms(azimuthOfReference, azimuthValues)
                 self.azimuth['rms'][int(key)] = rms
                 print('source {sourceNumber} : {rms}'.format(sourceNumber=(int(key) + 1), rms=rms))
 
@@ -171,23 +171,23 @@ class Indicators:
                 y = self.config['Sources'][int(key)]['y']
                 z = self.config['Sources'][int(key)]['z']
                 xyHypotenuse = math.sqrt(x**2 + y**2 + z**2)
-                elevationOfReference = self.__azimuthCalculation(z, xyHypotenuse)
-                rms = self.__rms(elevationOfReference, elevationValues)
+                elevationOfReference = self.azimuthCalculation(z, xyHypotenuse)
+                rms = self.rms(elevationOfReference, elevationValues)
                 self.elevation['rms'][int(key)] = rms
                 print('source {sourceNumber} : {rms}'.format(sourceNumber=(int(key) + 1), rms=rms))
 
 
-    def __azimuthCalculation(self, y, x):
+    def azimuthCalculation(self, y, x):
         azimuth = math.atan2(y, x) % (2 * math.pi)
         return azimuth
 
 
-    def __elevationCalculation(self, z, xyHypotenuse):
+    def elevationCalculation(self, z, xyHypotenuse):
         elevation = math.atan2(z, xyHypotenuse) % (2 * math.pi)
         return elevation
 
 
-    def __rms(self, valueOfReference, values=[]):
+    def rms(self, valueOfReference, values=[]):
         sumOfSquare = 0
         rms = 0
 
