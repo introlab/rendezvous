@@ -1,22 +1,48 @@
 import matplotlib.pyplot as plt
+import pandas
 import numpy
 
 class Histogram:
 
-    def __init__(self, data):
+    def __init__(self, data, binsRange):
         self.histogramData = data
-        n, bins, patches = plt.hist(x=self.histogramData, bins='auto', color='#0504aa',
-                                    alpha=0.7, rwidth=0.85, density=True)
-        self.n = n
-        self.bins = bins
-        self.patches = patches
+        self.__bins = []
+        self.__calculateBins(binsRange)
 
 
-    def plot(self, xLabel='x', yLabel='y', title='My Very Own Histogram'):
-        plt.grid(axis='y', alpha=0.75)
-        plt.xlabel(xLabel)
-        plt.ylabel(yLabel)
-        plt.title(title)
-        maxfreq = self.n.max()
+    @staticmethod
+    def getMaxValueDict(dictionary):
+        maxValue = 0
+        for _, values in dictionary.items():
+            itemMaxValue = max(values)
+            if (maxValue < itemMaxValue):
+                maxValue = itemMaxValue
+
+        return maxValue
+
+
+    def plotWithDensity(self, xLabel='x', yLabel='y', title='My Very Own Histogram'):
+        columns = []
+        for key, _ in self.histogramData.items():
+            columns.append(key)
+
+        dist = pandas.DataFrame(self.histogramData, columns=columns)
+        _, ax = plt.subplots()
+        dist.plot.hist(bins=self.__bins, density=True, ax=ax)
+        dist.plot.kde(ax=ax, legend=False, title=title)
+
+        ax.set_ylabel(yLabel)
+        ax.set_xlabel(xLabel)
+        ax.autoscale(enable=True, axis='both', tight=True)
+        ax.grid(axis='y', alpha=0.75)
+        ax.set_facecolor('#d8dcd6')
         plt.show()
 
+
+    def __calculateBins(self, binsRange):
+        self.bins = []
+        maxValue = self.getMaxValueDict(self.histogramData)
+        stopValue = int(maxValue) + 1
+        step = int(binsRange)
+        for value in range (0, stopValue, step):
+            self.__bins.append(value)

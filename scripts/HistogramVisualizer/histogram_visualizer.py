@@ -1,5 +1,6 @@
 import sys
 import os
+import collections
 
 from FileHelper.file_helper import FileHelper
 from ArgsParser.args_parser import ArgsParser
@@ -19,10 +20,11 @@ def main():
         # load data
         events = FileHelper.readJsonFile(args.dataPath)
         indicators = Indicators(events)
-        data = {'azimuth' : indicators.azimuths, 'elevation' : indicators.elevations}
+        data = collections.OrderedDict({'azimuth' : indicators.azimuths, 'elevation' : indicators.elevations})
 
-        hist = Histogram(data['azimuth'])
-        hist.plot(title=args.title, xLabel=args.xLabel, yLabel=args.yLabel)
+        # create an histogram and show a plot
+        hist = Histogram(data, args.binsRange)
+        hist.plotWithDensity(title=args.title, xLabel=args.xLabel, yLabel=args.yLabel)
 
     except Exception as e:
         print('Exception : ', e)
