@@ -2,7 +2,7 @@ import json
 import os
 
 
-class FileHandler:
+class FileHelper:
 
     def __init__(self):
         pass
