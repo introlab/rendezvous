@@ -42,7 +42,7 @@ class Indicators:
         width = detectionArea['Width']
         height = detectionArea['Height']
 
-        print('\nReel angles for each sources (degree) : \n')
+        print('\nReal angles for each sources (degree) : \n')
         for index, source in enumerate(self.config['Sources']):
             x = source['x']
             y = source['y']
