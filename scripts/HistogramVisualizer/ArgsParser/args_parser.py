@@ -14,6 +14,9 @@ class ArgsParser:
         parser = argparse.ArgumentParser(description='Histogram and Kernel Density Estimate (KDE) visualization tool based on a file fills with data.')
 
         parser.add_argument('--datapath', dest='dataPath', action='store', help='path to the data file (json file)', required=True)
+        parser.add_argument('--title', dest='title', action='store', type=str, help='plot title', default='My Very Own Histogram', required=False)
+        parser.add_argument('--ylabel', dest='yLabel', action='store', type=str, help='y axis label', default='y', required=False)
+        parser.add_argument('--xlabel', dest='xLabel', action='store', type=str, help='x axis label', default='x', required=False)
 
         return parser
 

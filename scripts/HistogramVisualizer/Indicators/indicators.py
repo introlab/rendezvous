@@ -6,6 +6,7 @@ class Indicators:
         self.events = events
         self.azimuths = []
         self.elevations = []
+        self.__calculateIndicators()
 
     
     def azimuthCalculation(self, y, x):
@@ -18,18 +19,18 @@ class Indicators:
         return elevation
 
 
-    def __processEvents(self):
+    def __calculateIndicators(self):
         # calculate indicators for each events
         for event in self.events:
             sources = event[0]['src']
-            for source in sources:
+            for _, source in sources.items():
 
                 x = source['x']
                 y = source['y']
                 z = source['z']
                 xyHypotenuse = math.sqrt(y**2 + x**2)
-                azimuth = self.azimuthCalculation(y, x)
-                elevation = self.elevationCalculation(z, xyHypotenuse)
+                azimuth = self.azimuthCalculation(y, x) * 180 / math.pi
+                elevation = self.elevationCalculation(z, xyHypotenuse) * 180 / math.pi
                         
                 self.azimuths.append(azimuth)
                 self.elevations.append(elevation)
