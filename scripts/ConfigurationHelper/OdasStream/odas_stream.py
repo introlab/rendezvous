@@ -5,7 +5,7 @@ import os
 import sys
 import signal
 
-from FileHandler.file_handler import FileHandler
+from FileHelper.file_helper import FileHelper
 
 workingDirectory = os.path.dirname(os.path.realpath(sys.argv[0]))
 
@@ -95,7 +95,7 @@ class OdasStream:
         if self.data:
             fileName = 'ODASOutput.json'
             streamOutputPath = os.path.join(workingDirectory, fileName)
-            FileHandler.writeJsonFile(streamOutputPath, self.data)
+            FileHelper.writeJsonFile(streamOutputPath, self.data)
             self.currentChunkSize = 0
 
 

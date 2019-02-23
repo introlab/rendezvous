@@ -5,7 +5,7 @@ import os
 
 from OdasStream.odas_stream import OdasStream
 from OdasStream.odas_stream import AlarmException
-from FileHandler.file_handler import FileHandler
+from FileHelper.file_helper import FileHelper
 from ArgsParser.args_parser import ArgsParser
 from Indicators.indicators import Indicators
 
@@ -49,8 +49,8 @@ def main():
             print('indicators evalution starting...')
 
             # get last saved odas data
-            events = FileHandler.readJsonFile(outputFilePath)
-            sourceConfigs = FileHandler.readJsonFile(args.sourceConfigPath)
+            events = FileHelper.readJsonFile(outputFilePath)
+            sourceConfigs = FileHelper.readJsonFile(args.sourceConfigPath)
 
             # calculate indicators
             indicators = Indicators(events, sourceConfigs)
@@ -66,7 +66,7 @@ def main():
             signal.signal(signal.SIGINT, signalCallback)
             signal.signal(signal.SIGTERM, signalCallback)
             # read config file to get sample rate for while True sleepTime
-            line = FileHandler.getLineFromFile(args.configPath, 'fS')
+            line = FileHelper.getLineFromFile(args.configPath, 'fS')
             # extract the sample rate from the string and convert to an Integer
             sampleRate = int(re.sub('[^0-9]', '', line.split('=')[1]))
             sleepTime = 1 / sampleRate
