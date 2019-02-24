@@ -43,12 +43,12 @@
     $ pip freeze > requirements.txt
 
 ## Testing
-all unit tests goes in "tests" folder and the command to execute them is:
+all unit tests are located in "tests" folder and the command to execute them is:
 
     $ cd rendezvous/ 
     $ pytest --cov=./ tests/
 
-All tests files you add must follow this rule "test*.py".
+All tests files you add must follow this rule "test*.py", the framework use for testing is "unittest".
 
 ## Project Structure
 
