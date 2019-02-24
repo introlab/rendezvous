@@ -10,7 +10,7 @@ Pass the data file path as an argument using, normally the path to "ODASOutput.j
 
 2- Bins range of values
 
-Pass the bins range in degrees as an argument using :
+Pass the bins range in degrees (integers) as an argument using :
 
     --binsrange BINSRANGE
 
