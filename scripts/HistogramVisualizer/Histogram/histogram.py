@@ -41,7 +41,7 @@ class Histogram:
 
 
     def __calculateBins(self, binsRange):
-        self.bins = []
+        self.__bins = []
         maxValue = self.getMaxValueDict(self.histogramData)
         stopValue = int(maxValue) + 1
         step = int(binsRange)
