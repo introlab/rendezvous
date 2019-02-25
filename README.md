@@ -36,6 +36,7 @@
 
 8- Install dependencies by running:
 
+    $ sudo apt-get install python3-tk
     $ pip install -r requirements.txt
 
 9 - If you add dependencies run the following command to add your new dependencies to requirements.txt:
