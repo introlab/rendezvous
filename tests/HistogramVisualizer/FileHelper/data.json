@@ -1,0 +1,9 @@
+{
+    "test": "python",
+    "allo": 42,
+    "subobject":
+    {
+        "sub": "rendezvous"
+    },
+    "array": [1, 2, 3, 42]
+}

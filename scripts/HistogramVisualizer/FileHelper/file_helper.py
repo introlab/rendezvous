@@ -10,6 +10,9 @@ class FileHelper:
 
     @staticmethod
     def getLineFromFile(filePath, startsWith):
+        if not os.path.exists(filePath):
+            raise Exception('no file found at : {path}'.format(path=filePath))
+
         with open(filePath, 'r') as fi:
             for line in fi:
                 stripedLine = line.replace(' ', '')
@@ -31,6 +34,9 @@ class FileHelper:
         if not os.path.exists(filePath):
             raise Exception('no file found at : {path}'.format(path=filePath))
         
+        if not filePath.endswith('.json'):
+            raise Exception('not a json file')
+
         with open(filePath, mode='r', encoding='utf-8') as jsonFile:
             data = json.load(jsonFile)
             return data

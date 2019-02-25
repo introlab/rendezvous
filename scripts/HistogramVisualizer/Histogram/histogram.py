@@ -14,9 +14,10 @@ class Histogram:
     def getMaxValueDict(dictionary):
         maxValue = 0
         for _, values in dictionary.items():
-            itemMaxValue = max(values)
-            if (maxValue < itemMaxValue):
-                maxValue = itemMaxValue
+            if values:
+                itemMaxValue = max(values)
+                if (maxValue < itemMaxValue):
+                    maxValue = itemMaxValue
 
         return maxValue
 
