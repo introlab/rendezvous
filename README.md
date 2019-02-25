@@ -46,7 +46,7 @@
 all unit tests are located in "tests" folder and the command to execute them is:
 
     $ cd rendezvous/ 
-    $ pytest --cov=./ tests/
+    $ pytest -v --cov=./ tests/
 
 All tests files you add must follow this rule "test*.py", the framework use for testing is "unittest".
 
