@@ -1,6 +1,7 @@
 import math
 
-from Geometry.angles_3d_converter import Angles3DConverter
+from utils.angles_3d_converter import Angles3DConverter
+
 
 class Indicators:
 
@@ -25,3 +26,4 @@ class Indicators:
                         
                 self.azimuths.append(Angles3DConverter.radToDegree(azimuth))
                 self.elevations.append(Angles3DConverter.radToDegree(elevation))
+                

@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import pandas
-import numpy
+
 
 class Histogram:
 
@@ -47,3 +47,4 @@ class Histogram:
         step = int(binsRange)
         for value in range (0, stopValue, step):
             self.__bins.append(value)
+            

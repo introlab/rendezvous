@@ -40,3 +40,4 @@ class FileHelper:
         with open(filePath, mode='r', encoding='utf-8') as jsonFile:
             data = json.load(jsonFile)
             return data
+            

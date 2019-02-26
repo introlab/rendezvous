@@ -3,7 +3,7 @@ import pathlib
 import os
 import collections
 
-from scripts.HistogramVisualizer.Histogram.histogram import Histogram
+from src.tools.histogramvisualizer.histogram.histogram import Histogram
 
 rootPath = pathlib.Path('../../../').parents[2].absolute()
 
@@ -30,3 +30,4 @@ class TestHistogram(unittest.TestCase):
         dictionary = {'first' : [-1, -2000, -200, 10], 'second': [1, 2, 3]}
         maxValue = self.histogram.getMaxValueDict(dictionary)        
         self.assertEqual(maxValue, 10)
+        

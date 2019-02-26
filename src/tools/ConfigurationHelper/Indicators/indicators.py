@@ -1,8 +1,6 @@
-import sys
-sys.path.append('../../src/')
 import math
 
-from Geometry.angles_3d_converter import Angles3DConverter
+from utils.angles_3d_converter import Angles3DConverter
 
 class Indicators:
 

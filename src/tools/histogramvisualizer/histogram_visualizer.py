@@ -1,14 +1,15 @@
 import sys
-sys.path.append('../../src/')
 import os
 import collections
 
-from Utils.file_helper import FileHelper
-from ArgsParser.args_parser import ArgsParser
-from Indicators.indicators import Indicators
-from Histogram.histogram import Histogram
+from utils.file_helper import FileHelper
+from argsparser.args_parser import ArgsParser
+from indicators.indicators import Indicators
+from histogram.histogram import Histogram
+
 
 workingDirectory = os.path.dirname(os.path.realpath(sys.argv[0]))
+
 
 def main():
     try:
