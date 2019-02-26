@@ -7,8 +7,8 @@ except ImportError:
     cmdclass = {}
 
 setup(
-    name="prototype",
+    name="gui",
     version="0.1",
-    packages=["prototype"],
+    packages=["gui"],
     cmdclass=cmdclass,
 )

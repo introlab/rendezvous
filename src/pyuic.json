@@ -1,8 +1,8 @@
 {
     "files": [
 	[
-		"prototype/gui/*.ui",
-		"prototype/gui"
+		"gui/*.ui",
+		"gui"
 	]
     ],
     "hooks": [],
