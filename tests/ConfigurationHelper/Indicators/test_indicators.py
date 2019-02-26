@@ -4,7 +4,7 @@ import os
 import math
 
 from scripts.ConfigurationHelper.Indicators.indicators import Indicators
-from Utils.file_helper import FileHelper
+from src.Utils.file_helper import FileHelper
 
 rootPath = pathlib.Path('../../../').parents[2].absolute()
 
