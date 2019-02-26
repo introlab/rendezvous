@@ -1,5 +1,7 @@
 import math
 
+from Geometry.angles_3d_converter import Angles3DConverter
+
 class Indicators:
 
     def __init__(self, events):
@@ -7,16 +9,6 @@ class Indicators:
         self.azimuths = []
         self.elevations = []
         self.__calculateIndicators()
-
-    
-    def azimuthCalculation(self, y, x):
-        azimuth = math.atan2(y, x) % (2 * math.pi)
-        return azimuth
-
-
-    def elevationCalculation(self, z, xyHypotenuse):
-        elevation = math.atan2(z, xyHypotenuse) % (2 * math.pi)
-        return elevation
 
 
     def __calculateIndicators(self):
@@ -28,9 +20,8 @@ class Indicators:
                 x = source['x']
                 y = source['y']
                 z = source['z']
-                xyHypotenuse = math.sqrt(y**2 + x**2)
-                azimuth = self.azimuthCalculation(y, x) * 180 / math.pi
-                elevation = self.elevationCalculation(z, xyHypotenuse) * 180 / math.pi
+                azimuth = Angles3DConverter.azimuthCalculation(x, y)
+                elevation = Angles3DConverter.elevationCalculation(x, y, z)
                         
-                self.azimuths.append(azimuth)
-                self.elevations.append(elevation)
+                self.azimuths.append(Angles3DConverter.radToDegree(azimuth))
+                self.elevations.append(Angles3DConverter.radToDegree(elevation))

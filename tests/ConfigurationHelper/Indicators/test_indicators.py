@@ -25,16 +25,6 @@ class TestIndicators(unittest.TestCase):
 
         self.indicators = Indicators(events, config)
 
-    
-    def test_azimuthCalculation(self):
-        azimuth = self.indicators.azimuthCalculation(5, 0)
-        self.assertEqual(azimuth * 180 / math.pi, 90)
-
-
-    def test_elevationCalculation(self):
-        elevation = self.indicators.elevationCalculation(5, 0)
-        self.assertEqual(elevation * 180 / math.pi, 90)
-
 
     # test with empty list
     def test_rms_empty(self):

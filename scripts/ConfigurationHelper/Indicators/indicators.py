@@ -1,4 +1,8 @@
+import sys
+sys.path.append('../../src/')
 import math
+
+from Geometry.angles_3d_converter import Angles3DConverter
 
 class Indicators:
 
@@ -29,16 +33,6 @@ class Indicators:
         self.__rateDetectionInBounds()
         self.__falseDetectionRate()
         self.__rmsCalculation()
-
-    
-    def azimuthCalculation(self, y, x):
-        azimuth = math.atan2(y, x) % (2 * math.pi)
-        return azimuth
-
-
-    def elevationCalculation(self, z, xyHypotenuse):
-        elevation = math.atan2(z, xyHypotenuse) % (2 * math.pi)
-        return elevation
 
 
     def rms(self, valueOfReference, values=[]):
@@ -77,15 +71,16 @@ class Indicators:
             # Calculate the acceptable range of the azimuth angle
             xyHypotenuse = math.sqrt(x**2 + y**2)
             dThetaAz = math.sin(width / (2 * xyHypotenuse))
-            azimuth = self.azimuthCalculation(y, x)
-            print('Real azimuth for source {source} equals = {azimuth}'.format(source=index+1, azimuth=azimuth * 180 / math.pi))
+            azimuth = Angles3DConverter.azimuthCalculation(x, y)
+            print('Real azimuth for source {source} equals = {azimuth}'.format(source=index+1, azimuth=Angles3DConverter.radToDegree(azimuth)))
             azimuthBounds = { 'min' : azimuth - dThetaAz, 'max' : azimuth + dThetaAz }
 
             # Calculate the acceptable range of the elevation angle
             xyzHypotenuse = math.sqrt(x**2 + y**2 + z**2)
             dThetaEl = math.sin(height / (2* xyzHypotenuse))
-            elevation = self.elevationCalculation(z, xyHypotenuse)
-            print('Real elevation for source {source} equals = {elevation}'.format(source=index+1, elevation=elevation * 180 / math.pi))
+
+            elevation = Angles3DConverter.elevationCalculation(x, y, z)
+            print('Real elevation for source {source} equals = {elevation}'.format(source=index+1, elevation=Angles3DConverter.radToDegree(elevation)))
             elevationBounds = { 'min' : elevation - dThetaEl, 'max' : elevation + dThetaEl }
 
             self.configSources.append({'x' : x, 'y' : y, 'z' : z, 
@@ -108,9 +103,8 @@ class Indicators:
                 x = source['x']
                 y = source['y']
                 z = source['z']
-                xyHypotenuse = math.sqrt(y**2 + x**2)
-                azimuth = self.azimuthCalculation(y, x)
-                elevation = self.elevationCalculation(z, xyHypotenuse)
+                azimuth = Angles3DConverter.azimuthCalculation(x, y)
+                elevation = Angles3DConverter.elevationCalculation(x, y, z)
 
                 azimuthBounds = self.configSources[index]['azimuthBounds']
                 elevationBounds = self.configSources[index]['elevationBounds']
@@ -137,8 +131,8 @@ class Indicators:
             y = configSource['y']
             odasY = source['y']
 
-            azimuth = self.azimuthCalculation(y, x)
-            odasAzimuth = self.azimuthCalculation(odasY, odasX)
+            azimuth = Angles3DConverter.azimuthCalculation(x, y)
+            odasAzimuth = Angles3DConverter.azimuthCalculation(odasX, odasY)
             azimuthDelta = abs(azimuth - odasAzimuth)
 
             if azimuthDelta < minAzimuthDelta or minAzimuthDelta == -1:
@@ -155,7 +149,7 @@ class Indicators:
             if self.eventsPerSrc[index] != 0:
                 avgAzimuth = azimuthSum / self.eventsPerSrc[index]
                 self.azimuth['average'][index] = avgAzimuth
-                avgAzimuthDegree = (avgAzimuth * 180 / math.pi) % 360
+                avgAzimuthDegree = Angles3DConverter.radToDegree(avgAzimuth) % 360
                 print('source {sourceNumber} : {azimuth}'.format(sourceNumber=(index + 1), azimuth=(avgAzimuthDegree)))
 
         # average elevation for each source
@@ -164,7 +158,7 @@ class Indicators:
             if self.eventsPerSrc[index] != 0:
                 avgElevation = elevationSum / self.eventsPerSrc[index]
                 self.elevation['average'][index] = avgElevation
-                avgElevationDegree = (avgElevation * 180 / math.pi) % 360
+                avgElevationDegree = Angles3DConverter.radToDegree(avgElevation) % 360
                 print('source {sourceNumber} : {elevation}'.format(sourceNumber=(index + 1), elevation=avgElevationDegree))
 
 
@@ -192,7 +186,7 @@ class Indicators:
             if azimuthValues != [] and int(key) < len(self.config['Sources']):
                 x = self.config['Sources'][int(key)]['x']
                 y = self.config['Sources'][int(key)]['y']
-                azimuthOfReference = self.azimuthCalculation(y, x)
+                azimuthOfReference = Angles3DConverter.azimuthCalculation(x, y)
                 rms = self.rms(azimuthOfReference, azimuthValues)
                 self.azimuth['rms'][int(key)] = rms
                 print('source {sourceNumber} : {rms}'.format(sourceNumber=(int(key) + 1), rms=rms))
@@ -203,8 +197,7 @@ class Indicators:
                 x = self.config['Sources'][int(key)]['x']
                 y = self.config['Sources'][int(key)]['y']
                 z = self.config['Sources'][int(key)]['z']
-                xyHypotenuse = math.sqrt(x**2 + y**2 + z**2)
-                elevationOfReference = self.azimuthCalculation(z, xyHypotenuse)
+                elevationOfReference = Angles3DConverter.elevationCalculation(x, y, z)
                 rms = self.rms(elevationOfReference, elevationValues)
                 self.elevation['rms'][int(key)] = rms
                 print('source {sourceNumber} : {rms}'.format(sourceNumber=(int(key) + 1), rms=rms))
