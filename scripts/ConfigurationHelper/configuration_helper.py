@@ -1,4 +1,6 @@
 import sys
+sys.path.append('../../src/')
+
 import re
 import signal
 import os

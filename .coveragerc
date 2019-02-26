@@ -1,2 +1,2 @@
 [run]
-omit = env/*, tests/*
+omit = env/*, tests/*, src/prototype/gui/*, src/setup.py

@@ -2,7 +2,7 @@ import unittest
 import pathlib
 import os
 
-from Utils.file_helper import FileHelper
+from src.Utils.file_helper import FileHelper
 
 rootPath = pathlib.Path('../../../').parents[2].absolute()
 
