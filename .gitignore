@@ -6,3 +6,4 @@ test_postfiltered.raw
 scripts/ConfigurationHelper/ODASOutput.json
 *.pyc
 .coverage
+src/gui/*.py

@@ -1,13 +1,13 @@
 {
     "files": [
 	[
-		"gui/*.ui",
-		"gui"
+		"src/gui/*.ui",
+		"src/gui"
 	]
     ],
     "hooks": [],
     "pyrcc": "pyrcc5",
     "pyrcc_options": "",
     "pyuic": "pyuic5",
-    "pyuic_options": "--from-import"
+    "pyuic_options": "--from-import -d"
 }
