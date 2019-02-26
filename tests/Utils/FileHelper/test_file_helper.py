@@ -2,7 +2,7 @@ import unittest
 import pathlib
 import os
 
-from scripts.ConfigurationHelper.FileHelper.file_helper import FileHelper
+from src.Utils.file_helper import FileHelper
 
 rootPath = pathlib.Path('../../../').parents[2].absolute()
 
@@ -10,7 +10,7 @@ rootPath = pathlib.Path('../../../').parents[2].absolute()
 class TestFileHelper(unittest.TestCase):
 
     def setUp(self):
-        self.testFile = os.path.join(rootPath, 'tests/ConfigurationHelper/FileHelper/data.json')
+        self.testFile = os.path.join(rootPath, 'tests/Utils/FileHelper/data.json')
         pass
 
 
@@ -29,7 +29,7 @@ class TestFileHelper(unittest.TestCase):
 
     # create file and write
     def test_writeJsonFile_not_exists(self):
-        outputFile = os.path.join(rootPath, 'tests/ConfigurationHelper/FileHelper/test.json')
+        outputFile = os.path.join(rootPath, 'tests/Utils/FileHelper/test.json')
         jsonData = {
             'test' : 'rendezvous'
         }
@@ -43,7 +43,7 @@ class TestFileHelper(unittest.TestCase):
 
     # overwrite an existing file
     def text_writeJsonFile_exists(self):
-        outputFile = os.path.join(rootPath, 'tests/ConfigurationHelper/FileHelper/test.json')
+        outputFile = os.path.join(rootPath, 'tests/Utils/FileHelper/test.json')
         oldData = {
             'test' : 'rendezvous'
         }
@@ -60,7 +60,7 @@ class TestFileHelper(unittest.TestCase):
 
     # file doesn't exists
     def test_readJsonFile_not_exists(self):
-        readFile = os.path.join(rootPath, 'tests/ConfigurationHelper/FileHelper/notExists.json')
+        readFile = os.path.join(rootPath, 'tests/Utils/FileHelper/notExists.json')
         
         try:
             FileHelper.readJsonFile(readFile)
@@ -70,7 +70,7 @@ class TestFileHelper(unittest.TestCase):
 
 
     def test_readJsonFile_exists(self):
-        readFile = os.path.join(rootPath, 'tests/ConfigurationHelper/FileHelper/test.json')
+        readFile = os.path.join(rootPath, 'tests/Utils/FileHelper/test.json')
         data = {
             'test2' :  42
         }
@@ -82,7 +82,7 @@ class TestFileHelper(unittest.TestCase):
 
     
     def test_readJsonFile_not_json(self):
-        readFile = os.path.join(rootPath, 'tests/ConfigurationHelper/FileHelper/test.txt')
+        readFile = os.path.join(rootPath, 'tests/Utils/FileHelper/test.txt')
         data = 123423545435
         FileHelper.writeJsonFile(readFile, data)
         try: 

@@ -1,0 +1,13 @@
+{
+    "files": [
+	[
+		"gui/*.ui",
+		"gui"
+	]
+    ],
+    "hooks": [],
+    "pyrcc": "pyrcc5",
+    "pyrcc_options": "",
+    "pyuic": "pyuic5",
+    "pyuic_options": "--from-import"
+}

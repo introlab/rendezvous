@@ -5,7 +5,7 @@ import os
 import sys
 import signal
 
-from FileHelper.file_helper import FileHelper
+from Utils.file_helper import FileHelper
 
 workingDirectory = os.path.dirname(os.path.realpath(sys.argv[0]))
 
