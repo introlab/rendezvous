@@ -1,8 +1,8 @@
 {
     "files": [
 	[
-		"gui/*.ui",
-		"gui"
+		"src/gui/*.ui",
+		"src/gui"
 	]
     ],
     "hooks": [],
