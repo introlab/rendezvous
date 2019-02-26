@@ -1,17 +1,17 @@
 import sys
-sys.path.append('../../src/')
-
 import re
 import signal
 import os
 
-from OdasStream.odas_stream import OdasStream
-from OdasStream.odas_stream import AlarmException
-from Utils.file_helper import FileHelper
-from ArgsParser.args_parser import ArgsParser
-from Indicators.indicators import Indicators
-
 workingDirectory = os.path.dirname(os.path.realpath(sys.argv[0]))
+sys.path.append(os.path.join(workingDirectory, '../../../src'))
+
+from odasstream.odas_stream import OdasStream
+from odasstream.odas_stream import AlarmException
+from utils.file_helper import FileHelper
+from argsparser.args_parser import ArgsParser
+from indicators.indicators import Indicators
+
 outputFilePath = os.path.join(workingDirectory, 'ODASOutput.json')
 
 

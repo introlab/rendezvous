@@ -3,8 +3,8 @@ import pathlib
 import os
 import math
 
-from scripts.ConfigurationHelper.Indicators.indicators import Indicators
-from src.Utils.file_helper import FileHelper
+from src.tools.configurationhelper.indicators.indicators import Indicators
+from src.utils.file_helper import FileHelper
 
 rootPath = pathlib.Path('../../../').parents[2].absolute()
 

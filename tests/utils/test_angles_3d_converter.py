@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from src.Geometry.angles_3d_converter import Angles3DConverter
+from src.utils.angles_3d_converter import Angles3DConverter
 
 class TestAngles3DConverter(unittest.TestCase):
 

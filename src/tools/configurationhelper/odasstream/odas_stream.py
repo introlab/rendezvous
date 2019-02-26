@@ -5,12 +5,14 @@ import os
 import sys
 import signal
 
-from Utils.file_helper import FileHelper
+from utils.file_helper import FileHelper
 
 workingDirectory = os.path.dirname(os.path.realpath(sys.argv[0]))
 
+
 class AlarmException(Exception):
     pass
+
 
 class OdasStream:
 
@@ -33,6 +35,7 @@ class OdasStream:
 
         self.__spawnSubProcess()
         self.__processOutput()
+
 
     # public function to stop the stream
     def stop(self):

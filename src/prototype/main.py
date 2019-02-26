@@ -7,7 +7,7 @@ from PyQt5.QtCore import pyqtSlot
 
 from gui.mainwidow_ui import Ui_MainWindow
 from OdasStream.odas_stream import OdasStream
-from Utils.file_helper import FileHelper
+from utils.file_helper import FileHelper
 from ArgsParser.args_parser import ArgsParser
 
 
