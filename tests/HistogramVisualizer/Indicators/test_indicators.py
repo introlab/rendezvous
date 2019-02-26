@@ -4,7 +4,7 @@ import os
 import math
 
 from scripts.HistogramVisualizer.Indicators.indicators import Indicators
-from scripts.HistogramVisualizer.FileHelper.file_helper import FileHelper
+from Utils.file_helper import FileHelper
 
 rootPath = pathlib.Path('../../../').parents[2].absolute()
 
