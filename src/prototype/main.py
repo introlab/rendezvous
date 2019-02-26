@@ -1,12 +1,15 @@
 import sys
 import re
 import os
+
 from PyQt5.QtWidgets import QApplication, QMainWindow
 from PyQt5.QtCore import pyqtSlot
+
 from gui.mainwidow_ui import Ui_MainWindow
 from OdasStream.odas_stream import OdasStream
-from FileHelper.file_helper import FileHelper
+from Utils.file_helper import FileHelper
 from ArgsParser.args_parser import ArgsParser
+
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -15,12 +18,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         self.odasStream = odasStream
 
-        # signal slots
+        # Qt signal slots
         self.odasStream.signalOdasData.connect(self.odasDataReveived)
         self.btnStartOdas.clicked.connect(self.btnStartOdasClicked)
         self.btnStopOdas.clicked.connect(self.btnStopOdasClicked)
 
 
+    # Handles the event where the user closes the window with the X button
     def closeEvent(self, event):
         self.stopOdas()
         event.accept()
@@ -32,8 +36,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 
     def stopOdas(self):
-        if self.odasStream and self.odasStream.odasProcess:
-            if self.odasStream.isRunning:
+        if self.odasStream and self.odasStream.isRunning:
                 self.odasStream.stop()
 
 
@@ -49,26 +52,25 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     @pyqtSlot(object)
     def odasDataReveived(self, values):
-        self.source1AzimuthValue.setText('%.5f' % values[0]['azimuth'])
-        self.source2AzimuthValue.setText('%.5f' % values[1]['azimuth'])
-        self.source3AzimuthValue.setText('%.5f' % values[2]['azimuth'])
-        self.source4AzimuthValue.setText('%.5f' % values[3]['azimuth'])
+        self.source1AzimuthValueLabel.setText('%.5f' % values[0]['azimuth'])
+        self.source2AzimuthValueLabel.setText('%.5f' % values[1]['azimuth'])
+        self.source3AzimuthValueLabel.setText('%.5f' % values[2]['azimuth'])
+        self.source4AzimuthValueLabel.setText('%.5f' % values[3]['azimuth'])
 
-        self.source1ElevationValue.setText('%.5f' % values[0]['elevation'])
-        self.source2ElevationValue.setText('%.5f' % values[1]['elevation'])
-        self.source3ElevationValue.setText('%.5f' % values[2]['elevation'])
-        self.source4ElevationValue.setText('%.5f' % values[3]['elevation'])
+        self.source1ElevationValueLabel.setText('%.5f' % values[0]['elevation'])
+        self.source2ElevationValueLabel.setText('%.5f' % values[1]['elevation'])
+        self.source3ElevationValueLabel.setText('%.5f' % values[2]['elevation'])
+        self.source4ElevationValueLabel.setText('%.5f' % values[3]['elevation'])
 
 
 def main():
-    # get terminal arguments.
     parser = ArgsParser()
     args = parser.args
 
-    # read config file to get sample rate for while True sleepTime
+    # Read config file to get sample rate for while True sleepTime
     line = FileHelper.getLineFromFile(args.configPath, 'fS')
 
-    # extract the sample rate from the string and convert to an Integer
+    # Extract the sample rate from the string and convert to an Integer
     sampleRate = int(re.sub('[^0-9]', '', line.split('=')[1]))
     sleepTime = 1 / sampleRate
 

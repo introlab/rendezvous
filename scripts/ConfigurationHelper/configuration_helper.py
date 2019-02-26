@@ -5,7 +5,7 @@ import os
 
 from OdasStream.odas_stream import OdasStream
 from OdasStream.odas_stream import AlarmException
-from FileHelper.file_helper import FileHelper
+from Utils.file_helper import FileHelper
 from ArgsParser.args_parser import ArgsParser
 from Indicators.indicators import Indicators
 

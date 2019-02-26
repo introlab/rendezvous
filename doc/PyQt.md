@@ -47,7 +47,7 @@ Generate the python ui with:
 
 Install the PyQt dependency (only the first time)
 
-    $ pip install
+    $ pip install -r requirements.txt
 
 Run the app:
 

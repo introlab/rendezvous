@@ -2,7 +2,7 @@ import sys
 import os
 import collections
 
-from FileHelper.file_helper import FileHelper
+from Utils.file_helper import FileHelper
 from ArgsParser.args_parser import ArgsParser
 from Indicators.indicators import Indicators
 from Histogram.histogram import Histogram

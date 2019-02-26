@@ -5,7 +5,10 @@ import math
 import os
 import sys
 from threading import Thread
+
 from PyQt5.QtCore import QObject, pyqtSignal
+
+from Geometry.angles_3d_converter import Angles3DConverter
 
 
 class OdasStream(QObject):
@@ -77,20 +80,9 @@ class OdasStream(QObject):
 
         sources = {}
         for index, jsonSource in enumerate(jsonSources):
-            jsonSource['azimuth'] = self.__azimuthCalculation(jsonSource['x'], jsonSource['y'])
-            jsonSource['elevation'] = self.__elevationCalculation(jsonSource['x'], jsonSource['y'], jsonSource['z'])
+            jsonSource['azimuth'] = Angles3DConverter.azimuthCalculation(jsonSource['x'], jsonSource['y'])
+            jsonSource['elevation'] = Angles3DConverter.elevationCalculation(jsonSource['x'], jsonSource['y'], jsonSource['z'])
             sources[index] = jsonSource
 
         if sources:
             self.signalOdasData.emit(sources)
-
-
-    def __azimuthCalculation(self, x, y):
-        return math.atan2(y, x) % (2 * math.pi)
-
-
-    def __elevationCalculation(self, x, y, z):
-        xyHypotenuse = math.sqrt(y**2 + x**2)
-        return math.atan2(z, xyHypotenuse) % (2 * math.pi)
-
-

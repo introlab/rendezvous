@@ -67,7 +67,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QLabel" name="source1AzimuthValue">
+              <widget class="QLabel" name="source1AzimuthValueLabel">
                <property name="text">
                 <string>0.00000</string>
                </property>
@@ -84,7 +84,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QLabel" name="source1ElevationValue">
+              <widget class="QLabel" name="source1ElevationValueLabel">
                <property name="text">
                 <string>0.00000</string>
                </property>
@@ -146,7 +146,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QLabel" name="source2AzimuthValue">
+              <widget class="QLabel" name="source2AzimuthValueLabel">
                <property name="text">
                 <string>0.00000</string>
                </property>
@@ -163,7 +163,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QLabel" name="source2ElevationValue">
+              <widget class="QLabel" name="source2ElevationValueLabel">
                <property name="text">
                 <string>0.00000</string>
                </property>
@@ -222,7 +222,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QLabel" name="source3AzimuthValue">
+              <widget class="QLabel" name="source3AzimuthValueLabel">
                <property name="text">
                 <string>0.00000</string>
                </property>
@@ -239,7 +239,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QLabel" name="source3ElevationValue">
+              <widget class="QLabel" name="source3ElevationValueLabel">
                <property name="text">
                 <string>0.00000</string>
                </property>
@@ -298,7 +298,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QLabel" name="source4AzimuthValue">
+              <widget class="QLabel" name="source4AzimuthValueLabel">
                <property name="text">
                 <string>0.00000</string>
                </property>
@@ -315,7 +315,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QLabel" name="source4ElevationValue">
+              <widget class="QLabel" name="source4ElevationValueLabel">
                <property name="text">
                 <string>0.00000</string>
                </property>
