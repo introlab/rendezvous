@@ -2,9 +2,6 @@ import sys
 import os
 import collections
 
-workingDirectory = os.path.dirname(os.path.realpath(sys.argv[0]))
-sys.path.append(os.path.join(workingDirectory, '../../../src'))
-
 import context
 from src.utils.file_helper import FileHelper
 from src.tools.histogramvisualizer.argsparser.args_parser import ArgsParser

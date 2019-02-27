@@ -4,7 +4,6 @@ import signal
 import os
 
 workingDirectory = os.path.dirname(os.path.realpath(sys.argv[0]))
-sys.path.append(os.path.join(workingDirectory, '../../../src'))
 
 import context
 from src.tools.configurationhelper.odasstream.odas_stream import OdasStream
