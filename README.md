@@ -54,8 +54,8 @@ All tests files you add must follow this rule "test*.py", the framework use for 
 ## Project Structure
 
 - doc : for most documentation
-- scripts : command-line tools
+- scripts : command-line scripts
 - lib : C-language libraries
-- src : application source code
+- src : application source code and tools related to the source code
 - tests : unit testing
 - config : for different config files
