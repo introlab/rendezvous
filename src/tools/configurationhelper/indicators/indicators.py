@@ -1,6 +1,6 @@
 import math
 
-from utils.angles_3d_converter import Angles3DConverter
+from src.utils.angles_3d_converter import Angles3DConverter
 
 class Indicators:
 

@@ -8,7 +8,7 @@ from threading import Thread
 
 from PyQt5.QtCore import QObject, pyqtSignal
 
-from Geometry.angles_3d_converter import Angles3DConverter
+from src.utils.angles_3d_converter import Angles3DConverter
 
 
 class OdasStream(QObject):

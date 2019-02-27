@@ -5,10 +5,11 @@ import os
 from PyQt5.QtWidgets import QApplication, QMainWindow
 from PyQt5.QtCore import pyqtSlot
 
-from gui.mainwidow_ui import Ui_MainWindow
-from OdasStream.odas_stream import OdasStream
-from utils.file_helper import FileHelper
-from ArgsParser.args_parser import ArgsParser
+import context
+from src.prototype.gui.mainwidow_ui import Ui_MainWindow
+from src.prototype.odasstream.odas_stream import OdasStream
+from src.utils.file_helper import FileHelper
+from src.prototype.argsparser.args_parser import ArgsParser
 
 
 

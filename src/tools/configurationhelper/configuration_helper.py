@@ -6,11 +6,12 @@ import os
 workingDirectory = os.path.dirname(os.path.realpath(sys.argv[0]))
 sys.path.append(os.path.join(workingDirectory, '../../../src'))
 
-from odasstream.odas_stream import OdasStream
-from odasstream.odas_stream import AlarmException
-from utils.file_helper import FileHelper
-from argsparser.args_parser import ArgsParser
-from indicators.indicators import Indicators
+import context
+from src.tools.configurationhelper.odasstream.odas_stream import OdasStream
+from src.tools.configurationhelper.odasstream.odas_stream import AlarmException
+from src.utils.file_helper import FileHelper
+from src.tools.configurationhelper.argsparser.args_parser import ArgsParser
+from src.tools.configurationhelper.indicators.indicators import Indicators
 
 outputFilePath = os.path.join(workingDirectory, 'ODASOutput.json')
 
