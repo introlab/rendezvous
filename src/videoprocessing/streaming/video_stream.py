@@ -18,6 +18,7 @@ class VideoStream:
         self.fps = fps
         self.fourcc = fourcc
 
+
     # Displays the source and dewarped image, set debug to true to show the areas of the calculations
     def startStream(self, donutMapping, centersDistance, debug):
         self.__initalizeCamera()
