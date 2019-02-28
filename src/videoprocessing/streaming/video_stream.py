@@ -1,11 +1,16 @@
-import cv2
-import numpy as np
 import time
+import os
 from collections import namedtuple
 
-DonutMapping = namedtuple('DonutMapping', 'xCenter yCenter inRadius outRadius middleAngle angleSpan')
-DebugImageInfoParam = namedtuple('DebugImageInfoParam', 'donutMapping newDonutMapping center \
+import cv2
+import numpy as np
+from pathlib import Path
+
+DonutSlice = namedtuple('DonutSlice', 'xCenter yCenter inRadius outRadius middleAngle angleSpan')
+DebugImageInfoParam = namedtuple('DebugImageInfoParam', 'donutSlice newDonutSlice center \
     newCenter bottomLeft bottomRight centerRadius')
+
+rootDirectory = os.path.realpath(Path(__file__).parents[3])
 
 
 class VideoStream:
@@ -20,7 +25,7 @@ class VideoStream:
 
 
     # Displays the source and dewarped image, set debug to true to show the areas of the calculations
-    def startStream(self, donutMapping, centersDistance, debug):
+    def startStream(self, donutSlice, topDistorsionFactor, bottomDistorsionFactor, debug):
         self.__initalizeCamera()
 
         # Changing the codec of the camera throws an exception on camera.read every two execution for whatever reason
@@ -33,15 +38,16 @@ class VideoStream:
 
         self.printCameraSettings()
 
+        # If the maps doesn't exist, create them
         try:
-            xMap, yMap = self.__readMaps(donutMapping, centersDistance)
+            xMap, yMap = self.__readMaps(donutSlice, topDistorsionFactor, bottomDistorsionFactor)
         except:
-            self.buildMaps(donutMapping, centersDistance)
-            xMap, yMap = self.__readMaps(donutMapping, centersDistance)
+            self.buildMaps(donutSlice, topDistorsionFactor, bottomDistorsionFactor)
+            xMap, yMap = self.__readMaps(donutSlice, topDistorsionFactor, bottomDistorsionFactor)
 
         if debug:
             print('DEBUG enabled')
-            debugImageInfoParam = self.__createDebugImageInfoParam(donutMapping, centersDistance)
+            debugImageInfoParam = self.__createDebugImageInfoParam(donutSlice, topDistorsionFactor)
 
         print('Press ESCAPE key to exit')
 
@@ -65,24 +71,27 @@ class VideoStream:
 
     
     # Build maps for the unwarping of fisheye image
-    def buildMaps(self, baseDonutMapping, centersDistance):
+    def buildMaps(self, baseDonutSlice, topDistorsionFactor, bottomDistorsionFactor):
         print("Building Maps...")
 
+        # Distance between center of baseDonutSlice and newDonutSlice to calculate
+        centersDistance = topDistorsionFactor * 10000
+
         # Return a new donut mapping based on the one passed, which have properties to reduce the distorsion in the image
-        newDonutMapping = self.__createDewarpingDonutMapping(baseDonutMapping, centersDistance)
+        newDonutSlice = self.__createDewarpingDonutSlice(baseDonutSlice, centersDistance)
 
         # Radius of circle which would be in the middle of the dewarped image if no radius factor was applied to dewarping
-        centerRadius = (newDonutMapping.inRadius + newDonutMapping.outRadius) / 2
+        centerRadius = (newDonutSlice.inRadius + newDonutSlice.outRadius) / 2
 
         # Offset in x in order for the mapping to be in the right section of the source image (changes the angle of mapping)
-        xOffset = (newDonutMapping.middleAngle - newDonutMapping.angleSpan / 2) * centerRadius
+        xOffset = (newDonutSlice.middleAngle - newDonutSlice.angleSpan / 2) * centerRadius
 
         # Difference between the outside radius of the base donut and the new one
-        outRadiusDiff = baseDonutMapping.outRadius + centersDistance - newDonutMapping.outRadius 
+        outRadiusDiff = baseDonutSlice.outRadius + centersDistance - newDonutSlice.outRadius 
 
         # Width and Height of the dewarped image
-        dewarpHeight = newDonutMapping.outRadius - newDonutMapping.inRadius
-        dewarpWidth = newDonutMapping.angleSpan * centerRadius
+        dewarpHeight = newDonutSlice.outRadius - newDonutSlice.inRadius
+        dewarpWidth = newDonutSlice.angleSpan * centerRadius
 
         # Build maps to ajust the radius used when mapping the pixels of the dewarped image to pixels of the source image
         xRadiusFactorMap = np.zeros(int(dewarpWidth), np.float32)
@@ -98,14 +107,15 @@ class VideoStream:
         yMap = np.zeros((int(dewarpHeight), int(dewarpWidth)), np.float32)
         for y in range(0, int(dewarpHeight - 1)):
             for x in range(0, int(dewarpWidth) - 1): 
-                r = y + newDonutMapping.inRadius + outRadiusDiff * xRadiusFactorMap[x] * yRadiusFactorMap[y]
+                r = y + newDonutSlice.inRadius + outRadiusDiff * xRadiusFactorMap[x] \
+                    * yRadiusFactorMap[y] * (1 - bottomDistorsionFactor)
                 theta = (x + xOffset) / centerRadius
-                xS = newDonutMapping.xCenter + r * np.sin(theta)
-                yS = newDonutMapping.yCenter + r * np.cos(theta)
+                xS = newDonutSlice.xCenter + r * np.sin(theta)
+                yS = newDonutSlice.yCenter + r * np.cos(theta)
                 xMap.itemset((y, x), int(xS))
                 yMap.itemset((y, x), int(yS))
 
-        self.__saveMaps(baseDonutMapping, centersDistance, xMap, yMap)
+        self.__saveMaps(baseDonutSlice, topDistorsionFactor, bottomDistorsionFactor, xMap, yMap)
 
 
     def printCameraSettings(self):
@@ -129,40 +139,41 @@ class VideoStream:
 
 
     # Create the dataset required to display the debug lines on the source image
-    def __createDebugImageInfoParam(self, donutMapping, centersDistance):
-        newDonutMapping = self.__createDewarpingDonutMapping(donutMapping, centersDistance)
-        center = (int(donutMapping.xCenter), int(donutMapping.yCenter))
-        newCenter = (int(newDonutMapping.xCenter), int(newDonutMapping.yCenter))
-        theta0 = donutMapping.middleAngle - donutMapping.angleSpan / 2
-        theta1 = donutMapping.middleAngle + donutMapping.angleSpan / 2
-        bottomLeft = (int(donutMapping.xCenter + np.sin(theta0) * donutMapping.outRadius), \
-            int(donutMapping.yCenter + np.cos(theta0) * donutMapping.outRadius))
-        bottomRight = (int(donutMapping.xCenter + np.sin(theta1) * donutMapping.outRadius), \
-            int(donutMapping.yCenter + np.cos(theta1) * donutMapping.outRadius))
-        centerRadius = (newDonutMapping.inRadius + newDonutMapping.outRadius) / 2
+    def __createDebugImageInfoParam(self, donutSlice, topDistorsionFactor):
+        centersDistance = topDistorsionFactor * 10000
+        newDonutSlice = self.__createDewarpingDonutSlice(donutSlice, centersDistance)
+        center = (int(donutSlice.xCenter), int(donutSlice.yCenter))
+        newCenter = (int(newDonutSlice.xCenter), int(newDonutSlice.yCenter))
+        theta0 = donutSlice.middleAngle - donutSlice.angleSpan / 2
+        theta1 = donutSlice.middleAngle + donutSlice.angleSpan / 2
+        bottomLeft = (int(donutSlice.xCenter + np.sin(theta0) * donutSlice.outRadius), \
+            int(donutSlice.yCenter + np.cos(theta0) * donutSlice.outRadius))
+        bottomRight = (int(donutSlice.xCenter + np.sin(theta1) * donutSlice.outRadius), \
+            int(donutSlice.yCenter + np.cos(theta1) * donutSlice.outRadius))
+        centerRadius = (newDonutSlice.inRadius + newDonutSlice.outRadius) / 2
 
-        return DebugImageInfoParam(donutMapping=donutMapping, newDonutMapping=newDonutMapping, center=center, \
+        return DebugImageInfoParam(donutSlice=donutSlice, newDonutSlice=newDonutSlice, center=center, \
             newCenter=newCenter, bottomLeft=bottomLeft, bottomRight=bottomRight, centerRadius=centerRadius)
 
 
     # Add debug lines on the source image
     def __addDebugInfoToImage(self, frame, debugImageInfoParam):
-        donutMapping = debugImageInfoParam.donutMapping
-        newDonutMapping = debugImageInfoParam.newDonutMapping
+        donutSlice = debugImageInfoParam.donutSlice
+        newDonutSlice = debugImageInfoParam.newDonutSlice
 
-        cv2.circle(frame, debugImageInfoParam.center, donutMapping.inRadius, (255,0,255), 5)
-        cv2.circle(frame, debugImageInfoParam.center, donutMapping.outRadius, (255,0,255), 5)
-        cv2.circle(frame, debugImageInfoParam.center, int((donutMapping.inRadius + donutMapping.outRadius) / 2), (255,255,0), 5)
+        cv2.circle(frame, debugImageInfoParam.center, donutSlice.inRadius, (255,0,255), 5)
+        cv2.circle(frame, debugImageInfoParam.center, donutSlice.outRadius, (255,0,255), 5)
+        cv2.circle(frame, debugImageInfoParam.center, int((donutSlice.inRadius + donutSlice.outRadius) / 2), (255,255,0), 5)
 
         cv2.line(frame, debugImageInfoParam.center, debugImageInfoParam.bottomLeft, (255,0,255), 5)
         cv2.line(frame, debugImageInfoParam.center, debugImageInfoParam.bottomRight, (255,0,255), 5)
 
-        cv2.circle(frame, debugImageInfoParam.newCenter, int(newDonutMapping.inRadius), (255,0,122), 5)
-        cv2.circle(frame, debugImageInfoParam.newCenter, int(newDonutMapping.outRadius), (255,0,122), 5)
+        cv2.circle(frame, debugImageInfoParam.newCenter, int(newDonutSlice.inRadius), (255,0,122), 5)
+        cv2.circle(frame, debugImageInfoParam.newCenter, int(newDonutSlice.outRadius), (255,0,122), 5)
         cv2.circle(frame, debugImageInfoParam.newCenter, int(debugImageInfoParam.centerRadius), (122,0,255), 5)
 
-        cv2.line(frame, debugImageInfoParam.newCenter, (int(newDonutMapping.xCenter + np.sin(donutMapping.middleAngle) * newDonutMapping.outRadius), \
-            int(newDonutMapping.yCenter + np.cos(donutMapping.middleAngle) * newDonutMapping.outRadius)), (255,0,122), 5)
+        cv2.line(frame, debugImageInfoParam.newCenter, (int(newDonutSlice.xCenter + np.sin(donutSlice.middleAngle) * newDonutSlice.outRadius), \
+            int(newDonutSlice.yCenter + np.cos(donutSlice.middleAngle) * newDonutSlice.outRadius)), (255,0,122), 5)
         cv2.line(frame, debugImageInfoParam.newCenter, debugImageInfoParam.bottomLeft, (122,0,255), 5)
         cv2.line(frame, debugImageInfoParam.newCenter, debugImageInfoParam.bottomRight, (122,0,255), 5)
 
@@ -172,46 +183,38 @@ class VideoStream:
         return "".join([chr((int(cc) >> 8 * i) & 0xFF) for i in range(4)])
 
 
-    # It is called a donut mapping because the pixels in the dewarped image will be mapped to 
-    # pixels from the camera image in between two circles (of radius inRadius and outRadius)
-    def __createDewarpingDonutMapping(self, baseDonutMapping, centersDistance):
-        xNewCenter = baseDonutMapping.xCenter - np.sin(baseDonutMapping.middleAngle) * centersDistance
-        yNewCenter = baseDonutMapping.yCenter - np.cos(baseDonutMapping.middleAngle) * centersDistance
+    # It is called a donut slice because the pixels in the dewarped image will be mapped to 
+    # pixels from the camera image in between two circles (of radius inRadius and outRadius) and for a given angle
+    def __createDewarpingDonutSlice(self, baseDonutSlice, centersDistance):
+        xNewCenter = baseDonutSlice.xCenter - np.sin(baseDonutSlice.middleAngle) * centersDistance
+        yNewCenter = baseDonutSlice.yCenter - np.cos(baseDonutSlice.middleAngle) * centersDistance
 
         # Length of a line which start from the new center, pass by image center and end to form the side of a right-angled 
         # triangle which other point is on the circle of center (xImageCenter, yImageCenter) and radius (outRadius)
-        d = np.cos(baseDonutMapping.angleSpan / 2) * baseDonutMapping.outRadius + centersDistance
+        d = np.cos(baseDonutSlice.angleSpan / 2) * baseDonutSlice.outRadius + centersDistance
 
-        newInRadius = baseDonutMapping.inRadius + centersDistance
-        newOutRadius = np.sqrt(d**2 + (np.sin(baseDonutMapping.angleSpan / 2) * baseDonutMapping.outRadius)**2)
+        newInRadius = baseDonutSlice.inRadius + centersDistance
+        newOutRadius = np.sqrt(d**2 + (np.sin(baseDonutSlice.angleSpan / 2) * baseDonutSlice.outRadius)**2)
         newAngleSpan = np.arccos(d / newOutRadius) * 2
 
-        return DonutMapping(xCenter=xNewCenter, yCenter=yNewCenter, inRadius = newInRadius, \
-            outRadius=newOutRadius, middleAngle=baseDonutMapping.middleAngle, angleSpan=newAngleSpan)
+        return DonutSlice(xCenter=xNewCenter, yCenter=yNewCenter, inRadius = newInRadius, \
+            outRadius=newOutRadius, middleAngle=baseDonutSlice.middleAngle, angleSpan=newAngleSpan)
 
 
-    def __saveMaps(self, donutMapping, centersDistance, xMap, yMap):
-        np.save('../../config/maps/{xC}-{yC}-{iR}-{oR}-{mA}-{sA}-{cD}-xmap.npy' \
-            .format(xC=int(donutMapping.xCenter), yC=int(donutMapping.yCenter), iR=int(donutMapping.inRadius), \
-            oR=int(donutMapping.outRadius), mA=int(np.rad2deg(donutMapping.middleAngle)), \
-            sA=int(np.rad2deg(donutMapping.angleSpan)), cD=int(centersDistance)), xMap)
-
-        np.save('../../config/maps/{xC}-{yC}-{iR}-{oR}-{mA}-{sA}-{cD}-ymap.npy' \
-            .format(xC=int(donutMapping.xCenter), yC=int(donutMapping.yCenter), iR=int(donutMapping.inRadius), \
-            oR=int(donutMapping.outRadius), mA=int(np.rad2deg(donutMapping.middleAngle)), \
-            sA=int(np.rad2deg(donutMapping.angleSpan)), cD=int(centersDistance)), yMap)
+    def __saveMaps(self, donutSlice, topDistorsionFactor, bottomDistorsionFactor, xMap, yMap):
+        np.save(self.__getMapPath(donutSlice, topDistorsionFactor, bottomDistorsionFactor, 'x'), xMap)
+        np.save(self.__getMapPath(donutSlice, topDistorsionFactor, bottomDistorsionFactor, 'y'), yMap)
 
 
-    def __readMaps(self, donutMapping, centersDistance):
-        xMap = np.load('../../config/maps/{xC}-{yC}-{iR}-{oR}-{mA}-{sA}-{cD}-xmap.npy' \
-            .format(xC=int(donutMapping.xCenter), yC=int(donutMapping.yCenter), iR=int(donutMapping.inRadius), \
-            oR=int(donutMapping.outRadius), mA=int(np.rad2deg(donutMapping.middleAngle)), \
-            sA=int(np.rad2deg(donutMapping.angleSpan)), cD=int(centersDistance)))
-
-        yMap = np.load('../../config/maps/{xC}-{yC}-{iR}-{oR}-{mA}-{sA}-{cD}-ymap.npy' \
-            .format(xC=int(donutMapping.xCenter), yC=int(donutMapping.yCenter), iR=int(donutMapping.inRadius), \
-            oR=int(donutMapping.outRadius), mA=int(np.rad2deg(donutMapping.middleAngle)), \
-            sA=int(np.rad2deg(donutMapping.angleSpan)), cD=int(centersDistance)))
-
+    def __readMaps(self, donutSlice, topDistorsionFactor, bottomDistorsionFactor):
+        xMap = np.load(self.__getMapPath(donutSlice, topDistorsionFactor, bottomDistorsionFactor, 'x'))
+        yMap = np.load(self.__getMapPath(donutSlice, topDistorsionFactor, bottomDistorsionFactor, 'y'))
         return xMap, yMap
+
+
+    def __getMapPath(self, donutSlice, topDistorsionFactor, bottomDistorsionFactor, coordinate):
+        return os.path.join(rootDirectory, 'config/maps/{xC}-{yC}-{iR}-{oR}-{mA}-{sA}-{tD}-{bD}-{coord}map.npy' \
+            .format(xC=int(donutSlice.xCenter), yC=int(donutSlice.yCenter), iR=int(donutSlice.inRadius), \
+            oR=int(donutSlice.outRadius), mA=int(np.rad2deg(donutSlice.middleAngle)), \
+            sA=int(np.rad2deg(donutSlice.angleSpan)), tD=topDistorsionFactor, bD=bottomDistorsionFactor, coord=coordinate))
     
