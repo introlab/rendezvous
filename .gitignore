@@ -7,3 +7,4 @@ scripts/ConfigurationHelper/ODASOutput.json
 *.pyc
 .coverage
 src/gui/*.py
+config/maps/*.npy
