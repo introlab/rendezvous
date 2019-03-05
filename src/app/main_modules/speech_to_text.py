@@ -4,8 +4,7 @@ from os import path
 from PyQt5.QtWidgets import QWidget, QFileDialog
 from PyQt5.QtCore import pyqtSlot
 
-import context
-from src.utils.speech_to_text_api import SpeechToTextAPI
+from src.app.speechtotextapi.speech_to_text_api import SpeechToTextAPI
 from src.app.gui.speech_to_text_ui import Ui_SpeechToText
 
 @unique
