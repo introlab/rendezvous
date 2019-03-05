@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QWidget
 from PyQt5.QtCore import pyqtSlot
 
 import context
-from src.app.gui.odaslive_ui import Ui_OdasLive
+from src.app.gui.odas_live_ui import Ui_OdasLive
 
 class OdasLive(QWidget, Ui_OdasLive):
     def __init__(self, odasStream, parent=None):
