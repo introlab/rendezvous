@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QMainWindow
 
 import context
-from src.app.gui.mainwindow_ui import Ui_MainWindow
+from src.app.gui.main_window_ui import Ui_MainWindow
 from src.app.main_modules.odas_live import OdasLive
 from src.app.main_modules.speech_to_text import SpeechToText
 
