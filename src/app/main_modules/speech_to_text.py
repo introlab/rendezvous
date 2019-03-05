@@ -36,7 +36,9 @@ class SpeechToText(QWidget, Ui_SpeechToText):
 
         # Populate UI.
         self.encoding.addItems([encodingType.value for encodingType in EncodingType])
+        # Valid range accepted by the Google API.
         self.sampleRate.setRange(8000, 48000)
+        # Value we are most likly to use.
         self.sampleRate.setValue(48000)
         self.language.addItems([languageCode.value for languageCode in LanguageCode])
         self.model.addItems([model.value for model in Model])
@@ -46,27 +48,35 @@ class SpeechToText(QWidget, Ui_SpeechToText):
         self.btnImportServiceAccount.clicked.connect(self.ImportServiceAccountClicked)
         self.btnTranscribe.clicked.connect(self.TranscribeClicked)
 
+
     # Handles the event where the user closes the window with the X button
     def closeEvent(self, event):
         event.accept()
+
 
     @pyqtSlot()
     def ImportAudioClicked(self):
         audioDataPath = QFileDialog.getOpenFileName(self, 'Open Audio Data', './')
         self.audioDataPath.setText(audioDataPath[0])
 
+
     @pyqtSlot()
     def ImportServiceAccountClicked(self):
         serviceAccountPath = QFileDialog.getOpenFileName(self, 'Open Google Service Account File', './')
         self.serviceAccountPath.setText(serviceAccountPath[0])
 
+
     @pyqtSlot()
     def TranscribeClicked(self):
+        config = {
+        'encoding' : self.encoding.currentText(),
+        'sampleRate' : self.sampleRate.value(),
+        'languageCode' : self.language.currentText(),
+        'model' : self.model.currentText(),
+        'enhanced' : self.enhanced.checkState()}
+
         self.transcriptionResult.setText(SpeechToTextAPI.resquestTranscription(
             self.serviceAccountPath.text(),
             self.audioDataPath.text(),
-            self.encoding.currentText(), 
-            self.sampleRate.value(),
-            self.language.currentText(),
-            self.model.currentText(),
-            self.enhanced.checkState()))
+            config))
+            

@@ -14,26 +14,32 @@ class OdasLive(QWidget, Ui_OdasLive):
         self.btnStartOdas.clicked.connect(self.btnStartOdasClicked)
         self.btnStopOdas.clicked.connect(self.btnStopOdasClicked)
     
+
     # Handles the event where the user closes the window with the X button
     def closeEvent(self, event):
         self.stopOdas()
         event.accept()
 
+
     def startOdas(self):
         if self.odasStream and not self.odasStream.isRunning:
             self.odasStream.start()
+
 
     def stopOdas(self):
         if self.odasStream and self.odasStream.isRunning:
                 self.odasStream.stop()
 
+
     @pyqtSlot()
     def btnStartOdasClicked(self):
         self.startOdas()
 
+
     @pyqtSlot()
     def btnStopOdasClicked(self):
         self.stopOdas()
+
 
     @pyqtSlot(object)
     def odasDataReveived(self, values):

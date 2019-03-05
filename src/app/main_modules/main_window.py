@@ -10,9 +10,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
 
         self.odasLiveTab = OdasLive(odasStream, parent=self)   
-        self.tabWidget.addTab(self.odasLiveTab, "Odas Live")
+        self.tabWidget.addTab(self.odasLiveTab, 'Odas Live')
 
         self.speechToTextTab = SpeechToText(parent=self)   
-        self.tabWidget.addTab(self.speechToTextTab, "Speech to Text")  
+        self.tabWidget.addTab(self.speechToTextTab, 'Speech to Text')
 
+
+    # Handles the event where the user closes the window with the X button
+    def closeEvent(self, event):
+        event.accept()
         
