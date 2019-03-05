@@ -51,25 +51,35 @@ def main():
         #         alternative=i+1,
         #         result=result.alternatives[i].transcript))
         
+        
         operation = client.long_running_recognize(config, audio)
 
         print('Waiting for operation to complete...')
         result = operation.result(timeout=90)
 
-        print('TEST\n')
         for result in result.results:
             alternative = result.alternatives[0]
             print(u'Transcript: {}'.format(alternative.transcript))
             print('Confidence: {}'.format(alternative.confidence))
 
-            for word_info in alternative.words:
-                word = word_info.word
-                start_time = word_info.start_time
-                end_time = word_info.end_time
-                print('Word: {}, start_time: {}, end_time: {}'.format(
-                    word,
-                    start_time.seconds + start_time.nanos * 1e-9,
-                    end_time.seconds + end_time.nanos * 1e-9))
+            with open('test.srt', 'w') as file:
+                for ctr, word_info in enumerate(alternative.words):
+                    word = word_info.word
+                    start_time = word_info.start_time.seconds + word_info.start_time.nanos * 1e-9
+                    end_time = word_info.end_time.seconds + word_info.end_time.nanos * 1e-9
+
+                    file.write('{}\n'.format(ctr+1))
+                    file.write('{:02d}:{:02d}:{:02d},{:03d} --> {:02d}:{:02d}:{:02d},{:03d}\n'.format(
+                        int(start_time // 360), int(start_time / 60), int(start_time % 60), int(1000 * (start_time % 1)),
+                        int(end_time // 360), int(end_time / 60), int(end_time % 60), int(1000 * (end_time % 1)),
+                    ))
+                    file.write('{}\n'.format(word))
+                    file.write('\n')
+
+                    # print('Word: {}, start_time: {}, end_time: {}'.format(
+                    #     word,
+                    #     start_time.seconds + start_time.nanos * 1e-9,
+                    #     end_time.seconds + end_time.nanos * 1e-9))
 
     except Exception as e:
         print('Exception : ', e)
