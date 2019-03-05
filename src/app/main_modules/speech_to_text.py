@@ -38,7 +38,7 @@ class SpeechToText(QWidget, Ui_SpeechToText):
         self.encoding.addItems([encodingType.value for encodingType in EncodingType])
         # Valid range accepted by the Google API.
         self.sampleRate.setRange(8000, 48000)
-        # Value we are most likly to use.
+        # Value we are most likely to use.
         self.sampleRate.setValue(48000)
         self.language.addItems([languageCode.value for languageCode in LanguageCode])
         self.model.addItems([model.value for model in Model])
