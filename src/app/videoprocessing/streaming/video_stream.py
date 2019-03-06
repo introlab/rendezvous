@@ -1,31 +1,33 @@
-import time
 import os
 from collections import namedtuple
+from pathlib import Path
 
 import cv2
 import numpy as np
-from pathlib import Path
+
+from .camera_config import CameraConfig
+
 
 DonutSlice = namedtuple('DonutSlice', 'xCenter yCenter inRadius outRadius middleAngle angleSpan')
 DebugImageInfoParam = namedtuple('DebugImageInfoParam', 'donutSlice newDonutSlice center \
     newCenter bottomLeft bottomRight centerRadius')
 
-rootDirectory = os.path.realpath(Path(__file__).parents[3])
+rootDirectory = os.path.realpath(Path(__file__).parents[4])
 
 
 class VideoStream:
 
-    def __init__(self, cameraPort, imageWidth, imageHeight, fps, fourcc):
-        self.camera = cv2.VideoCapture(cameraPort)
-        self.cameraPort = cameraPort
-        self.imageWidth = imageWidth
-        self.imageHeight = imageHeight
-        self.fps = fps
-        self.fourcc = fourcc
+    def __init__(self, cameraConfig, debug):
+        self.config = CameraConfig(cameraConfig)
+        self.camera = None
+        
+        self.debug = debug
+        self.xMap = None
+        self.yMap = None
+        self.debugImageInfoParam = None
 
 
-    # Displays the source and dewarped image, set debug to true to show the areas of the calculations
-    def startStream(self, donutSlice, topDistorsionFactor, bottomDistorsionFactor, debug):
+    def initializeStream(self):
         self.__initalizeCamera()
 
         # Changing the codec of the camera throws an exception on camera.read every two execution for whatever reason
@@ -33,45 +35,56 @@ class VideoStream:
             self.camera.read()
         except:
             self.camera.release()
-            self.camera.open(self.cameraPort)
+            self.camera.open(self.config.cameraPort)
             self.__initalizeCamera()
 
         self.printCameraSettings()
 
-        # If the maps doesn't exist, create them
+        donutSlice = DonutSlice(xCenter=self.config.imageWidth / 2, yCenter=self.config.imageHeight / 2, inRadius = self.config.inRadius, \
+            outRadius=self.config.outRadius, middleAngle=np.deg2rad(self.config.middleAngle), angleSpan=np.deg2rad(self.config.angleSpan))
+
+        # If the maps don't exist, create them
         try:
-            xMap, yMap = self.__readMaps(donutSlice, topDistorsionFactor, bottomDistorsionFactor)
+            self.xMap, self.yMap = self.__readMaps(donutSlice, self.config.topDistorsionFactor, self.config.bottomDistorsionFactor)
         except:
-            self.buildMaps(donutSlice, topDistorsionFactor, bottomDistorsionFactor)
-            xMap, yMap = self.__readMaps(donutSlice, topDistorsionFactor, bottomDistorsionFactor)
+            self.__buildMaps(donutSlice, self.config.topDistorsionFactor, self.config.bottomDistorsionFactor)
+            self.xMap, self.yMap = self.__readMaps(donutSlice, self.config.topDistorsionFactor, self.config.bottomDistorsionFactor)
 
-        if debug:
+        if self.debug:
             print('DEBUG enabled')
-            debugImageInfoParam = self.__createDebugImageInfoParam(donutSlice, topDistorsionFactor)
+            self.debugImageInfoParam = self.__createDebugImageInfoParam(donutSlice, self.config.topDistorsionFactor)
 
-        print('Press ESCAPE key to exit')
 
-        while(True):
-            success, frame = self.camera.read()
-
-            if success:
-                if debug:
-                    self.__addDebugInfoToImage(frame, debugImageInfoParam)
-
-                cv2.imshow('frame', cv2.resize(frame, (720, 540)))
-
-                dewarpedFrame = self.__unwarp(frame, xMap, yMap)
-                cv2.imshow('unwarp', cv2.resize(dewarpedFrame, (775, 452)))
-
-            if cv2.waitKey(1) & 0xFF == 27:
-                break
-
+    def destroy(self):
         self.camera.release()
-        cv2.destroyAllWindows()
+
+
+    def readFrame(self):
+        success, frame = self.camera.read()
+
+        if success:
+            if self.debugImageInfoParam:
+                self.__addDebugInfoToImage(frame)
+
+            dewarpedFrame = self.__unwarp(frame)
+
+            return success, frame
+        else:
+            return success, None
+
+
+    def printCameraSettings(self):
+        if self.camera == None:
+            print('Stream must be initiazed to print the camera settings')
+        else:
+            print('Image width = {width}'.format(width=self.camera.get(cv2.CAP_PROP_FRAME_WIDTH)))
+            print('Image height = {height}'.format(height=self.camera.get(cv2.CAP_PROP_FRAME_HEIGHT)))
+            print('Codec = {codec}'.format(codec=self.__decode_fourcc(self.camera.get(cv2.CAP_PROP_FOURCC))))
+            print('FPS = {fps}'.format(fps=self.camera.get(cv2.CAP_PROP_FPS)))
 
     
     # Build maps for the unwarping of fisheye image
-    def buildMaps(self, baseDonutSlice, topDistorsionFactor, bottomDistorsionFactor):
+    def __buildMaps(self, baseDonutSlice, topDistorsionFactor, bottomDistorsionFactor):
         print("Building Maps...")
 
         # Distance between center of baseDonutSlice and newDonutSlice to calculate
@@ -118,23 +131,20 @@ class VideoStream:
         self.__saveMaps(baseDonutSlice, topDistorsionFactor, bottomDistorsionFactor, xMap, yMap)
 
 
-    def printCameraSettings(self):
-        print('Image width = {width}'.format(width=self.camera.get(cv2.CAP_PROP_FRAME_WIDTH)))
-        print('Image height = {height}'.format(height=self.camera.get(cv2.CAP_PROP_FRAME_HEIGHT)))
-        print('Codec = {codec}'.format(codec=self.__decode_fourcc(self.camera.get(cv2.CAP_PROP_FOURCC))))
-        print('FPS = {fps}'.format(fps=self.camera.get(cv2.CAP_PROP_FPS)))
-
-
     def __initalizeCamera(self):
-        self.camera.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(self.fourcc[0], self.fourcc[1], self.fourcc[2], self.fourcc[3]))
-        self.camera.set(cv2.CAP_PROP_FRAME_WIDTH, self.imageWidth)
-        self.camera.set(cv2.CAP_PROP_FRAME_HEIGHT, self.imageHeight)
-        self.camera.set(cv2.CAP_PROP_FPS, self.fps)
+        self.camera = cv2.VideoCapture(self.config.cameraPort)
+        self.camera.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(self.config.fourcc[0],
+                                                                    self.config.fourcc[1],
+                                                                    self.config.fourcc[2],
+                                                                    self.config.fourcc[3]))
+        self.camera.set(cv2.CAP_PROP_FRAME_WIDTH, self.config.imageWidth)
+        self.camera.set(cv2.CAP_PROP_FRAME_HEIGHT, self.config.imageHeight)
+        self.camera.set(cv2.CAP_PROP_FPS, self.config.fps)
 
 
     # Unwarp video stream from fisheye to pano
-    def __unwarp(self, img, xmap, ymap):
-        output = cv2.remap(img, xmap, ymap, cv2.INTER_LINEAR)
+    def __unwarp(self, img):
+        output = cv2.remap(img, self.xMap, self.yMap, cv2.INTER_LINEAR)
         return output
 
 
@@ -157,25 +167,25 @@ class VideoStream:
 
 
     # Add debug lines on the source image
-    def __addDebugInfoToImage(self, frame, debugImageInfoParam):
-        donutSlice = debugImageInfoParam.donutSlice
-        newDonutSlice = debugImageInfoParam.newDonutSlice
+    def __addDebugInfoToImage(self, frame):
+        donutSlice = self.debugImageInfoParam.donutSlice
+        newDonutSlice = self.debugImageInfoParam.newDonutSlice
 
-        cv2.circle(frame, debugImageInfoParam.center, donutSlice.inRadius, (255,0,255), 5)
-        cv2.circle(frame, debugImageInfoParam.center, donutSlice.outRadius, (255,0,255), 5)
-        cv2.circle(frame, debugImageInfoParam.center, int((donutSlice.inRadius + donutSlice.outRadius) / 2), (255,255,0), 5)
+        cv2.circle(frame, self.debugImageInfoParam.center, donutSlice.inRadius, (255,0,255), 5)
+        cv2.circle(frame, self.debugImageInfoParam.center, donutSlice.outRadius, (255,0,255), 5)
+        cv2.circle(frame, self.debugImageInfoParam.center, int((donutSlice.inRadius + donutSlice.outRadius) / 2), (255,255,0), 5)
 
-        cv2.line(frame, debugImageInfoParam.center, debugImageInfoParam.bottomLeft, (255,0,255), 5)
-        cv2.line(frame, debugImageInfoParam.center, debugImageInfoParam.bottomRight, (255,0,255), 5)
+        cv2.line(frame, self.debugImageInfoParam.center, self.debugImageInfoParam.bottomLeft, (255,0,255), 5)
+        cv2.line(frame, self.debugImageInfoParam.center, self.debugImageInfoParam.bottomRight, (255,0,255), 5)
 
-        cv2.circle(frame, debugImageInfoParam.newCenter, int(newDonutSlice.inRadius), (255,0,122), 5)
-        cv2.circle(frame, debugImageInfoParam.newCenter, int(newDonutSlice.outRadius), (255,0,122), 5)
-        cv2.circle(frame, debugImageInfoParam.newCenter, int(debugImageInfoParam.centerRadius), (122,0,255), 5)
+        cv2.circle(frame, self.debugImageInfoParam.newCenter, int(newDonutSlice.inRadius), (255,0,122), 5)
+        cv2.circle(frame, self.debugImageInfoParam.newCenter, int(newDonutSlice.outRadius), (255,0,122), 5)
+        cv2.circle(frame, self.debugImageInfoParam.newCenter, int(self.debugImageInfoParam.centerRadius), (122,0,255), 5)
 
-        cv2.line(frame, debugImageInfoParam.newCenter, (int(newDonutSlice.xCenter + np.sin(donutSlice.middleAngle) * newDonutSlice.outRadius), \
+        cv2.line(frame, self.debugImageInfoParam.newCenter, (int(newDonutSlice.xCenter + np.sin(donutSlice.middleAngle) * newDonutSlice.outRadius), \
             int(newDonutSlice.yCenter + np.cos(donutSlice.middleAngle) * newDonutSlice.outRadius)), (255,0,122), 5)
-        cv2.line(frame, debugImageInfoParam.newCenter, debugImageInfoParam.bottomLeft, (122,0,255), 5)
-        cv2.line(frame, debugImageInfoParam.newCenter, debugImageInfoParam.bottomRight, (122,0,255), 5)
+        cv2.line(frame, self.debugImageInfoParam.newCenter, self.debugImageInfoParam.bottomLeft, (122,0,255), 5)
+        cv2.line(frame, self.debugImageInfoParam.newCenter, self.debugImageInfoParam.bottomRight, (122,0,255), 5)
 
 
     # Return 4 chars reprenting codec
