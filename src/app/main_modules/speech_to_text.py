@@ -1,7 +1,7 @@
 from enum import Enum, unique, auto
 from os import path
 
-from PyQt5.QtWidgets import QWidget, QFileDialog
+from PyQt5.QtWidgets import QApplication, QWidget, QFileDialog
 from PyQt5.QtCore import pyqtSlot
 
 from src.app.speechtotextapi.speech_to_text_api import SpeechToTextAPI
@@ -68,6 +68,11 @@ class SpeechToText(QWidget, Ui_SpeechToText):
 
     @pyqtSlot()
     def TranscribeClicked(self):
+        self.transcriptionResult.setText('Transcribing...')
+        self.setDisabled(True)
+        # The UI update is scheduled after the ending of the slot, that's why we need to force the porcessing of events.
+        QApplication.processEvents()
+
         config = {
         'encoding' : self.encoding.currentText(),
         'sampleRate' : self.sampleRate.value(),
@@ -79,4 +84,6 @@ class SpeechToText(QWidget, Ui_SpeechToText):
             self.serviceAccountPath.text(),
             self.audioDataPath.text(),
             config))
-            
+
+        self.setDisabled(False)
+    
