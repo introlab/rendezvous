@@ -8,7 +8,9 @@ import context
 from src.app.main_modules.main_window import MainWindow
 from src.app.argsparser.args_parser import ArgsParser 
 from src.app.odasstream.odas_stream import OdasStream
+from src.app.videoprocessing.video_processor import VideoProcessor
 from src.utils.file_helper import FileHelper
+
 
 if __name__ == '__main__':
     parser = ArgsParser()
@@ -21,9 +23,12 @@ if __name__ == '__main__':
     sampleRate = int(re.sub('[^0-9]', '', line.split('=')[1]))
     sleepTime = 1 / sampleRate
 
-    stream = OdasStream(args.odasPath, args.configPath, sleepTime)
+    odasStream = OdasStream(args.odasPath, args.configPath, sleepTime)
+
+    cameraConfigs = FileHelper.readJsonFile(args.cameraConfigPath)
+    videoProcessor = VideoProcessor(cameraConfigs, False)
 
     app = QApplication(sys.argv)
-    main_window = MainWindow(stream)
+    main_window = MainWindow(odasStream, videoProcessor)
     main_window.show()
     exit(app.exec_())
