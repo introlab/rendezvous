@@ -7,6 +7,7 @@ class CameraConfig:
 
         self.imageWidth = cameraConfigJson['Image']['Width']
         self.imageHeight = cameraConfigJson['Image']['Height']
+        self.fisheyeAngle = cameraConfigJson['Image']['FisheyeAngle']
             
         self.cameraPort = cameraConfigJson['Camera']['Port']
         self.fps = cameraConfigJson['Camera']['FPS']

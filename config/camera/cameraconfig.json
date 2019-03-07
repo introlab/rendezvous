@@ -12,7 +12,8 @@
     "Image":
     {
         "Width": 2880,
-        "Height": 2160
+        "Height": 2160,
+        "FisheyeAngle": 220
     },
 
     "Camera":

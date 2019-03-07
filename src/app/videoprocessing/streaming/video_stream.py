@@ -9,8 +9,10 @@ from .camera_config import CameraConfig
 
 
 DonutSlice = namedtuple('DonutSlice', 'xCenter yCenter inRadius outRadius middleAngle angleSpan')
-DebugImageInfoParam = namedtuple('DebugImageInfoParam', 'donutSlice newDonutSlice center \
-    newCenter bottomLeft bottomRight centerRadius')
+DewarpingParameters = namedtuple('DewarpingParameters', 'centersDistance \
+    newDonutSlice centerRadius xOffset outRadiusDiff dewarpHeight dewarpWidth')
+DebugImageInfoParam = namedtuple('DebugImageInfoParam', 'donutSlice \
+    newDonutSlice center newCenter bottomLeft bottomRight centerRadius')
 
 rootDirectory = os.path.realpath(Path(__file__).parents[4])
 
@@ -82,49 +84,59 @@ class VideoStream:
             print('Codec = {codec}'.format(codec=self.__decode_fourcc(self.camera.get(cv2.CAP_PROP_FOURCC))))
             print('FPS = {fps}'.format(fps=self.camera.get(cv2.CAP_PROP_FPS)))
 
+
+    # From a pixel of a dewarped frame, get the spherical angles in 3D space
+    def getSphericalAngles(self, xPixel, yPixel, baseDonutSlice, topDistorsionFactor, bottomDistorsionFactor):
+        xSourcePixel, ySourcePixel = self.__getSourcePixel(xPixel, yPixel, \
+            baseDonutSlice, topDistorsionFactor, bottomDistorsionFactor)
+
+        dx = xSourcePixel - baseDonutSlice.xCenter
+        dy = ySourcePixel - baseDonutSlice.yCenter
+        distanceFromCenter = np.sqrt(dx**2 + dy**2)
+        distanceFromBorder = (self.config.imageWidth / 2) - distanceFromCenter
+        ratio = (distanceFromBorder / (self.config.imageWidth / 2))
+
+        azimuth = 0
+
+        if dx >= 0 and dy > 0:
+            azimuth = np.arctan(dx / dy)
+        elif dx <= 0 and dy < 0:
+            azimuth = np.arctan(-dx / -dy) + np.pi
+        elif dx > 0 and dy <= 0:
+            azimuth = np.arctan(-dy / dx) + np.pi / 2
+        elif dx < 0 and dy >= 0:
+            azimuth = np.arctan(dy / -dx) + 3 * np.pi / 2
+
+        elevation = ratio * (self.config.fisheyeAngle / 2) + (np.pi / 2 - (self.config.fisheyeAngle / 2))
+
+        return azimuth, elevation
+
     
     # Build maps for the unwarping of fisheye image
     def __buildMaps(self, baseDonutSlice, topDistorsionFactor, bottomDistorsionFactor):
         print("Building Maps...")
 
-        # Distance between center of baseDonutSlice and newDonutSlice to calculate
-        centersDistance = topDistorsionFactor * 10000
-
-        # Return a new donut mapping based on the one passed, which have properties to reduce the distorsion in the image
-        newDonutSlice = self.__createDewarpingDonutSlice(baseDonutSlice, centersDistance)
-
-        # Radius of circle which would be in the middle of the dewarped image if no radius factor was applied to dewarping
-        centerRadius = (newDonutSlice.inRadius + newDonutSlice.outRadius) / 2
-
-        # Offset in x in order for the mapping to be in the right section of the source image (changes the angle of mapping)
-        xOffset = (newDonutSlice.middleAngle - newDonutSlice.angleSpan / 2) * centerRadius
-
-        # Difference between the outside radius of the base donut and the new one
-        outRadiusDiff = baseDonutSlice.outRadius + centersDistance - newDonutSlice.outRadius 
-
-        # Width and Height of the dewarped image
-        dewarpHeight = newDonutSlice.outRadius - newDonutSlice.inRadius
-        dewarpWidth = newDonutSlice.angleSpan * centerRadius
+        dewarpingParameters = self.__getDewarpingParameters(baseDonutSlice, topDistorsionFactor, bottomDistorsionFactor)
 
         # Build maps to ajust the radius used when mapping the pixels of the dewarped image to pixels of the source image
-        xRadiusFactorMap = np.zeros(int(dewarpWidth), np.float32)
-        for x in range(0, int(dewarpWidth) - 1):
-            xRadiusFactorMap.itemset(x, np.sin((np.pi * x) / dewarpWidth))
+        xRadiusFactorMap = np.zeros(int(dewarpingParameters.dewarpWidth), np.float32)
+        for x in range(0, int(dewarpingParameters.dewarpWidth) - 1):
+            xRadiusFactorMap.itemset(x, np.sin((np.pi * x) / dewarpingParameters.dewarpWidth))
         
-        yRadiusFactorMap = np.zeros(int(dewarpHeight), np.float32)
-        for y in range(0, int(dewarpHeight - 1)):
-            yRadiusFactorMap.itemset(y, np.sin((np.pi * y) / (dewarpHeight * 2)))
+        yRadiusFactorMap = np.zeros(int(dewarpingParameters.dewarpHeight), np.float32)
+        for y in range(0, int(dewarpingParameters.dewarpHeight - 1)):
+            yRadiusFactorMap.itemset(y, np.sin((np.pi * y) / (dewarpingParameters.dewarpHeight * 2)))
 
         # Build the pixel coordinate maps used to generate the dewarped image
-        xMap = np.zeros((int(dewarpHeight), int(dewarpWidth)), np.float32)
-        yMap = np.zeros((int(dewarpHeight), int(dewarpWidth)), np.float32)
-        for y in range(0, int(dewarpHeight - 1)):
-            for x in range(0, int(dewarpWidth) - 1): 
-                r = y + newDonutSlice.inRadius + outRadiusDiff * xRadiusFactorMap[x] \
+        xMap = np.zeros((int(dewarpingParameters.dewarpHeight), int(dewarpingParameters.dewarpWidth)), np.float32)
+        yMap = np.zeros((int(dewarpingParameters.dewarpHeight), int(dewarpingParameters.dewarpWidth)), np.float32)
+        for y in range(0, int(dewarpingParameters.dewarpHeight - 1)):
+            for x in range(0, int(dewarpingParameters.dewarpWidth) - 1): 
+                r = y + dewarpingParameters.newDonutSlice.inRadius + dewarpingParameters.outRadiusDiff * xRadiusFactorMap[x] \
                     * yRadiusFactorMap[y] * (1 - bottomDistorsionFactor)
-                theta = (x + xOffset) / centerRadius
-                xS = newDonutSlice.xCenter + r * np.sin(theta)
-                yS = newDonutSlice.yCenter + r * np.cos(theta)
+                theta = (x + dewarpingParameters.xOffset) / dewarpingParameters.centerRadius
+                xS = dewarpingParameters.newDonutSlice.xCenter + r * np.sin(theta)
+                yS = dewarpingParameters.newDonutSlice.yCenter + r * np.cos(theta)
                 xMap.itemset((y, x), int(xS))
                 yMap.itemset((y, x), int(yS))
 
@@ -146,6 +158,22 @@ class VideoStream:
     def __unwarp(self, img):
         output = cv2.remap(img, self.xMap, self.yMap, cv2.INTER_LINEAR)
         return output
+
+    
+    # Pass the dewarped image pixel and get the pixel from the source fisheye image
+    def __getSourcePixel(self, xPixel, yPixel, baseDonutSlice, topDistorsionFactor, bottomDistorsionFactor):
+        dewarpingParameters = self.__getDewarpingParameters(baseDonutSlice, topDistorsionFactor, bottomDistorsionFactor)
+
+        xRadiusFactor = np.sin((np.pi * xPixel) / dewarpingParameters.dewarpWidth)
+        yRadiusFactor = np.sin((np.pi * yPixel) / (dewarpingParameters.dewarpHeight * 2))
+
+        r = yPixel + dewarpingParameters.newDonutSlice.inRadius + dewarpingParameters.outRadiusDiff * \
+            xRadiusFactor * yRadiusFactor * (1 - bottomDistorsionFactor)
+        theta = (xPixel + dewarpingParameters.xOffset) / dewarpingParameters.centerRadius
+        xSourcePixel = dewarpingParameters.newDonutSlice.xCenter + r * np.sin(theta)
+        ySourcePixel = dewarpingParameters.newDonutSlice.yCenter + r * np.cos(theta)
+
+        return xSourcePixel, ySourcePixel
 
 
     # Create the dataset required to display the debug lines on the source image
@@ -191,6 +219,31 @@ class VideoStream:
     # Return 4 chars reprenting codec
     def __decode_fourcc(self, cc):
         return "".join([chr((int(cc) >> 8 * i) & 0xFF) for i in range(4)])
+
+
+    # Dewarping parameters used to build maps
+    def __getDewarpingParameters(self, baseDonutSlice, topDistorsionFactor, bottomDistorsionFactor):
+        # Distance between center of baseDonutSlice and newDonutSlice to calculate
+        centersDistance = topDistorsionFactor * 10000
+
+        # Return a new donut mapping based on the one passed, which have properties to reduce the distorsion in the image
+        newDonutSlice = self.__createDewarpingDonutSlice(baseDonutSlice, centersDistance)
+
+        # Radius of circle which would be in the middle of the dewarped image if no radius factor was applied to dewarping
+        centerRadius = (newDonutSlice.inRadius + newDonutSlice.outRadius) / 2
+
+        # Offset in x in order for the mapping to be in the right section of the source image (changes the angle of mapping)
+        xOffset = (newDonutSlice.middleAngle - newDonutSlice.angleSpan / 2) * centerRadius
+
+        # Difference between the outside radius of the base donut and the new one
+        outRadiusDiff = baseDonutSlice.outRadius + centersDistance - newDonutSlice.outRadius 
+
+        # Width and Height of the dewarped image
+        dewarpHeight = newDonutSlice.outRadius - newDonutSlice.inRadius
+        dewarpWidth = newDonutSlice.angleSpan * centerRadius
+
+        return DewarpingParameters(centersDistance=centersDistance, newDonutSlice=newDonutSlice, centerRadius=centerRadius, \
+            xOffset=xOffset, outRadiusDiff=outRadiusDiff, dewarpHeight=dewarpHeight, dewarpWidth=dewarpWidth)
 
 
     # It is called a donut slice because the pixels in the dewarped image will be mapped to 
