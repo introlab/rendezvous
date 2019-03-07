@@ -1,4 +1,5 @@
 import os
+from time import sleep
 from threading import Thread
 
 from PyQt5.QtCore import QObject, pyqtSignal
@@ -10,6 +11,7 @@ from .facedetection.facedetector.dnn_face_detector import DnnFaceDetector
 class VideoProcessor(QObject):
 
     signalFrameData = pyqtSignal(object, object)
+    signalVideoException = pyqtSignal(Exception)
 
     def __init__(self, cameraConfig, debug, parent=None):
         super(VideoProcessor, self).__init__(parent)
@@ -22,10 +24,13 @@ class VideoProcessor(QObject):
 
     def start(self):
         print("Starting video processor...")
+        try:
+            self.videoStream.initializeStream()
+            Thread(target=self.run).start()
 
-        self.videoStream.initializeStream()
-        Thread(target=self.run).start()
-
+        except Exception as e:
+            self.isRunning = False
+            self.signalVideoException.emit(e)
 
     def stop(self):
          self.isRunning = False
@@ -34,16 +39,19 @@ class VideoProcessor(QObject):
     # Displays the source and dewarped image, set debug to true to show the areas of the calculations
     def run(self):
         print("Video processor started")
+        try:
+            self.isRunning = True
+            while self.isRunning:
+                success, frame = self.videoStream.readFrame()
 
-        self.isRunning = True
-        while self.isRunning:
+                if success:
+                    faces = self.faceDetector.detectFaces(frame)
+                    self.signalFrameData.emit(frame, faces)
 
-            success, frame = self.videoStream.readFrame()
-
-            if success:
-                faces = self.faceDetector.detectFaces(frame)
-                self.signalFrameData.emit(frame, faces)
-
-        self.videoStream.destroy()
+            self.videoStream.destroy()
+        
+        except Exception as e:
+            self.isRunning = False
+            self.signalVideoException.emit(e)
         
         print("Video stream terminated")
