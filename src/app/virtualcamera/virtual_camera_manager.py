@@ -1,5 +1,3 @@
-import math
-
 from PyQt5.QtCore import QTimer
 
 from .virtual_camera import VirtualCamera
