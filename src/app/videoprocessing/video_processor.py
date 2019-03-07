@@ -22,8 +22,6 @@ class VideoProcessor(QObject):
 
     def start(self):
         print("Starting video processor...")
-
-        self.videoStream.initializeStream()
         Thread(target=self.run).start()
 
 
@@ -31,10 +29,10 @@ class VideoProcessor(QObject):
          self.isRunning = False
 
 
-    # Displays the source and dewarped image, set debug to true to show the areas of the calculations
+    # Initialize stream, displays the source and dewarped image, set debug to true to show the areas of the calculations
     def run(self):
         print("Video processor started")
-
+        self.videoStream.initializeStream()
         self.isRunning = True
         while self.isRunning:
 
