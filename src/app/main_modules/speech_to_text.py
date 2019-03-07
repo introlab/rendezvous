@@ -4,6 +4,7 @@ from os import path
 from PyQt5.QtWidgets import QApplication, QWidget, QFileDialog
 from PyQt5.QtCore import pyqtSlot
 
+from src.app.components.dialogs.warning_box import WarningBox
 from src.app.speechtotextapi.speech_to_text_api import SpeechToTextAPI
 from src.app.gui.speech_to_text_ui import Ui_SpeechToText
 
@@ -73,17 +74,22 @@ class SpeechToText(QWidget, Ui_SpeechToText):
         # The UI update is scheduled after the ending of the slot, that's why we need to force the porcessing of events.
         QApplication.processEvents()
 
-        config = {
-        'encoding' : self.encoding.currentText(),
-        'sampleRate' : self.sampleRate.value(),
-        'languageCode' : self.language.currentText(),
-        'model' : self.model.currentText(),
-        'enhanced' : self.enhanced.checkState()}
+        try:
+            config = {
+            'encoding' : self.encoding.currentText(),
+            'sampleRate' : self.sampleRate.value(),
+            'languageCode' : self.language.currentText(),
+            'model' : self.model.currentText(),
+            'enhanced' : self.enhanced.checkState()}
 
-        self.transcriptionResult.setText(SpeechToTextAPI.resquestTranscription(
-            self.serviceAccountPath.text(),
-            self.audioDataPath.text(),
-            config))
-
-        self.setDisabled(False)
+            self.transcriptionResult.setText(SpeechToTextAPI.resquestTranscription(
+                self.serviceAccountPath.text(),
+                self.audioDataPath.text(),
+                config))
+        
+        except Exception as e:
+            WarningBox(e)
+            self.transcriptionResult.setText('')
+        finally:
+            self.setDisabled(False)
     
