@@ -44,7 +44,7 @@ class OdasStream(QObject):
 
             if self.odasProcess.poll():
                 self.stop()
-                return
+                break
 
             line = self.odasProcess.stdout.readline().decode('UTF-8')
 
@@ -60,7 +60,7 @@ class OdasStream(QObject):
 
         self.odasProcess.kill()
         if self.odasProcess.returncode and self.odasProcess.returncode != 0:
-                raise Exception('ODAS exited with exit code {exitCode}'.format(exitCode=self.odasProcess.returncode))
+            raise Exception('ODAS exited with exit code {exitCode}'.format(exitCode=self.odasProcess.returncode))
         print("ODAS process terminated")
 
 
