@@ -17,9 +17,6 @@ class OdasLive(QWidget, Ui_OdasLive):
         self.virtualCameraDisplayer = VirtualCameraDisplayer(self.virtualCameraFrame)
 
         # Qt signal slots
-        self.odasStream.signalOdasData.connect(self.odasDataReveived)
-        self.videoProcessor.signalFrameData.connect(self.imageReceived)
-
         self.btnStartOdas.clicked.connect(self.btnStartOdasClicked)
         self.btnStopOdas.clicked.connect(self.btnStopOdasClicked)
         self.btnStartVideo.clicked.connect(self.btnStartVideoClicked)
@@ -35,22 +32,27 @@ class OdasLive(QWidget, Ui_OdasLive):
 
     def startOdas(self):
         if self.odasStream and not self.odasStream.isRunning:
+            self.odasStream.signalOdasData.connect(self.odasDataReveived)
             self.odasStream.start()
 
 
     def stopOdas(self):
         if self.odasStream and self.odasStream.isRunning:
+            self.odasStream.signalOdasData.disconnect(self.odasDataReveived)
             self.odasStream.stop()
 
 
     def startVideoProcessor(self):
         if self.videoProcessor and not self.videoProcessor.isRunning:
+            self.videoProcessor.signalFrameData.connect(self.imageReceived)
             self.videoProcessor.start()
 
 
     def stopVideoProcessor(self):
         if self.videoProcessor and self.videoProcessor.isRunning:
             self.videoProcessor.stop()
+            self.videoProcessor.signalFrameData.disconnect(self.imageReceived)
+            self.virtualCameraManager.virtualCameras.clear()
 
 
     @pyqtSlot()

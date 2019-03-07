@@ -70,7 +70,7 @@ class VideoStream:
 
             dewarpedFrame = self.__unwarp(frame)
 
-            return success, frame
+            return success, dewarpedFrame
         else:
             return success, None
 
