@@ -56,13 +56,19 @@ class SpeechToText(QWidget, Ui_SpeechToText):
 
     @pyqtSlot()
     def ImportAudioClicked(self):
-        audioDataPath = QFileDialog.getOpenFileName(self, 'Open Audio Data', './')
+        audioDataPath = QFileDialog.getOpenFileName(parent=self, 
+                                            caption='Open Audio Data', 
+                                            directory='./',
+                                            options=QFileDialog.DontUseNativeDialog)
         self.audioDataPath.setText(audioDataPath[0])
 
 
     @pyqtSlot()
     def ImportServiceAccountClicked(self):
-        serviceAccountPath = QFileDialog.getOpenFileName(self, 'Open Google Service Account File', './')
+        serviceAccountPath = QFileDialog.getOpenFileName(parent=self, 
+                                    caption='Open Google Service Account File', 
+                                    directory='./',
+                                    options=QFileDialog.DontUseNativeDialog)
         self.serviceAccountPath.setText(serviceAccountPath[0])
 
 
