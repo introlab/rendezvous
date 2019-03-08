@@ -14,6 +14,8 @@ from src.utils.angles_3d_converter import Angles3DConverter
 class OdasStream(QObject):
 
     signalOdasData = pyqtSignal(object)
+    signalOdasException = pyqtSignal(Exception)
+
 
     def __init__(self, odasPath, configPath, sleepTime, parent=None):
         super(OdasStream, self).__init__(parent)
@@ -29,25 +31,22 @@ class OdasStream(QObject):
 
 
     def stop(self):
-        if self.odasProcess and self.isRunning:
-            print('Stopping Odas stream...')
-            self.odasProcess.kill()
-            print('Odas stream stopped.')
-            self.isRunning = False
-
-            if self.odasProcess.returncode and self.odasProcess.returncode != 0:
-                raise Exception('ODAS exited with exit code {exitCode}'.format(exitCode=self.odasProcess.returncode))
+        self.isRunning = False
 
 
     def run(self):
         self.__spawnSubProcess()
 
+        print("ODAS stream started")
+
+        self.isRunning = True
+
         stdout = []
-        while True:
+        while self.isRunning:
 
             if self.odasProcess.poll():
                 self.stop()
-                return
+                break
 
             line = self.odasProcess.stdout.readline().decode('UTF-8')
 
@@ -61,6 +60,13 @@ class OdasStream(QObject):
 
             time.sleep(self.sleepTime)
 
+        self.odasProcess.kill()
+        self.isRunning = False
+        if self.odasProcess.returncode and self.odasProcess.returncode != 0:
+            e = Exception('ODAS exited with exit code {exitCode}'.format(exitCode=self.odasProcess.returncode))
+            self.signalOdasException.emit(e)
+        print("ODAS process terminated")
+
 
     # Spawn a sub process that execute odaslive.
     def __spawnSubProcess(self):
@@ -69,8 +75,6 @@ class OdasStream(QObject):
 
         print('ODAS stream starting...')
         self.odasProcess = subprocess.Popen([self.odasPath, '-c', self.configPath], shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-        self.isRunning = True
         
 
     # Parse every Odas event 

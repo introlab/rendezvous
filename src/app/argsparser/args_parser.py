@@ -15,6 +15,7 @@ class ArgsParser:
 
         parser.add_argument('--cpath', dest='configPath', action='store', help='Path to the config file for ODAS.')
         parser.add_argument('--opath', dest='odasPath', action='store', help='Path to odaslive program.')
+        parser.add_argument('--cameraconfigpath', dest='cameraConfigPath', action='store', help='Path to camera config file.')
 
         return parser
 
@@ -25,3 +26,6 @@ class ArgsParser:
 
         if not self.args.odasPath:
             raise self.__parser.error('--opath is required.')
+
+        if not self.args.cameraConfigPath:
+            raise self.__parser.error('--cameraconfigpath is required.')
