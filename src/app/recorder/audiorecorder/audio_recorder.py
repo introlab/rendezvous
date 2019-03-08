@@ -15,7 +15,7 @@ class AudioRecorder:
             raise Exception('there is no file at : {path}'.format(path=rawPath))
 
         filename = os.path.splitext(rawPath)[0]
-        data, samplerate = soundfile.read(rawPath, channels=4, samplerate=48000, subtype='FLOAT')
+        data, samplerate = soundfile.read(rawPath, channels=1, samplerate=8000, subtype='FLOAT')
         wavFile = '{filename}.wav'.format(filename=filename)
         soundfile.write(wavFile, data, samplerate)
     
@@ -29,5 +29,5 @@ class AudioRecorder:
 
 
 if __name__ == '__main__':
-    AudioRecorder.convertRawToWav('test_postfiltered.raw')
+    AudioRecorder.convertRawToWav('/home/morel/Downloads/test.raw')
 
