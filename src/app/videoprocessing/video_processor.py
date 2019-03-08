@@ -24,7 +24,6 @@ class VideoProcessor(QObject):
     def start(self):
         print("Starting video processor...")
         try:
-            self.videoStream.initializeStream()
             Thread(target=self.run).start()
 
         except Exception as e:
@@ -35,12 +34,14 @@ class VideoProcessor(QObject):
          self.isRunning = False
 
 
-    # Displays the source and dewarped image, set debug to true to show the areas of the calculations
+    # Initialize stream, displays the source and dewarped image, set debug to true to show the areas of the calculations
     def run(self):
         print("Video processor started")
         try:
+            self.videoStream.initializeStream()
             self.isRunning = True
             while self.isRunning:
+
                 success, frame = self.videoStream.readFrame()
 
                 if success:
