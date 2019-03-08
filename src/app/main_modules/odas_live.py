@@ -2,18 +2,19 @@ from PyQt5.QtWidgets import QWidget
 from PyQt5.QtCore import pyqtSlot
 
 from src.app.gui.odas_live_ui import Ui_OdasLive
+from src.app.odasstream.odas_stream import OdasStream
+from src.app.videoprocessing.video_processor import VideoProcessor
 from src.app.virtualcamera.virtual_camera_displayer import VirtualCameraDisplayer
 from src.app.virtualcamera.virtual_camera_manager import VirtualCameraManager
 
 
 class OdasLive(QWidget, Ui_OdasLive):
 
-    def __init__(self, odasStream, videoProcessor, parent=None):
+    def __init__(self, parent=None):
         super(OdasLive, self).__init__(parent)
         self.setupUi(self)
-        self.odasStream = odasStream
-        self.videoProcessor = videoProcessor
-        
+        self.odasStream = OdasStream()
+        self.videoProcessor = VideoProcessor()
 
         self.virtualCameraManager = VirtualCameraManager()
         self.virtualCameraDisplayer = VirtualCameraDisplayer(self.virtualCameraFrame)
@@ -48,7 +49,7 @@ class OdasLive(QWidget, Ui_OdasLive):
     def startVideoProcessor(self):
         if self.videoProcessor and not self.videoProcessor.isRunning:
             self.videoProcessor.signalFrameData.connect(self.imageReceived)
-            self.videoProcessor.start()
+            self.videoProcessor.start(False)
 
 
     def stopVideoProcessor(self):
@@ -60,21 +61,21 @@ class OdasLive(QWidget, Ui_OdasLive):
 
     def odasExceptionHandling(self, e):
         print('Exception : ', e)
-        if not self.odasStream.isRunning:
-            self.btnStartStopOdas.setText('Start ODAS')
-        else:
-            self.btnStartStopOdas.setText('Stop ODAS')
-        
+
+        # We make sure the thread is stopped
+        self.stopOdas()
+
+        self.btnStartStopOdas.setText('Start ODAS')
         self.btnStartStopOdas.setDisabled(False)
 
 
     def videoExceptionHandling(self, e):
         print('Exception : ', e)
-        if not self.videoProcessor.isRunning:
-            self.btnStartStopVideo.setText('Start Video')
-        else:
-            self.btnStartStopVideo.setText('Stop Video')
-        
+
+        # We make sure the thread is stopped
+        self.stopVideoProcessor()
+
+        self.btnStartStopVideo.setText('Start Video')      
         self.btnStartStopVideo.setDisabled(False)
 
 
