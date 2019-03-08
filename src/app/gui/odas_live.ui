@@ -7,8 +7,11 @@
     <x>0</x>
     <y>0</y>
     <width>368</width>
-    <height>239</height>
+    <height>248</height>
    </rect>
+  </property>
+  <property name="mouseTracking">
+   <bool>false</bool>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
@@ -71,20 +74,6 @@
         </spacer>
        </item>
        <item>
-        <widget class="QPushButton" name="btnStartVideo">
-         <property name="text">
-          <string>Start video</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="btnStopVideo">
-         <property name="text">
-          <string>Stop video</string>
-         </property>
-        </widget>
-       </item>
-       <item>
         <spacer name="horizontalSpacer_4">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -96,6 +85,13 @@
           </size>
          </property>
         </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnStartStopVideo">
+         <property name="text">
+          <string>Start Video</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>
@@ -436,20 +432,6 @@
         </spacer>
        </item>
        <item>
-        <widget class="QPushButton" name="btnStartOdas">
-         <property name="text">
-          <string>Start ODAS</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="btnStopOdas">
-         <property name="text">
-          <string>Stop ODAS</string>
-         </property>
-        </widget>
-       </item>
-       <item>
         <spacer name="horizontalSpacer_2">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -461,6 +443,16 @@
           </size>
          </property>
         </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnStartStopOdas">
+         <property name="toolTip">
+          <string/>
+         </property>
+         <property name="text">
+          <string>Start ODAS</string>
+         </property>
+        </widget>
        </item>
       </layout>
      </item>

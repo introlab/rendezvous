@@ -7,20 +7,23 @@ from src.app.virtualcamera.virtual_camera_manager import VirtualCameraManager
 
 
 class OdasLive(QWidget, Ui_OdasLive):
+
     def __init__(self, odasStream, videoProcessor, parent=None):
         super(OdasLive, self).__init__(parent)
         self.setupUi(self)
         self.odasStream = odasStream
         self.videoProcessor = videoProcessor
+        
 
         self.virtualCameraManager = VirtualCameraManager()
         self.virtualCameraDisplayer = VirtualCameraDisplayer(self.virtualCameraFrame)
 
         # Qt signal slots
-        self.btnStartOdas.clicked.connect(self.btnStartOdasClicked)
-        self.btnStopOdas.clicked.connect(self.btnStopOdasClicked)
-        self.btnStartVideo.clicked.connect(self.btnStartVideoClicked)
-        self.btnStopVideo.clicked.connect(self.btnStopVideoClicked)
+        self.btnStartStopOdas.clicked.connect(self.btnStartStopOdasClicked)
+        self.btnStartStopVideo.clicked.connect(self.btnStartStopVideoClicked)
+
+        self.odasStream.signalOdasException.connect(self.odasExceptionHandling)
+        self.videoProcessor.signalVideoException.connect(self.videoExceptionHandling)
     
 
     # Handles the event where the user closes the window with the X button
@@ -55,24 +58,53 @@ class OdasLive(QWidget, Ui_OdasLive):
             self.virtualCameraManager.virtualCameras.clear()
 
 
-    @pyqtSlot()
-    def btnStartOdasClicked(self):
-        self.startOdas()
+    def odasExceptionHandling(self, e):
+        print('Exception : ', e)
+        if not self.odasStream.isRunning:
+            self.btnStartStopOdas.setText('Start ODAS')
+        else:
+            self.btnStartStopOdas.setText('Stop ODAS')
         
-
-    @pyqtSlot()
-    def btnStopOdasClicked(self):
-        self.stopOdas()
+        self.btnStartStopOdas.setDisabled(False)
 
 
-    @pyqtSlot()
-    def btnStartVideoClicked(self):
-        self.startVideoProcessor()
+    def videoExceptionHandling(self, e):
+        print('Exception : ', e)
+        if not self.videoProcessor.isRunning:
+            self.btnStartStopVideo.setText('Start Video')
+        else:
+            self.btnStartStopVideo.setText('Stop Video')
         
+        self.btnStartStopVideo.setDisabled(False)
+
 
     @pyqtSlot()
-    def btnStopVideoClicked(self):
-        self.stopVideoProcessor()
+    def btnStartStopOdasClicked(self):
+        self.btnStartStopOdas.setDisabled(True)
+
+        if not self.odasStream.isRunning:
+            self.startOdas()
+            self.btnStartStopOdas.setText('Stop ODAS')
+
+        else:
+            self.stopOdas()
+            self.btnStartStopOdas.setText('Start ODAS')
+
+        self.btnStartStopOdas.setDisabled(False)
+
+
+    @pyqtSlot()
+    def btnStartStopVideoClicked(self):
+        self.btnStartStopVideo.setDisabled(True)
+
+        if not self.videoProcessor.isRunning:
+            self.btnStartStopVideo.setText('Stop Video')
+            self.startVideoProcessor()
+        else:
+            self.stopVideoProcessor()
+            self.btnStartStopVideo.setText('Start Video')
+        
+        self.btnStartStopVideo.setDisabled(False)
 
 
     @pyqtSlot(object)
@@ -96,4 +128,3 @@ class OdasLive(QWidget, Ui_OdasLive):
             self.virtualCameraManager.addOrUpdateVirtualCamera(face, imageWidth, imageHeight)
 
         self.virtualCameraDisplayer.updateDisplay(image, self.virtualCameraManager.virtualCameras)
-

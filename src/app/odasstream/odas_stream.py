@@ -14,6 +14,8 @@ from src.utils.angles_3d_converter import Angles3DConverter
 class OdasStream(QObject):
 
     signalOdasData = pyqtSignal(object)
+    signalOdasException = pyqtSignal(Exception)
+
 
     def __init__(self, odasPath, configPath, sleepTime, parent=None):
         super(OdasStream, self).__init__(parent)
@@ -61,7 +63,8 @@ class OdasStream(QObject):
         self.odasProcess.kill()
         self.isRunning = False
         if self.odasProcess.returncode and self.odasProcess.returncode != 0:
-            raise Exception('ODAS exited with exit code {exitCode}'.format(exitCode=self.odasProcess.returncode))
+            e = Exception('ODAS exited with exit code {exitCode}'.format(exitCode=self.odasProcess.returncode))
+            self.signalOdasException.emit(e)
         print("ODAS process terminated")
 
 
