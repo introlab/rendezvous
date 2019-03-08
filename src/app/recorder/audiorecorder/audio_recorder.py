@@ -15,9 +15,9 @@ class AudioRecorder:
             raise Exception('there is no file at : {path}'.format(path=rawPath))
 
         filename = os.path.splitext(rawPath)[0]
-        data, samplerate = soundfile.read(rawPath, channels=1, samplerate=8000, subtype='FLOAT')
+        data, samplerate = soundfile.read(rawPath, channels=1, samplerate=48000, format='RAW', subtype='FLOAT', endian='BIG')
         wavFile = '{filename}.wav'.format(filename=filename)
-        soundfile.write(wavFile, data, samplerate)
+        soundfile.write(wavFile, data, samplerate, endian='BIG')
     
     
     def startRecording(self):
@@ -29,5 +29,5 @@ class AudioRecorder:
 
 
 if __name__ == '__main__':
-    AudioRecorder.convertRawToWav('/home/morel/Downloads/test.raw')
+    AudioRecorder.convertRawToWav('/home/morel/development/rendezvous/test_postfiltered.raw')
 
