@@ -1,14 +1,14 @@
 import subprocess
 import json
 import time
-import math
-import os
-import sys
+import re
 from threading import Thread
 
 from PyQt5.QtCore import QObject, pyqtSignal
 
 from src.utils.angles_3d_converter import Angles3DConverter
+from src.app.settings.app_settings import AppSettings
+from src.utils.file_helper import FileHelper
 
 
 class OdasStream(QObject):
@@ -16,26 +16,49 @@ class OdasStream(QObject):
     signalOdasData = pyqtSignal(object)
     signalOdasException = pyqtSignal(Exception)
 
-
-    def __init__(self, odasPath, configPath, sleepTime, parent=None):
+    def __init__(self, parent=None):
         super(OdasStream, self).__init__(parent)
-        self.odasPath = odasPath
-        self.configPath = configPath
         self.odasProcess = None
-        self.sleepTime = sleepTime
         self.isRunning = False
         
 
     def start(self):
-        Thread(target=self.run, args=()).start()
+        print("Starting Odas stream...")
+
+        try:  
+            
+            odasPath = AppSettings.getValue("odasPath")
+            micConfigPath = AppSettings.getValue("micConfigPath")
+
+            if not odasPath or odasPath == "":
+                raise Exception("odasPath needs to be set in the settings")
+
+            if not micConfigPath or micConfigPath == "":
+                raise Exception("micConfigPath needs to be set in the settings")
+
+            # Read config file to get sample rate for while True sleepTime
+            line = FileHelper.getLineFromFile(micConfigPath, 'fS')
+            if not line:
+                raise Exception("sample rate not found in ", micConfigPath)
+
+            # Extract the sample rate from the string and convert to an Integer
+            sampleRate = int(re.sub('[^0-9]', '', line.split('=')[1]))
+            sleepTime = 1 / sampleRate
+
+            Thread(target=self.run, args=(odasPath, micConfigPath, sleepTime)).start()
+
+        except Exception as e:
+            
+            self.isRunning = False
+            self.signalOdasException.emit(e)
 
 
     def stop(self):
         self.isRunning = False
 
 
-    def run(self):
-        self.__spawnSubProcess()
+    def run(self, odasPath, micConfigPath, sleepTime):
+        self.__spawnSubProcess(odasPath, micConfigPath)
 
         print("ODAS stream started")
 
@@ -58,23 +81,21 @@ class OdasStream(QObject):
                 self.__parseOdasObject(textoutput)
                 stdout.clear()
 
-            time.sleep(self.sleepTime)
-
+            time.sleep(sleepTime)
+   
         self.odasProcess.kill()
-        self.isRunning = False
         if self.odasProcess.returncode and self.odasProcess.returncode != 0:
+            self.isRunning = False
             e = Exception('ODAS exited with exit code {exitCode}'.format(exitCode=self.odasProcess.returncode))
             self.signalOdasException.emit(e)
+
         print("ODAS process terminated")
 
 
     # Spawn a sub process that execute odaslive.
-    def __spawnSubProcess(self):
-        if (not self.odasPath and not self.configPath):
-            raise Exception('odasPath and configPath cannot be null or empty')
-
+    def __spawnSubProcess(self, odasPath, micConfigPath):
         print('ODAS stream starting...')
-        self.odasProcess = subprocess.Popen([self.odasPath, '-c', self.configPath], shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        self.odasProcess = subprocess.Popen([odasPath, '-c', micConfigPath], shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         
 
     # Parse every Odas event 
