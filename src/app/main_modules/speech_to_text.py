@@ -4,7 +4,7 @@ from os import path
 from PyQt5.QtWidgets import QApplication, QWidget, QFileDialog
 from PyQt5.QtCore import pyqtSlot
 
-from src.app.components.dialogs.warning_box import WarningBox
+from src.app.main_modules.exception_manager import ExceptionManager
 from src.app.speechtotextapi.speech_to_text_api import SpeechToTextAPI
 from src.app.gui.speech_to_text_ui import Ui_SpeechToText
 
@@ -94,7 +94,7 @@ class SpeechToText(QWidget, Ui_SpeechToText):
                 config))
         
         except Exception as e:
-            WarningBox(e)
+            self.window().exceptionManager.signalException.emit(e)
             self.transcriptionResult.setText('')
         finally:
             self.setDisabled(False)

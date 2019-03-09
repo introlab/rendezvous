@@ -25,7 +25,7 @@ class OdasStream(QObject):
     def start(self):
         print("Starting Odas stream...")
 
-        try:  
+        try:
             
             odasPath = AppSettings.getValue("odasPath")
             micConfigPath = AppSettings.getValue("micConfigPath")

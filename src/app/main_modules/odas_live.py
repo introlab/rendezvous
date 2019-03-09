@@ -60,7 +60,7 @@ class OdasLive(QWidget, Ui_OdasLive):
 
 
     def odasExceptionHandling(self, e):
-        print('Exception : ', e)
+        self.window().exceptionManager.signalException.emit(e)
 
         # We make sure the thread is stopped
         self.stopOdas()
@@ -70,7 +70,7 @@ class OdasLive(QWidget, Ui_OdasLive):
 
 
     def videoExceptionHandling(self, e):
-        print('Exception : ', e)
+        self.window().exceptionManager.signalException.emit(e)
 
         # We make sure the thread is stopped
         self.stopVideoProcessor()
