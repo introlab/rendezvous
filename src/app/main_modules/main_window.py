@@ -1,10 +1,13 @@
 from PyQt5.QtWidgets import QMainWindow
 
 from src.app.gui.main_window_ui import Ui_MainWindow
+
 from src.app.main_modules.exception_manager import ExceptionManager
+from src.app.main_modules.settings_manager import SettingsManager
 from src.app.main_modules.odas_live import OdasLive
 from src.app.main_modules.speech_to_text import SpeechToText
-from src.app.main_modules.settings import SettingsDialog
+
+from src.app.components.dialogs.settings import Settings
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -15,6 +18,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Exception manager.
         self.exceptionManager = ExceptionManager()
+
+        # Settings manager.
+        self.settingsManager = SettingsManager()
 
         # Top options.
         self.actionSettings.triggered.connect(self.actionSettingsClicked)
@@ -28,7 +34,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         
 
     def actionSettingsClicked(self):
-        dialog = SettingsDialog(self)
+        dialog = Settings(self)
         dialog.exec()
             
 
@@ -37,6 +43,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.odasLiveTab.closeEvent(event)
         self.speechToTextTab.closeEvent(event)
         event.accept()
+
 
     # Used by tab modules to tell the exception manager that an exception occured.    
     def emitToExceptionManager(self, exception):

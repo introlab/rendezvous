@@ -21,7 +21,6 @@ class SpeechToText(QWidget, Ui_SpeechToText):
 
         # Qt signal slots.
         self.btnImportAudio.clicked.connect(self.importAudioClicked)
-        self.btnImportServiceAccount.clicked.connect(self.importServiceAccountClicked)
         self.btnTranscribe.clicked.connect(self.transcribeClicked)
 
 
@@ -44,20 +43,6 @@ class SpeechToText(QWidget, Ui_SpeechToText):
 
 
     @pyqtSlot()
-    def importServiceAccountClicked(self):
-        try:
-            serviceAccountPath, _ = QFileDialog.getOpenFileName(parent=self, 
-                                                                caption="Import Google Service Account File",
-                                                                directory="./",
-                                                                filter='JSON File (*.json)',
-                                                                options=QFileDialog.DontUseNativeDialog)
-            if serviceAccountPath:
-                self.serviceAccountPath.setText(serviceAccountPath)
-        except Exception as e:
-            self.window().emitToExceptionManager(e)
-
-
-    @pyqtSlot()
     def transcribeClicked(self):
         self.transcriptionResult.setText('Transcribing...')
         self.setDisabled(True)
@@ -73,7 +58,7 @@ class SpeechToText(QWidget, Ui_SpeechToText):
                 'enhanced' : self.enhanced.checkState()}
 
             self.transcriptionResult.setText(SpeechToTextAPI.resquestTranscription(
-                self.serviceAccountPath.text(),
+                self.window().settingsManager.getValue('serviceAccountPath'),
                 self.audioDataPath.text(),
                 config))
         

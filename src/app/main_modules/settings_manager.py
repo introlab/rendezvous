@@ -1,7 +1,7 @@
 from PyQt5.QtCore import QSettings
 
 
-class AppSettings:
+class SettingsManager:
 
     qSettings = QSettings("Groupe RendezVous", "App")
 
@@ -11,9 +11,9 @@ class AppSettings:
 
     @staticmethod
     def getValue(key):
-        return AppSettings.qSettings.value(key)
+        return SettingsManager.qSettings.value(key)
 
 
     @staticmethod
     def setValue(key, value):
-        AppSettings.qSettings.setValue(key, value)
+        SettingsManager.qSettings.setValue(key, value)

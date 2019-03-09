@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>540</width>
-    <height>180</height>
+    <width>733</width>
+    <height>228</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -23,40 +23,48 @@
       <string>Configuration</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
-      <item row="0" column="1">
+      <item row="3" column="3">
+       <widget class="QLineEdit" name="odasPath"/>
+      </item>
+      <item row="2" column="1">
+       <widget class="QPushButton" name="btnBrowseMicConfig">
+        <property name="text">
+         <string>Browse...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="3">
+       <widget class="QLineEdit" name="cameraConfigPath"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>Google Service Account :</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
        <widget class="QPushButton" name="btnBrowseOdas">
         <property name="text">
          <string>Browse...</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_3">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
+      <item row="0" column="1">
+       <widget class="QPushButton" name="btnBrowseCameraConfig">
         <property name="text">
-         <string>Microphone config :</string>
+         <string>Browse...</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
+      <item row="0" column="0">
        <widget class="QLabel" name="label_2">
         <property name="text">
          <string>Camera config :</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="2">
-       <widget class="QLineEdit" name="odasPath"/>
-      </item>
-      <item row="1" column="2">
-       <widget class="QLineEdit" name="micConfigPath"/>
-      </item>
-      <item row="0" column="0">
+      <item row="3" column="0">
        <widget class="QLabel" name="label">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
@@ -69,22 +77,31 @@
         </property>
        </widget>
       </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_3">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Microphone config :</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="3">
+       <widget class="QLineEdit" name="micConfigPath"/>
+      </item>
       <item row="1" column="1">
-       <widget class="QPushButton" name="btnBrowseMicConfig">
+       <widget class="QPushButton" name="btnBrowseServiceAccount">
         <property name="text">
          <string>Browse...</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
-       <widget class="QPushButton" name="btnBrowseCameraConfig">
-        <property name="text">
-         <string>Browse...</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="2">
-       <widget class="QLineEdit" name="cameraConfigPath"/>
+      <item row="1" column="3">
+       <widget class="QLineEdit" name="serviceAccountPath"/>
       </item>
      </layout>
     </widget>
