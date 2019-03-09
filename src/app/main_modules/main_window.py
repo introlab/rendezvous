@@ -6,6 +6,7 @@ from src.app.main_modules.odas_live import OdasLive
 from src.app.main_modules.speech_to_text import SpeechToText
 from src.app.main_modules.settings import SettingsDialog
 
+
 class MainWindow(QMainWindow, Ui_MainWindow):
 
     def __init__(self, parent=None):
@@ -36,4 +37,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.odasLiveTab.closeEvent(event)
         self.speechToTextTab.closeEvent(event)
         event.accept()
-        
+
+    # Used by tab modules to tell the exception manager that an exception occured.    
+    def emitToExceptionManager(self, exception):
+        self.exceptionManager.signalException.emit(exception)

@@ -1,34 +1,9 @@
-from enum import Enum, unique, auto
-from os import path
-
 from PyQt5.QtWidgets import QApplication, QWidget, QFileDialog
 from PyQt5.QtCore import pyqtSlot
 
-from src.app.main_modules.exception_manager import ExceptionManager
-from src.app.speechtotextapi.speech_to_text_api import SpeechToTextAPI
+from src.app.speechtotextapi.speech_to_text_api import EncodingType, LanguageCode, Model, SpeechToTextAPI
 from src.app.gui.speech_to_text_ui import Ui_SpeechToText
 
-@unique
-class EncodingType(Enum):
-    ENCODING_UNSPECIFIED = 'ENCODING_UNSPECIFIED'
-    FLAC = 'FLAC'
-    AMR = 'AMR'
-    AMR_WB = 'AMR_WB'
-    LINEAR16 = 'LINEAR16'
-    OGG_OPUS = 'OGG_OPUS'
-    SPEEX_WITH_HEADER_BYTE = 'SPEEX_WITH_HEADER_BYTE'
-
-@unique
-class LanguageCode(Enum):
-    FR_CA = 'fr-CA'
-    EN_CA = 'en-CA'
-
-@unique
-class Model(Enum):
-    DEFAULT = 'default'
-    COMMAND_AND_SEARCH = 'command_and_search'
-    PHONE_CALL = 'phone_call'
-    VIDEO = 'video'
 
 class SpeechToText(QWidget, Ui_SpeechToText):
     def __init__(self, parent=None):
@@ -45,36 +20,45 @@ class SpeechToText(QWidget, Ui_SpeechToText):
         self.model.addItems([model.value for model in Model])
 
         # Qt signal slots.
-        self.btnImportAudio.clicked.connect(self.ImportAudioClicked)
-        self.btnImportServiceAccount.clicked.connect(self.ImportServiceAccountClicked)
-        self.btnTranscribe.clicked.connect(self.TranscribeClicked)
+        self.btnImportAudio.clicked.connect(self.importAudioClicked)
+        self.btnImportServiceAccount.clicked.connect(self.importServiceAccountClicked)
+        self.btnTranscribe.clicked.connect(self.transcribeClicked)
 
 
-    # Handles the event where the user closes the window with the X button
+    # Handles the event where the user closes the window with the X button.
     def closeEvent(self, event):
         event.accept()
 
 
     @pyqtSlot()
-    def ImportAudioClicked(self):
-        audioDataPath = QFileDialog.getOpenFileName(parent=self, 
-                                            caption='Open Audio Data', 
-                                            directory='./',
-                                            options=QFileDialog.DontUseNativeDialog)
-        self.audioDataPath.setText(audioDataPath[0])
+    def importAudioClicked(self):
+        try:
+            audioDataPath, _ = QFileDialog.getOpenFileName(parent=self, 
+                                                           caption='Import Audio Data', 
+                                                           directory='./',
+                                                           options=QFileDialog.DontUseNativeDialog)
+            if audioDataPath:
+                self.audioDataPath.setText(audioDataPath)
+        except Exception as e:
+            self.window().emitToExceptionManager(e)
 
 
     @pyqtSlot()
-    def ImportServiceAccountClicked(self):
-        serviceAccountPath = QFileDialog.getOpenFileName(parent=self, 
-                                    caption='Open Google Service Account File', 
-                                    directory='./',
-                                    options=QFileDialog.DontUseNativeDialog)
-        self.serviceAccountPath.setText(serviceAccountPath[0])
+    def importServiceAccountClicked(self):
+        try:
+            serviceAccountPath, _ = QFileDialog.getOpenFileName(parent=self, 
+                                                                caption="Import Google Service Account File",
+                                                                directory="./",
+                                                                filter='JSON File (*.json)',
+                                                                options=QFileDialog.DontUseNativeDialog)
+            if serviceAccountPath:
+                self.serviceAccountPath.setText(serviceAccountPath)
+        except Exception as e:
+            self.window().emitToExceptionManager(e)
 
 
     @pyqtSlot()
-    def TranscribeClicked(self):
+    def transcribeClicked(self):
         self.transcriptionResult.setText('Transcribing...')
         self.setDisabled(True)
         # The UI update is scheduled after the ending of the slot, that's why we need to force the porcessing of events.
@@ -82,11 +66,11 @@ class SpeechToText(QWidget, Ui_SpeechToText):
 
         try:
             config = {
-            'encoding' : self.encoding.currentText(),
-            'sampleRate' : self.sampleRate.value(),
-            'languageCode' : self.language.currentText(),
-            'model' : self.model.currentText(),
-            'enhanced' : self.enhanced.checkState()}
+                'encoding' : self.encoding.currentText(),
+                'sampleRate' : self.sampleRate.value(),
+                'languageCode' : self.language.currentText(),
+                'model' : self.model.currentText(),
+                'enhanced' : self.enhanced.checkState()}
 
             self.transcriptionResult.setText(SpeechToTextAPI.resquestTranscription(
                 self.serviceAccountPath.text(),
@@ -94,8 +78,8 @@ class SpeechToText(QWidget, Ui_SpeechToText):
                 config))
         
         except Exception as e:
-            self.window().exceptionManager.signalException.emit(e)
+            self.window().emitToExceptionManager(e)
             self.transcriptionResult.setText('')
         finally:
             self.setDisabled(False)
-    
+        
