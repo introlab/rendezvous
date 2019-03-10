@@ -4,7 +4,6 @@ from PyQt5.QtCore import QObject, pyqtSignal
 
 from .streaming.video_stream import VideoStream
 from .facedetection.facedetector.dnn_face_detector import DnnFaceDetector
-from src.app.main_modules.settings_manager import SettingsManager
 from src.utils.file_helper import FileHelper
 
 
@@ -21,12 +20,11 @@ class VideoProcessor(QObject):
 
 
     # Set debug to true to show the areas of the calculations
-    def start(self, debug):
+    def start(self, debug, cameraConfigPath):
         print("Starting video processor...")
 
-        try:             
-
-            cameraConfigPath = SettingsManager.getValue("cameraConfigPath")           
+        try:
+                               
             if not cameraConfigPath or cameraConfigPath == "":
                 raise Exception("cameraConfigPath needs to be set in the settings")
 

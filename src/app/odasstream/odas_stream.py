@@ -7,7 +7,6 @@ from threading import Thread
 from PyQt5.QtCore import QObject, pyqtSignal
 
 from src.utils.angles_3d_converter import Angles3DConverter
-from src.app.main_modules.settings_manager import SettingsManager
 from src.utils.file_helper import FileHelper
 
 
@@ -22,13 +21,10 @@ class OdasStream(QObject):
         self.isRunning = False
         
 
-    def start(self):
+    def start(self, odasPath, micConfigPath):
         print("Starting Odas stream...")
 
         try:
-            
-            odasPath = SettingsManager.getValue("odasPath")
-            micConfigPath = SettingsManager.getValue("micConfigPath")
 
             if not odasPath or odasPath == "":
                 raise Exception("odasPath needs to be set in the settings")

@@ -37,7 +37,7 @@ class OdasLive(QWidget, Ui_OdasLive):
     def startOdas(self):
         if self.odasStream and not self.odasStream.isRunning:
             self.odasStream.signalOdasData.connect(self.odasDataReveived)
-            self.odasStream.start()
+            self.odasStream.start(self.window().settingsManager.getValue('odasPath'), self.window().settingsManager.getValue('micConfigPath'))
 
 
     def stopOdas(self):
@@ -49,7 +49,7 @@ class OdasLive(QWidget, Ui_OdasLive):
     def startVideoProcessor(self):
         if self.videoProcessor and not self.videoProcessor.isRunning:
             self.videoProcessor.signalFrameData.connect(self.imageReceived)
-            self.videoProcessor.start(False)
+            self.videoProcessor.start(False, self.window().settingsManager.getValue('cameraConfigPath'))
 
 
     def stopVideoProcessor(self):

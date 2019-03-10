@@ -31,6 +31,7 @@ class Model(Enum):
 
 
 class SpeechToTextAPI:
+    
         def __init__(self):
             pass
 
