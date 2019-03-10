@@ -7,7 +7,6 @@ from threading import Thread
 from PyQt5.QtCore import QObject, pyqtSignal
 
 from src.utils.angles_3d_converter import Angles3DConverter
-from src.app.settings.app_settings import AppSettings
 from src.utils.file_helper import FileHelper
 
 
@@ -22,24 +21,21 @@ class OdasStream(QObject):
         self.isRunning = False
         
 
-    def start(self):
-        print("Starting Odas stream...")
+    def start(self, odasPath, micConfigPath):
+        print('Starting Odas stream...')
 
-        try:  
-            
-            odasPath = AppSettings.getValue("odasPath")
-            micConfigPath = AppSettings.getValue("micConfigPath")
+        try:
 
-            if not odasPath or odasPath == "":
-                raise Exception("odasPath needs to be set in the settings")
+            if not odasPath:
+                raise Exception('odasPath needs to be set in the settings')
 
-            if not micConfigPath or micConfigPath == "":
-                raise Exception("micConfigPath needs to be set in the settings")
+            if not micConfigPath:
+                raise Exception('micConfigPath needs to be set in the settings')
 
             # Read config file to get sample rate for while True sleepTime
             line = FileHelper.getLineFromFile(micConfigPath, 'fS')
             if not line:
-                raise Exception("sample rate not found in ", micConfigPath)
+                raise Exception('sample rate not found in ', micConfigPath)
 
             # Extract the sample rate from the string and convert to an Integer
             sampleRate = int(re.sub('[^0-9]', '', line.split('=')[1]))
@@ -60,7 +56,7 @@ class OdasStream(QObject):
     def run(self, odasPath, micConfigPath, sleepTime):
         self.__spawnSubProcess(odasPath, micConfigPath)
 
-        print("ODAS stream started")
+        print('ODAS stream started')
 
         self.isRunning = True
 
@@ -89,7 +85,7 @@ class OdasStream(QObject):
             e = Exception('ODAS exited with exit code {exitCode}'.format(exitCode=self.odasProcess.returncode))
             self.signalOdasException.emit(e)
 
-        print("ODAS process terminated")
+        print('ODAS process terminated')
 
 
     # Spawn a sub process that execute odaslive.
