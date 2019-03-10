@@ -21,12 +21,12 @@ class VideoProcessor(QObject):
 
     # Set debug to true to show the areas of the calculations
     def start(self, debug, cameraConfigPath):
-        print("Starting video processor...")
+        print('Starting video processor...')
 
         try:
                                
-            if not cameraConfigPath or cameraConfigPath == "":
-                raise Exception("cameraConfigPath needs to be set in the settings")
+            if not cameraConfigPath or cameraConfigPath == '':
+                raise Exception('cameraConfigPath needs to be set in the settings')
 
             Thread(target=self.run, args=(cameraConfigPath, debug)).start()
 
@@ -50,7 +50,7 @@ class VideoProcessor(QObject):
             videoStream = VideoStream(cameraConfig, debug)
             videoStream.initializeStream()
 
-            print("Video processor started")
+            print('Video processor started')
 
             self.isRunning = True
             while self.isRunning:
@@ -71,5 +71,5 @@ class VideoProcessor(QObject):
             if videoStream:
                 videoStream.destroy()
 
-        print("Video stream terminated")
+        print('Video stream terminated')
 

@@ -3,8 +3,8 @@ from PyQt5.QtWidgets import QMainWindow
 from src.app.gui.main_window_ui import Ui_MainWindow
 
 from src.app.main_modules.exception_manager import ExceptionManager
-from src.app.main_modules.settings_manager import SettingsManager
 from src.app.main_modules.odas_live import OdasLive
+from src.app.main_modules.settings_manager import SettingsManager
 from src.app.main_modules.speech_to_text import SpeechToText
 
 from src.app.components.dialogs.settings import Settings

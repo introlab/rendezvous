@@ -28,10 +28,10 @@ class Settings(QDialog, Ui_Settings):
 
     @pyqtSlot()
     def apply(self):
-        self.parent().settingsManager.setValue("cameraConfigPath", self.cameraConfigPath.text())
-        self.parent().settingsManager.setValue("serviceAccountPath", self.serviceAccountPath.text())
-        self.parent().settingsManager.setValue("micConfigPath", self.micConfigPath.text())
-        self.parent().settingsManager.setValue("odasPath", self.odasPath.text())
+        self.parent().settingsManager.setValue('cameraConfigPath', self.cameraConfigPath.text())
+        self.parent().settingsManager.setValue('serviceAccountPath', self.serviceAccountPath.text())
+        self.parent().settingsManager.setValue('micConfigPath', self.micConfigPath.text())
+        self.parent().settingsManager.setValue('odasPath', self.odasPath.text())
         
         self.accept()
 
@@ -45,7 +45,7 @@ class Settings(QDialog, Ui_Settings):
     def btnBrowseOdasClicked(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        odasPath, _ = QFileDialog.getOpenFileName(self, "Browse Odas Path", "./", options=options)
+        odasPath, _ = QFileDialog.getOpenFileName(self, 'Browse Odas Path', './', options=options)
         if odasPath:
             self.odasPath.setText(odasPath)
         
@@ -54,7 +54,7 @@ class Settings(QDialog, Ui_Settings):
     def btnBrowseMicConfigClicked(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        micConfigPath, _ = QFileDialog.getOpenFileName(self, "Browse Microphone Config", "./", "Config Files (*.cfg)", options=options)
+        micConfigPath, _ = QFileDialog.getOpenFileName(self, 'Browse Microphone Config', './', 'Config Files (*.cfg)', options=options)
         if micConfigPath:
             self.micConfigPath.setText(micConfigPath)
 
@@ -63,7 +63,7 @@ class Settings(QDialog, Ui_Settings):
     def btnBrowseCameraConfigClicked(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        cameraConfigPath, _ = QFileDialog.getOpenFileName(self, "Browse Camera Config", "./", "JSON Files (*.json)", options=options)
+        cameraConfigPath, _ = QFileDialog.getOpenFileName(self, 'Browse Camera Config', './', 'JSON Files (*.json)', options=options)
         if cameraConfigPath:
             self.cameraConfigPath.setText(cameraConfigPath)
 
@@ -71,14 +71,14 @@ class Settings(QDialog, Ui_Settings):
     def btnBrowseServiceAccountClicked(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        serviceAccountPath, _ = QFileDialog.getOpenFileName(self, "Browse Google Service Account File", "./", "JSON Files (*.json)", options=options)
+        serviceAccountPath, _ = QFileDialog.getOpenFileName(self, 'Browse Google Service Account File', './', 'JSON Files (*.json)', options=options)
         if serviceAccountPath:
             self.serviceAccountPath.setText(serviceAccountPath)
 
 
     def __loadSettings(self, settingsManager):
-        self.cameraConfigPath.setText(settingsManager.getValue("cameraConfigPath"))
-        self.serviceAccountPath.setText(settingsManager.getValue("serviceAccountPath"))
-        self.micConfigPath.setText(settingsManager.getValue("micConfigPath"))
-        self.odasPath.setText(settingsManager.getValue("odasPath"))
+        self.cameraConfigPath.setText(settingsManager.getValue('cameraConfigPath'))
+        self.serviceAccountPath.setText(settingsManager.getValue('serviceAccountPath'))
+        self.micConfigPath.setText(settingsManager.getValue('micConfigPath'))
+        self.odasPath.setText(settingsManager.getValue('odasPath'))
         

@@ -3,7 +3,7 @@ from PyQt5.QtCore import QSettings
 
 class SettingsManager:
 
-    qSettings = QSettings("Groupe RendezVous", "App")
+    qSettings = QSettings('Groupe RendezVous', 'App')
 
     def __init__(self):
         pass
