@@ -1,3 +1,6 @@
+import os
+from pathlib import Path
+
 from PyQt5.QtWidgets import QDialog, QFileDialog
 from PyQt5.QtCore import pyqtSlot
 
@@ -5,7 +8,9 @@ from src.app.gui.settings_ui import Ui_Settings
 
 
 class Settings(QDialog, Ui_Settings):
-    
+
+    rootDirectory = os.path.realpath(Path(__file__).parents[4])
+
     def __init__(self, parent=None):
         super(Settings, self).__init__(parent)
         self.setupUi(self)
@@ -23,7 +28,8 @@ class Settings(QDialog, Ui_Settings):
 
     # Handles the event where the user closes the window with the X button
     def closeEvent(self, event):
-        event.accept()
+        if event:
+            event.accept()
 
 
     @pyqtSlot()
@@ -45,7 +51,7 @@ class Settings(QDialog, Ui_Settings):
     def btnBrowseOdasClicked(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        odasPath, _ = QFileDialog.getOpenFileName(self, 'Browse Odas Path', './', options=options)
+        odasPath, _ = QFileDialog.getOpenFileName(self, 'Browse Odas Path', self.rootDirectory, options=options)
         if odasPath:
             self.odasPath.setText(odasPath)
         
@@ -54,7 +60,7 @@ class Settings(QDialog, Ui_Settings):
     def btnBrowseMicConfigClicked(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        micConfigPath, _ = QFileDialog.getOpenFileName(self, 'Browse Microphone Config', './', 'Config Files (*.cfg)', options=options)
+        micConfigPath, _ = QFileDialog.getOpenFileName(self, 'Browse Microphone Config', self.rootDirectory, 'Config Files (*.cfg)', options=options)
         if micConfigPath:
             self.micConfigPath.setText(micConfigPath)
 
@@ -63,7 +69,7 @@ class Settings(QDialog, Ui_Settings):
     def btnBrowseCameraConfigClicked(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        cameraConfigPath, _ = QFileDialog.getOpenFileName(self, 'Browse Camera Config', './', 'JSON Files (*.json)', options=options)
+        cameraConfigPath, _ = QFileDialog.getOpenFileName(self, 'Browse Camera Config', self.rootDirectory, 'JSON Files (*.json)', options=options)
         if cameraConfigPath:
             self.cameraConfigPath.setText(cameraConfigPath)
 
@@ -71,7 +77,7 @@ class Settings(QDialog, Ui_Settings):
     def btnBrowseServiceAccountClicked(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        serviceAccountPath, _ = QFileDialog.getOpenFileName(self, 'Browse Google Service Account File', './', 'JSON Files (*.json)', options=options)
+        serviceAccountPath, _ = QFileDialog.getOpenFileName(self, 'Browse Google Service Account File', self.rootDirectory, 'JSON Files (*.json)', options=options)
         if serviceAccountPath:
             self.serviceAccountPath.setText(serviceAccountPath)
 

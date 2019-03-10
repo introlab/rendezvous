@@ -25,7 +25,7 @@ class VideoProcessor(QObject):
 
         try:
                                
-            if not cameraConfigPath or cameraConfigPath == '':
+            if not cameraConfigPath:
                 raise Exception('cameraConfigPath needs to be set in the settings')
 
             Thread(target=self.run, args=(cameraConfigPath, debug)).start()

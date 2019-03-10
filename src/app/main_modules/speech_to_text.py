@@ -1,3 +1,6 @@
+import os
+from pathlib import Path
+
 from PyQt5.QtWidgets import QApplication, QWidget, QFileDialog
 from PyQt5.QtCore import pyqtSlot
 
@@ -6,6 +9,9 @@ from src.app.gui.speech_to_text_ui import Ui_SpeechToText
 
 
 class SpeechToText(QWidget, Ui_SpeechToText):
+
+    rootDirectory = os.path.realpath(Path(__file__).parents[3])
+
     def __init__(self, parent=None):
         super(SpeechToText, self).__init__(parent)
         self.setupUi(self)
@@ -26,7 +32,8 @@ class SpeechToText(QWidget, Ui_SpeechToText):
 
     # Handles the event where the user closes the window with the X button.
     def closeEvent(self, event):
-        event.accept()
+        if event:
+            event.accept()
 
 
     @pyqtSlot()
@@ -34,7 +41,7 @@ class SpeechToText(QWidget, Ui_SpeechToText):
         try:
             audioDataPath, _ = QFileDialog.getOpenFileName(parent=self, 
                                                            caption='Import Audio Data', 
-                                                           directory='./',
+                                                           directory=self.rootDirectory,
                                                            options=QFileDialog.DontUseNativeDialog)
             if audioDataPath:
                 self.audioDataPath.setText(audioDataPath)
@@ -57,10 +64,10 @@ class SpeechToText(QWidget, Ui_SpeechToText):
                 'model' : self.model.currentText(),
                 'enhanced' : self.enhanced.checkState()}
 
-            self.transcriptionResult.setText(SpeechToTextAPI.resquestTranscription(
-                self.window().settingsManager.getValue('serviceAccountPath'),
-                self.audioDataPath.text(),
-                config))
+            transcriptionResult = SpeechToTextAPI.resquestTranscription(serviceAccountPath=self.window().settingsManager.getValue('serviceAccountPath'),
+                                                                        audioDataPath=self.audioDataPath.text(),
+                                                                        config=config)
+            self.transcriptionResult.setText(transcriptionResult)
         
         except Exception as e:
             self.window().emitToExceptionManager(e)

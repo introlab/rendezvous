@@ -8,13 +8,14 @@ class ExceptionManager(QObject):
 
     def __init__(self, parent=None):
         super(ExceptionManager, self).__init__(parent)
-        self.signalException.connect(self.ExceptionHandling)
+        self.signalException.connect(self.exceptionHandling)
 
 
-    def ExceptionHandling(self, e):
-        dlg = QMessageBox()
-        dlg.setIcon(QMessageBox.Warning)
-        dlg.setText(str(e))
-        dlg.setWindowTitle('Warning')
-        dlg.setStandardButtons(QMessageBox.Ok)
-        dlg.exec_()
+    def exceptionHandling(self, e):
+        if e:
+            dlg = QMessageBox()
+            dlg.setIcon(QMessageBox.Warning)
+            dlg.setText(str(e))
+            dlg.setWindowTitle('Warning')
+            dlg.setStandardButtons(QMessageBox.Ok)
+            dlg.exec_()

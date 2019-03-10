@@ -26,10 +26,10 @@ class OdasStream(QObject):
 
         try:
 
-            if not odasPath or odasPath == '':
+            if not odasPath:
                 raise Exception('odasPath needs to be set in the settings')
 
-            if not micConfigPath or micConfigPath == '':
+            if not micConfigPath:
                 raise Exception('micConfigPath needs to be set in the settings')
 
             # Read config file to get sample rate for while True sleepTime

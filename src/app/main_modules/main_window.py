@@ -40,9 +40,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     # Handles the event where the user closes the window with the X button.
     def closeEvent(self, event):
-        self.odasLiveTab.closeEvent(event)
-        self.speechToTextTab.closeEvent(event)
-        event.accept()
+        if event:
+            self.odasLiveTab.closeEvent(event)
+            self.speechToTextTab.closeEvent(event)
+            event.accept()
 
 
     # Used by tab modules to tell the exception manager that an exception occured.    
