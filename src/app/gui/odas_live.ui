@@ -454,6 +454,19 @@
          </property>
         </widget>
        </item>
+       <item>
+        <widget class="QPushButton" name="btnStartStopAudioRecord">
+         <property name="text">
+          <string>Start Audio Recording</string>
+         </property>
+         <property name="checkable">
+          <bool>false</bool>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
       </layout>
      </item>
     </layout>

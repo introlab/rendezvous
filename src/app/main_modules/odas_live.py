@@ -19,9 +19,12 @@ class OdasLive(QWidget, Ui_OdasLive):
         self.virtualCameraManager = VirtualCameraManager()
         self.virtualCameraDisplayer = VirtualCameraDisplayer(self.virtualCameraFrame)
 
+        self.btnStartStopAudioRecord.setDisabled(True)
+
         # Qt signal slots
         self.btnStartStopOdas.clicked.connect(self.btnStartStopOdasClicked)
         self.btnStartStopVideo.clicked.connect(self.btnStartStopVideoClicked)
+        self.btnStartStopAudioRecord.clicked.connect(self.btnStartStopAudioRecordClicked)
 
         self.odasStream.signalOdasException.connect(self.odasExceptionHandling)
         self.videoProcessor.signalVideoException.connect(self.videoExceptionHandling)
@@ -44,6 +47,14 @@ class OdasLive(QWidget, Ui_OdasLive):
         if self.odasStream and self.odasStream.isRunning:
             self.odasStream.signalOdasData.disconnect(self.odasDataReveived)
             self.odasStream.stop()
+
+    
+    def startAudioRecording(self):
+        pass
+
+
+    def stopAudioRecording(self):
+        pass
 
 
     def startVideoProcessor(self):
@@ -86,10 +97,13 @@ class OdasLive(QWidget, Ui_OdasLive):
         if not self.odasStream.isRunning:
             self.startOdas()
             self.btnStartStopOdas.setText('Stop ODAS')
+            self.btnStartStopAudioRecord.setDisabled(False)
 
         else:
             self.stopOdas()
             self.btnStartStopOdas.setText('Start ODAS')
+            self.stopAudioRecording()
+            self.btnStartStopAudioRecord.setDisabled(True)
 
         self.btnStartStopOdas.setDisabled(False)
 
@@ -106,6 +120,17 @@ class OdasLive(QWidget, Ui_OdasLive):
             self.btnStartStopVideo.setText('Start Video')
         
         self.btnStartStopVideo.setDisabled(False)
+
+
+    @pyqtSlot()
+    def btnStartStopAudioRecordClicked(self):
+        self.btnStartStopAudioRecord.setDisabled(True)
+
+        # if not self.audioRecorder.isRunning:
+        #     self.startAudioRecording()
+        #     self.btnStartStopAudioRecord.setText('Stop Audio Recording')
+
+        self.btnStartStopAudioRecord.setDisabled(False)
 
 
     @pyqtSlot(object)
