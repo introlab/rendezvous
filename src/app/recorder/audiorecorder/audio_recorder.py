@@ -30,7 +30,7 @@ class AudioRecorder(QObject):
 
     def __run(self, outputFolder):
         try:
-            pass
+            
 
         except Exception as e:
             self.signalException(e)
