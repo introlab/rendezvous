@@ -16,8 +16,9 @@ class AudioRecorder(QObject):
         self.isRecording = False
         self.isConnected = False
         self.connection = None
-        self.__outputFolder = None
-    
+        self.bitNumber = 16
+        self.wavFileWriter = None
+        self.audioBuffer = bytearray()
     
     def startServer(self):
         try:
@@ -41,11 +42,19 @@ class AudioRecorder(QObject):
             print('connection closed')
     
     def startRecording(self, outputFolder):
-        self.__outputFolder = outputFolder
+        outputFile = os.path.join(outputFolder, 'outputAudio.wav')
+        self.wavFileWriter = wave.open(outputFile, 'wb')
+        self.wavFileWriter.setnchannels(1)
+        self.wavFileWriter.setsampwidth(2)
+        self.wavFileWriter.setframerate(48000)
         self.isRecording = True
 
 
     def stopRecording(self):
+        if self.audioBuffer:
+            self.wavFileWriter.writeframesraw(self.audioBuffer)
+            self.audioBuffer = bytearray()
+            self.wavFileWriter.close()
         self.isRecording = False
 
 
@@ -63,7 +72,7 @@ class AudioRecorder(QObject):
                 while True:
                     if not self.isRunning:
                         break
-                    socket.
+
                     self.connection, _ = sock.accept()
                     if self.connection:
                         self.isConnected = True
@@ -77,8 +86,8 @@ class AudioRecorder(QObject):
 
                                 if not data:
                                     break
-
                                 print('I received data!! :)')
+                                self.audioBuffer.extend(data)
                             sleep(0.00001)
                     
                     sleep(0.00001)
