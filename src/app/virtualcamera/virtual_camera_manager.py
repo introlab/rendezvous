@@ -9,18 +9,23 @@ class VirtualCameraManager:
     def __init__(self):
         self.virtualCameras = []
 
+        # 3:4 (portrait)
+        self.aspectRatio = 3 / 4
+
         # Distance from existing virtual cameras at which new virtual cameras are created,
         # If it is closer, it means we detected an existing virtual camera
         self.newCameraPositionThreshold = 150
 
         # Change in position that cause a move of the virtual camera
-        self.positionChangedThreshold = 30
+        self.positionChangedThreshold = 10
 
         # Change in dimension that cause a resize of the virtual camera
-        self.dimensionChangeThreshold = 30
+        self.dimensionChangeThreshold = 15
 
-        # 3:4 (portrait)
-        self.aspectRatio = 3 / 4
+        # Factors to smooth out movements and resizing of virtual cameras
+        # Smaller factor means smoother but slower movements
+        self.resizeSmoothingFactor = 1 / 4
+        self.moveSmoothingFactor = 1 / 2
 
         # Face scale factor to get the person's portrait (with shoulders)
         self.portraitScaleFactor = 2.5
@@ -40,7 +45,7 @@ class VirtualCameraManager:
             return
 
         newVirtualCamera = VirtualCamera.createFromFace(face)
-        self.__tryResizeVirtualCamera(newVirtualCamera, 2.5, imageWidth, imageHeight)
+        self.__tryResizeVirtualCamera(newVirtualCamera, self.portraitScaleFactor, imageWidth, imageHeight)
 
         existingVirtualCamera = self.__findExistingVirtualCamera(newVirtualCamera)
         if existingVirtualCamera:
@@ -62,16 +67,23 @@ class VirtualCameraManager:
     # Updates the size and position of the virtual camera if it has changed
     def __updateVirtualCamera(self, existingVirtualCamera, newVirtualCamera, imageWidth, imageHeight):
         if abs(newVirtualCamera.width - existingVirtualCamera.width) > self.dimensionChangeThreshold and \
-           abs(newVirtualCamera.height - existingVirtualCamera.height) > self.dimensionChangeThreshold:
+          abs(newVirtualCamera.height - existingVirtualCamera.height) > self.dimensionChangeThreshold:
+            dw = newVirtualCamera.width - existingVirtualCamera.width
+            resizeFactor = (existingVirtualCamera.width + dw * self.resizeSmoothingFactor) / existingVirtualCamera.width
             self.__tryResizeVirtualCamera(existingVirtualCamera,
-                                          newVirtualCamera.width / existingVirtualCamera.width,
+                                          resizeFactor,
                                           imageWidth,
                                           imageHeight)
 
         distance = GeometryUtils.distanceBetweenTwoPoints(existingVirtualCamera.getPosition(), newVirtualCamera.getPosition())
         if distance > self.positionChangedThreshold:
+            x, y = existingVirtualCamera.getPosition()
+            newX, newY = newVirtualCamera.getPosition()
+            (unitX, unitY) = GeometryUtils.getUnitVector(newX - x, newY - y)
+            smoothDx = distance * self.moveSmoothingFactor * unitX
+            smoothDy = distance * self.moveSmoothingFactor * unitY
             self.__tryMoveVirtualCamera(existingVirtualCamera,
-                                        (newVirtualCamera.xPos, newVirtualCamera.yPos),
+                                        (existingVirtualCamera.xPos + smoothDx, existingVirtualCamera.yPos + smoothDy),
                                         imageWidth,
                                         imageHeight)
 
@@ -96,7 +108,7 @@ class VirtualCameraManager:
     # If the new dimensions overflow the image, we move the image to remove the overflow
     def __tryResizeVirtualCamera(self, virtualCamera, scaleFactor, imageWidth, imageHeight):
         # Find the desired dimensions respecting the aspect ratio
-        virtualCamera.height = min(virtualCamera.height * scaleFactor, imageHeight * 0.8)
+        virtualCamera.height = min(virtualCamera.height * scaleFactor, imageHeight * 0.9)
         virtualCamera.width = virtualCamera.height * self.aspectRatio
 
         # Remove caused overflow, if any
