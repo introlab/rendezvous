@@ -63,7 +63,8 @@ class OdasLive(QWidget, Ui_OdasLive):
 
 
     def stopAudioRecording(self):
-        self.audioRecorder.stopRecording()
+        if self.audioRecorder.isRecording:
+            self.audioRecorder.stopRecording()
 
 
     def startVideoProcessor(self):
@@ -138,7 +139,7 @@ class OdasLive(QWidget, Ui_OdasLive):
         else:
             self.stopOdas()
             self.btnStartStopOdas.setText('Start ODAS')
-            self.audioRecorder.closeConnection()
+            self.audioRecorder.closeConnection(isFromUI=True)
             self.stopAudioRecording()
             self.btnStartStopAudioRecord.setDisabled(True)
             self.btnStartStopAudioRecord.setText('Start Audio Recording')
