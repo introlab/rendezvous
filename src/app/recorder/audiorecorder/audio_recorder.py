@@ -2,6 +2,7 @@ import wave
 import os
 from threading import Thread
 from time import sleep
+import socket
 
 from PyQt5.QtCore import QObject, pyqtSignal
 
