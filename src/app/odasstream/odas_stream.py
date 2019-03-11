@@ -13,7 +13,7 @@ from src.utils.file_helper import FileHelper
 class OdasStream(QObject):
 
     signalOdasData = pyqtSignal(object)
-    signalOdasException = pyqtSignal(Exception)
+    signalException = pyqtSignal(Exception)
 
     def __init__(self, parent=None):
         super(OdasStream, self).__init__(parent)
@@ -44,7 +44,7 @@ class OdasStream(QObject):
         except Exception as e:
             
             self.isRunning = False
-            self.signalOdasException.emit(e)
+            self.signalException.emit(e)
 
 
     def stop(self):
@@ -77,11 +77,10 @@ class OdasStream(QObject):
     
             self.odasProcess.kill()
             if self.odasProcess.returncode and self.odasProcess.returncode != 0:
-                e = Exception('ODAS exited with exit code {exitCode}'.format(exitCode=self.odasProcess.returncode))
-                self.signalOdasException.emit(e)
+                raise Exception('ODAS exited with exit code {exitCode}'.format(exitCode=self.odasProcess.returncode))
         
         except Exception as e:
-            self.signalOdasException.emit(e)
+            self.signalException.emit(e)
 
         finally:
             self.isRunning = False

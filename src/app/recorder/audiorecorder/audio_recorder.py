@@ -1,33 +1,38 @@
 import wave
 import os
+from threading import Thread
+from time import sleep
 
-import soundfile
+from PyQt5.QtCore import QObject, pyqtSignal
 
+class AudioRecorder(QObject):
 
-class AudioRecorder:
+    signalException = pyqtSignal(Exception)
 
-    def __init__(self):
-        pass
-
-    @staticmethod
-    def convertRawToWav(rawPath):
-        if not os.path.exists(rawPath):
-            raise Exception('there is no file at : {path}'.format(path=rawPath))
-
-        filename = os.path.splitext(rawPath)[0]
-        data, samplerate = soundfile.read(rawPath, channels=1, samplerate=48000, format='RAW', subtype='FLOAT', endian='BIG')
-        wavFile = '{filename}.wav'.format(filename=filename)
-        soundfile.write(wavFile, data, samplerate, endian='BIG')
+    def __init__(self, parent=None):
+        super(AudioRecorder, self).__init__(parent)
+        self.isRunning = False
     
     
-    def startRecording(self):
-        pass
-
+    def start(self, outputFolder):
+        try:
+            Thread(target=self.__run, args=[outputFolder]).start()
+        
+        except Exception as e:
+            self.isRunning = False
+            self.signalException.emit(e)
     
-    def stopRecording(self):
-        pass
+
+    def stop(self):
+        self.isRunning = False
 
 
-if __name__ == '__main__':
-    AudioRecorder.convertRawToWav('/home/morel/development/rendezvous/test_postfiltered.raw')
+    def __run(self, outputFolder):
+        try:
+            pass
 
+        except Exception as e:
+            self.signalException(e)
+
+        finally:
+            self.stop()
