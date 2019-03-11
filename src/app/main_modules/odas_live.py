@@ -17,6 +17,7 @@ class OdasLive(QWidget, Ui_OdasLive):
         self.odasStream = OdasStream()
         self.videoProcessor = VideoProcessor()
         self.audioRecorder = AudioRecorder()
+        self.audioRecorder.startServer()
 
         self.virtualCameraManager = VirtualCameraManager()
         self.virtualCameraDisplayer = VirtualCameraDisplayer(self.virtualCameraFrame)
@@ -39,6 +40,7 @@ class OdasLive(QWidget, Ui_OdasLive):
     def closeEvent(self, event):
         if event:
             self.stopVideoProcessor()
+            self.audioRecorder.stopServer()
             self.stopOdas()
             event.accept()
 
@@ -57,11 +59,11 @@ class OdasLive(QWidget, Ui_OdasLive):
 
     
     def startAudioRecording(self):
-        self.audioRecorder.start(outputFolder=self.outputFolder.text())
+        self.audioRecorder.startRecording(outputFolder=self.outputFolder.text())
 
 
     def stopAudioRecording(self):
-        self.audioRecorder.stop()
+        self.audioRecorder.stopRecording()
 
 
     def startVideoProcessor(self):
@@ -93,7 +95,7 @@ class OdasLive(QWidget, Ui_OdasLive):
 
     def audioRecorderExceptionHandling(self, e):
         self.window().exceptionManager.signalException.emit(e)
-        self.audioRecorder.stop()
+        self.audioRecorder.stopServer()
         self.btnStartStopAudioRecord.setText('Start Audio Recording')
 
 
@@ -136,8 +138,10 @@ class OdasLive(QWidget, Ui_OdasLive):
         else:
             self.stopOdas()
             self.btnStartStopOdas.setText('Start ODAS')
+            self.audioRecorder.closeConnection()
             self.stopAudioRecording()
             self.btnStartStopAudioRecord.setDisabled(True)
+            self.btnStartStopAudioRecord.setText('Start Audio Recording')
 
         self.btnStartStopOdas.setDisabled(False)
 
@@ -160,7 +164,7 @@ class OdasLive(QWidget, Ui_OdasLive):
     def btnStartStopAudioRecordClicked(self):
         self.btnStartStopAudioRecord.setDisabled(True)
 
-        if not self.audioRecorder.isRunning:
+        if not self.audioRecorder.isRecording:
             self.btnStartStopAudioRecord.setText('Stop Audio Recording')
             self.startAudioRecording()
         else:

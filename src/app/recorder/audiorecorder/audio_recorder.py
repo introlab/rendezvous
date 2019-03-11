@@ -13,46 +13,83 @@ class AudioRecorder(QObject):
     def __init__(self, parent=None):
         super(AudioRecorder, self).__init__(parent)
         self.isRunning = False
+        self.isRecording = False
+        self.isConnected = False
+        self.connection = None
+        self.__outputFolder = None
     
     
-    def start(self, outputFolder):
+    def startServer(self):
         try:
-            Thread(target=self.__run, args=[outputFolder]).start()
+            Thread(target=self.__run, args=[]).start()
         
         except Exception as e:
             self.isRunning = False
             self.signalException.emit(e)
     
 
-    def stop(self):
+    def stopServer(self):
+        self.stopRecording()
+        self.closeConnection()
         self.isRunning = False
 
+    
+    def closeConnection(self):
+        if self.connection:
+            self.connection.close()
+            self.isConnected = False
+            print('connection closed')
+    
+    def startRecording(self, outputFolder):
+        self.__outputFolder = outputFolder
+        self.isRecording = True
 
-    def __run(self, outputFolder):
+
+    def stopRecording(self):
+        self.isRecording = False
+
+
+    def __run(self):
         try:
             host = '127.0.0.1'
             port = 10020
 
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
-                server.bind((host, port))
-                server.listen()
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+                sock.bind((host, port))
+                sock.listen()
                 print('server is up!')
-                client, _ = server.accept()
-                with client:
-                    print('client connected!')
-                    while True:
-                        data = client.recv(1024)
-                        if not data:
-                            break
-                        print('I received data!! :)')
-                        print(str(data))
+                self.isRunning = True
+                
+                while True:
+                    if not self.isRunning:
+                        break
+                    socket.
+                    self.connection, _ = sock.accept()
+                    if self.connection:
+                        self.isConnected = True
+                        print('client connected!')
+                        while True:
+                            if not self.isConnected:
+                                break
+
+                            if self.isRecording:
+                                data = self.connection.recv(1024)
+
+                                if not data:
+                                    break
+
+                                print('I received data!! :)')
+                            sleep(0.00001)
+                    
+                    sleep(0.00001)
 
         except Exception as e:
-            print(e)
-            #self.signalException(e)
+            self.signalException.emit(e)
+            raise e
 
         finally:
-            self.stop()
+            self.stopServer()
+            print('server stopped')
 
 if __name__ == '__main__':
     recorder = AudioRecorder()
