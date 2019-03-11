@@ -20,6 +20,7 @@ class OdasLive(QWidget, Ui_OdasLive):
         self.virtualCameraDisplayer = VirtualCameraDisplayer(self.virtualCameraFrame)
 
         self.btnStartStopAudioRecord.setDisabled(True)
+        self.outputFolder.setText(self.window().settingsManager.getValue('outputFolder'))
 
         # Qt signal slots
         self.btnSelectOutputFolder.clicked.connect(self.selectOutputFolder)
@@ -50,6 +51,8 @@ class OdasLive(QWidget, Ui_OdasLive):
             )
             if outputFolder:
                 self.outputFolder.setText(outputFolder)
+                self.window().settingsManager.setValue('outputFolder', outputFolder)
+
         except Exception as e:
             self.window().emitToExceptionManager(e)
 
