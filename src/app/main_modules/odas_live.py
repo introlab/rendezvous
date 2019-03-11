@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget
+from PyQt5.QtWidgets import QWidget, QFileDialog
 from PyQt5.QtCore import pyqtSlot
 
 from src.app.gui.odas_live_ui import Ui_OdasLive
@@ -22,6 +22,7 @@ class OdasLive(QWidget, Ui_OdasLive):
         self.btnStartStopAudioRecord.setDisabled(True)
 
         # Qt signal slots
+        self.btnSelectOutputFolder.clicked.connect(self.selectOutputFolder)
         self.btnStartStopOdas.clicked.connect(self.btnStartStopOdasClicked)
         self.btnStartStopVideo.clicked.connect(self.btnStartStopVideoClicked)
         self.btnStartStopAudioRecord.clicked.connect(self.btnStartStopAudioRecordClicked)
@@ -36,6 +37,21 @@ class OdasLive(QWidget, Ui_OdasLive):
             self.stopVideoProcessor()
             self.stopOdas()
             event.accept()
+
+
+    @pyqtSlot()
+    def selectOutputFolder(self):
+        try:
+            outputFolder = QFileDialog.getExistingDirectory(
+                parent=self, 
+                caption='Select Output Directory', 
+                directory=self.window().rootDirectory,
+                options=QFileDialog.DontUseNativeDialog
+            )
+            if outputFolder:
+                self.outputFolder.setText(outputFolder)
+        except Exception as e:
+            self.window().emitToExceptionManager(e)
 
 
     def startOdas(self):
@@ -81,6 +97,7 @@ class OdasLive(QWidget, Ui_OdasLive):
 
         self.btnStartStopOdas.setText('Start ODAS')
         self.btnStartStopOdas.setDisabled(False)
+        self.btnStartStopAudioRecord.setDisabled(True)
 
 
     def videoExceptionHandling(self, e):
@@ -128,10 +145,6 @@ class OdasLive(QWidget, Ui_OdasLive):
     @pyqtSlot()
     def btnStartStopAudioRecordClicked(self):
         self.btnStartStopAudioRecord.setDisabled(True)
-
-        # if not self.audioRecorder.isRunning:
-        #     self.startAudioRecording()
-        #     self.btnStartStopAudioRecord.setText('Stop Audio Recording')
 
         self.btnStartStopAudioRecord.setDisabled(False)
 

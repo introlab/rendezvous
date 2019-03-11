@@ -9,3 +9,4 @@ scripts/ConfigurationHelper/ODASOutput.json
 src/gui/*.py
 config/maps/*.npy
 *_ui.py
+output/

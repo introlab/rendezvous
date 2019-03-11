@@ -1,6 +1,3 @@
-import os
-from pathlib import Path
-
 from PyQt5.QtWidgets import QApplication, QWidget, QFileDialog
 from PyQt5.QtCore import pyqtSlot
 
@@ -9,8 +6,6 @@ from src.app.gui.speech_to_text_ui import Ui_SpeechToText
 
 
 class SpeechToText(QWidget, Ui_SpeechToText):
-
-    rootDirectory = os.path.realpath(Path(__file__).parents[3])
 
     def __init__(self, parent=None):
         super(SpeechToText, self).__init__(parent)
@@ -41,7 +36,7 @@ class SpeechToText(QWidget, Ui_SpeechToText):
         try:
             audioDataPath, _ = QFileDialog.getOpenFileName(parent=self, 
                                                            caption='Import Audio Data', 
-                                                           directory=self.rootDirectory,
+                                                           directory=self.window().rootDirectory,
                                                            options=QFileDialog.DontUseNativeDialog)
             if audioDataPath:
                 self.audioDataPath.setText(audioDataPath)

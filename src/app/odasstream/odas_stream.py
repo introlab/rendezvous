@@ -22,8 +22,6 @@ class OdasStream(QObject):
         
 
     def start(self, odasPath, micConfigPath):
-        print('Starting Odas stream...')
-
         try:
 
             if not odasPath:
@@ -54,43 +52,43 @@ class OdasStream(QObject):
 
 
     def run(self, odasPath, micConfigPath, sleepTime):
-        self.__spawnSubProcess(odasPath, micConfigPath)
+        try:
+            self.__spawnSubProcess(odasPath, micConfigPath)
+            self.isRunning = True
 
-        print('ODAS stream started')
+            stdout = []
+            while self.isRunning:
 
-        self.isRunning = True
+                if self.odasProcess.poll():
+                    self.stop()
+                    break
 
-        stdout = []
-        while self.isRunning:
+                line = self.odasProcess.stdout.readline().decode('UTF-8')
 
-            if self.odasProcess.poll():
-                self.stop()
-                break
+                if line:
+                    stdout.append(line)
 
-            line = self.odasProcess.stdout.readline().decode('UTF-8')
+                if len(stdout) > 8: # 8 because an object is 9 lines long.
+                    textoutput = '\n'.join(stdout)
+                    self.__parseOdasObject(textoutput)
+                    stdout.clear()
 
-            if line:
-                stdout.append(line)
-
-            if len(stdout) > 8: # 8 because an object is 9 lines long.
-                textoutput = '\n'.join(stdout)
-                self.__parseOdasObject(textoutput)
-                stdout.clear()
-
-            time.sleep(sleepTime)
-   
-        self.odasProcess.kill()
-        if self.odasProcess.returncode and self.odasProcess.returncode != 0:
-            self.isRunning = False
-            e = Exception('ODAS exited with exit code {exitCode}'.format(exitCode=self.odasProcess.returncode))
+                time.sleep(sleepTime)
+    
+            self.odasProcess.kill()
+            if self.odasProcess.returncode and self.odasProcess.returncode != 0:
+                e = Exception('ODAS exited with exit code {exitCode}'.format(exitCode=self.odasProcess.returncode))
+                self.signalOdasException.emit(e)
+        
+        except Exception as e:
             self.signalOdasException.emit(e)
 
-        print('ODAS process terminated')
+        finally:
+            self.isRunning = False
 
 
     # Spawn a sub process that execute odaslive.
     def __spawnSubProcess(self, odasPath, micConfigPath):
-        print('ODAS stream starting...')
         self.odasProcess = subprocess.Popen([odasPath, '-c', micConfigPath], shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         
 
