@@ -103,9 +103,9 @@ class AudioRecorder(QObject):
                                     while offset < len(data):
                                         for key, _ in self.sourcesBuffer.items():
                                             currentByte = int(offset + int(key))
-                                            self.sourcesBuffer[key] += data[currentByte:currentByte + 1]
+                                            self.sourcesBuffer[key] += data[currentByte:currentByte + 2]
 
-                                        offset += nChannel
+                                        offset += nChannel * 2
                                         
 
                                 sleep(0.00001)
