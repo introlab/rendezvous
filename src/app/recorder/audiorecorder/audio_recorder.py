@@ -17,8 +17,8 @@ class AudioRecorder(QObject):
         self.isConnected = False
         self.isOdasClosed = False
         self.connection = None
-        self.wavFileWriter = None
-        self.audioBuffer = bytearray()
+        self.wavFileWriters = []
+        self.sourcesBuffer = {'0' :bytearray(), '1': bytearray(), '2': bytearray(), '3': bytearray()}
     
     def startServer(self):
         try:
@@ -47,20 +47,25 @@ class AudioRecorder(QObject):
             self.isOdasClosed = True
     
     def startRecording(self, outputFolder):
-        outputFile = os.path.join(outputFolder, 'outputAudio.wav')
-        self.wavFileWriter = wave.open(outputFile, 'wb')
-        self.wavFileWriter.setnchannels(4)
-        self.wavFileWriter.setsampwidth(2)
-        self.wavFileWriter.setframerate(48000)
+        for i in range(0, 4):
+            outputFile = os.path.join(outputFolder, 'outputsrc-{}.wav'.format(i))
+            self.wavFileWriters.append(wave.open(outputFile, 'wb'))
+            self.wavFileWriters[i].setnchannels(1)
+            self.wavFileWriters[i].setsampwidth(2)
+            self.wavFileWriters[i].setframerate(48000)
+        
         self.isRecording = True
 
 
     def stopRecording(self):
-        if self.wavFileWriter:
-            self.wavFileWriter.writeframesraw(self.audioBuffer)
-            self.audioBuffer = bytearray()
-            self.wavFileWriter.close()
-            self.wavFileWriter = None
+        for index, wavWriter in enumerate(self.wavFileWriters):
+            if wavWriter:
+                audioRaw = self.sourcesBuffer[str(index)]
+                wavWriter.writeframesraw(audioRaw)
+                wavWriter.close()
+                self.sourcesBuffer[str(index)] = bytearray()
+        
+        self.wavFileWriters = []
         self.isRecording = False
 
 
@@ -88,19 +93,28 @@ class AudioRecorder(QObject):
                                 if not self.isConnected or not self.isRunning:
                                     break
 
+                                data = self.connection.recv(1024)
+                                if not data:
+                                    break
+
                                 if self.isRecording:
-                                    data = self.connection.recv(1024)
+                                    nChannel = 4
+                                    offset = 0
+                                    while offset < len(data):
+                                        for key, _ in self.sourcesBuffer.items():
+                                            currentByte = int(offset + int(key))
+                                            self.sourcesBuffer[key] += data[currentByte:currentByte + 1]
 
-                                    if not data:
-                                        break
+                                        offset += nChannel
+                                        
 
-                                    self.audioBuffer += data
                                 sleep(0.00001)
                     
                     sleep(0.00001)
 
         except Exception as e:
             self.signalException.emit(e)
+            raise(e)
 
         finally:
             self.stopServer()
