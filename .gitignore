@@ -10,3 +10,4 @@ src/gui/*.py
 config/maps/*.npy
 *_ui.py
 output/
+config/service_account.json

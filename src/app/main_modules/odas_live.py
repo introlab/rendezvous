@@ -4,7 +4,8 @@ from PyQt5.QtCore import pyqtSlot
 from src.app.gui.odas_live_ui import Ui_OdasLive
 from src.app.odasstream.odas_stream import OdasStream
 from src.app.videoprocessing.video_processor import VideoProcessor
-from src.app.recorder.audiorecorder.audio_recorder import AudioRecorder
+from src.app.recorder.audio.audio_stream import AudioStream
+from src.app.recorder.audio.audio_writer import AudioWriter
 from src.app.virtualcamera.virtual_camera_displayer import VirtualCameraDisplayer
 from src.app.virtualcamera.virtual_camera_manager import VirtualCameraManager
 
@@ -15,10 +16,11 @@ class OdasLive(QWidget, Ui_OdasLive):
         super(OdasLive, self).__init__(parent)
         self.setupUi(self)
         self.odasStream = OdasStream()
-        self.videoProcessor = VideoProcessor()
-        self.audioRecorder = AudioRecorder()
-        self.audioRecorder.startServer()
+        self.audioStream = AudioStream('127.0.0.1', 10020)
+        self.audioStream.startServer()
+        self.audioWriter = AudioWriter()
 
+        self.videoProcessor = VideoProcessor()
         self.virtualCameraManager = VirtualCameraManager()
         self.virtualCameraDisplayer = VirtualCameraDisplayer(self.virtualCameraFrame)
 
@@ -33,81 +35,9 @@ class OdasLive(QWidget, Ui_OdasLive):
 
         self.odasStream.signalException.connect(self.odasExceptionHandling)
         self.videoProcessor.signalException.connect(self.videoExceptionHandling)
-        self.audioRecorder.signalException.connect(self.audioRecorderExceptionHandling)
-    
+        self.audioStream.signalException.connect(self.audioRecorderExceptionHandling)
 
-    # Handles the event where the user closes the window with the X button
-    def closeEvent(self, event):
-        if event:
-            self.stopVideoProcessor()
-            self.audioRecorder.stopServer()
-            self.stopOdas()
-            event.accept()
-
-
-    def startOdas(self):
-        if self.odasStream and not self.odasStream.isRunning:
-            self.odasStream.signalOdasData.connect(self.odasDataReveived)
-            self.odasStream.start(odasPath=self.window().settingsManager.getValue('odasPath'), 
-                                  micConfigPath=self.window().settingsManager.getValue('micConfigPath'))
-
-
-    def stopOdas(self):
-        if self.odasStream and self.odasStream.isRunning:
-            self.odasStream.signalOdasData.disconnect(self.odasDataReveived)
-            self.odasStream.stop()
-
-    
-    def startAudioRecording(self):
-        self.audioRecorder.startRecording(outputFolder=self.outputFolder.text())
-
-
-    def stopAudioRecording(self):
-        if self.audioRecorder.isRecording:
-            self.audioRecorder.stopRecording()
-
-
-    def startVideoProcessor(self):
-        if self.videoProcessor and not self.videoProcessor.isRunning:
-            self.videoProcessor.signalFrameData.connect(self.imageReceived)
-            self.videoProcessor.start(debug=False, 
-                                      cameraConfigPath=self.window().settingsManager.getValue('cameraConfigPath'))
-
-
-    def stopVideoProcessor(self):
-        if self.videoProcessor and self.videoProcessor.isRunning:
-            self.videoProcessor.stop()
-            self.videoProcessor.signalFrameData.disconnect(self.imageReceived)
-            self.virtualCameraManager.virtualCameras.clear()
-
-
-    def odasExceptionHandling(self, e):
-        self.window().exceptionManager.signalException.emit(e)
-
-        # We make sure the threads is stopped
-        self.stopOdas()
-        self.stopAudioRecording()
-
-        self.btnStartStopOdas.setText('Start ODAS')
-        self.btnStartStopOdas.setDisabled(False)
-        self.btnStartStopAudioRecord.setText('Start Audio Recording')
-        self.btnStartStopAudioRecord.setDisabled(True)
-
-
-    def audioRecorderExceptionHandling(self, e):
-        self.window().exceptionManager.signalException.emit(e)
-        self.audioRecorder.stopServer()
-        self.btnStartStopAudioRecord.setText('Start Audio Recording')
-
-
-    def videoExceptionHandling(self, e):
-        self.window().exceptionManager.signalException.emit(e)
-
-        # We make sure the thread is stopped
-        self.stopVideoProcessor()
-
-        self.btnStartStopVideo.setText('Start Video')      
-        self.btnStartStopVideo.setDisabled(False)
+        self.audioStream.signalNewData.connect(self.audioDataReceived)
 
 
     @pyqtSlot()
@@ -176,7 +106,7 @@ class OdasLive(QWidget, Ui_OdasLive):
 
 
     @pyqtSlot(object)
-    def odasDataReveived(self, values):
+    def positionDataReceived(self, values):
         self.source1AzimuthValueLabel.setText('%.5f' % values[0]['azimuth'])
         self.source2AzimuthValueLabel.setText('%.5f' % values[1]['azimuth'])
         self.source3AzimuthValueLabel.setText('%.5f' % values[2]['azimuth'])
@@ -190,9 +120,97 @@ class OdasLive(QWidget, Ui_OdasLive):
 
     @pyqtSlot(object, object)
     def imageReceived(self, image, faces):
-        imageHeight, imageWidth, colors = image.shape
+        imageHeight, imageWidth, _ = image.shape
 
         for face in faces:
             self.virtualCameraManager.addOrUpdateVirtualCamera(face, imageWidth, imageHeight)
 
         self.virtualCameraDisplayer.updateDisplay(image, self.virtualCameraManager.virtualCameras)
+
+    
+    @pyqtSlot(bytes)
+    def audioDataReceived(self, streamData):
+        if self.audioWriter:
+            self.audioWriter.processRawData(streamData)
+
+
+    # Handles the event where the user closes the window with the X button
+    def closeEvent(self, event):
+        if event:
+            self.stopVideoProcessor()
+            self.audioStream.stopServer()
+            self.stopAudioRecording()
+            self.stopOdas()
+            event.accept()
+
+
+    def startOdas(self):
+        if self.odasStream and not self.odasStream.isRunning:
+            self.odasStream.signalOdasData.connect(self.positionDataReceived)
+            self.odasStream.start(odasPath=self.window().settingsManager.getValue('odasPath'), 
+                                  micConfigPath=self.window().settingsManager.getValue('micConfigPath'))
+
+
+    def stopOdas(self):
+        if self.odasStream and self.odasStream.isRunning:
+            self.odasStream.signalOdasData.disconnect(self.positionDataReceived)
+            self.odasStream.stop()
+
+
+    def stopAudioStreaming(self):
+        self.audioStream.stopServer()
+
+
+    def startAudioRecording(self):
+        self.audioWriter.startRecording(outputFolder=self.outputFolder.text(), nChannels=1, byteDepth=2, sampleRate=48000)
+        self.audioStream.signalNewData.connect(self.audioDataReceived)
+
+
+    def stopAudioRecording(self):
+        if self.audioWriter.isRecording:
+            # stop data reception for audiowriter and stop recording.
+            self.audioStream.signalNewData.disconnect(self.audioDataReceived)
+            self.audioWriter.stopRecording()
+
+
+    def startVideoProcessor(self):
+        if self.videoProcessor and not self.videoProcessor.isRunning:
+            self.videoProcessor.signalFrameData.connect(self.imageReceived)
+            self.videoProcessor.start(debug=False, 
+                                      cameraConfigPath=self.window().settingsManager.getValue('cameraConfigPath'))
+
+
+    def stopVideoProcessor(self):
+        if self.videoProcessor and self.videoProcessor.isRunning:
+            self.videoProcessor.stop()
+            self.videoProcessor.signalFrameData.disconnect(self.imageReceived)
+            self.virtualCameraManager.virtualCameras.clear()
+
+
+    def odasExceptionHandling(self, e):
+        self.window().exceptionManager.signalException.emit(e)
+
+        # We make sure the threads are stopped
+        self.stopOdas()
+
+        self.btnStartStopOdas.setText('Start ODAS')
+        self.btnStartStopOdas.setDisabled(False)
+        self.btnStartStopAudioRecord.setText('Start Audio Recording')
+        self.btnStartStopAudioRecord.setDisabled(True)
+
+
+    def audioRecorderExceptionHandling(self, e):
+        self.window().exceptionManager.signalException.emit(e)
+        self.audioRecorder.stopServer()
+        self.btnStartStopAudioRecord.setText('Start Audio Recording')
+
+
+    def videoExceptionHandling(self, e):
+        self.window().exceptionManager.signalException.emit(e)
+
+        # We make sure the thread is stopped
+        self.stopVideoProcessor()
+
+        self.btnStartStopVideo.setText('Start Video')      
+        self.btnStartStopVideo.setDisabled(False)
+
