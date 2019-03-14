@@ -29,15 +29,17 @@ class OdasLive(QWidget, Ui_OdasLive):
 
     # Handles the event where the user closes the window with the X button
     def closeEvent(self, event):
-        self.stopVideoProcessor()
-        self.stopOdas()
-        event.accept()
+        if event:
+            self.stopVideoProcessor()
+            self.stopOdas()
+            event.accept()
 
 
     def startOdas(self):
         if self.odasStream and not self.odasStream.isRunning:
             self.odasStream.signalOdasData.connect(self.odasDataReveived)
-            self.odasStream.start()
+            self.odasStream.start(odasPath=self.window().settingsManager.getValue('odasPath'), 
+                                  micConfigPath=self.window().settingsManager.getValue('micConfigPath'))
 
 
     def stopOdas(self):
@@ -49,7 +51,8 @@ class OdasLive(QWidget, Ui_OdasLive):
     def startVideoProcessor(self):
         if self.videoProcessor and not self.videoProcessor.isRunning:
             self.videoProcessor.signalFrameData.connect(self.imageReceived)
-            self.videoProcessor.start(False)
+            self.videoProcessor.start(debug=False, 
+                                      cameraConfigPath=self.window().settingsManager.getValue('cameraConfigPath'))
 
 
     def stopVideoProcessor(self):
@@ -60,7 +63,7 @@ class OdasLive(QWidget, Ui_OdasLive):
 
 
     def odasExceptionHandling(self, e):
-        print('Exception : ', e)
+        self.window().exceptionManager.signalException.emit(e)
 
         # We make sure the thread is stopped
         self.stopOdas()
@@ -70,7 +73,7 @@ class OdasLive(QWidget, Ui_OdasLive):
 
 
     def videoExceptionHandling(self, e):
-        print('Exception : ', e)
+        self.window().exceptionManager.signalException.emit(e)
 
         # We make sure the thread is stopped
         self.stopVideoProcessor()
