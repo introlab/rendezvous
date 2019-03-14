@@ -1,9 +1,12 @@
 import wave
 import os
 
-from PyQt5.QtCore import QObject
+from PyQt5.QtCore import QObject, pyqtSignal
 
 class AudioWriter(QObject):
+
+    signalRecordingStarted = pyqtSignal()
+    signalRecordingStopped = pyqtSignal()
 
     def __init__(self, parent=None):
         self.isRecording = False
@@ -13,26 +16,29 @@ class AudioWriter(QObject):
 
 
     def startRecording(self, outputFolder, nChannels, byteDepth, sampleRate):
-        for i in range(0, 4):
-            outputFile = os.path.join(outputFolder, 'outputsrc-{}.wav'.format(i))
-            self.wavFiles.append(wave.open(outputFile, 'wb'))
-            self.wavFiles[i].setnchannels(nChannels)
-            self.wavFiles[i].setsampwidth(byteDepth)
-            self.wavFiles[i].setframerate(sampleRate)
+        if not self.isRecording:
+            for i in range(0, 4):
+                outputFile = os.path.join(outputFolder, 'outputsrc-{}.wav'.format(i))
+                self.wavFiles.append(wave.open(outputFile, 'wb'))
+                self.wavFiles[i].setnchannels(nChannels)
+                self.wavFiles[i].setsampwidth(byteDepth)
+                self.wavFiles[i].setframerate(sampleRate)
 
-        self.isRecording = True
-
+            self.isRecording = True
+            self.signalRecordingStarted.emit()
 
     def stopRecording(self):
-        for index, wavFile in enumerate(self.wavFiles):
-            if wavFile:
-                audioRaw = self.sourcesBuffer[str(index)]
-                wavFile.writeframesraw(audioRaw)
-                wavFile.close()
-                self.sourcesBuffer[str(index)] = bytearray()
-        
-        self.wavFiles = []
-        self.isRecording = False
+        if self.isRecording:
+            for index, wavFile in enumerate(self.wavFiles):
+                if wavFile:
+                    audioRaw = self.sourcesBuffer[str(index)]
+                    wavFile.writeframesraw(audioRaw)
+                    wavFile.close()
+                    self.sourcesBuffer[str(index)] = bytearray()
+            
+            self.wavFiles = []
+            self.isRecording = False
+            self.signalRecordingStopped.emit()
 
     
     def processRawData(self, rawBytes):
