@@ -14,6 +14,9 @@ class AudioStream(QObject, Thread):
 
     def __init__(self, hostIP, port, isVerbose=False, parent=None):
         super(AudioStream, self).__init__(parent)
+        Thread.__init__(self)
+
+        self.daemon = True
         
         self.host = hostIP
         self.port = port
@@ -21,18 +24,15 @@ class AudioStream(QObject, Thread):
 
         self.isRunning = False
         self.isConnected = False
-        self.isOdasClosed = False
 
         self.clientConnection = None
     
 
     def stop(self):
         self.closeConnection()
-        
-        # wait until the thread terminate
         self.isRunning = False
-        self.join()
         self.signalServerDown.emit()
+        print('server stopped') if self.isVerbose else None
 
     
     def closeConnection(self):
@@ -53,32 +53,23 @@ class AudioStream(QObject, Thread):
                 print('server is up!') if self.isVerbose else None
 
                 while True:
-                    if not self.isRunning:
-                        break
-                    
-                    if not self.isOdasClosed:
-                        self.clientConnection, _ = sock.accept()
-                        if self.clientConnection:
-                            self.isConnected = True
-                            print('client connected!') if self.isVerbose else None
-                            while True:
-                                if not self.isConnected or not self.isRunning:
-                                    break
-
-                                # 1024 because this is the minimum Odas send through the socket.
-                                data = self.clientConnection.recv(1024)
-                                # if there is no data incomming close the stream.
-                                if not data:
-                                    break
-
-                                self.signalNewData.emit(data)
-                                sleep(0.00001)
+                    self.clientConnection, _ = sock.accept()
+                    if self.clientConnection:
+                        self.isConnected = True
+                        print('client connected!') if self.isVerbose else None
+                        while True:
+                            if not self.isConnected or not self.isRunning:
+                                break
+                            # 1024 because this is the minimum Odas send through the socket.
+                            data = self.clientConnection.recv(1024)
+                            # if there is no data incomming close the stream.
+                            if not data:
+                                break
+                            self.signalNewData.emit(data)
+                            sleep(0.00001)
                     
                     sleep(0.00001)
 
         except Exception as e:
             self.signalException.emit(e)
-            raise(e)
 
-        finally:
-            print('server stopped') if self.isVerbose else None

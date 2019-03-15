@@ -40,6 +40,13 @@ class AudioWriter(QObject, Thread):
             self.mailbox.put('stop')
             # wait until the thread terminate
             self.join()
+
+            for wavFile in self.wavFiles:
+                if wavFile:
+                    wavFile.close()
+        
+            self.wavFiles = []
+
             self.isRunning = False
             self.signalRecordingStopped.emit()
 
@@ -50,17 +57,17 @@ class AudioWriter(QObject, Thread):
             self.signalRecordingStarted.emit()
             while True:
                     data = self.mailbox.get()
-                    if data == 'stop':
-                        for wavFile in self.wavFiles:
-                            if wavFile:
-                                wavFile.close()
-        
-                            self.wavFiles = []
 
-                        self.signalRecordingStopped.emit()
-                        return
-                    
-                    if data == 'savefiles':
+                    if isinstance(data, bytes):
+                        offset = 0
+                        while offset < len(data):
+                            for key, _ in self.sourcesBuffer.items():
+                                currentByte = int(offset + int(key))
+                                self.sourcesBuffer[key] += data[currentByte:currentByte + 2]
+
+                            offset += self.nChannels * 2
+
+                    elif data == 'savefiles':
                         self.__writeWavFiles()
 
                     elif data == 'createwriters':
@@ -72,14 +79,8 @@ class AudioWriter(QObject, Thread):
                             self.wavFiles[i].setframerate(self.sampleRate)
                             self.sourcesBuffer[str(i)] = bytearray()
 
-                    else:
-                        offset = 0
-                        while offset < len(data):
-                            for key, _ in self.sourcesBuffer.items():
-                                currentByte = int(offset + int(key))
-                                self.sourcesBuffer[key] += data[currentByte:currentByte + 2]
-
-                            offset += self.nChannels * 2
+                    elif data == 'stop':
+                        return
         
         except Exception as e:
             self.isRunning = False

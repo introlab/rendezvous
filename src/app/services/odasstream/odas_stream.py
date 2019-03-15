@@ -14,6 +14,8 @@ class OdasStream(QObject):
 
     signalOdasData = pyqtSignal(object)
     signalException = pyqtSignal(Exception)
+    signalOdasUp = pyqtSignal()
+    signalOdasDown = pyqtSignal()
 
     def __init__(self, parent=None):
         super(OdasStream, self).__init__(parent)
@@ -63,6 +65,7 @@ class OdasStream(QObject):
                     break
 
                 line = self.odasProcess.stdout.readline().decode('UTF-8')
+                self.signalOdasUp.emit()
 
                 if line:
                     stdout.append(line)
@@ -83,6 +86,7 @@ class OdasStream(QObject):
 
         finally:
             self.isRunning = False
+            self.signalOdasDown.emit()
 
 
     # Spawn a sub process that execute odaslive.

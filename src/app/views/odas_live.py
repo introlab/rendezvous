@@ -18,7 +18,7 @@ class OdasLive(QWidget, Ui_OdasLive):
         self.setupUi(self)
         self.odasStream = OdasStream()
 
-        self.audioStream = AudioStream('127.0.0.1', 10020, isVerbose=True)
+        self.audioStream = AudioStream('127.0.0.1', 10020)
         self.startAudioStreaming()
         self.audioWriter = AudioWriter()
         self.outputFolder.setText(self.window().settingsManager.getValue('outputFolder'))
@@ -42,6 +42,9 @@ class OdasLive(QWidget, Ui_OdasLive):
         self.videoProcessor.signalException.connect(self.videoExceptionHandling)
         self.audioStream.signalException.connect(self.audioStreamExceptionHandling)
         self.audioWriter.signalException.connect(self.audioWriterExceptionHandling)
+
+        self.odasStream.signalOdasUp.connect(self.odasStarted)
+        self.odasStream.signalOdasDown.connect(self.odasStopped)
         
         self.audioStream.signalServerUp.connect(self.audioStreamStarted)
         self.audioStream.signalServerDown.connect(self.audioStreamStopped)
@@ -76,14 +79,12 @@ class OdasLive(QWidget, Ui_OdasLive):
         if not self.odasStream.isRunning:
             self.startOdas()
             self.btnStartStopOdas.setText('Stop ODAS')
-            self.btnStartStopAudioRecord.setDisabled(False)
 
         else:
             self.stopOdas()
             self.btnStartStopOdas.setText('Start ODAS')
             self.audioStream.closeConnection()
             self.stopAudioRecording()
-            self.btnStartStopAudioRecord.setDisabled(True)
 
         self.btnStartStopOdas.setDisabled(False)
 
@@ -173,6 +174,15 @@ class OdasLive(QWidget, Ui_OdasLive):
     def recordingStopped(self):
         self.btnStartStopAudioRecord.setText('Start Audio Recording')
 
+
+    @pyqtSlot()
+    def odasStarted(self):
+        self.btnStartStopAudioRecord.setDisabled(False)
+
+
+    @pyqtSlot()
+    def odasStopped(self):
+        self.btnStartStopAudioRecord.setDisabled(True)
 
     # Handles the event where the user closes the window with the X button
     def closeEvent(self, event):
