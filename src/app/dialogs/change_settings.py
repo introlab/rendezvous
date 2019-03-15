@@ -4,15 +4,15 @@ from pathlib import Path
 from PyQt5.QtWidgets import QDialog, QFileDialog
 from PyQt5.QtCore import pyqtSlot
 
-from src.app.gui.settings_ui import Ui_Settings
+from src.app.gui.change_settings_ui import Ui_ChangeSettings
 
 
-class Settings(QDialog, Ui_Settings):
+class ChangeSettings(QDialog, Ui_ChangeSettings):
 
     rootDirectory = os.path.realpath(Path(__file__).parents[4])
 
     def __init__(self, parent=None):
-        super(Settings, self).__init__(parent)
+        super(ChangeSettings, self).__init__(parent)
         self.setupUi(self)
 
         self.__loadSettings(self.parent().settingsManager)
