@@ -2,12 +2,12 @@ from PyQt5.QtWidgets import QMainWindow
 
 from src.app.gui.main_window_ui import Ui_MainWindow
 
-from src.app.main_modules.exception_manager import ExceptionManager
-from src.app.main_modules.odas_live import OdasLive
-from src.app.main_modules.settings_manager import SettingsManager
-from src.app.main_modules.speech_to_text import SpeechToText
+from src.app.managers.exception_manager import ExceptionManager
+from src.app.views.odas_live import OdasLive
+from src.app.managers.settings_manager import SettingsManager
+from src.app.views.transcription import Transcription
 
-from src.app.components.dialogs.settings import Settings
+from src.app.dialogs.settings import Settings
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -29,8 +29,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.odasLiveTab = OdasLive(parent=self)   
         self.tabWidget.addTab(self.odasLiveTab, 'Odas Live')
 
-        self.speechToTextTab = SpeechToText(parent=self)   
-        self.tabWidget.addTab(self.speechToTextTab, 'Speech to Text')
+        self.transcriptionTab = Transcription(parent=self)   
+        self.tabWidget.addTab(self.transcriptionTab, 'Transcription')
         
 
     def actionSettingsClicked(self):
@@ -42,7 +42,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def closeEvent(self, event):
         if event:
             self.odasLiveTab.closeEvent(event)
-            self.speechToTextTab.closeEvent(event)
+            self.transcriptionTab.closeEvent(event)
             event.accept()
 
 
