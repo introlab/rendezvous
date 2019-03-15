@@ -21,7 +21,7 @@ class OdasLive(QWidget, Ui_OdasLive):
         self.audioStream = AudioStream('127.0.0.1', 10020)
         self.startAudioStreaming()
         self.audioWriter = AudioWriter()
-        self.outputFolder.setText(self.window().settingsManager.getValue('outputFolder'))
+        self.outputFolder.setText(self.window().getSetting('outputFolder'))
         self.audioWriter.changeWavSettings(outputFolder=self.outputFolder.text(), nChannels=4, nChannelFile=1, byteDepth=2, sampleRate=48000)
         self.audioWriter.start()
         self.isRecording = False
@@ -65,7 +65,7 @@ class OdasLive(QWidget, Ui_OdasLive):
             )
             if outputFolder:
                 self.outputFolder.setText(outputFolder)
-                self.window().settingsManager.setValue('outputFolder', outputFolder)
+                self.window().setSetting('outputFolder', outputFolder)
 
         except Exception as e:
             self.window().emitToExceptionManager(e)
@@ -197,8 +197,8 @@ class OdasLive(QWidget, Ui_OdasLive):
     def startOdas(self):
         if self.odasStream and not self.odasStream.isRunning:
             self.odasStream.signalOdasData.connect(self.positionDataReceived)
-            self.odasStream.start(odasPath=self.window().settingsManager.getValue('odasPath'), 
-                                  micConfigPath=self.window().settingsManager.getValue('micConfigPath'))
+            self.odasStream.start(odasPath=self.window().getSetting('odasPath'), 
+                                  micConfigPath=self.window().getSetting('micConfigPath'))
 
 
     def stopOdas(self):
@@ -239,7 +239,7 @@ class OdasLive(QWidget, Ui_OdasLive):
         if self.videoProcessor and not self.videoProcessor.isRunning:
             self.videoProcessor.signalFrameData.connect(self.imageReceived)
             self.videoProcessor.start(debug=False, 
-                                      cameraConfigPath=self.window().settingsManager.getValue('cameraConfigPath'))
+                                      cameraConfigPath=self.window().getSetting('cameraConfigPath'))
 
 
     def stopVideoProcessor(self):
