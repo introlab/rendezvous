@@ -57,9 +57,9 @@ class AudioStream(QObject):
     def __run(self):
         try:
 
-            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as self.sock:
-                self.sock.bind((self.hostIP, self.port))
-                self.sock.listen()
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+                sock.bind((self.host, self.port))
+                sock.listen()
                 self.isRunning = True
                 self.signalServerUp.emit()
                 print('server is up!') if self.isVerbose else None
@@ -69,7 +69,7 @@ class AudioStream(QObject):
                         break
                     
                     if not self.isOdasClosed:
-                        self.clientConnection, _ = self.sock.accept()
+                        self.clientConnection, _ = sock.accept()
                         if self.clientConnection:
                             self.isConnected = True
                             print('client connected!') if self.isVerbose else None
@@ -83,7 +83,7 @@ class AudioStream(QObject):
                                 if not data:
                                     break
 
-                                self.signalNewData(data)
+                                self.signalNewData.emit(data)
                                 sleep(0.00001)
                     
                     sleep(0.00001)
