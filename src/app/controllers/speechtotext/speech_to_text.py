@@ -30,7 +30,7 @@ class Model(Enum):
     VIDEO = 'video'
 
 
-class SpeechToTextAPI:
+class SpeechToText:
     
         def __init__(self):
             pass

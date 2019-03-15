@@ -2,12 +2,13 @@ from PyQt5.QtWidgets import QWidget, QFileDialog
 from PyQt5.QtCore import pyqtSlot
 
 from src.app.gui.odas_live_ui import Ui_OdasLive
-from src.app.odasstream.odas_stream import OdasStream
-from src.app.videoprocessing.video_processor import VideoProcessor
-from src.app.recorder.audio.audio_stream import AudioStream
-from src.app.recorder.audio.audio_writer import AudioWriter
-from src.app.virtualcamera.virtual_camera_displayer import VirtualCameraDisplayer
-from src.app.virtualcamera.virtual_camera_manager import VirtualCameraManager
+# TODO A controler is needed here, so we don't call all the services in the UI layer.
+from src.app.services.odasstream.odas_stream import OdasStream
+from src.app.services.videoprocessing.video_processor import VideoProcessor
+from src.app.services.virtualcamera.virtual_camera_displayer import VirtualCameraDisplayer
+from src.app.services.virtualcamera.virtual_camera_manager import VirtualCameraManager
+from src.app.services.recorder.audio.audio_stream import AudioStream
+from src.app.services.recorder.audio.audio_writer import AudioWriter
 
 
 class OdasLive(QWidget, Ui_OdasLive):
