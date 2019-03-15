@@ -4,16 +4,16 @@ from pathlib import Path
 from PyQt5.QtWidgets import QApplication, QWidget, QFileDialog
 from PyQt5.QtCore import pyqtSlot
 
-from src.app.speechtotextapi.speech_to_text_api import EncodingType, LanguageCode, Model, SpeechToTextAPI
-from src.app.gui.speech_to_text_ui import Ui_SpeechToText
+from src.app.controllers.speechtotext.speech_to_text import EncodingType, LanguageCode, Model, SpeechToText
+from src.app.gui.transcription_ui import Ui_Transcription
 
 
-class SpeechToText(QWidget, Ui_SpeechToText):
+class Transcription(QWidget, Ui_Transcription):
 
     rootDirectory = os.path.realpath(Path(__file__).parents[3])
 
     def __init__(self, parent=None):
-        super(SpeechToText, self).__init__(parent)
+        super(Transcription, self).__init__(parent)
         self.setupUi(self)
 
         # Populate UI.
@@ -64,7 +64,7 @@ class SpeechToText(QWidget, Ui_SpeechToText):
                 'model' : self.model.currentText(),
                 'enhanced' : self.enhanced.checkState()}
 
-            transcriptionResult = SpeechToTextAPI.resquestTranscription(serviceAccountPath=self.window().settingsManager.getValue('serviceAccountPath'),
+            transcriptionResult = SpeechToText.resquestTranscription(serviceAccountPath=self.window().settingsManager.getValue('serviceAccountPath'),
                                                                         audioDataPath=self.audioDataPath.text(),
                                                                         config=config)
             self.transcriptionResult.setText(transcriptionResult)
