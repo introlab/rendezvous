@@ -7,8 +7,7 @@ from src.app.managers.settings import Settings
 
 from src.app.views.odas_live import OdasLive
 from src.app.views.transcription import Transcription
-
-from src.app.dialogs.change_settings import ChangeSettings
+from src.app.views.change_settings import ChangeSettings
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -23,9 +22,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Settings manager.
         self.__settingsManager = Settings()
 
-        # Top options.
-        self.actionSettings.triggered.connect(self.actionSettingsClicked)
-
         # Tabs of the main layout.
         self.odasLiveTab = OdasLive(parent=self)   
         self.tabWidget.addTab(self.odasLiveTab, 'Odas Live')
@@ -33,11 +29,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.transcriptionTab = Transcription(parent=self)   
         self.tabWidget.addTab(self.transcriptionTab, 'Transcription')
         
-
-    def actionSettingsClicked(self):
-        dialog = ChangeSettings(self)
-        dialog.exec()
-            
+        self.settingsTab = ChangeSettings(parent=self)   
+        self.tabWidget.addTab(self.settingsTab, 'Settings')
+  
 
     # Handles the event where the user closes the window with the X button.
     def closeEvent(self, event):
