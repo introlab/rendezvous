@@ -55,7 +55,6 @@ class OdasStream(QObject):
         try:
             self.__spawnSubProcess(odasPath, micConfigPath)
             self.isRunning = True
-
             stdout = []
             while self.isRunning:
 

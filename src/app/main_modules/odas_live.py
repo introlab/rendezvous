@@ -16,16 +16,20 @@ class OdasLive(QWidget, Ui_OdasLive):
         super(OdasLive, self).__init__(parent)
         self.setupUi(self)
         self.odasStream = OdasStream()
-        self.audioStream = AudioStream('127.0.0.1', 10020)
+
+        self.audioStream = AudioStream('127.0.0.1', 10020, isVerbose=True)
         self.startAudioStreaming()
         self.audioWriter = AudioWriter()
+        self.outputFolder.setText(self.window().settingsManager.getValue('outputFolder'))
+        self.audioWriter.changeWavSettings(outputFolder=self.outputFolder.text(), nChannels=4, nChannelFile=1, byteDepth=2, sampleRate=48000)
+        self.audioWriter.start()
+        self.isRecording = False
 
         self.videoProcessor = VideoProcessor()
         self.virtualCameraManager = VirtualCameraManager()
         self.virtualCameraDisplayer = VirtualCameraDisplayer(self.virtualCameraFrame)
 
         self.btnStartStopAudioRecord.setDisabled(True)
-        self.outputFolder.setText(self.window().settingsManager.getValue('outputFolder'))
 
         # Qt signal slots
         self.btnSelectOutputFolder.clicked.connect(self.selectOutputFolder)
@@ -36,6 +40,7 @@ class OdasLive(QWidget, Ui_OdasLive):
         self.odasStream.signalException.connect(self.odasExceptionHandling)
         self.videoProcessor.signalException.connect(self.videoExceptionHandling)
         self.audioStream.signalException.connect(self.audioStreamExceptionHandling)
+        self.audioWriter.signalException.connect(self.audioWriterExceptionHandling)
         
         self.audioStream.signalServerUp.connect(self.audioStreamStarted)
         self.audioStream.signalServerDown.connect(self.audioStreamStopped)
@@ -98,7 +103,7 @@ class OdasLive(QWidget, Ui_OdasLive):
     def btnStartStopAudioRecordClicked(self):
         self.btnStartStopAudioRecord.setDisabled(True)
 
-        if not self.audioWriter.isRecording:
+        if not self.isRecording:
             self.btnStartStopAudioRecord.setText('Stop Audio Recording')
             self.startAudioRecording()
         else:
@@ -133,7 +138,7 @@ class OdasLive(QWidget, Ui_OdasLive):
     
     @pyqtSlot(bytes)
     def audioDataReceived(self, streamData):
-        if self.audioWriter and self.audioWriter.mailbox:
+        if self.isRecording and self.audioWriter and self.audioWriter.mailbox:
             self.audioWriter.mailbox.put(streamData)
 
     
@@ -168,8 +173,8 @@ class OdasLive(QWidget, Ui_OdasLive):
     def closeEvent(self, event):
         if event:
             self.stopVideoProcessor()
-            self.audioStream.stopServer()
-            self.stopAudioRecording()
+            self.audioStream.stop()
+            self.audioWriter.stop()
             self.stopOdas()
             event.accept()
 
@@ -189,7 +194,7 @@ class OdasLive(QWidget, Ui_OdasLive):
 
     def startAudioStreaming(self):
         if self.audioStream and not self.audioStream.isRunning:
-            self.audioStream.startServer(isVerbose=True)
+            self.audioStream.start()
 
 
     def stopAudioStreaming(self):
@@ -199,24 +204,20 @@ class OdasLive(QWidget, Ui_OdasLive):
 
     def startAudioRecording(self):
         try:
-            if not self.audioWriter.isRecording:
-                self.audioWriter.changeWavSettings(outputFolder=self.outputFolder.text(), nChannels=1, byteDepth=2, sampleRate=48000)
-                self.audioWriter.start()
+            if not self.isRecording:
+                self.audioWriter.changeWavSettings(outputFolder=self.outputFolder.text(), nChannels=4, nChannelFile=1, byteDepth=2, sampleRate=48000)
                 self.audioStream.signalNewData.connect(self.audioDataReceived)
+                self.isRecording = True
 
         except Exception as e:
             self.window().exceptionManager.signalException.emit(e)
 
 
     def stopAudioRecording(self):
-        try:
-            if self.audioWriter.isRecording:
-                # stop data reception for audiowriter and stop recording.
-                self.audioStream.signalNewData.disconnect(self.audioDataReceived)
-                self.audioWriter.stop()
-
-        except Exception as e:
-            self.window().exceptionManager.signalException.emit(e)
+        if self.audioWriter and self.isRecording:
+            # stop data reception for audiowriter and stop recording.
+            self.audioWriter.mailbox.put('savefiles')
+            self.isRecording = False
 
 
     def startVideoProcessor(self):
@@ -249,8 +250,14 @@ class OdasLive(QWidget, Ui_OdasLive):
     def audioStreamExceptionHandling(self, e):
         self.stopAudioStreaming()
         self.stopAudioRecording()
+        self.isRecording = False
         self.btnStartStopAudioRecord.setDisabled(True)
         self.btnStartStopOdas.setDisabled(True)
+        self.window().exceptionManager.signalException.emit(e)
+
+
+    def audioWriterExceptionHandling(self, e):
+        self.isRecording = False
         self.window().exceptionManager.signalException.emit(e)
 
 
@@ -262,4 +269,3 @@ class OdasLive(QWidget, Ui_OdasLive):
 
         self.btnStartStopVideo.setText('Start Video')      
         self.btnStartStopVideo.setDisabled(False)
-

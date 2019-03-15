@@ -5,41 +5,33 @@ import socket
 
 from PyQt5.QtCore import QObject, pyqtSignal
 
-class AudioStream(QObject):
+class AudioStream(QObject, Thread):
 
     signalException = pyqtSignal(Exception)
     signalServerUp = pyqtSignal()
     signalServerDown = pyqtSignal()
     signalNewData = pyqtSignal(bytes)
 
-    def __init__(self, hostIP, port, parent=None):
+    def __init__(self, hostIP, port, isVerbose=False, parent=None):
         super(AudioStream, self).__init__(parent)
         
         self.host = hostIP
         self.port = port
+        self.isVerbose = isVerbose
 
         self.isRunning = False
         self.isConnected = False
         self.isOdasClosed = False
-        self.isVerbose = False
 
         self.clientConnection = None
-
-    
-    def startServer(self, isVerbose=False):
-        try:
-            self.isVerbose = isVerbose
-            Thread(target=self.__run, args=[]).start()
-        
-        except Exception as e:
-            self.isRunning = False
-            self.signalServerDown.emit()
-            self.signalException.emit(e)
     
 
-    def stopServer(self):
+    def stop(self):
         self.closeConnection()
+        
+        # wait until the thread terminate
         self.isRunning = False
+        self.join()
         self.signalServerDown.emit()
 
     
@@ -54,9 +46,8 @@ class AudioStream(QObject):
             self.isOdasClosed = True
     
 
-    def __run(self):
+    def run(self):
         try:
-
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
                 sock.bind((self.host, self.port))
                 sock.listen()
@@ -92,5 +83,4 @@ class AudioStream(QObject):
             self.signalException.emit(e)
 
         finally:
-            self.stopServer()
             print('server stopped') if self.isVerbose else None
