@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QFileDialog
+from PyQt5.QtWidgets import QWidget, QFileDialog, QApplication
 from PyQt5.QtCore import pyqtSlot
 
 from src.app.gui.odas_live_ui import Ui_OdasLive
@@ -70,6 +70,7 @@ class OdasLive(QWidget, Ui_OdasLive):
     @pyqtSlot()
     def btnStartStopOdasClicked(self):
         self.btnStartStopOdas.setDisabled(True)
+        QApplication.processEvents()
 
         if not self.odasStream.isRunning:
             self.startOdas()
@@ -89,6 +90,7 @@ class OdasLive(QWidget, Ui_OdasLive):
     @pyqtSlot()
     def btnStartStopVideoClicked(self):
         self.btnStartStopVideo.setDisabled(True)
+        QApplication.processEvents()
 
         if not self.videoProcessor.isRunning:
             self.btnStartStopVideo.setText('Stop Video')
@@ -103,6 +105,7 @@ class OdasLive(QWidget, Ui_OdasLive):
     @pyqtSlot()
     def btnStartStopAudioRecordClicked(self):
         self.btnStartStopAudioRecord.setDisabled(True)
+        QApplication.processEvents()
 
         if not self.isRecording:
             self.btnStartStopAudioRecord.setText('Stop Audio Recording')
@@ -174,9 +177,9 @@ class OdasLive(QWidget, Ui_OdasLive):
     def closeEvent(self, event):
         if event:
             self.stopVideoProcessor()
+            self.stopOdas()
             self.audioStream.stop()
             self.audioWriter.stop()
-            self.stopOdas()
             event.accept()
 
 
@@ -207,6 +210,7 @@ class OdasLive(QWidget, Ui_OdasLive):
         try:
             if not self.isRecording:
                 self.audioWriter.changeWavSettings(outputFolder=self.outputFolder.text(), nChannels=4, nChannelFile=1, byteDepth=2, sampleRate=48000)
+                self.audioWriter.mailbox.put('createwriters')
                 self.audioStream.signalNewData.connect(self.audioDataReceived)
                 self.isRecording = True
 

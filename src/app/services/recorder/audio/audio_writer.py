@@ -36,35 +36,40 @@ class AudioWriter(QObject, Thread):
 
 
     def stop(self):
-            self.wavFiles = []
-            
+        if self.isRunning:
             self.mailbox.put('stop')
             # wait until the thread terminate
             self.join()
             self.isRunning = False
             self.signalRecordingStopped.emit()
-            print('writer stopped')
 
 
     def run(self):
         try:
-            for i in range(0, self.nChannels):
-                outputFile = os.path.join(self.outputFolder, 'outputsrc-{}.wav'.format(i))
-                self.wavFiles.append(wave.open(outputFile, 'wb'))
-                self.wavFiles[i].setnchannels(self.nChannelsFile)
-                self.wavFiles[i].setsampwidth(self.byteDepth)
-                self.wavFiles[i].setframerate(self.sampleRate)
-
             self.isRunning = True
             self.signalRecordingStarted.emit()
             while True:
                     data = self.mailbox.get()
                     if data == 'stop':
-                        print('stop')
+                        for wavFile in self.wavFiles:
+                            if wavFile:
+                                wavFile.close()
+        
+                            self.wavFiles = []
+
+                        self.signalRecordingStopped.emit()
                         return
                     
                     if data == 'savefiles':
                         self.__writeWavFiles()
+
+                    elif data == 'createwriters':
+                        for i in range(0, self.nChannels):
+                            outputFile = os.path.join(self.outputFolder, 'outputsrc-{}.wav'.format(i))
+                            self.wavFiles.append(wave.open(outputFile, 'wb'))
+                            self.wavFiles[i].setnchannels(self.nChannelsFile)
+                            self.wavFiles[i].setsampwidth(self.byteDepth)
+                            self.wavFiles[i].setframerate(self.sampleRate)
 
                     else:
                         nChannel = 4
@@ -77,8 +82,9 @@ class AudioWriter(QObject, Thread):
                             offset += nChannel * 2
         
         except Exception as e:
+            self.isRunning = False
             self.signalException.emit(e)
-            raise e
+            self.signalRecordingStopped.emit()
 
 
     def __writeWavFiles(self):
