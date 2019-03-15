@@ -211,7 +211,7 @@ class OdasLive(QWidget, Ui_OdasLive):
                 self.isRecording = True
 
         except Exception as e:
-            self.window().exceptionManager.signalException.emit(e)
+            self.window().emitToExceptionManager(e)
 
 
     def stopAudioRecording(self):
@@ -236,8 +236,6 @@ class OdasLive(QWidget, Ui_OdasLive):
 
 
     def odasExceptionHandling(self, e):
-        self.window().exceptionManager.signalException.emit(e)
-
         # We make sure the threads are stopped
         self.audioStream.closeConnection()
         self.stopOdas()
@@ -247,6 +245,8 @@ class OdasLive(QWidget, Ui_OdasLive):
         self.btnStartStopOdas.setDisabled(False)
         self.btnStartStopAudioRecord.setDisabled(True)
 
+        self.window().emitToExceptionManager(e)
+
 
     def audioStreamExceptionHandling(self, e):
         self.stopAudioStreaming()
@@ -254,19 +254,20 @@ class OdasLive(QWidget, Ui_OdasLive):
         self.isRecording = False
         self.btnStartStopAudioRecord.setDisabled(True)
         self.btnStartStopOdas.setDisabled(True)
-        self.window().exceptionManager.signalException.emit(e)
+        self.window().emitToExceptionManager(e)
 
 
     def audioWriterExceptionHandling(self, e):
         self.isRecording = False
-        self.window().exceptionManager.signalException.emit(e)
+        self.window().emitToExceptionManager(e)
 
 
     def videoExceptionHandling(self, e):
-        self.window().exceptionManager.signalException.emit(e)
+        self.window().emitToExceptionManager(e)
 
         # We make sure the thread is stopped
         self.stopVideoProcessor()
 
         self.btnStartStopVideo.setText('Start Video')      
         self.btnStartStopVideo.setDisabled(False)
+
