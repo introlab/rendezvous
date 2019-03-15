@@ -18,10 +18,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.setupUi(self)
 
         # Exception manager.
-        self.exceptionsManager = Exceptions()
+        self.__exceptionsManager = Exceptions()
 
         # Settings manager.
-        self.settingsManager = Settings()
+        self.__settingsManager = Settings()
 
         # Top options.
         self.actionSettings.triggered.connect(self.actionSettingsClicked)
@@ -48,5 +48,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 
     # Used by tab modules to tell the exception manager that an exception occured.    
-    def emitToExceptionManager(self, exception):
-        self.exceptionsManager.signalException.emit(exception)
+    def emitToExceptionsManager(self, exception):
+        self.__exceptionsManager.signalException.emit(exception)
+
+    # Used by tab modules to set an application setting.
+    def setSetting(self, setting, value):
+        self.__settingsManager.setValue(setting, value)
+    
+    # Used by tab modules to get an application setting.
+    def getSetting(self, setting):
+        return self.__settingsManager.getValue(setting)

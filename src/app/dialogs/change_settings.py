@@ -15,7 +15,7 @@ class ChangeSettings(QDialog, Ui_ChangeSettings):
         super(ChangeSettings, self).__init__(parent)
         self.setupUi(self)
 
-        self.__loadSettings(self.parent().settingsManager)
+        self.__loadSettings(parent)
 
         self.dialogBtnBox.accepted.connect(self.apply)
         self.dialogBtnBox.rejected.connect(self.cancel)
@@ -34,10 +34,10 @@ class ChangeSettings(QDialog, Ui_ChangeSettings):
 
     @pyqtSlot()
     def apply(self):
-        self.parent().settingsManager.setValue('cameraConfigPath', self.cameraConfigPath.text())
-        self.parent().settingsManager.setValue('serviceAccountPath', self.serviceAccountPath.text())
-        self.parent().settingsManager.setValue('micConfigPath', self.micConfigPath.text())
-        self.parent().settingsManager.setValue('odasPath', self.odasPath.text())
+        self.parent().setSetting('cameraConfigPath', self.cameraConfigPath.text())
+        self.parent().setSetting('serviceAccountPath', self.serviceAccountPath.text())
+        self.parent().setSetting('micConfigPath', self.micConfigPath.text())
+        self.parent().setSetting('odasPath', self.odasPath.text())
         
         self.accept()
 
@@ -82,9 +82,9 @@ class ChangeSettings(QDialog, Ui_ChangeSettings):
             self.serviceAccountPath.setText(serviceAccountPath)
 
 
-    def __loadSettings(self, settingsManager):
-        self.cameraConfigPath.setText(settingsManager.getValue('cameraConfigPath'))
-        self.serviceAccountPath.setText(settingsManager.getValue('serviceAccountPath'))
-        self.micConfigPath.setText(settingsManager.getValue('micConfigPath'))
-        self.odasPath.setText(settingsManager.getValue('odasPath'))
+    def __loadSettings(self, parent):
+        self.cameraConfigPath.setText(parent.getSetting('cameraConfigPath'))
+        self.serviceAccountPath.setText(parent.getSetting('serviceAccountPath'))
+        self.micConfigPath.setText(parent.getSetting('micConfigPath'))
+        self.odasPath.setText(parent.getSetting('odasPath'))
         
