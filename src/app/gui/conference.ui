@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>OdasLive</class>
- <widget class="QWidget" name="OdasLive">
+ <class>Conference</class>
+ <widget class="QWidget" name="Conference">
   <property name="geometry">
    <rect>
     <x>0</x>

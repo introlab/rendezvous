@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QWidget, QFileDialog, QApplication
 from PyQt5.QtCore import pyqtSlot
 
-from src.app.gui.odas_live_ui import Ui_OdasLive
+from src.app.gui.conference_ui import Ui_Conference
 # TODO A controler is needed here, so we don't call all the services in the UI layer.
 from src.app.services.odasstream.odas_stream import OdasStream
 from src.app.services.videoprocessing.video_processor import VideoProcessor
@@ -11,10 +11,10 @@ from src.app.services.recorder.audio.audio_stream import AudioStream
 from src.app.services.recorder.audio.audio_writer import AudioWriter
 
 
-class OdasLive(QWidget, Ui_OdasLive):
+class Conference(QWidget, Ui_Conference):
 
     def __init__(self, parent=None):
-        super(OdasLive, self).__init__(parent)
+        super(Conference, self).__init__(parent)
         self.setupUi(self)
         self.odasStream = OdasStream()
 
