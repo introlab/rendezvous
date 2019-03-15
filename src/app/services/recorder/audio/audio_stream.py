@@ -35,15 +35,12 @@ class AudioStream(QObject, Thread):
         self.signalServerDown.emit()
 
     
-    def closeConnection(self, isFromUI=False):
+    def closeConnection(self):
         if self.clientConnection:
             self.clientConnection.close()
             self.isConnected = False
             self.clientConnection = None
             print('connection closed') if self.isVerbose else None
-
-        if isFromUI:
-            self.isOdasClosed = True
     
 
     def run(self):
@@ -81,6 +78,7 @@ class AudioStream(QObject, Thread):
 
         except Exception as e:
             self.signalException.emit(e)
+            raise(e)
 
         finally:
             print('server stopped') if self.isVerbose else None

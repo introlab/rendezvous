@@ -70,16 +70,16 @@ class AudioWriter(QObject, Thread):
                             self.wavFiles[i].setnchannels(self.nChannelsFile)
                             self.wavFiles[i].setsampwidth(self.byteDepth)
                             self.wavFiles[i].setframerate(self.sampleRate)
+                            self.sourcesBuffer[str(i)] = bytearray()
 
                     else:
-                        nChannel = 4
                         offset = 0
                         while offset < len(data):
                             for key, _ in self.sourcesBuffer.items():
                                 currentByte = int(offset + int(key))
                                 self.sourcesBuffer[key] += data[currentByte:currentByte + 2]
 
-                            offset += nChannel * 2
+                            offset += self.nChannels * 2
         
         except Exception as e:
             self.isRunning = False
@@ -94,4 +94,6 @@ class AudioWriter(QObject, Thread):
                 wavFile.writeframesraw(audioRaw)
                 wavFile.close()
                 self.sourcesBuffer[str(index)] = bytearray()
+        
+        self.wavFiles = []
 
