@@ -12,6 +12,7 @@ class CameraConfig:
         self.cameraPort = cameraConfigJson['Camera']['Port']
         self.fps = cameraConfigJson['Camera']['FPS']
         self.fourcc = cameraConfigJson['Camera']['Fourcc']
+        self.bufferSize = cameraConfigJson['Camera']['BufferSize']
         
         self.topDistorsionFactor = cameraConfigJson['Distorsion']['TopDistorsionFactor']
         self.bottomDistorsionFactor = cameraConfigJson['Distorsion']['BottomDistorsionFactor']

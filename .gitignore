@@ -9,3 +9,10 @@ scripts/ConfigurationHelper/ODASOutput.json
 src/gui/*.py
 config/maps/*.npy
 *_ui.py
+*.o
+*.a
+*.so
+lib/*/build
+src/app/videoprocessing/dewarping/src/shaders/autogen
+src/app/videoprocessing/dewarping/interface/fisheye_dewarping.py
+src/app/videoprocessing/dewarping/interface/fisheye_dewarping_wrap.cpp
