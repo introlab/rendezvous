@@ -52,7 +52,7 @@ class OdasLive(QWidget, Ui_OdasLive):
     def startVideoProcessor(self):
         if self.videoProcessor and not self.videoProcessor.isRunning:
             self.videoProcessor.signalFrameData.connect(self.imageReceived)
-            self.videoProcessor.start(cameraConfigPath=self.window().getSetting('cameraConfigPath'))
+            self.videoProcessor.start(self.window().getSetting('cameraConfigPath'))
 
 
     def stopVideoProcessor(self):
