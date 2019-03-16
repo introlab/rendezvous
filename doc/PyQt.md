@@ -16,16 +16,6 @@
 
 4 - During installation, choose the following version of Qt: 5.12.1
 
-5 - Install build essentials:
-
-    $ sudo apt-get install build-essential
-
-6 - Install packages:
-
-    $ sudo apt-get install mesa-common-dev
-    $ sudo apt-get install libglu1-mesa-dev -y
-    $ sudo apt-get install pyqt5-dev-tools
-
 For more information:
 
     https://wiki.qt.io/Install_Qt_5_on_Ubuntu
@@ -35,11 +25,10 @@ For more information:
 
 ### Modifying the UI
 
-Open QtCreator and modify the file: prototype/gui/mainwindow.ui
+Open QtCreator and modify the ui files: app/gui/*.ui
 
 Generate the python ui with:
 
-    $ cd src
     $ python setup.py build_ui
 
 
@@ -51,4 +40,4 @@ Install the PyQt dependency (only the first time)
 
 Run the app:
 
-    $ python prototype/main.py --opath "path to odaslive" --cpath "path to config file"
+    $ python src/app/main.py
