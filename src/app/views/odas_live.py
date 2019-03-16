@@ -39,8 +39,8 @@ class OdasLive(QWidget, Ui_OdasLive):
     def startOdas(self):
         if self.odasStream and not self.odasStream.isRunning:
             self.odasStream.signalOdasData.connect(self.odasDataReveived)
-            self.odasStream.start(odasPath=self.window().settingsManager.getValue('odasPath'), 
-                                  micConfigPath=self.window().settingsManager.getValue('micConfigPath'))
+            self.odasStream.start(odasPath=self.window().getSetting('odasPath'), 
+                                  micConfigPath=self.window().getSetting('micConfigPath'))
 
 
     def stopOdas(self):
@@ -53,7 +53,7 @@ class OdasLive(QWidget, Ui_OdasLive):
         if self.videoProcessor and not self.videoProcessor.isRunning:
             self.videoProcessor.signalFrameData.connect(self.imageReceived)
             self.videoProcessor.start(debug=False, 
-                                      cameraConfigPath=self.window().settingsManager.getValue('cameraConfigPath'))
+                                      cameraConfigPath=self.window().getSetting('cameraConfigPath'))
 
 
     def stopVideoProcessor(self):
@@ -64,7 +64,7 @@ class OdasLive(QWidget, Ui_OdasLive):
 
 
     def odasExceptionHandling(self, e):
-        self.window().exceptionManager.signalException.emit(e)
+        self.window().emitToExceptionsManager(e)
 
         # We make sure the thread is stopped
         self.stopOdas()
@@ -74,7 +74,7 @@ class OdasLive(QWidget, Ui_OdasLive):
 
 
     def videoExceptionHandling(self, e):
-        self.window().exceptionManager.signalException.emit(e)
+        self.window().emitToExceptionsManager(e)
 
         # We make sure the thread is stopped
         self.stopVideoProcessor()

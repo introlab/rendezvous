@@ -1,24 +1,21 @@
 import os
 from pathlib import Path
 
-from PyQt5.QtWidgets import QDialog, QFileDialog
+from PyQt5.QtWidgets import QWidget, QFileDialog
 from PyQt5.QtCore import pyqtSlot
 
-from src.app.gui.settings_ui import Ui_Settings
+from src.app.gui.change_settings_ui import Ui_ChangeSettings
 
 
-class Settings(QDialog, Ui_Settings):
+class ChangeSettings(QWidget, Ui_ChangeSettings):
 
     rootDirectory = os.path.realpath(Path(__file__).parents[4])
 
     def __init__(self, parent=None):
-        super(Settings, self).__init__(parent)
+        super(ChangeSettings, self).__init__(parent)
         self.setupUi(self)
 
-        self.__loadSettings(self.parent().settingsManager)
-
-        self.dialogBtnBox.accepted.connect(self.apply)
-        self.dialogBtnBox.rejected.connect(self.cancel)
+        self.__loadSettings(parent)
 
         self.btnBrowseCameraConfig.clicked.connect(self.btnBrowseCameraConfigClicked)
         self.btnBrowseServiceAccount.clicked.connect(self.btnBrowseServiceAccountClicked)
@@ -33,27 +30,13 @@ class Settings(QDialog, Ui_Settings):
 
 
     @pyqtSlot()
-    def apply(self):
-        self.parent().settingsManager.setValue('cameraConfigPath', self.cameraConfigPath.text())
-        self.parent().settingsManager.setValue('serviceAccountPath', self.serviceAccountPath.text())
-        self.parent().settingsManager.setValue('micConfigPath', self.micConfigPath.text())
-        self.parent().settingsManager.setValue('odasPath', self.odasPath.text())
-        
-        self.accept()
-
-
-    @pyqtSlot()
-    def cancel(self):
-        self.reject()
-
-
-    @pyqtSlot()
     def btnBrowseOdasClicked(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         odasPath, _ = QFileDialog.getOpenFileName(self, 'Browse Odas Path', self.rootDirectory, options=options)
         if odasPath:
             self.odasPath.setText(odasPath)
+            self.window().setSetting('odasPath', odasPath)
         
 
     @pyqtSlot()
@@ -63,6 +46,7 @@ class Settings(QDialog, Ui_Settings):
         micConfigPath, _ = QFileDialog.getOpenFileName(self, 'Browse Microphone Config', self.rootDirectory, 'Config Files (*.cfg)', options=options)
         if micConfigPath:
             self.micConfigPath.setText(micConfigPath)
+            self.window().setSetting('micConfigPath', micConfigPath)
 
 
     @pyqtSlot()
@@ -72,6 +56,7 @@ class Settings(QDialog, Ui_Settings):
         cameraConfigPath, _ = QFileDialog.getOpenFileName(self, 'Browse Camera Config', self.rootDirectory, 'JSON Files (*.json)', options=options)
         if cameraConfigPath:
             self.cameraConfigPath.setText(cameraConfigPath)
+            self.window().setSetting('cameraConfigPath', cameraConfigPath)
 
     @pyqtSlot()
     def btnBrowseServiceAccountClicked(self):
@@ -80,11 +65,12 @@ class Settings(QDialog, Ui_Settings):
         serviceAccountPath, _ = QFileDialog.getOpenFileName(self, 'Browse Google Service Account File', self.rootDirectory, 'JSON Files (*.json)', options=options)
         if serviceAccountPath:
             self.serviceAccountPath.setText(serviceAccountPath)
+            self.window().setSetting('serviceAccountPath', serviceAccountPath)
 
 
-    def __loadSettings(self, settingsManager):
-        self.cameraConfigPath.setText(settingsManager.getValue('cameraConfigPath'))
-        self.serviceAccountPath.setText(settingsManager.getValue('serviceAccountPath'))
-        self.micConfigPath.setText(settingsManager.getValue('micConfigPath'))
-        self.odasPath.setText(settingsManager.getValue('odasPath'))
+    def __loadSettings(self, parent):
+        self.cameraConfigPath.setText(parent.getSetting('cameraConfigPath'))
+        self.serviceAccountPath.setText(parent.getSetting('serviceAccountPath'))
+        self.micConfigPath.setText(parent.getSetting('micConfigPath'))
+        self.odasPath.setText(parent.getSetting('odasPath'))
         

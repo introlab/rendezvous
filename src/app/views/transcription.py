@@ -46,7 +46,7 @@ class Transcription(QWidget, Ui_Transcription):
             if audioDataPath:
                 self.audioDataPath.setText(audioDataPath)
         except Exception as e:
-            self.window().emitToExceptionManager(e)
+            self.window().emitToExceptionsManager(e)
 
 
     @pyqtSlot()
@@ -64,13 +64,13 @@ class Transcription(QWidget, Ui_Transcription):
                 'model' : self.model.currentText(),
                 'enhanced' : self.enhanced.checkState()}
 
-            transcriptionResult = SpeechToText.resquestTranscription(serviceAccountPath=self.window().settingsManager.getValue('serviceAccountPath'),
+            transcriptionResult = SpeechToText.resquestTranscription(serviceAccountPath=self.window().getSetting('serviceAccountPath'),
                                                                         audioDataPath=self.audioDataPath.text(),
                                                                         config=config)
             self.transcriptionResult.setText(transcriptionResult)
         
         except Exception as e:
-            self.window().emitToExceptionManager(e)
+            self.window().emitToExceptionsManager(e)
             self.transcriptionResult.setText('')
         finally:
             self.setDisabled(False)
