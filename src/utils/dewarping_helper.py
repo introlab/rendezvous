@@ -1,7 +1,7 @@
 import numpy as np
 
-from src.app.videoprocessing.dewarping.interface.fisheye_dewarping import DewarpingParameters
-from src.app.videoprocessing.dewarping.interface.fisheye_dewarping import DonutSlice
+from src.app.services.videoprocessing.dewarping.interface.fisheye_dewarping import DewarpingParameters
+from src.app.services.videoprocessing.dewarping.interface.fisheye_dewarping import DonutSlice
 
 
 class DewarpingHelper:

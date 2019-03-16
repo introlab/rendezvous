@@ -41,13 +41,15 @@ class VideoStream:
         dewarpingParameters = DewarpingHelper.getDewarpingParameters(donutSlice, self.config.topDistorsionFactor, self.config.bottomDistorsionFactor)
         self.dewarper.setDewarpingParameters(dewarpingParameters)
 
-        if self.dewarper.initialize(self.config.imageWidth, self.config.imageHeight, \
-            dewarpingParameters.dewarpWidth, dewarpingParameters.dewarpHeight, channels, True) == -1:
+        outputWidth = int(dewarpingParameters.dewarpWidth)
+        outputHeight = int(dewarpingParameters.dewarpHeight)
+
+        if self.dewarper.initialize(self.config.imageWidth, self.config.imageHeight, outputWidth, outputHeight, channels, True) == -1:
             raise Exception('Error during c++ dewarping library initialization')
 
         self.printCameraSettings()
 
-        self.dewarpedImage = np.zeros((dewarpingParameters.dewarpHeight, dewarpingParameters.dewarpWidth, channels), dtype=np.uint8)
+        self.dewarpedImage = np.zeros((outputHeight, outputWidth, channels), dtype=np.uint8)
        
 
     def destroy(self):

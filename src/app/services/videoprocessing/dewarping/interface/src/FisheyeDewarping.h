@@ -17,7 +17,7 @@ public:
     FisheyeDewarping();
     virtual ~FisheyeDewarping();
 
-    int initialize(int inputWidth, int inputeight, int outputWidth, int outputHeight, int channels, bool isDewarping = true);
+    int initialize(int inputWidth, int inputHeight, int outputWidth, int outputHeight, int channels, bool isDewarping = true);
     void setDewarpingParameters(DewarpingParameters& dewarpingParameters);
     void loadFisheyeImage(int width, int height, int channels, unsigned char * fisheyeImage);
     void dewarpImage(int width, int height, int channels, unsigned char * dewarpedImage);

@@ -27,7 +27,7 @@ FisheyeDewarping::~FisheyeDewarping()
     cleanUp();
 }
 
-int FisheyeDewarping::initialize(int inputWidth, int inputeight, int outputWidth, int outputHeight, int channels, bool isDewarping)
+int FisheyeDewarping::initialize(int inputWidth, int inputHeight, int outputWidth, int outputHeight, int channels, bool isDewarping)
 {
     if (m_isInitialized)
     {
@@ -51,7 +51,7 @@ int FisheyeDewarping::initialize(int inputWidth, int inputeight, int outputWidth
     }
 
     m_vertexObjectLoader = make_unique<VertexObjectLoader>();
-    m_frameLoader = make_unique<FrameLoader>(inputWidth, inputeight, outputWidth, outputHeight, channels, GL_BGR, SinglePBO);
+    m_frameLoader = make_unique<FrameLoader>(inputWidth, inputHeight, outputWidth, outputHeight, channels, GL_BGR, SinglePBO);
     m_dewarpRenderer = make_unique<DewarpRenderer>(m_shader, *m_vertexObjectLoader);
     m_fisheyeTexture = make_unique<FisheyeTexture>(m_frameLoader->getTextureId(), glm::vec2(0, 0), glm::vec2(1, 1));
 
