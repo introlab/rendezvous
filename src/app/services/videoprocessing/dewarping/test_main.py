@@ -6,8 +6,8 @@ import numpy as np
 
 import context
 from src.utils.dewarping_helper import DewarpingHelper
-from src.app.videoprocessing.dewarping.interface.fisheye_dewarping import FisheyeDewarping
-from src.app.videoprocessing.dewarping.interface.fisheye_dewarping import DonutSlice
+from src.app.services.videoprocessing.dewarping.interface.fisheye_dewarping import FisheyeDewarping
+from src.app.services.videoprocessing.dewarping.interface.fisheye_dewarping import DonutSlice
 
 DebugImageInfoParam = namedtuple('DebugImageInfoParam', 'donutSlice \
     newDonutSlice center newCenter bottomLeft bottomRight centerRadius')

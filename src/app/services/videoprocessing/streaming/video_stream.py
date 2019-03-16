@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 import cv2
@@ -6,10 +5,8 @@ import numpy as np
 
 from .camera_config import CameraConfig
 from src.utils.dewarping_helper import DewarpingHelper
-from src.app.videoprocessing.dewarping.interface.fisheye_dewarping import FisheyeDewarping
-from src.app.videoprocessing.dewarping.interface.fisheye_dewarping import DonutSlice
-
-rootDirectory = os.path.realpath(Path(__file__).parents[4])
+from src.app.services.videoprocessing.dewarping.interface.fisheye_dewarping import FisheyeDewarping
+from src.app.services.videoprocessing.dewarping.interface.fisheye_dewarping import DonutSlice
 
 
 class VideoStream:
