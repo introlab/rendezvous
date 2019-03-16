@@ -2,15 +2,21 @@ import wave
 import os
 from threading import Thread
 import queue
-from time import sleep
+from enum import Enum, unique
 
 from PyQt5.QtCore import QObject, pyqtSignal
+
+
+@unique
+class WriterActions(Enum):
+    __STOP = 'stop'
+    SAVE_FILES = 'savefiles'
+    NEW_RECORDING = 'newrecording'
+
 
 class AudioWriter(QObject, Thread):
 
     signalException = pyqtSignal(Exception)
-    signalRecordingStarted = pyqtSignal()
-    signalRecordingStopped = pyqtSignal()
 
     def __init__(self, parent=None):
         super(AudioWriter, self).__init__(parent)
@@ -37,7 +43,7 @@ class AudioWriter(QObject, Thread):
 
     def stop(self):
         if self.isRunning:
-            self.mailbox.put('stop')
+            self.mailbox.put(WriterActions.__STOP)
             # wait until the thread terminate
             self.join()
 
@@ -46,15 +52,12 @@ class AudioWriter(QObject, Thread):
                     wavFile.close()
         
             self.wavFiles = []
-
             self.isRunning = False
-            self.signalRecordingStopped.emit()
 
 
     def run(self):
         try:
             self.isRunning = True
-            self.signalRecordingStarted.emit()
             while True:
                     data = self.mailbox.get()
 
@@ -67,10 +70,10 @@ class AudioWriter(QObject, Thread):
 
                             offset += self.nChannels * 2
 
-                    elif data == 'savefiles':
+                    elif data == WriterActions.SAVE_FILES:
                         self.__writeWavFiles()
 
-                    elif data == 'createwriters':
+                    elif data == WriterActions.NEW_RECORDING:
                         for i in range(0, self.nChannels):
                             outputFile = os.path.join(self.outputFolder, 'outputsrc-{}.wav'.format(i))
                             self.wavFiles.append(wave.open(outputFile, 'wb'))
@@ -79,13 +82,14 @@ class AudioWriter(QObject, Thread):
                             self.wavFiles[i].setframerate(self.sampleRate)
                             self.sourcesBuffer[str(i)] = bytearray()
 
-                    elif data == 'stop':
-                        return
+                    elif data == WriterActions.__STOP:
+                        break
         
         except Exception as e:
-            self.isRunning = False
             self.signalException.emit(e)
-            self.signalRecordingStopped.emit()
+
+        finally:
+            self.isRunning = False
 
 
     def __writeWavFiles(self):
