@@ -1,0 +1,1 @@
+const char * regularVertexShaderSource = "#version 330 core\nin vec2 position;\nout vec2 textureCoords;\nuniform mat4 transformationMatrix;\nvoid main(void)\n{\ngl_Position = transformationMatrix * vec4(position, 0.0, 1.0);\ntextureCoords = vec2((position.x+1.0)/2.0, (position.y+1.0)/2.0);\n}\n\0";

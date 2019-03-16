@@ -1,4 +1,4 @@
-LIB_PATH=../../../../lib
+LIB_PATH=../../../../../lib
 INC_PATH=-I./include -I$(LIB_PATH)/glfw-3.2.1/include -I$(LIB_PATH)/glm/include -I$(LIB_PATH)/glad/include
 CC=g++
 CFLAGS=-Wall $(INC_PATH)

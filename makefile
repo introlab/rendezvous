@@ -3,7 +3,7 @@ all: libs dewarping_lib
 
 .PHONY: dewarping_lib
 dewarping_lib:
-	$(MAKE) -C ./src/app/videoprocessing/dewarping
+	$(MAKE) -C ./src/app/services/videoprocessing/dewarping
 
 .PHONY: libs
 libs:
@@ -14,7 +14,7 @@ clean: clean_libs clean_dewarping_lib
 
 .PHONY: clean_dewarping_lib
 clean_dewarping_lib:
-	$(MAKE) clean -C ./src/app/videoprocessing/dewarping
+	$(MAKE) clean -C ./src/app/services/videoprocessing/dewarping
 
 .PHONY: clean_libs
 clean_libs:

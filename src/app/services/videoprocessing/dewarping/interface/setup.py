@@ -3,7 +3,7 @@ import numpy
 
 name = 'fisheye_dewarping'    # name of the module
 version = '1.0'        # the module's version number
-libpath = '../../../../../lib'
+libpath = '../../../../../../lib'
 
 setup(name=name, version=version,
       # distutils detects .i files and compiles them automatically
