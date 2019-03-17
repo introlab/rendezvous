@@ -1,7 +1,7 @@
 LIB_PATH=../../../../../lib
-INC_PATH=-I./include -I$(LIB_PATH)/glfw-3.2.1/include -I$(LIB_PATH)/glm/include -I$(LIB_PATH)/glad/include
+INC_PATH=-I./include -I$(LIB_PATH)/glfw-3.2.1/include -I$(LIB_PATH)/glm/include -I$(LIB_PATH)/glad/include -I$(LIB_PATH)/KHR/include
 CC=g++
-CFLAGS=-Wall $(INC_PATH)
+CFLAGS=-Wall -std=c++14 $(INC_PATH)
 SOURCE_FOLDERS=$(wildcard src/*)
 OUTPUT_FOLDERS=$(patsubst src/%, bin/%, $(SOURCE_FOLDERS))
 SOURCES=$(wildcard src/*/*.cpp)
