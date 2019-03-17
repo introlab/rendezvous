@@ -1,6 +1,8 @@
 import math
 
-from src.utils.angles_3d_converter import Angles3DConverter
+import numpy as np
+
+from src.utils.spherical_angles_converter import SphericalAnglesConverter
 
 
 class Indicators:
@@ -21,9 +23,9 @@ class Indicators:
                 x = source['x']
                 y = source['y']
                 z = source['z']
-                azimuth = Angles3DConverter.azimuthCalculation(x, y)
-                elevation = Angles3DConverter.elevationCalculation(x, y, z)
+                azimuth = SphericalAnglesConverter.getAzimuthFromPosition(x, y)
+                elevation = SphericalAnglesConverter.getElevationFromPosition(x, y, z)
                         
-                self.azimuths.append(Angles3DConverter.radToDegree(azimuth))
-                self.elevations.append(Angles3DConverter.radToDegree(elevation))
+                self.azimuths.append(np.rad2deg(azimuth))
+                self.elevations.append(np.rad2deg(elevation))
                 

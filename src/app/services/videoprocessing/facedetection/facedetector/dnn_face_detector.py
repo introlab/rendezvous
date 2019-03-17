@@ -20,7 +20,7 @@ class DnnFaceDetector(IFaceDetector):
 
     def detectFaces(self, image):
         (h, w) = image.shape[:2]
-        blob = cv2.dnn.blobFromImage(image, 1.0, (300, 300), [104, 117, 123], False, False)
+        blob = cv2.dnn.blobFromImage(image, 1.0, (229, 229), [104, 117, 123], False, False)
 
         self.net.setInput(blob)
         detections = self.net.forward()

@@ -39,7 +39,32 @@
     $ sudo apt-get install python3-tk
     $ pip install -r requirements.txt
 
-9 - If you add dependencies run the following command to add your new dependencies to requirements.txt:
+9 - Generate the python ui with:
+
+    $ python setup.py build_ui
+
+10 - Build the dewarping library
+
+    $sudo apt-get install xorg-dev libglu1-mesa-dev
+    $sudo apt-get install swig
+
+To build the library and its dependencies use :
+
+    $ make
+
+To only build the dewarping library alone use :
+
+    $ make dewarping_lib
+
+To clean the library and its dependencies use :
+
+    $ make clean
+
+To clean the dewarping library alone use :
+
+    $ make clean_dewarping_lib
+
+11 - If you add dependencies run the following command to add your new dependencies to requirements.txt:
     
     $ pip freeze > requirements.txt
 
