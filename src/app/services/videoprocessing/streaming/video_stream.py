@@ -49,7 +49,8 @@ class VideoStream:
 
         self.printCameraSettings()
 
-        self.dewarpedImage = np.zeros((outputHeight, outputWidth, channels), dtype=np.uint8)
+        self.dewarpedImageBuffers = np.zeros((2, outputHeight, outputWidth, channels), dtype=np.uint8)
+        self.dewarpedImageBuffersIndex = 0
        
 
     def destroy(self):
@@ -61,8 +62,9 @@ class VideoStream:
 
         if success:
             self.dewarper.loadFisheyeImage(frame)
-            self.dewarper.dewarpImage(self.dewarpedImage)
-            return success, self.dewarpedImage
+            self.dewarpedImageBuffersIndex = (self.dewarpedImageBuffersIndex + 1) % 2
+            self.dewarper.dewarpImage(self.dewarpedImageBuffers[self.dewarpedImageBuffersIndex])
+            return success, self.dewarpedImageBuffers[self.dewarpedImageBuffersIndex]
         else:
             return success, None
 
