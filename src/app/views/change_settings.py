@@ -21,6 +21,7 @@ class ChangeSettings(QWidget, Ui_ChangeSettings):
         self.btnBrowseServiceAccount.clicked.connect(self.btnBrowseServiceAccountClicked)
         self.btnBrowseMicConfig.clicked.connect(self.btnBrowseMicConfigClicked)
         self.btnBrowseOdas.clicked.connect(self.btnBrowseOdasClicked)
+        self.btnBrowseDefaultOutputFolder.clicked.connect(self.btnBrowseDefaultOutputFolderClicked)
 
 
     # Handles the event where the user closes the window with the X button
@@ -58,6 +59,7 @@ class ChangeSettings(QWidget, Ui_ChangeSettings):
             self.cameraConfigPath.setText(cameraConfigPath)
             self.window().setSetting('cameraConfigPath', cameraConfigPath)
 
+
     @pyqtSlot()
     def btnBrowseServiceAccountClicked(self):
         options = QFileDialog.Options()
@@ -68,9 +70,20 @@ class ChangeSettings(QWidget, Ui_ChangeSettings):
             self.window().setSetting('serviceAccountPath', serviceAccountPath)
 
 
+    @pyqtSlot()
+    def btnBrowseDefaultOutputFolderClicked(self):
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        defaultOutputFolder = QFileDialog.getExistingDirectory(self, 'Browse Default Output Folder', self.rootDirectory, options=options)
+        if defaultOutputFolder:
+            self.defaultOutputFolder.setText(defaultOutputFolder)
+            self.window().setSetting('defaultOutputFolder', defaultOutputFolder)
+
+
     def __loadSettings(self, parent):
         self.cameraConfigPath.setText(parent.getSetting('cameraConfigPath'))
         self.serviceAccountPath.setText(parent.getSetting('serviceAccountPath'))
         self.micConfigPath.setText(parent.getSetting('micConfigPath'))
         self.odasPath.setText(parent.getSetting('odasPath'))
+        self.defaultOutputFolder.setText(parent.getSetting('defaultOutputFolder'))
         

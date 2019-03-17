@@ -66,6 +66,7 @@ class Transcription(QWidget, Ui_Transcription):
 
             transcriptionResult = SpeechToText.resquestTranscription(serviceAccountPath=self.window().getSetting('serviceAccountPath'),
                                                                         audioDataPath=self.audioDataPath.text(),
+                                                                        outputFolder=self.window().getSetting('defaultOutputFolder'),
                                                                         config=config)
             self.transcriptionResult.setText(transcriptionResult)
         
