@@ -4,6 +4,7 @@ from PyQt5.QtCore import QObject, pyqtSignal
 
 from .streaming.video_stream import VideoStream
 from .facedetection.facedetector.dnn_face_detector import DnnFaceDetector
+from .virtualcamera.virtual_camera_manager import VirtualCameraManager
 from src.utils.file_helper import FileHelper
 
 
@@ -16,6 +17,7 @@ class VideoProcessor(QObject):
         super(VideoProcessor, self).__init__(parent)
 
         self.faceDetector = DnnFaceDetector()
+        self.virtualCameraManager = VirtualCameraManager()
         self.isRunning = False
 
 
@@ -59,7 +61,11 @@ class VideoProcessor(QObject):
 
                 if success:
                     faces = self.faceDetector.detectFaces(frame)
-                    self.signalFrameData.emit(frame, faces)
+
+                    frameHeight, frameWidth, colors = frame.shape
+                    self.virtualCameraManager.update(faces.tolist(), frameWidth, frameHeight)
+
+                    self.signalFrameData.emit(frame, self.virtualCameraManager.getVirtualCameras())
 
         except Exception as e:
 
@@ -70,6 +76,8 @@ class VideoProcessor(QObject):
 
             if videoStream:
                 videoStream.destroy()
+
+            self.virtualCameraManager.clear()
 
         print('Video stream terminated')
 

@@ -7,7 +7,7 @@ from src.utils.geometry_utils import GeometryUtils
 class VirtualCameraManager:
 
     def __init__(self):
-        self.virtualCameras = []
+        self.__virtualCameras = []
 
         # 3:4 (portrait)
         self.aspectRatio = 3 / 4
@@ -39,20 +39,32 @@ class VirtualCameraManager:
     def update(self, faces, imageWidth, imageHeight):
 
         # Find matches between existing virtual cameras and detected faces
-        matches = dict.fromkeys(self.virtualCameras, [])
+        matches = dict.fromkeys(self.__virtualCameras, [])
         matches, unmatchedFaces = self.__tryFindMatches(matches, faces)
 
         # Create new virtual cameras from faces that were not associated with a vc
         for unmatchedFace in unmatchedFaces:
             newVirtualCamera = VirtualCamera.createFromFace(unmatchedFace)
             self.__tryResizeVirtualCamera(newVirtualCamera, self.portraitScaleFactor, imageWidth, imageHeight)
-            self.virtualCameras.append(newVirtualCamera)
+            self.__virtualCameras.append(newVirtualCamera)
 
         for vc, face in matches.items():       
             # Found a face to associate the vc with, so we update the vc with its matched face
             if face != []:
                 vc.resetTimeToLive()
                 self.__updateVirtualCamera(vc, face, imageWidth, imageHeight)
+
+    
+    # Returns a copy of the virtual cameras so the caller can't modify the original ones
+    def getVirtualCameras(self):
+        vcs = []
+        for vc in self.__virtualCameras:
+            vcs.append(VirtualCamera.copy(vc))
+        return vcs
+
+
+    def clear(self):
+        self.__virtualCameras.clear()
 
 
     # Updates the size and position of the virtual camera if it has changed
@@ -181,7 +193,7 @@ class VirtualCameraManager:
 
     # Removes the virtual cameras that were not associated with a face for some time
     def __garbageCollect(self):
-        for vc in self.virtualCameras:
+        for vc in self.__virtualCameras:
             vc.decreaseTimeToLive()
             if not vc.isAlive():
-                self.virtualCameras.remove(vc)
+                self.__virtualCameras.remove(vc)
