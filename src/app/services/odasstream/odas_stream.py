@@ -6,7 +6,7 @@ from threading import Thread
 
 from PyQt5.QtCore import QObject, pyqtSignal
 
-from src.utils.angles_3d_converter import Angles3DConverter
+from src.utils.spherical_angles_converter import SphericalAnglesConverter
 from src.utils.file_helper import FileHelper
 
 
@@ -101,8 +101,8 @@ class OdasStream(QObject):
 
         sources = {}
         for index, jsonSource in enumerate(jsonSources):
-            jsonSource['azimuth'] = Angles3DConverter.azimuthCalculation(jsonSource['x'], jsonSource['y'])
-            jsonSource['elevation'] = Angles3DConverter.elevationCalculation(jsonSource['x'], jsonSource['y'], jsonSource['z'])
+            jsonSource['azimuth'] = SphericalAnglesConverter.getAzimuthFromPosition(jsonSource['x'], jsonSource['y'])
+            jsonSource['elevation'] = SphericalAnglesConverter.getElevationFromPosition(jsonSource['x'], jsonSource['y'], jsonSource['z'])
             sources[index] = jsonSource
 
         if sources:
