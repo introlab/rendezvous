@@ -9,7 +9,7 @@ from PyQt5.QtCore import QObject, pyqtSignal
 
 @unique
 class WriterActions(Enum):
-    __STOP = 'stop'
+    STOP = 'stop'
     SAVE_FILES = 'savefiles'
     NEW_RECORDING = 'newrecording'
 
@@ -43,7 +43,7 @@ class AudioWriter(QObject, Thread):
 
     def stop(self):
         if self.isRunning:
-            self.mailbox.put(WriterActions.__STOP)
+            self.mailbox.put(WriterActions.STOP)
             # wait until the thread terminate
             self.join()
 
@@ -82,7 +82,7 @@ class AudioWriter(QObject, Thread):
                             self.wavFiles[i].setframerate(self.sampleRate)
                             self.sourcesBuffer[str(i)] = bytearray()
 
-                    elif data == WriterActions.__STOP:
+                    elif data == WriterActions.STOP:
                         break
         
         except Exception as e:

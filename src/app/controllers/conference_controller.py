@@ -5,38 +5,41 @@ from src.app.services.recorder.audio.audio_writer import AudioWriter, WriterActi
 
 class ConferenceController(QObject):
 
+    signalException = pyqtSignal(Exception)
     signalAudioPositions = pyqtSignal(object)
-    signalOdasIsRunning = pyqtSignal(bool)
+    signalOdasState = pyqtSignal(bool)
+    signalRecordingState = pyqtSignal(bool)
 
     def __init__(self, parent=None):
         super(ConferenceController, self).__init__(parent)
 
-        self.odas = Odas(hostIP='127.0.0.1', port= 10020, isVerbose=True)
-        self.odas.start()
+        self.__odas = Odas(hostIP='127.0.0.1', port= 10020, isVerbose=True)
+        self.__odas.start()
 
-        self.audioWriter = AudioWriter()
-        self.audioWriter.changeWavSettings(outputFolder=self.outputFolder.text(), nChannels=4, nChannelFile=1, byteDepth=2, sampleRate=48000)
-        self.audioWriter.start()
-        self.isRecording = False
-        self.odasLiveConnected = False
+        self.__audioWriter = AudioWriter()
+        self.__audioWriter.changeWavSettings(outputFolder='', nChannels=4, nChannelFile=1, byteDepth=2, sampleRate=48000)
+        self.__audioWriter.start()
+        self.__isRecording = False
+        self.__odasLiveConnected = False
 
-        self.audioWriter.signalException.connect(self.audioWriterExceptionHandling)
-        self.odas.signalException.connect(self.odasExceptionHandling)
+        self.__audioWriter.signalException.connect(self.audioWriterExceptionHandling)
+        self.__odas.signalException.connect(self.odasExceptionHandling)
         
-        self.odas.signalAudioData.connect(self.audioDataReceived)
-        self.odas.signalPositionData.connect(self.positionDataReceived)
-        self.odas.signalClientConnected.connect(self.odasClientConnected)
+
+        self.__odas.signalAudioData.connect(self.audioDataReceived)
+        self.__odas.signalPositionData.connect(self.positionDataReceived)
+        self.__odas.signalClientConnected.connect(self.odasClientConnected)
 
 
     @pyqtSlot(bool)
     def odasClientConnected(self, isConnected):
-        self.signalOdasIsRunning.emit(isConnected)
+        self.signalOdasState.emit(isConnected)
 
 
     @pyqtSlot(bytes)
     def audioDataReceived(self, streamData):
-        if self.isRecording and self.audioWriter and self.audioWriter.mailbox:
-            self.audioWriter.mailbox.put(streamData)
+        if self.__isRecording and self.__audioWriter and self.__audioWriter.mailbox:
+            self.__audioWriter.mailbox.put(streamData)
 
 
     @pyqtSlot(object)
@@ -46,44 +49,55 @@ class ConferenceController(QObject):
 
     @pyqtSlot(Exception)
     def odasExceptionHandling(self, e):
-        self.stopOdas()
-        self.window().emitToExceptionManager(e)
+        self.saveAudioRecording()
+        self.__isRecording = False
+        self.signalRecordingState.emit(self.__isRecording)
+        self.signalException.emit(e)
 
 
     @pyqtSlot(Exception)
     def audioWriterExceptionHandling(self, e):
-        self.isRecording = False
-        self.window().emitToExceptionManager(e)
+        self.__isRecording = False
+        self.signalRecordingState.emit(self.__isRecording)
+        self.signalException.emit(e)
 
 
-    def startOdasLive(self):
-        self.odas.startOdasLive(odasPath=self.window().getSetting('odasPath'), micConfigPath=self.window().getSetting('micConfigPath'))
+    def startOdasLive(self, odasPath, micConfigPath):
+        self.__odas.startOdasLive(odasPath, micConfigPath)
 
 
     def stopOdasLive(self):
-        self.odas.stopOdasLive()
+        self.__odas.stopOdasLive()
 
 
     def stopOdasServer(self):
-        if self.odas.isRunning:
-            self.odas.stop()
+        if self.__odas.isRunning:
+            self.__odas.stop()
 
 
-    def startAudioRecording(self):
+    def startAudioRecording(self, outputFolder):
         try:
-            if not self.isRecording:
-                self.audioWriter.changeWavSettings(outputFolder=self.outputFolder.text(), nChannels=4, nChannelFile=1, byteDepth=2, sampleRate=48000)
-                self.audioWriter.mailbox.put(WriterActions.NEW_RECORDING)
-                self.isRecording = True
+            if not self.__isRecording:
+                self.__audioWriter.changeWavSettings(outputFolder=outputFolder, nChannels=4, nChannelFile=1, byteDepth=2, sampleRate=48000)
+                self.__audioWriter.mailbox.put(WriterActions.NEW_RECORDING)
+                self.__isRecording = True
+                self.signalRecordingState.emit(self.__isRecording)
 
         except Exception as e:
-            self.window().emitToExceptionManager(e)
+            self.signalException.emit(e)
+
+
+    def saveAudioRecording(self):
+        if self.__audioWriter and self.__isRecording:
+            # stop data reception for audiowriter and save wave files
+            self.__isRecording = False
+            self.__audioWriter.mailbox.put(WriterActions.SAVE_FILES)
+            self.signalRecordingState.emit(self.__isRecording)
 
 
     def stopAudioRecording(self):
-        if self.audioWriter and self.isRecording:
-            # stop data reception for audiowriter and stop recording.
-            self.isRecording = False
-            self.audioWriter.mailbox.put(WriterActions.SAVE_FILES)
-
+        if self.__audioWriter:
+            self.__isRecording = False
+            self.__audioWriter.stop()
+            self.signalRecordingState.emit(self.__isRecording)
 

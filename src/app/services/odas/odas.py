@@ -2,15 +2,15 @@
 import os
 import json
 import re
-import subprocess
 import socket
 from threading import Thread
 from time import sleep
 
-from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 
 from src.utils.angles_3d_converter import Angles3DConverter
 from src.utils.file_helper import FileHelper
+from src.app.services.odas.odasliveprocess.odas_live_process import OdasLiveProcess
 
 # Read config file to get sample rate for while True sleepTime
         # line = FileHelper.getLineFromFile(micConfigPath, 'fS')
@@ -85,7 +85,6 @@ class Odas(QObject, Thread):
         self.closeConnection()
         self.stopOdasLive()
         self.isRunning = False
-        self.signalClientConnected.emit(False)
         print('server stopped') if self.isVerbose else None
 
 
@@ -119,8 +118,6 @@ class Odas(QObject, Thread):
         except Exception as e:
             self.closeConnection()
             self.stopOdasLive()
-            self.signalClientConnected.emit(False)
-
             self.signalException.emit(e)
 
         finally:
@@ -133,6 +130,7 @@ class Odas(QObject, Thread):
             self.isConnected = False
             self.clientConnection = None
             print('connection closed') if self.isVerbose else None
+            self.signalClientConnected.emit(False)
 
 
     # Spawn a sub process that execute odaslive.
@@ -144,16 +142,30 @@ class Odas(QObject, Thread):
             if not micConfigPath:
                 raise Exception('micConfigPath needs to be set in the settings')
 
-            self.odasProcess = subprocess.Popen([odasPath, '-c', micConfigPath], shell=False)
+            self.odasProcess = OdasLiveProcess(odasPath, micConfigPath)
+            self.odasProcess.signalException.connect(self.odasLiveExceptionHandling)
+            self.odasProcess.start()
             print('odas subprocess started...') if self.isVerbose else None
 
 
     # stop the sub process
     def stopOdasLive(self):
         if self.odasProcess:
-            self.odasProcess.kill()
+            if self.isConnected:
+                self.closeConnection()
+            self.odasProcess.stop()
+            self.odasProcess.signalException.disconnect(self.odasLiveExceptionHandling)
             self.odasProcess = None
             print('odas subprocess stopped...') if self.isVerbose else None
+
+    
+    @pyqtSlot(Exception)
+    def odasLiveExceptionHandling(self, e):
+        if self.odasProcess:
+            self.odasProcess.signalException.disconnect(self.odasLiveExceptionHandling)
+            self.odasProcess = None
+            self.closeConnection()
+        self.signalException.emit(e)
 
 
     # Parse every Odas event 
