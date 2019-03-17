@@ -81,7 +81,6 @@ class Conference(QWidget, Ui_Conference):
     @pyqtSlot()
     def btnStartStopVideoClicked(self):
         self.btnStartStopVideo.setDisabled(True)
-        QApplication.processEvents()
 
         if not self.videoProcessor.isRunning:
             self.btnStartStopVideo.setText('Stop Video')
@@ -119,11 +118,8 @@ class Conference(QWidget, Ui_Conference):
 
     @pyqtSlot(object, object)
     def imageReceived(self, image, faces):
-        imageHeight, imageWidth, _ = image.shape
-
-        for face in faces:
-            self.virtualCameraManager.addOrUpdateVirtualCamera(face, imageWidth, imageHeight)
-
+        imageHeight, imageWidth, colors = image.shape
+        self.virtualCameraManager.update(faces.tolist(), imageWidth, imageHeight)
         self.virtualCameraDisplayer.updateDisplay(image, self.virtualCameraManager.virtualCameras)
 
 
@@ -154,7 +150,7 @@ class Conference(QWidget, Ui_Conference):
 
     @pyqtSlot(Exception)
     def videoExceptionHandling(self, e):
-        self.window().emitToExceptionManager(e)
+        self.window().emitToExceptionsManager(e)
 
         # We make sure the thread is stopped
         self.stopVideoProcessor()
@@ -175,8 +171,7 @@ class Conference(QWidget, Ui_Conference):
     def startVideoProcessor(self):
         if self.videoProcessor and not self.videoProcessor.isRunning:
             self.videoProcessor.signalFrameData.connect(self.imageReceived)
-            self.videoProcessor.start(debug=False, 
-                                      cameraConfigPath=self.window().getSetting('cameraConfigPath'))
+            self.videoProcessor.start(self.window().getSetting('cameraConfigPath'))
 
 
     def stopVideoProcessor(self):
