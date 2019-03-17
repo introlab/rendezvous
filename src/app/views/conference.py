@@ -70,12 +70,14 @@ class Conference(QWidget, Ui_Conference):
 
     @pyqtSlot()
     def btnStartStopOdasClicked(self):
+        self.btnStartStopOdas.setDisabled(True)
+        QApplication.processEvents()
+
         if self.btnStartStopOdas.text() == BtnOdasLabels.START_ODAS.value:
             self.conferenceController.startOdasLive(odasPath=self.window().getSetting('odasPath'), micConfigPath=self.window().getSetting('micConfigPath'))
         else:
             self.conferenceController.stopOdasLive()
 
-        self.btnStartStopOdas.setDisabled(True)
 
 
     @pyqtSlot()
@@ -94,13 +96,14 @@ class Conference(QWidget, Ui_Conference):
 
     @pyqtSlot()
     def btnStartStopAudioRecordClicked(self):
+        self.btnStartStopAudioRecord.setDisabled(True)
+        QApplication.processEvents()
+
         if self.btnStartStopAudioRecord.text() == BtnAudioRecordLabels.START_RECORDING.value:
             self.conferenceController.startAudioRecording(self.outputFolder.text())
 
         else:
-            self.conferenceController.stopAudioRecording()
-
-        self.btnStartStopAudioRecord.setDisabled(True)
+            self.conferenceController.saveAudioRecording()
 
 
     @pyqtSlot(object)
@@ -130,6 +133,8 @@ class Conference(QWidget, Ui_Conference):
         else:
             self.btnStartStopAudioRecord.setText(BtnAudioRecordLabels.START_RECORDING.value)
 
+        self.btnStartStopAudioRecord.setDisabled(False)
+
 
     @pyqtSlot(bool)
     def odasStateChanged(self, isRunning):
@@ -138,6 +143,8 @@ class Conference(QWidget, Ui_Conference):
             self.btnStartStopAudioRecord.setDisabled(False)
         else:
             self.btnStartStopOdas.setText(BtnOdasLabels.START_ODAS.value)
+            self.btnStartStopAudioRecord.setText(BtnAudioRecordLabels.START_RECORDING.value)
+            self.conferenceController.saveAudioRecording()
             self.btnStartStopAudioRecord.setDisabled(True)
 
         self.btnStartStopOdas.setDisabled(False)
