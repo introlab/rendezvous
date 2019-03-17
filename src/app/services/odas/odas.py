@@ -8,8 +8,7 @@ from time import sleep
 
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 
-from src.utils.angles_3d_converter import Angles3DConverter
-from src.utils.file_helper import FileHelper
+from src.utils.json_utils import JsonUtils
 from src.app.services.odas.odasliveprocess.odas_live_process import OdasLiveProcess
 
 # Read config file to get sample rate for while True sleepTime
@@ -110,7 +109,12 @@ class Odas(QObject, Thread):
                             # if there is no data incomming close the stream.
                             if not data:
                                 break
-                            self.signalData.emit(data)
+                            
+                            if JsonUtils.isJson(str(data)):
+                                self.__parseOdasObject(str(data))
+                            else:
+                                self.signalAudioData.emit(data)
+                            
                             sleep(0.00001)
                     
                     sleep(0.00001)
