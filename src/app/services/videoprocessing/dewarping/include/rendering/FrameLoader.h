@@ -3,9 +3,11 @@
 
 #include <string>
 #include <vector>
+#include <tuple>
 #include <glad/glad.h>
 
 struct RawModel;
+struct ImageBuffer;
 
 enum FrameLoaderType
 {
@@ -18,30 +20,33 @@ class FrameLoader
 {
 public:
 
-    FrameLoader(GLsizei inputWidth, GLsizei inputHeight, GLsizei outputWidth,
-        GLsizei outputHeight, GLuint channelCount, GLenum pixelFormat, FrameLoaderType frameLoaderType);
+    FrameLoader(GLsizei inputWidth, GLsizei inputHeight, GLuint channels, 
+        GLenum pixelFormat, FrameLoaderType frameLoaderType);
     virtual ~FrameLoader();
+
     GLuint getTextureId();
-    void load(GLubyte* inData);
-    void unload(GLubyte* outData);
+    GLuint createPackPBOs(GLsizei size);
+    void load(GLubyte* inData, GLsizei width, GLsizei height, GLuint channels);
+    void unload(ImageBuffer& imageBuffer, GLuint bufferId);
     void cleanUp();
 
 private:
 
     void initializeUnpackTexture();
     void initializeUnpackPBOs();
-    void initializePackPBOs();
+    void initializePackPBOs(GLuint* packPBOs, GLsizei size);
 
     inline void updateTexture();
     inline void loadDataToTexture(GLubyte* inData);
     inline void updateTextureWithPBO();
     inline void loadDataToTextureWithPBO(GLubyte* inData);
-    inline void updateOutputPBO();
-    inline void unloadOutputPBO(GLubyte* outData);
+    inline void updateOutputPBO(GLsizei width, GLsizei height);
+    inline void unloadOutputPBO(GLubyte* outData, GLsizei size);
 
 private:
 
-    GLuint m_packPBOs[2];
+    std::vector<GLuint*> m_packPBOsVector;
+
     GLuint m_unpackPBOs[2];
     GLubyte* m_textureData;
     GLuint m_texture;
@@ -50,11 +55,7 @@ private:
     GLsizei m_inputHeight;
     GLsizeiptr m_inputSize;
 
-    GLsizei m_outputWidth;
-    GLsizei m_outputHeight;
-    GLsizeiptr m_outputSize;
-
-    GLuint m_channelCount;
+    GLuint m_channels;
     GLenum m_pixelFormat;
     FrameLoaderType m_frameLoaderType;
 

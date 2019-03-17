@@ -1,24 +1,23 @@
 #include <rendering/FrameLoader.h>
 #include <models/RawModel.h>
+#include <models/ImageBuffer.h>
 
 #include <iostream>
 #include <cstring>
+#include <stdexcept> 
 
-FrameLoader::FrameLoader(GLsizei inputWidth, GLsizei inputHeight, GLsizei outputWidth, 
-        GLsizei outputHeight, GLuint channelCount, GLenum pixelFormat, FrameLoaderType frameLoaderType)
+FrameLoader::FrameLoader(GLsizei inputWidth, GLsizei inputHeight, 
+    GLuint channels, GLenum pixelFormat, FrameLoaderType frameLoader360Type)
     : m_inputWidth(inputWidth),
     m_inputHeight(inputHeight),
-    m_inputSize(inputWidth * inputHeight * channelCount),
-    m_outputWidth(outputWidth),
-    m_outputHeight(outputHeight),
-    m_outputSize(outputWidth * outputHeight * channelCount),
-    m_channelCount(channelCount),
+    m_inputSize(inputWidth * inputHeight * channels),
+    m_channels(channels),
     m_pixelFormat(pixelFormat),
-    m_frameLoaderType(frameLoaderType)
+    m_frameLoaderType(frameLoader360Type)
 {
     initializeUnpackTexture();
     initializeUnpackPBOs();
-    initializePackPBOs();
+    glPixelStorei(GL_PACK_ALIGNMENT, (m_channels & 3) ? 1 : 4);
 }
 
 FrameLoader::~FrameLoader()
@@ -27,6 +26,11 @@ FrameLoader::~FrameLoader()
     {
         delete[] m_textureData;
         m_textureData = nullptr;
+    }
+
+    for (GLuint * packPBOs : m_packPBOsVector)
+    {
+        delete[] packPBOs;
     }
 }
 
@@ -58,16 +62,13 @@ void FrameLoader::initializeUnpackPBOs()
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 }
 
-void FrameLoader::initializePackPBOs()
+void FrameLoader::initializePackPBOs(GLuint* packPBOs, GLsizei size)
 {
-    glPixelStorei(GL_PACK_ALIGNMENT, (m_channelCount & 3) ? 1 : 4);
-    glPixelStorei(GL_PACK_ROW_LENGTH, m_outputWidth);
-    
-    glGenBuffers(2, m_packPBOs);
-    glBindBuffer(GL_PIXEL_PACK_BUFFER, m_packPBOs[0]);
-    glBufferData(GL_PIXEL_PACK_BUFFER, m_outputSize, 0, GL_STREAM_READ);
-    glBindBuffer(GL_PIXEL_PACK_BUFFER, m_packPBOs[1]);
-    glBufferData(GL_PIXEL_PACK_BUFFER, m_outputSize, 0, GL_STREAM_READ);
+    glGenBuffers(2, packPBOs);
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, packPBOs[0]);
+    glBufferData(GL_PIXEL_PACK_BUFFER, size, 0, GL_STREAM_READ);
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, packPBOs[1]);
+    glBufferData(GL_PIXEL_PACK_BUFFER, size, 0, GL_STREAM_READ);
     glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 }
 
@@ -76,8 +77,22 @@ GLuint FrameLoader::getTextureId()
     return m_texture;
 }
 
-void FrameLoader::load(GLubyte* inData)
+GLuint FrameLoader::createPackPBOs(GLsizei size)
 {
+    GLuint * packPBOs = new GLuint[2];
+    initializePackPBOs(packPBOs, size);
+    
+    m_packPBOsVector.push_back(packPBOs);
+    GLuint bufferId = m_packPBOsVector.size() - 1;
+
+    return bufferId;
+}
+
+void FrameLoader::load(GLubyte* inData, GLsizei width, GLsizei height, GLuint channels)
+{
+    if (m_inputWidth != width || m_inputHeight != height || m_channels != channels)
+        throw std::invalid_argument("FrameLoader - Image size does not match size specified on initialization");
+
     glBindTexture(GL_TEXTURE_2D, m_texture);
 
     if (m_frameLoaderType != NoPBO)
@@ -106,38 +121,39 @@ void FrameLoader::load(GLubyte* inData)
     glGenerateMipmap(GL_TEXTURE_2D);
 }
 
-void FrameLoader::unload(GLubyte* outData)
+void FrameLoader::unload(ImageBuffer& imageBuffer, GLuint bufferId)
 {
     // Set the framebuffer to read
     glReadBuffer(GL_FRONT);
 
-    if (m_frameLoaderType != NoPBO)
-    {
-        static unsigned int bufferIndex = -1;
+    GLuint * packPBOs = m_packPBOsVector[bufferId];
 
-        // Alternate between buffers
-        bufferIndex = (bufferIndex + 1);
-        int nextBufferIndex = m_frameLoaderType == DoublePBO && bufferIndex ? (bufferIndex + 1) : bufferIndex;
+    glPixelStorei(GL_PACK_ROW_LENGTH, imageBuffer.width);
 
-        glBindBuffer(GL_PIXEL_PACK_BUFFER, m_packPBOs[bufferIndex % 2]);
-        updateOutputPBO();
+    static unsigned int bufferIndex = -1;
 
-        glBindBuffer(GL_PIXEL_PACK_BUFFER, m_packPBOs[nextBufferIndex % 2]);
-        unloadOutputPBO(outData);
+    // Alternate between buffers
+    bufferIndex = (bufferIndex + 1);
+    int nextBufferIndex = m_frameLoaderType == DoublePBO && bufferIndex ? (bufferIndex + 1) : bufferIndex;
 
-        glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
-    }
-    else
-    {
-        glReadPixels(0, 0, m_outputWidth, m_outputHeight, GL_RGBA, GL_UNSIGNED_BYTE, outData);
-    }
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, packPBOs[bufferIndex % 2]);
+    updateOutputPBO(imageBuffer.width, imageBuffer.height);
+
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, packPBOs[nextBufferIndex % 2]);
+    unloadOutputPBO(imageBuffer.image, imageBuffer.size);
+
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 }
 
 void FrameLoader::cleanUp()
 {
     glDeleteTextures(1, &m_texture);
     glDeleteBuffers(2, m_unpackPBOs);
-    glDeleteBuffers(2, m_packPBOs);
+
+    for (GLuint * packPBOs : m_packPBOsVector)
+    {
+        glDeleteBuffers(2, packPBOs);
+    }
 }
 
 void FrameLoader::updateTexture()
@@ -170,18 +186,18 @@ void FrameLoader::loadDataToTextureWithPBO(GLubyte* inData)
     }
 }
 
-void FrameLoader::updateOutputPBO()
+void FrameLoader::updateOutputPBO(GLsizei width, GLsizei height)
 {
-    glReadPixels(0, 0, m_outputWidth, m_outputHeight, m_pixelFormat, GL_UNSIGNED_BYTE, 0);
+    glReadPixels(0, 0, width, height, m_pixelFormat, GL_UNSIGNED_BYTE, 0);
 }
 
-void FrameLoader::unloadOutputPBO(GLubyte* outData)
+void FrameLoader::unloadOutputPBO(GLubyte* outData, GLsizei size)
 {
-    GLubyte* src = (GLubyte*)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
+    GLubyte* src = (GLubyte*) glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
 
     if (src)
     {
-        memcpy(outData, src, m_outputSize);
+        memcpy(outData, src, size);
         glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
     }
 }

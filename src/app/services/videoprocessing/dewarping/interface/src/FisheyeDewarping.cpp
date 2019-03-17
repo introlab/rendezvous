@@ -9,17 +9,18 @@
 #include <models/FisheyeTexture.h>
 
 #include <iostream>
+#include <stdexcept> 
 
 using namespace std;
 
-FisheyeDewarping::FisheyeDewarping()
+FisheyeDewarping::FisheyeDewarping(int inputWidth, int inputHeight, int channels, bool isDewarping)
     : m_dewarpRenderer(nullptr),
     m_fisheyeTexture(nullptr),
     m_frameLoader(nullptr),
     m_shader(nullptr),
-    m_vertexObjectLoader(nullptr),
-    m_isInitialized(false)
+    m_vertexObjectLoader(nullptr)
 {
+    initialize(inputWidth, inputHeight, channels, isDewarping);
 }
 
 FisheyeDewarping::~FisheyeDewarping()
@@ -27,77 +28,76 @@ FisheyeDewarping::~FisheyeDewarping()
     cleanUp();
 }
 
-int FisheyeDewarping::initialize(int inputWidth, int inputHeight, int outputWidth, int outputHeight, int channels, bool isDewarping)
+void FisheyeDewarping::loadFisheyeImage(unsigned char * fisheyeImage, int height, int width, int channels)
 {
-    if (m_isInitialized)
+    m_frameLoader->load(fisheyeImage, width, height, channels);
+}
+
+int FisheyeDewarping::bindDewarpingBuffer(unsigned char * dewarpedImageBuffer, int height, int width, int channels)
+{
+    ImageBuffer imageBuffer(dewarpedImageBuffer, width, height, channels);
+    
+    int bufferId = m_frameLoader->createPackPBOs(imageBuffer.size);
+
+    m_dewarpedImageBuffers.insert(pair<int, ImageBuffer>(bufferId, imageBuffer));
+
+    return bufferId;
+}
+
+void FisheyeDewarping::queueDewarping(DewarpingParameters& dewarpingParameters, int bufferId)
+{
+    m_dewarpingQueue.push_back(std::make_pair(bufferId, dewarpingParameters));
+}
+
+int FisheyeDewarping::dewarpNextImage()
+{
+    // Calling code knows all dewarping is completed when -1 is returned
+    if (m_dewarpingQueue.empty())
     {
-        cerr << "FisheyeDewarping object is already initialized" << endl;
         return -1;
     }
 
-    if (DisplayManager::createDisplay(outputWidth, outputHeight) != 0)
-    {
-        cerr << "FisheyeDewarping object initialization failed" << endl;
-        return -1;
-    }
+    // Retrieve next dewarping in queue
+    auto pair = m_dewarpingQueue.front();
+    int bufferId = pair.first;
+    DewarpingParameters dewarpingParameters = pair.second;
+    m_dewarpingQueue.pop_front();
     
-    if (isDewarping)
-    {
-        m_shader = make_shared<DewarpShader>();
-    }
-    else
-    {
-        m_shader = make_shared<RegularShader>();
-    }
-
-    m_vertexObjectLoader = make_unique<VertexObjectLoader>();
-    m_frameLoader = make_unique<FrameLoader>(inputWidth, inputHeight, outputWidth, outputHeight, channels, GL_BGR, SinglePBO);
-    m_dewarpRenderer = make_unique<DewarpRenderer>(m_shader, *m_vertexObjectLoader);
-    m_fisheyeTexture = make_unique<FisheyeTexture>(m_frameLoader->getTextureId(), glm::vec2(0, 0), glm::vec2(1, 1));
-
-    m_isInitialized = true;
-
-    return 0;
-}
-
-void FisheyeDewarping::setDewarpingParameters(DewarpingParameters& dewarpingParameters)
-{
-    m_dewarpingParameters = dewarpingParameters;
-}
-
-void FisheyeDewarping::loadFisheyeImage(int width, int height, int channels, unsigned char * fisheyeImage)
-{
-    if (!m_isInitialized)
-    {
-        cerr << "FisheyeDewarping object is not initialized" << endl;
-        return;
-    }
-    
-    m_frameLoader->load(fisheyeImage);
-}
-
-void FisheyeDewarping::dewarpImage(int width, int height, int channels, unsigned char * dewarpedImage)
-{
-    if (!m_isInitialized)
-    {
-        cerr << "FisheyeDewarping object is not initialized" << endl;
-        return;
-    }
-    
-    m_dewarpRenderer->render(*m_fisheyeTexture, m_dewarpingParameters);
-    
+    // Dewarp the fisheye image with the dewarping parameters
+    m_dewarpRenderer->render(*m_fisheyeTexture, dewarpingParameters);
     DisplayManager::updateDisplay();
 
-    m_frameLoader->unload(dewarpedImage);
+    // Copy the dewarped image to the buffer
+    ImageBuffer imageBuffer = m_dewarpedImageBuffers[bufferId];
+    DisplayManager::resizeWindow(imageBuffer.width, imageBuffer.height);
+    m_frameLoader->unload(imageBuffer, bufferId);
+
+    // Calling code knows which buffer was updated based on this id
+    return bufferId;
+}
+
+void FisheyeDewarping::initialize(int inputWidth, int inputHeight, int channels, bool isDewarping)
+{
+    if (DisplayManager::createDisplay(10, 10) != 0)
+    {
+        throw runtime_error("FisheyeDewarping object initialization failed");
+    }
+
+    if (isDewarping)
+        m_shader = make_shared<DewarpShader>();
+    else
+        m_shader = make_shared<RegularShader>();
+
+    m_vertexObjectLoader = make_unique<VertexObjectLoader>();
+    m_frameLoader = make_unique<FrameLoader>(inputWidth, inputHeight, channels, GL_BGR, SinglePBO);
+    m_dewarpRenderer = make_unique<DewarpRenderer>(m_shader, *m_vertexObjectLoader);
+    m_fisheyeTexture = make_unique<FisheyeTexture>(m_frameLoader->getTextureId(), glm::vec2(0, 0), glm::vec2(1, 1));    
 }
 
 void FisheyeDewarping::cleanUp()
 {
-    if (m_isInitialized)
-    {
-        m_shader->cleanUp();
-        m_frameLoader->cleanUp();
-        m_vertexObjectLoader->cleanUp();
-        DisplayManager::closeDisplay();
-    }
+    m_shader->cleanUp();
+    m_frameLoader->cleanUp();
+    m_vertexObjectLoader->cleanUp();
+    DisplayManager::closeDisplay();
 }

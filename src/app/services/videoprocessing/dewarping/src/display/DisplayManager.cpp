@@ -115,6 +115,11 @@ void DisplayManager::registerInputCallback(InputCallback* callback)
     m_inputCallback = callback;
 }
 
+void DisplayManager::resizeWindow(int width, int height)
+{
+    glfwSetWindowSize(m_window, width, height);
+}
+
 void DisplayManager::framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);

@@ -18,9 +18,9 @@ def main():
 	debug = False
 
 	# Camera desired parameters
-	port = 1
-	requestWidth = 2880
-	requestHeight = 2160
+	port = 0
+	requestWidth = 640
+	requestHeight = 480
 
 	# Try to modify camera parameters
 	cam = cv2.VideoCapture(port)
@@ -50,16 +50,13 @@ def main():
 
 	donutSlice = DonutSlice(width / 2.0, height / 2.0, inRadius, outRadius, np.deg2rad(middleAngle), np.deg2rad(angleSpan))
 	dewarpedImage = np.zeros((outputHeight, outputWidth, channels), dtype=np.uint8)
-	dewarper = FisheyeDewarping()
+	dewarper = FisheyeDewarping(width, height, channels, False)
+	bufferId = dewarper.bindDewarpingBuffer(dewarpedImage)
 	debugImageInfoParam = None
 
 	if debug:
 		print('DEBUG enabled')
 		debugImageInfoParam = createDebugImageInfoParam(donutSlice, topDistorsionFactor)
-
-	if dewarper.initialize(width, height, outputWidth, outputHeight, channels, True) == -1:
-		print("Error during c++ lib initialization")
-		return
 
 	while True:
 		success, frame = cam.read()
@@ -70,9 +67,9 @@ def main():
 				addDebugInfoToImage(frame, debugImageInfoParam)
 
 			dewarpingParameters = DewarpingHelper.getDewarpingParameters(donutSlice, topDistorsionFactor, bottomDistorsionFactor)
-			dewarper.setDewarpingParameters(dewarpingParameters)
 			dewarper.loadFisheyeImage(frame)
-			dewarper.dewarpImage(dewarpedImage)
+			dewarper.queueDewarping(dewarpingParameters, bufferId)
+			dewarper.dewarpNextImage()
 			cv2.imshow("img", dewarpedImage)
 
 		k = cv2.waitKey(1)

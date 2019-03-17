@@ -2,7 +2,11 @@
 #define FISHEYE_DEWARPING_H
 
 #include <memory>
+#include <queue>
+#include <map>
+#include <utility> 
 #include <models/DewarpingParameters.h>
+#include <models/ImageBuffer.h>
 
 class DewarpRenderer;
 class FisheyeTexture;
@@ -10,33 +14,39 @@ class FrameLoader;
 class ShaderProgram;
 class VertexObjectLoader;
 
+/*
+ * This class is the main interface between the c++ and python code.
+ * Functions which takes a 3 dimentional arrays start with height instead of width,
+ * because numpy arrays have row and col inverted from OpenGL arrays
+ */
+
 class FisheyeDewarping
 {
 public:
 
-    FisheyeDewarping();
+    FisheyeDewarping(int inputWidth, int inputHeight, int channels, bool isDewarping = true);
     virtual ~FisheyeDewarping();
 
-    int initialize(int inputWidth, int inputHeight, int outputWidth, int outputHeight, int channels, bool isDewarping = true);
-    void setDewarpingParameters(DewarpingParameters& dewarpingParameters);
-    void loadFisheyeImage(int width, int height, int channels, unsigned char * fisheyeImage);
-    void dewarpImage(int width, int height, int channels, unsigned char * dewarpedImage);
+    void loadFisheyeImage(unsigned char * fisheyeImage, int height, int width, int channels);
+    int bindDewarpingBuffer(unsigned char * dewarpedImageBuffer, int height, int width, int channels);
+    void queueDewarping(DewarpingParameters& dewarpingParameters, int bufferId);
+    int dewarpNextImage();
 
 private:
 
+    void initialize(int inputWidth, int inputHeight, int channels, bool isDewarping);
     void cleanUp();
 
 private:
 
-    DewarpingParameters m_dewarpingParameters;
+    std::deque<std::pair<int, DewarpingParameters>> m_dewarpingQueue;
+    std::map<int, ImageBuffer> m_dewarpedImageBuffers;
 
     std::unique_ptr<DewarpRenderer> m_dewarpRenderer;
     std::unique_ptr<FisheyeTexture> m_fisheyeTexture;
     std::unique_ptr<FrameLoader> m_frameLoader;
     std::shared_ptr<ShaderProgram> m_shader;
     std::unique_ptr<VertexObjectLoader> m_vertexObjectLoader;
-    
-    bool m_isInitialized;
     
 };
 
