@@ -126,5 +126,6 @@ class OdasLive(QWidget, Ui_OdasLive):
 
     @pyqtSlot(object, object)
     def imageReceived(self, image, faces):
-        self.virtualCameraManager.update(faces.tolist())
+        imageHeight, imageWidth, colors = image.shape
+        self.virtualCameraManager.update(faces.tolist(), imageWidth, imageHeight)
         self.virtualCameraDisplayer.updateDisplay(image, self.virtualCameraManager.virtualCameras)
