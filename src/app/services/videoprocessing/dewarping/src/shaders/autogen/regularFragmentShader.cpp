@@ -1,1 +1,0 @@
-const char * regularFragmentShaderSource = "#version 140\nin vec2 textureCoords;\nout vec4 out_Color;\nuniform sampler2D guiTexture;\nvoid main(void)\n{\nout_Color = texture(guiTexture, textureCoords);\n}\n\0";
