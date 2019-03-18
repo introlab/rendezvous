@@ -79,7 +79,6 @@ class Conference(QWidget, Ui_Conference):
             self.conferenceController.stopOdasLive()
 
 
-
     @pyqtSlot()
     def btnStartStopVideoClicked(self):
         self.btnStartStopVideo.setDisabled(True)
@@ -189,3 +188,4 @@ class Conference(QWidget, Ui_Conference):
             self.videoProcessor.stop()
             self.videoProcessor.signalFrameData.disconnect(self.imageReceived)
             self.virtualCameraManager.virtualCameras.clear()
+

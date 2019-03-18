@@ -1,7 +1,5 @@
-
 import os
 import json
-import re
 import socket
 from threading import Thread
 from time import sleep
@@ -93,6 +91,15 @@ class Odas(QObject, Thread):
             self.__workers.remove(worker)
 
 
+    @pyqtSlot(Exception)
+    def odasLiveExceptionHandling(self, e):
+        if self.odasProcess:
+            self.odasProcess.signalException.disconnect(self.odasLiveExceptionHandling)
+            self.odasProcess = None
+            self.closeConnections()
+        self.signalException.emit(e)
+
+
     def __initWorker(self, connection):
         worker = ClientHandler(connection, isVerbose=self.isVerbose)
         worker.signalAudio.connect(self.audioReceived)
@@ -136,15 +143,6 @@ class Odas(QObject, Thread):
             self.odasProcess.stop()
             self.odasProcess = None
             print('odas subprocess stopped...') if self.isVerbose else None
-
-    
-    @pyqtSlot(Exception)
-    def odasLiveExceptionHandling(self, e):
-        if self.odasProcess:
-            self.odasProcess.signalException.disconnect(self.odasLiveExceptionHandling)
-            self.odasProcess = None
-            self.closeConnections()
-        self.signalException.emit(e)
 
 
 class ClientHandler(QObject, Thread):
