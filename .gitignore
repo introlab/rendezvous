@@ -16,3 +16,4 @@ lib/*/build
 src/app/services/videoprocessing/dewarping/src/shaders/autogen
 src/app/services/videoprocessing/dewarping/interface/fisheye_dewarping.py
 src/app/services/videoprocessing/dewarping/interface/fisheye_dewarping_wrap.cpp
+config/service_account.json
