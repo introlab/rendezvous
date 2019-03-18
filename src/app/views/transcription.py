@@ -1,10 +1,10 @@
 import os
 from pathlib import Path
 
-from PyQt5.QtWidgets import QApplication, QWidget, QFileDialog
+from PyQt5.QtWidgets import QWidget, QFileDialog
 from PyQt5.QtCore import pyqtSlot
 
-from src.app.controllers.speechtotext.speech_to_text import EncodingType, LanguageCode, Model, SpeechToText
+from src.app.controllers.transcription_controller import TranscriptionController
 from src.app.gui.transcription_ui import Ui_Transcription
 
 
@@ -16,18 +16,23 @@ class Transcription(QWidget, Ui_Transcription):
         super(Transcription, self).__init__(parent)
         self.setupUi(self)
 
+        # Initilalization of the controller.
+        self.transcriptionController = TranscriptionController()
+
+
+
         # Populate UI.
-        self.encoding.addItems([encodingType.value for encodingType in EncodingType])
-        # Valid range accepted by the Google API.
-        self.sampleRate.setRange(8000, 48000)
-        # Value we are most likely to use.
-        self.sampleRate.setValue(48000)
-        self.language.addItems([languageCode.value for languageCode in LanguageCode])
-        self.model.addItems([model.value for model in Model])
+        self.encoding.addItems([encodingType.value for encodingType in self.transcriptionController.getEncodingTypes()])
+        self.sampleRate.setRange(self.transcriptionController.getMinSampleRate(), self.transcriptionController.getMaxSampleRate())
+        self.sampleRate.setValue(self.transcriptionController.getDefaultSampleRate())
+        self.language.addItems([languageCode.value for languageCode in self.transcriptionController.getLanguageCodes()])
+        self.model.addItems([model.value for model in self.transcriptionController.getModels()])    
 
         # Qt signal slots.
-        self.btnImportAudio.clicked.connect(self.importAudioClicked)
-        self.btnTranscribe.clicked.connect(self.transcribeClicked)
+        self.btnImportAudio.clicked.connect(self.onImportAudioClicked)
+        self.btnTranscribe.clicked.connect(self.onTranscribeClicked)
+        self.transcriptionController.transcriptionReady.connect(self.onTranscriptionReady)
+        self.transcriptionController.exception.connect(self.onException)
 
 
     # Handles the event where the user closes the window with the X button.
@@ -37,7 +42,7 @@ class Transcription(QWidget, Ui_Transcription):
 
 
     @pyqtSlot()
-    def importAudioClicked(self):
+    def onImportAudioClicked(self):
         try:
             audioDataPath, _ = QFileDialog.getOpenFileName(parent=self, 
                                                            caption='Import Audio Data', 
@@ -50,29 +55,29 @@ class Transcription(QWidget, Ui_Transcription):
 
 
     @pyqtSlot()
-    def transcribeClicked(self):
+    def onTranscribeClicked(self):
         self.transcriptionResult.setText('Transcribing...')
         self.setDisabled(True)
-        # The UI update is scheduled after the ending of the slot, that's why we need to force the porcessing of events.
-        QApplication.processEvents()
 
-        try:
-            config = {
-                'encoding' : self.encoding.currentText(),
-                'sampleRate' : self.sampleRate.value(),
-                'languageCode' : self.language.currentText(),
-                'model' : self.model.currentText(),
-                'enhanced' : self.enhanced.checkState()}
+        config = {'audioDataPath' : self.audioDataPath.text(),
+                    'encoding' : self.encoding.currentText(),
+                    'enhanced' : self.enhanced.checkState(),
+                    'languageCode' : self.language.currentText(),
+                    'model' : self.model.currentText(),
+                    'outputFolder' : self.window().getSetting('defaultOutputFolder'),
+                    'sampleRate' : self.sampleRate.value(),
+                    'serviceAccountPath' : self.window().getSetting('serviceAccountPath')}
+        self.transcriptionController.resquestTranscription(config)
 
-            transcriptionResult = SpeechToText.resquestTranscription(serviceAccountPath=self.window().getSetting('serviceAccountPath'),
-                                                                        audioDataPath=self.audioDataPath.text(),
-                                                                        outputFolder=self.window().getSetting('defaultOutputFolder'),
-                                                                        config=config)
-            self.transcriptionResult.setText(transcriptionResult)
-        
-        except Exception as e:
-            self.window().emitToExceptionsManager(e)
-            self.transcriptionResult.setText('')
-        finally:
-            self.setDisabled(False)
-        
+
+    @pyqtSlot(str)
+    def onTranscriptionReady(self, transcription):
+        self.transcriptionResult.setText(transcription)
+        self.setDisabled(False)
+
+
+    @pyqtSlot(Exception)
+    def onException(self, e):
+        self.window().emitToExceptionsManager(e)
+        self.transcriptionResult.setText('')
+        self.setDisabled(False)
