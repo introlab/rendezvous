@@ -8,58 +8,16 @@ from time import sleep
 
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 
-from src.utils.json_utils import JsonUtils
+from src.utils.json_utils import JsonUtils  
+from src.utils.spherical_angles_converter import SphericalAnglesConverter
 from src.app.services.odas.odasliveprocess.odas_live_process import OdasLiveProcess
 
-# Read config file to get sample rate for while True sleepTime
-        # line = FileHelper.getLineFromFile(micConfigPath, 'fS')
-        # if not line:
-        #     raise Exception('sample rate not found in ', micConfigPath)
-
-        # # Extract the sample rate from the string and convert to an Integer
-        # sampleRate = int(re.sub('[^0-9]', '', line.split('=')[1]))
-        # sleepTime = 1 / sampleRate
-
-    # def run(self, odasPath, micConfigPath, sleepTime):
-    #     try:
-    #         self.__spawnSubProcess(odasPath, micConfigPath)
-    #         stdout = []
-    #         while self.isRunning:
-
-    #             if self.odasProcess.poll():
-    #                 self.stop()
-    #                 break
-
-    #             line = self.odasProcess.stdout.readline().decode('UTF-8')
-    #             # at this point odaslive is ready to serve
-    #             self.isRunning = True
-
-    #             if line:
-    #                 stdout.append(line)
-
-    #             if len(stdout) > 8: # 8 because an object is 9 lines long.
-    #                 textoutput = '\n'.join(stdout)
-    #                 self.__parseOdasObject(textoutput)
-    #                 stdout.clear()
-
-    #             sleep(sleepTime)
-    
-    #         self.odasProcess.kill()
-    #         if self.odasProcess.returncode and self.odasProcess.returncode != 0:
-    #             raise Exception('ODAS exited with exit code {exitCode}'.format(exitCode=self.odasProcess.returncode))
-        
-    #     except Exception as e:
-    #         self.signalException.emit(e)
-
-    #     finally:
-    #         self.isRunning = False
 class Odas(QObject, Thread):
 
     signalException = pyqtSignal(Exception)
     signalAudioData = pyqtSignal(bytes)
     signalPositionData = pyqtSignal(object)
-    signalData = pyqtSignal(object)
-    signalClientConnected = pyqtSignal(bool)
+    signalClientsConnected = pyqtSignal(bool)
 
     def __init__(self, hostIP, port, isVerbose=False, parent=None):
         super(Odas, self).__init__(parent)
@@ -70,18 +28,18 @@ class Odas(QObject, Thread):
         self.host = hostIP
         self.port = port
         self.isVerbose = isVerbose
+        self.__workers = []
 
         self.isRunning = False
         self.isConnected = False
 
-        self.clientConnection = None
         self.odasProcess = None
         self.odasPath =  ''
         self.micConfigPath = ''
     
 
     def stop(self):
-        self.closeConnection()
+        self.closeConnections()
         self.stopOdasLive()
         self.isRunning = False
         print('server stopped') if self.isVerbose else None
@@ -91,36 +49,25 @@ class Odas(QObject, Thread):
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
                 sock.bind((self.host, self.port))
-                sock.listen()
+                #wait for 2 clients max
+                sock.listen(2)
                 self.isRunning = True
                 print('server is up!') if self.isVerbose else None
 
                 while True:
-                    self.clientConnection, _ = sock.accept()
-                    self.signalClientConnected.emit(True)
-                    if self.clientConnection:
+                    clientConnection, _ = sock.accept()
+                    if clientConnection:
                         self.isConnected = True
                         print('client connected!') if self.isVerbose else None
-                        while True:
-                            if not self.isConnected or not self.isRunning:
-                                break
-                            # 1024 because this is the minimum Odas send through the socket.
-                            data = self.clientConnection.recv(1024)
-                            # if there is no data incomming close the stream.
-                            if not data:
-                                break
-                            
-                            if JsonUtils.isJson(str(data)):
-                                self.__parseOdasObject(str(data))
-                            else:
-                                self.signalAudioData.emit(data)
-                            
-                            sleep(0.00001)
-                    
+                        worker = self.__initWorker(clientConnection)
+                        worker.start()
+                        self.__workers.append(worker)
+                        self.signalClientsConnected.emit(True)
+
                     sleep(0.00001)
 
         except Exception as e:
-            self.closeConnection()
+            self.closeConnections()
             self.stopOdasLive()
             self.signalException.emit(e)
 
@@ -128,13 +75,41 @@ class Odas(QObject, Thread):
             self.isRunning = False
 
 
-    def closeConnection(self):
-        if self.clientConnection:
-            self.clientConnection.close()
-            self.isConnected = False
-            self.clientConnection = None
-            print('connection closed') if self.isVerbose else None
-            self.signalClientConnected.emit(False)
+    @pyqtSlot(object)
+    def positionsReceived(self, data):
+        if data:
+            self.signalPositionData.emit(data)
+
+
+    @pyqtSlot(bytes)
+    def audioReceived(self, data):
+        if data:
+            self.signalAudioData.emit(data)
+
+
+    @pyqtSlot(object)
+    def workerTerminated(self, worker):
+        if worker in self.__workers:
+            self.__workers.remove(worker)
+
+
+    def __initWorker(self, connection):
+        worker = ClientHandler(connection, isVerbose=self.isVerbose)
+        worker.signalAudio.connect(self.audioReceived)
+        worker.signalPositions.connect(self.positionsReceived)
+        worker.signalConnectionClosed.connect(self.workerTerminated)
+        return worker
+
+
+    def closeConnections(self):
+        if self.__workers:
+            for worker in self.__workers:
+                worker.signalAudio.connect(self.audioReceived)
+                worker.signalPositions.connect(self.positionsReceived)
+                worker.signalConnectionClosed.connect(self.workerTerminated)
+                worker.stop()
+
+        self.signalClientsConnected.emit(False)
 
 
     # Spawn a sub process that execute odaslive.
@@ -156,9 +131,9 @@ class Odas(QObject, Thread):
     def stopOdasLive(self):
         if self.odasProcess:
             if self.isConnected:
-                self.closeConnection()
-            self.odasProcess.stop()
+                self.closeConnections()
             self.odasProcess.signalException.disconnect(self.odasLiveExceptionHandling)
+            self.odasProcess.stop()
             self.odasProcess = None
             print('odas subprocess stopped...') if self.isVerbose else None
 
@@ -168,21 +143,71 @@ class Odas(QObject, Thread):
         if self.odasProcess:
             self.odasProcess.signalException.disconnect(self.odasLiveExceptionHandling)
             self.odasProcess = None
-            self.closeConnection()
+            self.closeConnections()
         self.signalException.emit(e)
 
 
+class ClientHandler(QObject, Thread):
+
+    signalConnectionClosed = pyqtSignal(object)
+    signalAudio = pyqtSignal(bytes)
+    signalPositions = pyqtSignal(object)
+
+    def __init__(self, sock, isVerbose=False, parent=None):
+        super(ClientHandler, self).__init__(parent)
+        Thread.__init__(self)
+
+        self.sock = sock
+        self.isVerbose = isVerbose
+        self.isConnected = True
+
+
+    def stop(self):
+        if self.sock:
+            self.sock.close()
+            self.isConnected = False
+            self.sock = None
+
+            self.join()
+            print('connection closed') if self.isVerbose else None
+            self.signalConnectionClosed.emit(self)
+
+    def run(self):
+        try:
+            while True:
+                if not self.isConnected or not self.sock:
+                    self.isConnected = False
+                    return
+                # 1024 because this is the minimum Odas send through the socket.
+                data = self.sock.recv(1024)
+                # if there is no data incomming close the stream.
+                if not data:
+                    self.isConnected = False
+                    return
+                            
+                if JsonUtils.isJson(data):
+                    self.__parseOdasObject(data)
+                else:
+                    # print(data)
+                    self.signalAudio.emit(data)
+                            
+                sleep(0.00001)
+
+        except Exception as e:
+            self.signalConnectionClosed.emit(self)
+
+    
     # Parse every Odas event 
-    def __parseOdasObject(self, jsonText):
-        parsedJson = json.loads(jsonText)
+    def __parseOdasObject(self, jsonBytes):
+        parsedJson = json.loads(str(jsonBytes, 'utf-8'))
         jsonSources = parsedJson['src']
 
         sources = {}
         for index, jsonSource in enumerate(jsonSources):
-            jsonSource['azimuth'] = Angles3DConverter.azimuthCalculation(jsonSource['x'], jsonSource['y'])
-            jsonSource['elevation'] = Angles3DConverter.elevationCalculation(jsonSource['x'], jsonSource['y'], jsonSource['z'])
+            jsonSource['azimuth'] = SphericalAnglesConverter.getAzimuthFromPosition(jsonSource['x'], jsonSource['y'])
+            jsonSource['elevation'] = SphericalAnglesConverter.getElevationFromPosition(jsonSource['x'], jsonSource['y'], jsonSource['z'])
             sources[index] = jsonSource
 
         if sources:
-            self.signalOdasData.emit(sources)
+            self.signalPositions.emit(sources)
 

@@ -13,7 +13,7 @@ class ConferenceController(QObject):
     def __init__(self, parent=None):
         super(ConferenceController, self).__init__(parent)
 
-        self.__odas = Odas(hostIP='127.0.0.1', port= 10020, isVerbose=True)
+        self.__odas = Odas(hostIP='127.0.0.1', port= 10020, isVerbose=False)
         self.__odas.start()
 
         self.__audioWriter = AudioWriter()
@@ -28,7 +28,7 @@ class ConferenceController(QObject):
 
         self.__odas.signalAudioData.connect(self.audioDataReceived)
         self.__odas.signalPositionData.connect(self.positionDataReceived)
-        self.__odas.signalClientConnected.connect(self.odasClientConnected)
+        self.__odas.signalClientsConnected.connect(self.odasClientConnected)
 
 
     @pyqtSlot(bool)
@@ -52,6 +52,7 @@ class ConferenceController(QObject):
         self.saveAudioRecording()
         self.__isRecording = False
         self.signalRecordingState.emit(self.__isRecording)
+        self.signalOdasState.emit(False)
         self.signalException.emit(e)
 
 

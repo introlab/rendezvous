@@ -96,6 +96,9 @@ class Conference(QWidget, Ui_Conference):
 
     @pyqtSlot()
     def btnStartStopAudioRecordClicked(self):
+        if not self.outputFolder.text():
+            self.window().emitToExceptionsManager(Exception('output folder cannot be empty'))
+
         self.btnStartStopAudioRecord.setDisabled(True)
         QApplication.processEvents()
 
