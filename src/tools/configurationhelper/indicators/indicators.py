@@ -1,6 +1,9 @@
 import math
 
-from src.utils.angles_3d_converter import Angles3DConverter
+import numpy as np
+
+from src.utils.spherical_angles_converter import SphericalAnglesConverter
+
 
 class Indicators:
 
@@ -69,16 +72,16 @@ class Indicators:
             # Calculate the acceptable range of the azimuth angle
             xyHypotenuse = math.sqrt(x**2 + y**2)
             dThetaAz = math.sin(width / (2 * xyHypotenuse))
-            azimuth = Angles3DConverter.azimuthCalculation(x, y)
-            print('Real azimuth for source {source} equals = {azimuth}'.format(source=index+1, azimuth=Angles3DConverter.radToDegree(azimuth)))
+            azimuth = SphericalAnglesConverter.getAzimuthFromPosition(x, y)
+            print('Real azimuth for source {source} equals = {azimuth}'.format(source=index+1, azimuth=SphericalAnglesConverter.deg(azimuth)))
             azimuthBounds = { 'min' : azimuth - dThetaAz, 'max' : azimuth + dThetaAz }
 
             # Calculate the acceptable range of the elevation angle
             xyzHypotenuse = math.sqrt(x**2 + y**2 + z**2)
             dThetaEl = math.sin(height / (2* xyzHypotenuse))
 
-            elevation = Angles3DConverter.elevationCalculation(x, y, z)
-            print('Real elevation for source {source} equals = {elevation}'.format(source=index+1, elevation=Angles3DConverter.radToDegree(elevation)))
+            elevation = SphericalAnglesConverter.getElevationFromPosition(x, y, z)
+            print('Real elevation for source {source} equals = {elevation}'.format(source=index+1, elevation=SphericalAnglesConverter.deg(elevation)))
             elevationBounds = { 'min' : elevation - dThetaEl, 'max' : elevation + dThetaEl }
 
             self.configSources.append({'x' : x, 'y' : y, 'z' : z, 
@@ -101,8 +104,8 @@ class Indicators:
                 x = source['x']
                 y = source['y']
                 z = source['z']
-                azimuth = Angles3DConverter.azimuthCalculation(x, y)
-                elevation = Angles3DConverter.elevationCalculation(x, y, z)
+                azimuth = SphericalAnglesConverter.getAzimuthFromPosition(x, y)
+                elevation = SphericalAnglesConverter.getElevationFromPosition(x, y, z)
 
                 azimuthBounds = self.configSources[index]['azimuthBounds']
                 elevationBounds = self.configSources[index]['elevationBounds']
@@ -129,8 +132,8 @@ class Indicators:
             y = configSource['y']
             odasY = source['y']
 
-            azimuth = Angles3DConverter.azimuthCalculation(x, y)
-            odasAzimuth = Angles3DConverter.azimuthCalculation(odasX, odasY)
+            azimuth = SphericalAnglesConverter.getAzimuthFromPosition(x, y)
+            odasAzimuth = SphericalAnglesConverter.getAzimuthFromPosition(odasX, odasY)
             azimuthDelta = abs(azimuth - odasAzimuth)
 
             if azimuthDelta < minAzimuthDelta or minAzimuthDelta == -1:
@@ -147,7 +150,7 @@ class Indicators:
             if self.eventsPerSrc[index] != 0:
                 avgAzimuth = azimuthSum / self.eventsPerSrc[index]
                 self.azimuth['average'][index] = avgAzimuth
-                avgAzimuthDegree = Angles3DConverter.radToDegree(avgAzimuth) % 360
+                avgAzimuthDegree = np.rad2deg(avgAzimuth) % 360
                 print('source {sourceNumber} : {azimuth}'.format(sourceNumber=(index + 1), azimuth=(avgAzimuthDegree)))
 
         # average elevation for each source
@@ -156,7 +159,7 @@ class Indicators:
             if self.eventsPerSrc[index] != 0:
                 avgElevation = elevationSum / self.eventsPerSrc[index]
                 self.elevation['average'][index] = avgElevation
-                avgElevationDegree = Angles3DConverter.radToDegree(avgElevation) % 360
+                avgElevationDegree = np.rad2deg(avgElevation) % 360
                 print('source {sourceNumber} : {elevation}'.format(sourceNumber=(index + 1), elevation=avgElevationDegree))
 
 
@@ -184,7 +187,7 @@ class Indicators:
             if azimuthValues != [] and int(key) < len(self.config['Sources']):
                 x = self.config['Sources'][int(key)]['x']
                 y = self.config['Sources'][int(key)]['y']
-                azimuthOfReference = Angles3DConverter.azimuthCalculation(x, y)
+                azimuthOfReference = SphericalAnglesConverter.getAzimuthFromPosition(x, y)
                 rms = self.rms(azimuthOfReference, azimuthValues)
                 self.azimuth['rms'][int(key)] = rms
                 print('source {sourceNumber} : {rms}'.format(sourceNumber=(int(key) + 1), rms=rms))
@@ -195,7 +198,7 @@ class Indicators:
                 x = self.config['Sources'][int(key)]['x']
                 y = self.config['Sources'][int(key)]['y']
                 z = self.config['Sources'][int(key)]['z']
-                elevationOfReference = Angles3DConverter.elevationCalculation(x, y, z)
+                elevationOfReference = SphericalAnglesConverter.getElevationFromPosition(x, y, z)
                 rms = self.rms(elevationOfReference, elevationValues)
                 self.elevation['rms'][int(key)] = rms
                 print('source {sourceNumber} : {rms}'.format(sourceNumber=(int(key) + 1), rms=rms))

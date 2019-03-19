@@ -52,8 +52,7 @@ class OdasLive(QWidget, Ui_OdasLive):
     def startVideoProcessor(self):
         if self.videoProcessor and not self.videoProcessor.isRunning:
             self.videoProcessor.signalFrameData.connect(self.imageReceived)
-            self.videoProcessor.start(debug=False, 
-                                      cameraConfigPath=self.window().getSetting('cameraConfigPath'))
+            self.videoProcessor.start(self.window().getSetting('cameraConfigPath'))
 
 
     def stopVideoProcessor(self):
@@ -128,8 +127,5 @@ class OdasLive(QWidget, Ui_OdasLive):
     @pyqtSlot(object, object)
     def imageReceived(self, image, faces):
         imageHeight, imageWidth, colors = image.shape
-
-        for face in faces:
-            self.virtualCameraManager.addOrUpdateVirtualCamera(face, imageWidth, imageHeight)
-
+        self.virtualCameraManager.update(faces.tolist(), imageWidth, imageHeight)
         self.virtualCameraDisplayer.updateDisplay(image, self.virtualCameraManager.virtualCameras)
