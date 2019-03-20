@@ -1,10 +1,10 @@
 import unittest
-import pathlib
+from pathlib import Path
 import os
 
 from src.utils.file_helper import FileHelper
 
-rootPath = pathlib.Path('../../../').parents[2].absolute()
+rootPath = str(Path(__file__).resolve().parents[2])
 
 
 class TestFileHelper(unittest.TestCase):
