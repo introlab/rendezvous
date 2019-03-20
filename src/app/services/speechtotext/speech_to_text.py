@@ -1,6 +1,6 @@
 import io
 import os
-from enum import Enum, unique, auto
+from enum import Enum, unique
 
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 

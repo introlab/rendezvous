@@ -6,7 +6,7 @@ import cv2
 
 from .iface_detector import IFaceDetector
 
-rootDirectory = os.path.realpath(Path(__file__).parents[6])
+rootDirectory = str(Path(__file__).resolve().parents[6])
 
 
 class DnnFaceDetector(IFaceDetector):

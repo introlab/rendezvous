@@ -9,7 +9,7 @@ from src.app.gui.change_settings_ui import Ui_ChangeSettings
 
 class ChangeSettings(QWidget, Ui_ChangeSettings):
 
-    rootDirectory = os.path.realpath(Path(__file__).parents[4])
+    rootDirectory = str(Path(__file__).resolve().parents[4])
 
     def __init__(self, parent=None):
         super(ChangeSettings, self).__init__(parent)
