@@ -2,7 +2,16 @@ language: python
 python:
   - "3.5.2"
 cache: pip
+compiler: g++
+before_install:
+  - sudo apt-get -y update
 install:
   - pip install -r ./requirements.txt
+  - sudo apt-get install -y xorg-dev libglu1-mesa-dev
+  - sudo apt-get install -y swig
 script:
   - pytest -v --cov=./ tests/
+  - make
+  - make dewarping_lib
+  - make clean
+  - make clean_dewarping_lib
