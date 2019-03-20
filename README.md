@@ -10,19 +10,19 @@
     
     $ cd rendezvous
 
-3- Install Python 3.
+3- Install Python 3.5, since it's the latest version supported on **Ubuntu 16.04**. We assume in the next steps that you are using **Ubuntu16.04**.
 
     $ sudo apt-get install python3
 
-4 - Install pip for Python 3.
+4 - Install pip for Python 3.5.
 
     $ sudo apt-get install python3-pip
 
-5 - Install virtualenv for Python 3.
+5 - Install virtualenv for Python 3.5.
 
     $ python3 -m pip install --user virtualenv
 
-6- Create a virtual environment of Python 3.
+6- Create a virtual environment of Python 3.5.
 
     $ python3 -m virtualenv env
 
@@ -83,4 +83,4 @@ All tests files you add must follow this rule "test*.py", the framework use for 
 - lib : C-language libraries
 - src : application source code and tools related to the source code
 - tests : unit testing
-- config : for different config files  
+- config : for different config files
