@@ -36,7 +36,7 @@ pylint==2.2.2
 pynput==1.4
 pyparsing==2.3.1
 pyqt-distutils==0.7.3
-PyQt5==5.12
+PyQt5==5.6
 PyQt5-sip==4.19.14
 pytest==4.3.0
 pytest-cov==2.6.1
