@@ -169,7 +169,7 @@ class SpeechToText(QObject):
                 raise Exception('No Audio Data found at : {}'.format(audioDataPath))
 
             outputFolder = self.__config['outputFolder']
-            if not os.path.exists('outputFolder'):
+            if not os.path.exists(outputFolder):
                 raise Exception('No default output folder found at : {}'.format(outputFolder))
 
             encoding = self.__config['encoding']
