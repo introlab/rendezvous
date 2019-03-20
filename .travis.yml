@@ -2,10 +2,12 @@ language: python
 python:
   - "3.5.2"
 cache: pip
+before_install:
+  - sudo apt-get update
 install:
   - pip install -r ./requirements.txt
-  - sudo apt-get install xorg-dev libglu1-mesa-dev
-  - sudo apt-get install swig
+  - sudo apt-get install -y xorg-dev libglu1-mesa-dev
+  - sudo apt-get install -y swig
 script:
   - pytest -v --cov=./ tests/
   - make
