@@ -2,9 +2,10 @@ language: python
 python:
   - "3.5.2"
 cache: pip
-compiler: gcc
+compiler: g++
 before_install:
   - sudo apt-get update
+  - sudo apt-get upgrade
 install:
   - pip install -r ./requirements.txt
   - sudo apt-get install -y xorg-dev libglu1-mesa-dev
