@@ -1,9 +1,12 @@
+import queue
+import time
+from multiprocessing import Queue
 from threading import Thread
 
 from PyQt5.QtCore import QObject, pyqtSignal
 
 from .streaming.video_stream import VideoStream
-from .facedetection.facedetector.dnn_face_detector import DnnFaceDetector
+from .facedetection.face_detection import FaceDetection
 from src.utils.file_helper import FileHelper
 
 
@@ -14,12 +17,11 @@ class VideoProcessor(QObject):
 
     def __init__(self, parent=None):
         super(VideoProcessor, self).__init__(parent)
-
-        self.faceDetector = DnnFaceDetector()
         self.isRunning = False
+        self.imageQueue = Queue()
+        self.facesQueue = Queue()
 
 
-    # Set debug to true to show the areas of the calculations
     def start(self, cameraConfigPath):
         print("Starting video processor...")
 
@@ -43,6 +45,7 @@ class VideoProcessor(QObject):
     def run(self, cameraConfigPath):
 
         videoStream = None
+        faceDetection = None
 
         try:
 
@@ -50,15 +53,29 @@ class VideoProcessor(QObject):
             videoStream = VideoStream(cameraConfig)
             videoStream.initializeStream()
 
+            faceDetection = FaceDetection(self.imageQueue, self.facesQueue)
+            faceDetection.start()
+
             print('Video processor started')
 
             self.isRunning = True
+            faces = []
             while self.isRunning:
+                newFaces = None
+                try:
+                    newFaces = self.facesQueue.get_nowait()
+                except queue.Empty:
+                    time.sleep(0)
+
+                if newFaces is not None:
+                    faces = newFaces
 
                 success, frame = videoStream.readFrame()
 
+                if faceDetection.requestImage:
+                    self.imageQueue.put_nowait(frame)
+
                 if success:
-                    faces = self.faceDetector.detectFaces(frame)
                     self.signalFrameData.emit(frame, faces)
 
         except Exception as e:
@@ -68,8 +85,14 @@ class VideoProcessor(QObject):
 
         finally:
 
+            if faceDetection:
+                faceDetection.stop()
+                faceDetection.join()
+                faceDetection.terminate()
+                faceDetection = None
+
             if videoStream:
                 videoStream.destroy()
-
+                videoStream = None
+                
         print('Video stream terminated')
-
