@@ -10,7 +10,7 @@ from src.app.gui.transcription_ui import Ui_Transcription
 
 class Transcription(QWidget, Ui_Transcription):
 
-    rootDirectory = os.path.realpath(Path(__file__).parents[3])
+    rootDirectory = str(Path(__file__).resolve().parents[3])
 
     def __init__(self, parent=None):
         super(Transcription, self).__init__(parent)
