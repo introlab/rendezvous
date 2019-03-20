@@ -77,7 +77,7 @@ int FisheyeDewarping::dewarpNextImage()
 
 void FisheyeDewarping::initialize(int inputWidth, int inputHeight, int channels, bool isDewarping)
 {
-    if (DisplayManager::createDisplay(0, 0) != 0)
+    if (DisplayManager::createDisplay(1, 1) != 0)
     {
         throw runtime_error("FisheyeDewarping object initialization failed");
     }
