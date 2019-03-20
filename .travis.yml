@@ -5,7 +5,6 @@ cache: pip
 compiler: g++
 before_install:
   - sudo apt-get -y update
-  - sudo apt-get -y upgrade
 install:
   - pip install -r ./requirements.txt
   - sudo apt-get install -y xorg-dev libglu1-mesa-dev
