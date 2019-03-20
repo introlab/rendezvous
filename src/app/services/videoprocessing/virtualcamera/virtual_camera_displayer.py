@@ -19,6 +19,11 @@ class VirtualCameraDisplayer:
         self.image = openCVImage
         self.virtualCameras = virtualCameras
 
+    
+    def clear(self):
+        self.image = []
+        self.virtualCameras = []
+
 
     # Draw every virtual cameras on the frame.
     # Is called automatically by Qt when the frame is ready for an update

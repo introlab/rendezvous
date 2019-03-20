@@ -13,6 +13,13 @@ class VirtualCamera:
 
 
     @staticmethod
+    def copy(vc):
+        virtualCamera = VirtualCamera(vc.xPos, vc.yPos, vc.width, vc.height)
+        virtualCamera.timeToLive = vc.timeToLive
+        return virtualCamera
+
+
+    @staticmethod
     def createFromFace(face):
         (facex1, facey1, facex2, facey2) = face
         width = facex2 - facex1

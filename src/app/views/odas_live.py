@@ -5,8 +5,7 @@ from src.app.gui.odas_live_ui import Ui_OdasLive
 # TODO A controler is needed here, so we don't call all the services in the UI layer.
 from src.app.services.odasstream.odas_stream import OdasStream
 from src.app.services.videoprocessing.video_processor import VideoProcessor
-from src.app.services.virtualcamera.virtual_camera_displayer import VirtualCameraDisplayer
-from src.app.services.virtualcamera.virtual_camera_manager import VirtualCameraManager
+from src.app.services.videoprocessing.virtualcamera.virtual_camera_displayer import VirtualCameraDisplayer
 
 
 class OdasLive(QWidget, Ui_OdasLive):
@@ -17,7 +16,6 @@ class OdasLive(QWidget, Ui_OdasLive):
         self.odasStream = OdasStream()
         self.videoProcessor = VideoProcessor()
 
-        self.virtualCameraManager = VirtualCameraManager()
         self.virtualCameraDisplayer = VirtualCameraDisplayer(self.virtualCameraFrame)
 
         # Qt signal slots
@@ -59,7 +57,7 @@ class OdasLive(QWidget, Ui_OdasLive):
         if self.videoProcessor and self.videoProcessor.isRunning:
             self.videoProcessor.stop()
             self.videoProcessor.signalFrameData.disconnect(self.imageReceived)
-            self.virtualCameraManager.virtualCameras.clear()
+            self.virtualCameraDisplayer.clear()
 
 
     def odasExceptionHandling(self, e):
@@ -125,7 +123,5 @@ class OdasLive(QWidget, Ui_OdasLive):
 
 
     @pyqtSlot(object, object)
-    def imageReceived(self, image, faces):
-        imageHeight, imageWidth, colors = image.shape
-        self.virtualCameraManager.update(faces.tolist(), imageWidth, imageHeight)
-        self.virtualCameraDisplayer.updateDisplay(image, self.virtualCameraManager.virtualCameras)
+    def imageReceived(self, image, virtualCameras):
+        self.virtualCameraDisplayer.updateDisplay(image, virtualCameras)
