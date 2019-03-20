@@ -6,3 +6,7 @@ install:
   - pip install -r ./requirements.txt
 script:
   - pytest -v --cov=./ tests/
+  - make
+  - make dewarping_lib
+  - make clean
+  - make clean_dewarping_lib
