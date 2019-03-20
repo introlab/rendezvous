@@ -2,6 +2,7 @@ language: python
 python:
   - "3.5.2"
 cache: pip
+compiler: gcc
 before_install:
   - sudo apt-get update
 install:
