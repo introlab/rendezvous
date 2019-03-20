@@ -1,16 +1,20 @@
-from PyQt5.QtWidgets import QMainWindow
+import os
+from pathlib import Path
 
+from PyQt5.QtWidgets import QMainWindow
 from src.app.gui.main_window_ui import Ui_MainWindow
 
 from src.app.managers.exceptions import Exceptions
 from src.app.managers.settings import Settings
 
-from src.app.views.odas_live import OdasLive
+from src.app.views.conference import Conference
 from src.app.views.transcription import Transcription
 from src.app.views.change_settings import ChangeSettings
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
+
+    rootDirectory = str(Path(__file__).resolve().parents[3])
 
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
@@ -23,8 +27,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.__settingsManager = Settings()
 
         # Tabs of the main layout.
-        self.odasLiveTab = OdasLive(parent=self)   
-        self.tabWidget.addTab(self.odasLiveTab, 'Odas Live')
+        self.conferenceTab = Conference(parent=self)   
+        self.tabWidget.addTab(self.conferenceTab, 'Conference')
 
         self.transcriptionTab = Transcription(parent=self)   
         self.tabWidget.addTab(self.transcriptionTab, 'Transcription')
@@ -36,7 +40,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # Handles the event where the user closes the window with the X button.
     def closeEvent(self, event):
         if event:
-            self.odasLiveTab.closeEvent(event)
+            self.conferenceTab.closeEvent(event)
             self.transcriptionTab.closeEvent(event)
             event.accept()
 

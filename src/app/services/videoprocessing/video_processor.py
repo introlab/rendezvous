@@ -13,7 +13,7 @@ from src.utils.file_helper import FileHelper
 class VideoProcessor(QObject):
 
     signalFrameData = pyqtSignal(object, object)
-    signalVideoException = pyqtSignal(Exception)
+    signalException = pyqtSignal(Exception)
 
     def __init__(self, parent=None):
         super(VideoProcessor, self).__init__(parent)
@@ -35,7 +35,7 @@ class VideoProcessor(QObject):
         except Exception as e:
             
             self.isRunning = False
-            self.signalVideoException.emit(e)
+            self.signalException.emit(e)
 
 
     def stop(self):
@@ -81,7 +81,7 @@ class VideoProcessor(QObject):
         except Exception as e:
 
             self.isRunning = False
-            self.signalVideoException.emit(e)
+            self.signalException.emit(e)
 
         finally:
 
