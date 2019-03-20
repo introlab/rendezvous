@@ -64,3 +64,4 @@ class TranscriptionController(QObject):
     def onException(self, e):
         self.exception.emit(e)
         self.speechToTextThread.quit()
+

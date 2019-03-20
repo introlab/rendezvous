@@ -38,14 +38,16 @@ class SpeechToText(QObject):
     exception = pyqtSignal(Exception)
 
     # All the parameters needed to perform a transcription.
-    __config = {'audioDataPath' : '',
-                'encoding' : None,
-                'enhanced' : False,
-                'languageCode' : None,
-                'model' : None,
-                'outputFolder' : '',
-                'sampleRate' : 0,
-                'serviceAccountPath' : ''}
+    __config = {
+        'audioDataPath' : '',
+        'encoding' : None,
+        'enhanced' : False,
+        'languageCode' : None,
+        'model' : None,
+        'outputFolder' : '',
+        'sampleRate' : 0,
+        'serviceAccountPath' : ''
+    }
 
     # Valid range accepted by the Google API.
     __minSampleRate = 8000
@@ -71,7 +73,7 @@ class SpeechToText(QObject):
         # ID
         block = '{}\n'.format(id)
         
-        #HH:MM:SS,mmm ---> HH:MM:SS,mmm    
+        # HH:MM:SS,mmm ---> HH:MM:SS,mmm    
         block += '{:02d}:{:02d}:{:02d},{:03d} --> {:02d}:{:02d}:{:02d},{:03d}\n'.format(
             int(startTime // 360), 
             int(startTime / 60), 
@@ -102,7 +104,7 @@ class SpeechToText(QObject):
             # Line 1 and 2.
             block += '{}\n'.format(tmpText)
 
-        # Blank line        
+        # Blank line       
         block += '\n'
 
         return block
@@ -167,8 +169,8 @@ class SpeechToText(QObject):
                 raise Exception('No Audio Data found at : {}'.format(audioDataPath))
 
             outputFolder = self.__config['outputFolder']
-            if not os.path.exists(outputFolder):
-                raise Exception('No default output folder  found at : {}'.format(outputFolder))
+            if not os.path.exists('outputFolder'):
+                raise Exception('No default output folder found at : {}'.format(outputFolder))
 
             encoding = self.__config['encoding']
             if not encoding in [encodingType.value for encodingType in EncodingTypes]:

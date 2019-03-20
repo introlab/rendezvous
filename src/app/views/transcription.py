@@ -59,14 +59,16 @@ class Transcription(QWidget, Ui_Transcription):
         self.transcriptionResult.setText('Transcribing...')
         self.setDisabled(True)
 
-        config = {'audioDataPath' : self.audioDataPath.text(),
-                    'encoding' : self.encoding.currentText(),
-                    'enhanced' : self.enhanced.checkState(),
-                    'languageCode' : self.language.currentText(),
-                    'model' : self.model.currentText(),
-                    'outputFolder' : self.window().getSetting('defaultOutputFolder'),
-                    'sampleRate' : self.sampleRate.value(),
-                    'serviceAccountPath' : self.window().getSetting('serviceAccountPath')}
+        config = {
+            'audioDataPath' : self.audioDataPath.text(),
+            'encoding' : self.encoding.currentText(),
+            'enhanced' : self.enhanced.checkState(),
+            'languageCode' : self.language.currentText(),
+            'model' : self.model.currentText(),
+            'outputFolder' : self.window().getSetting('defaultOutputFolder'),
+            'sampleRate' : self.sampleRate.value(),
+            'serviceAccountPath' : self.window().getSetting('serviceAccountPath')
+        }
         self.transcriptionController.resquestTranscription(config)
 
 
