@@ -47,7 +47,7 @@ class Odas(QObject, Thread):
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
                 sock.bind((self.host, self.port))
-                #wait for 2 clients max
+                # Wait for 2 clients max.
                 sock.listen(2)
                 self.isRunning = True
                 print('server is up!') if self.isVerbose else None
@@ -134,7 +134,7 @@ class Odas(QObject, Thread):
             print('odas subprocess started...') if self.isVerbose else None
 
 
-    # stop the sub process
+    # Stop the sub process.
     def stopOdasLive(self):
         if self.odasProcess:
             if self.isConnected:
@@ -178,7 +178,7 @@ class ClientHandler(QObject, Thread):
                     return
                 # 1024 because this is the minimum Odas send through the socket.
                 data = self.sock.recv(1024)
-                # if there is no data incomming close the stream.
+                # If there is no data incomming close the stream.
                 if not data:
                     self.isConnected = False
                     return
@@ -186,7 +186,7 @@ class ClientHandler(QObject, Thread):
                 if JsonUtils.isJson(data):
                     self.__parseOdasObject(data)
                 else:
-                    # print(data)
+                    # Print(data).
                     self.signalAudio.emit(data)
                             
                 sleep(0.00001)
@@ -195,7 +195,7 @@ class ClientHandler(QObject, Thread):
             self.signalConnectionClosed.emit(self)
 
     
-    # Parse every Odas event 
+    # Parse every Odas event.
     def __parseOdasObject(self, jsonBytes):
         parsedJson = json.loads(str(jsonBytes, 'utf-8'))
         jsonSources = parsedJson['src']

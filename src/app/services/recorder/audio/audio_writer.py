@@ -44,7 +44,7 @@ class AudioWriter(QObject, Thread):
     def stop(self):
         if self.isRunning:
             self.mailbox.put(WriterActions.STOP)
-            # wait until the thread terminate
+            # Wait until the thread terminate.
             self.join()
 
             for wavFile in self.wavFiles:
