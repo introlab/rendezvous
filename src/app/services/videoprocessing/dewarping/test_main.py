@@ -18,9 +18,9 @@ def main():
 	debug = False
 
 	# Camera desired parameters
-	port = 0
-	requestWidth = 640
-	requestHeight = 480
+	port = 1
+	requestWidth = 2880
+	requestHeight = 2160
 
 	# Try to modify camera parameters
 	cam = cv2.VideoCapture(port)
@@ -49,9 +49,20 @@ def main():
 	angleSpan = 90
 
 	donutSlice = DonutSlice(width / 2.0, height / 2.0, inRadius, outRadius, np.deg2rad(middleAngle), np.deg2rad(angleSpan))
+	donutSlice2 = DonutSlice(width / 2.0, height / 2.0, inRadius, outRadius, np.deg2rad(middleAngle + 90), np.deg2rad(angleSpan))
+
+
 	dewarpedImage = np.zeros((outputHeight, outputWidth, channels), dtype=np.uint8)
-	dewarper = FisheyeDewarping(width, height, channels, False)
+	dewarpedPortrait = np.zeros((int(outputHeight / 5), int(outputWidth / 5), channels), dtype=np.uint8)
+
+	dewarper = FisheyeDewarping(width, height, channels, True)
 	bufferId = dewarper.bindDewarpingBuffer(dewarpedImage)
+	bufferPortraitId = dewarper.bindDewarpingBuffer(dewarpedPortrait)
+
+	dewarpedImages = {}
+	dewarpedImages[bufferId] = dewarpedImage
+	dewarpedImages[bufferPortraitId] = dewarpedPortrait
+
 	debugImageInfoParam = None
 
 	if debug:
@@ -66,11 +77,18 @@ def main():
 			if debugImageInfoParam:
 				addDebugInfoToImage(frame, debugImageInfoParam)
 
-			dewarpingParameters = DewarpingHelper.getDewarpingParameters(donutSlice, topDistorsionFactor, bottomDistorsionFactor)
 			dewarper.loadFisheyeImage(frame)
-			dewarper.queueDewarping(dewarpingParameters, bufferId)
-			dewarper.dewarpNextImage()
-			cv2.imshow("img", dewarpedImage)
+
+			dewarpingParameters = DewarpingHelper.getDewarpingParameters(donutSlice, topDistorsionFactor, bottomDistorsionFactor)
+			dewarpingParameters2 = DewarpingHelper.getDewarpingParameters(donutSlice2, topDistorsionFactor, bottomDistorsionFactor)
+			
+			dewarper.queueDewarping(bufferId, dewarpingParameters)
+			dewarper.queueDewarping(bufferPortraitId, dewarpingParameters2)
+
+			buffer = 0
+			while buffer != -1:
+				cv2.imshow("{buffer}".format(buffer=buffer), dewarpedImages[buffer])
+				buffer = dewarper.dewarpNextImage()
 
 		k = cv2.waitKey(1)
 		if k & 0xFF == ord('w'):

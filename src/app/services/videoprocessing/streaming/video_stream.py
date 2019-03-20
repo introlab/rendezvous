@@ -13,7 +13,7 @@ class VideoStream:
 
     def __init__(self, cameraConfig):
         self.config = CameraConfig(cameraConfig)
-        self.dewarper = FisheyeDewarping()
+        self.dewarper = None
         self.camera = None
 
 
@@ -35,21 +35,21 @@ class VideoStream:
         if not success:
             raise Exception('Could not read image from camera')
 
+        self.printCameraSettings()
+
         donutSlice = DonutSlice(self.config.imageWidth / 2, self.config.imageHeight / 2, self.config.inRadius, \
             self.config.outRadius, np.deg2rad(self.config.middleAngle), np.deg2rad(self.config.angleSpan))
 
-        dewarpingParameters = DewarpingHelper.getDewarpingParameters(donutSlice, self.config.topDistorsionFactor, self.config.bottomDistorsionFactor)
-        self.dewarper.setDewarpingParameters(dewarpingParameters)
+        self.dewarpingParameters = DewarpingHelper.getDewarpingParameters(donutSlice, self.config.topDistorsionFactor, self.config.bottomDistorsionFactor)
 
-        outputWidth = int(dewarpingParameters.dewarpWidth)
-        outputHeight = int(dewarpingParameters.dewarpHeight)
+        outputWidth = int(self.dewarpingParameters.dewarpWidth)
+        outputHeight = int(self.dewarpingParameters.dewarpHeight)
 
-        if self.dewarper.initialize(self.config.imageWidth, self.config.imageHeight, outputWidth, outputHeight, channels, True) == -1:
-            raise Exception('Error during c++ dewarping library initialization')
-
-        self.printCameraSettings()
-
+        self.dewarper = FisheyeDewarping(self.config.imageWidth, self.config.imageHeight, channels, False)
         self.dewarpedImageBuffers = np.zeros((2, outputHeight, outputWidth, channels), dtype=np.uint8)
+        self.dewarpedImageBuffersId = []
+        self.dewarpedImageBuffersId.append(self.dewarper.bindDewarpingBuffer(self.dewarpedImageBuffers[0]))
+        self.dewarpedImageBuffersId.append(self.dewarper.bindDewarpingBuffer(self.dewarpedImageBuffers[1]))
         self.dewarpedImageBuffersIndex = 0
        
 
@@ -63,7 +63,10 @@ class VideoStream:
         if success:
             self.dewarper.loadFisheyeImage(frame)
             self.dewarpedImageBuffersIndex = (self.dewarpedImageBuffersIndex + 1) % 2
-            self.dewarper.dewarpImage(self.dewarpedImageBuffers[self.dewarpedImageBuffersIndex])
+
+            self.dewarper.queueDewarping(self.dewarpedImageBuffersId[self.dewarpedImageBuffersIndex], self.dewarpingParameters)
+            self.dewarper.dewarpNextImage()
+			
             return success, self.dewarpedImageBuffers[self.dewarpedImageBuffersIndex]
         else:
             return success, None

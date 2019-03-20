@@ -1,4 +1,5 @@
 #include <rendering/FrameLoader.h>
+#include <rendering/RenderContext.h>
 #include <models/RawModel.h>
 #include <models/ImageBuffer.h>
 
@@ -15,8 +16,8 @@ FrameLoader::FrameLoader(GLsizei inputWidth, GLsizei inputHeight,
     m_pixelFormat(pixelFormat),
     m_frameLoaderType(frameLoader360Type)
 {
-    initializeUnpackTexture();
-    initializeUnpackPBOs();
+    generateTexture(m_textureData, m_texture, m_inputWidth, m_inputHeight, m_inputSize, m_pixelFormat);
+    generatePBOs(m_unpackPBOs, m_inputSize, GL_PIXEL_UNPACK_BUFFER, GL_STREAM_DRAW);
     glPixelStorei(GL_PACK_ALIGNMENT, (m_channels & 3) ? 1 : 4);
 }
 
@@ -28,48 +29,52 @@ FrameLoader::~FrameLoader()
         m_textureData = nullptr;
     }
 
-    for (GLuint * packPBOs : m_packPBOsVector)
+    for (RenderContext& renderContext : m_renderContexts)
     {
-        delete[] packPBOs;
+        delete[] renderContext.textureData;
+        renderContext.textureData = nullptr;
     }
 }
 
-void FrameLoader::initializeUnpackTexture()
+void FrameLoader::generateTexture(GLubyte*& textureData, GLuint& texture, 
+    GLsizei width, GLsizei height, GLsizei size, GLenum pixelFormat)
 {
-    m_textureData = new GLubyte[m_inputSize];
-    memset(m_textureData, 0, m_inputSize);
+    textureData = new GLubyte[size];
+    memset(textureData, 0, size);
 
-    glGenTextures(1, &m_texture);
-    glBindTexture(GL_TEXTURE_2D, m_texture);
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_inputWidth, m_inputHeight, 0, m_pixelFormat, GL_UNSIGNED_BYTE, (GLvoid*) m_textureData);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, pixelFormat, GL_UNSIGNED_BYTE, (GLvoid*) textureData);
     
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void FrameLoader::initializeUnpackPBOs()
+void FrameLoader::generatePBOs(GLuint* pbos, GLsizei size, GLenum target, GLenum usage)
 {
-    glGenBuffers(2, m_unpackPBOs);
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_unpackPBOs[0]);
-    glBufferData(GL_PIXEL_UNPACK_BUFFER, m_inputSize, 0, GL_STREAM_DRAW);
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, m_unpackPBOs[1]);
-    glBufferData(GL_PIXEL_UNPACK_BUFFER, m_inputSize, 0, GL_STREAM_DRAW);
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+    glGenBuffers(2, pbos);
+    glBindBuffer(target, pbos[0]);
+    glBufferData(target, size, 0, usage);
+    glBindBuffer(target, pbos[1]);
+    glBufferData(target, size, 0, usage);
+    glBindBuffer(target, 0);
 }
 
-void FrameLoader::initializePackPBOs(GLuint* packPBOs, GLsizei size)
+void FrameLoader::generateFBO(GLuint& fbo, GLuint texture)
 {
-    glGenBuffers(2, packPBOs);
-    glBindBuffer(GL_PIXEL_PACK_BUFFER, packPBOs[0]);
-    glBufferData(GL_PIXEL_PACK_BUFFER, size, 0, GL_STREAM_READ);
-    glBindBuffer(GL_PIXEL_PACK_BUFFER, packPBOs[1]);
-    glBufferData(GL_PIXEL_PACK_BUFFER, size, 0, GL_STREAM_READ);
-    glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+    glGenFramebuffers(1, &fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        throw std::runtime_error("FrameLoader - Error when creating frame buffer object!");
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);  
 }
 
 GLuint FrameLoader::getTextureId()
@@ -77,15 +82,24 @@ GLuint FrameLoader::getTextureId()
     return m_texture;
 }
 
-GLuint FrameLoader::createPackPBOs(GLsizei size)
+GLuint FrameLoader::createRenderContext(GLsizei width, GLsizei height, GLsizei size)
 {
-    GLuint * packPBOs = new GLuint[2];
-    initializePackPBOs(packPBOs, size);
-    
-    m_packPBOsVector.push_back(packPBOs);
-    GLuint bufferId = m_packPBOsVector.size() - 1;
+    RenderContext renderContext;
+    generateTexture(renderContext.textureData, renderContext.texture, width, height, size, m_pixelFormat);
+    generateFBO(renderContext.fbo, renderContext.texture);
+    generatePBOs(renderContext.pbos, size, GL_PIXEL_PACK_BUFFER, GL_STREAM_READ);
 
-    return bufferId;
+    m_renderContexts.push_back(renderContext);
+    GLuint renderContextId = m_renderContexts.size() - 1;
+
+    return renderContextId;
+}
+
+void FrameLoader::setRenderingContext(GLuint renderContextId, GLsizei width, GLsizei height)
+{
+    RenderContext& renderContext = m_renderContexts[renderContextId];
+    glViewport(0, 0, width, height);
+    glBindFramebuffer(GL_FRAMEBUFFER, renderContext.fbo);
 }
 
 void FrameLoader::load(GLubyte* inData, GLsizei width, GLsizei height, GLuint channels)
@@ -121,12 +135,9 @@ void FrameLoader::load(GLubyte* inData, GLsizei width, GLsizei height, GLuint ch
     glGenerateMipmap(GL_TEXTURE_2D);
 }
 
-void FrameLoader::unload(ImageBuffer& imageBuffer, GLuint bufferId)
+void FrameLoader::unload(ImageBuffer& imageBuffer, GLuint renderContextId)
 {
-    // Set the framebuffer to read
-    glReadBuffer(GL_FRONT);
-
-    GLuint * packPBOs = m_packPBOsVector[bufferId];
+    RenderContext& renderContext = m_renderContexts[renderContextId];
 
     glPixelStorei(GL_PACK_ROW_LENGTH, imageBuffer.width);
 
@@ -136,10 +147,10 @@ void FrameLoader::unload(ImageBuffer& imageBuffer, GLuint bufferId)
     bufferIndex = (bufferIndex + 1);
     int nextBufferIndex = m_frameLoaderType == DoublePBO && bufferIndex ? (bufferIndex + 1) : bufferIndex;
 
-    glBindBuffer(GL_PIXEL_PACK_BUFFER, packPBOs[bufferIndex % 2]);
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, renderContext.pbos[bufferIndex % 2]);
     updateOutputPBO(imageBuffer.width, imageBuffer.height);
 
-    glBindBuffer(GL_PIXEL_PACK_BUFFER, packPBOs[nextBufferIndex % 2]);
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, renderContext.pbos[nextBufferIndex % 2]);
     unloadOutputPBO(imageBuffer.image, imageBuffer.size);
 
     glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
@@ -150,15 +161,17 @@ void FrameLoader::cleanUp()
     glDeleteTextures(1, &m_texture);
     glDeleteBuffers(2, m_unpackPBOs);
 
-    for (GLuint * packPBOs : m_packPBOsVector)
+    for (RenderContext& renderContext : m_renderContexts)
     {
-        glDeleteBuffers(2, packPBOs);
+        glDeleteBuffers(2, renderContext.pbos);
+        glDeleteFramebuffers(1, &renderContext.fbo);
+        glDeleteTextures(1, &renderContext.texture);
     }
 }
 
 void FrameLoader::updateTexture()
 {
-    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_inputWidth, m_inputHeight, m_pixelFormat, GL_UNSIGNED_BYTE, (GLvoid*)m_textureData);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_inputWidth, m_inputHeight, m_pixelFormat, GL_UNSIGNED_BYTE, (GLvoid*) m_textureData);
 }
 
 void FrameLoader::loadDataToTexture(GLubyte* inData)

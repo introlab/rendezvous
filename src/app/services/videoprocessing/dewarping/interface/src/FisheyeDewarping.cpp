@@ -37,16 +37,15 @@ int FisheyeDewarping::bindDewarpingBuffer(unsigned char * dewarpedImageBuffer, i
 {
     ImageBuffer imageBuffer(dewarpedImageBuffer, width, height, channels);
     
-    int bufferId = m_frameLoader->createPackPBOs(imageBuffer.size);
+    int renderContextId = m_frameLoader->createRenderContext(imageBuffer.width, imageBuffer.height, imageBuffer.size);
+    m_dewarpedImageBuffers.insert(pair<int, ImageBuffer>(renderContextId, imageBuffer));
 
-    m_dewarpedImageBuffers.insert(pair<int, ImageBuffer>(bufferId, imageBuffer));
-
-    return bufferId;
+    return renderContextId;
 }
 
-void FisheyeDewarping::queueDewarping(DewarpingParameters& dewarpingParameters, int bufferId)
+void FisheyeDewarping::queueDewarping(int renderContextId, DewarpingParameters& dewarpingParameters)
 {
-    m_dewarpingQueue.push_back(std::make_pair(bufferId, dewarpingParameters));
+    m_dewarpingQueue.push_back(std::make_pair(renderContextId, dewarpingParameters));
 }
 
 int FisheyeDewarping::dewarpNextImage()
@@ -59,26 +58,26 @@ int FisheyeDewarping::dewarpNextImage()
 
     // Retrieve next dewarping in queue
     auto pair = m_dewarpingQueue.front();
-    int bufferId = pair.first;
+    int renderContextId = pair.first;
     DewarpingParameters dewarpingParameters = pair.second;
     m_dewarpingQueue.pop_front();
     
+    ImageBuffer imageBuffer = m_dewarpedImageBuffers[renderContextId];
+    m_frameLoader->setRenderingContext(renderContextId, imageBuffer.width, imageBuffer.height);
+
     // Dewarp the fisheye image with the dewarping parameters
     m_dewarpRenderer->render(*m_fisheyeTexture, dewarpingParameters);
-    DisplayManager::updateDisplay();
 
     // Copy the dewarped image to the buffer
-    ImageBuffer imageBuffer = m_dewarpedImageBuffers[bufferId];
-    DisplayManager::resizeWindow(imageBuffer.width, imageBuffer.height);
-    m_frameLoader->unload(imageBuffer, bufferId);
+    m_frameLoader->unload(imageBuffer, renderContextId);
 
     // Calling code knows which buffer was updated based on this id
-    return bufferId;
+    return renderContextId;
 }
 
 void FisheyeDewarping::initialize(int inputWidth, int inputHeight, int channels, bool isDewarping)
 {
-    if (DisplayManager::createDisplay(10, 10) != 0)
+    if (DisplayManager::createDisplay(0, 0) != 0)
     {
         throw runtime_error("FisheyeDewarping object initialization failed");
     }

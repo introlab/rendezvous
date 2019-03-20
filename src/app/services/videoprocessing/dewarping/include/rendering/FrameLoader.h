@@ -8,6 +8,7 @@
 
 struct RawModel;
 struct ImageBuffer;
+struct RenderContext;
 
 enum FrameLoaderType
 {
@@ -25,16 +26,17 @@ public:
     virtual ~FrameLoader();
 
     GLuint getTextureId();
-    GLuint createPackPBOs(GLsizei size);
+    GLuint createRenderContext(GLsizei width, GLsizei height, GLsizei size);
+    void setRenderingContext(GLuint renderContextId, GLsizei width, GLsizei height);
     void load(GLubyte* inData, GLsizei width, GLsizei height, GLuint channels);
-    void unload(ImageBuffer& imageBuffer, GLuint bufferId);
+    void unload(ImageBuffer& imageBuffer, GLuint renderContextId);
     void cleanUp();
 
 private:
 
-    void initializeUnpackTexture();
-    void initializeUnpackPBOs();
-    void initializePackPBOs(GLuint* packPBOs, GLsizei size);
+    void generatePBOs(GLuint* pbos, GLsizei size, GLenum target, GLenum usage);
+    void generateFBO(GLuint& fbo, GLuint texture);
+    void generateTexture(GLubyte*& textureData, GLuint& texture, GLsizei width, GLsizei height, GLsizei size, GLenum pixelFormat);
 
     inline void updateTexture();
     inline void loadDataToTexture(GLubyte* inData);
@@ -45,7 +47,7 @@ private:
 
 private:
 
-    std::vector<GLuint*> m_packPBOsVector;
+    std::vector<RenderContext> m_renderContexts;
 
     GLuint m_unpackPBOs[2];
     GLubyte* m_textureData;

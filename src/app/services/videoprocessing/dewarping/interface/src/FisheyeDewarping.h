@@ -29,7 +29,7 @@ public:
 
     void loadFisheyeImage(unsigned char * fisheyeImage, int height, int width, int channels);
     int bindDewarpingBuffer(unsigned char * dewarpedImageBuffer, int height, int width, int channels);
-    void queueDewarping(DewarpingParameters& dewarpingParameters, int bufferId);
+    void queueDewarping(int renderContextId, DewarpingParameters& dewarpingParameters);
     int dewarpNextImage();
 
 private:
