@@ -1,3 +1,4 @@
+import os
 from threading import Thread
 import subprocess
 from time import sleep
@@ -25,6 +26,12 @@ class OdasLiveProcess(QObject, Thread):
 
     def run(self):
         try:
+            if not os.path.exists(self.odasPath):
+                raise Exception('no file found at {}'.format(self.odasPath))
+
+            if not os.path.exists(self.micConfigPath):
+                raise Exception('no file found at {}'.format(self.micConfigPath))
+
             self.process = subprocess.Popen([self.odasPath, '-c', self.micConfigPath], shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
             while True:
