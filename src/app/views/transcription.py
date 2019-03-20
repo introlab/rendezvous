@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from PyQt5.QtWidgets import QApplication, QWidget, QFileDialog
 from PyQt5.QtCore import pyqtSlot
 
@@ -6,6 +8,8 @@ from src.app.gui.transcription_ui import Ui_Transcription
 
 
 class Transcription(QWidget, Ui_Transcription):
+
+    rootDirectory = str(Path(__file__).resolve().parents[3])
 
     def __init__(self, parent=None):
         super(Transcription, self).__init__(parent)

@@ -1,6 +1,6 @@
 import io
 import os
-from enum import Enum, unique, auto
+from enum import Enum, unique
 
 from google.cloud import speech
 
