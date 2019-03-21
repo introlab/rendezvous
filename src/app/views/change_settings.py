@@ -81,9 +81,11 @@ class ChangeSettings(QWidget, Ui_ChangeSettings):
 
 
     def __loadSettings(self, parent):
-        self.cameraConfigPath.setText(str(parent.getSetting('cameraConfigPath')))
-        self.serviceAccountPath.setText(str(parent.getSetting('serviceAccountPath')))
-        self.micConfigPath.setText(str(parent.getSetting('micConfigPath')))
-        self.odasPath.setText(str(parent.getSetting('odasPath')))
-        self.defaultOutputFolder.setText(str(parent.getSetting('defaultOutputFolder')))
+        self.cameraConfigPath.setText(parent.getSetting('cameraConfigPath'))
+        self.serviceAccountPath.setText(parent.getSetting('serviceAccountPath'))
+        self.micConfigPath.setText(parent.getSetting('micConfigPath'))
+        self.odasPath.setText(parent.getSetting('odasPath'))
+
+        defaultOutputFolder = parent.getSetting('defaultOutputFolder')
+        self.defaultOutputFolder.setText(defaultOutputFolder if defaultOutputFolder else parent.window().rootDirectory)
         
