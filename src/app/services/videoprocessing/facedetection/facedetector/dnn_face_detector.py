@@ -15,7 +15,7 @@ class DnnFaceDetector(IFaceDetector):
         self.modelFile = os.path.join(rootDirectory, "config/facedetection/opencv_face_detector_uint8.pb")
         self.configFile = os.path.join(rootDirectory, "config/facedetection/opencv_face_detector.pbtxt")
         self.net = cv2.dnn.readNetFromTensorflow(self.modelFile, self.configFile)
-        self.probabilityThreshold = 0.7
+        self.probabilityThreshold = 0.5
 
 
     def detectFaces(self, image):

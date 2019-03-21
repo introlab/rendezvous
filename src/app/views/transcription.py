@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 from PyQt5.QtWidgets import QWidget, QFileDialog
@@ -46,7 +45,7 @@ class Transcription(QWidget, Ui_Transcription):
         try:
             audioDataPath, _ = QFileDialog.getOpenFileName(parent=self, 
                                                            caption='Import Audio Data', 
-                                                           directory=self.rootDirectory,
+                                                           directory=self.window().rootDirectory,
                                                            options=QFileDialog.DontUseNativeDialog)
             if audioDataPath:
                 self.audioDataPath.setText(audioDataPath)

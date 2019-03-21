@@ -17,7 +17,7 @@ class VirtualCameraManager:
         self.newCameraPositionThreshold = 50
 
         # Change in position that cause a move of the virtual camera
-        self.positionChangedThreshold = 15
+        self.positionChangedThreshold = 10
 
         # Change in dimension that cause a resize of the virtual camera
         self.dimensionChangeThreshold = 10
