@@ -13,7 +13,7 @@ class Settings:
     def __init__(self):
         defaultOutputFolder = self.getValue('defaultOutputFolder')
         if not defaultOutputFolder:
-            self.setValue('defaultOutputFolder', rootDirectory)
+            self.setValue('defaultOutputFolder', self.rootDirectory)
 
 
     @staticmethod
