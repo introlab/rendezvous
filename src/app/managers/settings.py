@@ -6,7 +6,7 @@ from PyQt5.QtCore import QSettings
 
 class Settings:
     
-    rootDirectory = str(Path(__file__).resolve().parents[2])
+    rootDirectory = str(Path(__file__).resolve().parents[3])
 
     qSettings = QSettings('Groupe RendezVous', 'App')
 
