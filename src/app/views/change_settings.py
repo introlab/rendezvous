@@ -85,7 +85,5 @@ class ChangeSettings(QWidget, Ui_ChangeSettings):
         self.serviceAccountPath.setText(parent.getSetting('serviceAccountPath'))
         self.micConfigPath.setText(parent.getSetting('micConfigPath'))
         self.odasPath.setText(parent.getSetting('odasPath'))
-
-        defaultOutputFolder = parent.getSetting('defaultOutputFolder')
-        self.defaultOutputFolder.setText(defaultOutputFolder if defaultOutputFolder else parent.window().rootDirectory)
+        self.defaultOutputFolder.setText(parent.getSetting('defaultOutputFolder'))
         
