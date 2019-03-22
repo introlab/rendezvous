@@ -186,7 +186,9 @@ class ClientHandler(QObject, Thread):
                 if JsonUtils.isJson(data):
                     self.__parseOdasObject(data)
                 else:
-                    # Print(data).
+                    while len(data) % 4 != 0:
+                        data += b'\x00'
+
                     self.signalAudio.emit(data)
                             
                 sleep(0.00001)
