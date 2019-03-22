@@ -177,7 +177,7 @@ class ClientHandler(QObject, Thread):
                     self.isConnected = False
                     return
                 # 1024 because this is the minimum Odas send through the socket.
-                data = self.sock.recv(1024)
+                data = self.sock.recv(512)
                 # If there is no data incomming close the stream.
                 if not data:
                     self.isConnected = False
@@ -191,7 +191,7 @@ class ClientHandler(QObject, Thread):
 
                     self.signalAudio.emit(data)
                             
-                sleep(0.00001)
+                sleep(0.0001)
 
         except Exception as e:
             self.signalConnectionClosed.emit(self)
