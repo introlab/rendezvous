@@ -45,8 +45,8 @@
 
 10 - Build the dewarping library
 
-    $sudo apt-get install xorg-dev libglu1-mesa-dev
-    $sudo apt-get install swig
+    $ sudo apt-get install xorg-dev libglu1-mesa-dev
+    $ sudo apt-get install swig
 
 To build the library and its dependencies use :
 

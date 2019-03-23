@@ -14,7 +14,7 @@ from src.app.views.change_settings import ChangeSettings
 
 class MainWindow(QMainWindow, Ui_MainWindow):
 
-    rootDirectory = str(Path(__file__).resolve().parents[3])
+    rootDirectory = str(Path(__file__).resolve().parents[2])
 
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
