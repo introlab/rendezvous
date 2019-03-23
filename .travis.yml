@@ -4,7 +4,9 @@ language:
   - cpp
 python:
   - "3.5.2"
-cache: pip
+cache: 
+  - pip
+  - ccache
 compiler: g++
 before_install:
   - sudo apt-get -y update
