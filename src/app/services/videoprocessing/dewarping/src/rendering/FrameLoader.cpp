@@ -39,6 +39,9 @@ FrameLoader::~FrameLoader()
 void FrameLoader::generateTexture(GLubyte*& textureData, GLuint& texture, 
     GLsizei width, GLsizei height, GLsizei size, GLenum pixelFormat)
 {
+    if (width % 4 != 0 || height % 4 != 0)
+        throw std::invalid_argument("FrameLoader - texture width and height must be multiples of 4");
+    
     textureData = new GLubyte[size];
     memset(textureData, 0, size);
 

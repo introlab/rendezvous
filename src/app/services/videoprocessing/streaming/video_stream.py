@@ -1,18 +1,14 @@
 from pathlib import Path
 
 import cv2
-import numpy as np
 
 from .camera_config import CameraConfig
-from src.utils.dewarping_helper import DewarpingHelper
-from src.app.services.videoprocessing.dewarping.interface.fisheye_dewarping import FisheyeDewarping
-from src.app.services.videoprocessing.dewarping.interface.fisheye_dewarping import DonutSlice
 
 
 class VideoStream:
 
     def __init__(self, cameraConfig):
-        self.config = CameraConfig(cameraConfig)
+        self.config = cameraConfig
         self.dewarper = None
         self.camera = None
 
@@ -34,24 +30,7 @@ class VideoStream:
         if not success:
             raise Exception('Could not read image from camera at port {port}'.format(port=self.config.cameraPort))
 
-        channels = len(frame.shape)
-
         self.printCameraSettings()
-
-        donutSlice = DonutSlice(self.config.imageWidth / 2, self.config.imageHeight / 2, self.config.inRadius, \
-            self.config.outRadius, np.deg2rad(self.config.middleAngle), np.deg2rad(self.config.angleSpan))
-
-        self.dewarpingParameters = DewarpingHelper.getDewarpingParameters(donutSlice, self.config.topDistorsionFactor, self.config.bottomDistorsionFactor)
-
-        outputWidth = int(self.dewarpingParameters.dewarpWidth)
-        outputHeight = int(self.dewarpingParameters.dewarpHeight)
-
-        self.dewarper = FisheyeDewarping(self.config.imageWidth, self.config.imageHeight, channels, False)
-        self.dewarpedImageBuffers = np.zeros((2, outputHeight, outputWidth, channels), dtype=np.uint8)
-        self.dewarpedImageBuffersId = []
-        self.dewarpedImageBuffersId.append(self.dewarper.bindDewarpingBuffer(self.dewarpedImageBuffers[0]))
-        self.dewarpedImageBuffersId.append(self.dewarper.bindDewarpingBuffer(self.dewarpedImageBuffers[1]))
-        self.dewarpedImageBuffersIndex = 0
        
 
     def destroy(self):
@@ -62,13 +41,7 @@ class VideoStream:
         success, frame = self.camera.read()
 
         if success:
-            self.dewarper.loadFisheyeImage(frame)
-            self.dewarpedImageBuffersIndex = (self.dewarpedImageBuffersIndex + 1) % 2
-
-            self.dewarper.queueDewarping(self.dewarpedImageBuffersId[self.dewarpedImageBuffersIndex], self.dewarpingParameters)
-            self.dewarper.dewarpNextImage()
-			
-            return success, self.dewarpedImageBuffers[self.dewarpedImageBuffersIndex]
+            return success, frame
         else:
             return success, None
 
