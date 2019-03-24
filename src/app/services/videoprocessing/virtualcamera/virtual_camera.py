@@ -1,15 +1,17 @@
 import math
 
+from src.utils.rect import Rect
 
-class VirtualCamera:
+
+class VirtualCamera(Rect):
 
     def __init__(self, xPos, yPos, width, height):
-        self.xPos = xPos
-        self.yPos = yPos
-        self.width = width
-        self.height = height
-        
-        self.timeToLive = 3
+        super().__init__(xPos, yPos, width, height)
+        self.timeToLive = 5
+
+        # New position and size to move to every frame (is updated when a new face is associated with this vc) 
+        self.positionGoal = xPos, yPos
+        self.sizeGoal = width, height
 
 
     @staticmethod
@@ -21,10 +23,8 @@ class VirtualCamera:
 
     @staticmethod
     def createFromFace(face):
-        (facex1, facey1, facex2, facey2) = face
-        width = facex2 - facex1
-        height = facey2 - facey1
-        return VirtualCamera(facex1 + width / 2, facey1 + height / 2, width, height)
+        faceX, faceY = face.getPosition()
+        return VirtualCamera(faceX, faceY, face.width, face.height)
 
 
     def isAlive(self):
@@ -37,21 +37,3 @@ class VirtualCamera:
 
     def resetTimeToLive(self):
         self.timeToLive = 5
-
-
-    def getBoundingRect(self):
-        x1 = math.floor(self.xPos - self.width / 2)
-        x2 = math.floor(self.xPos + self.width / 2)
-        y1 = math.floor(self.yPos - self.height / 2)
-        y2 = math.floor(self.yPos + self.height / 2)
-        return (x1, y1, x2, y2)
-
-
-    def getPosition(self):
-        return (self.xPos, self.yPos)
-
-
-    
-
-
-    

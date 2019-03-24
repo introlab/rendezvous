@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>OdasLive</class>
- <widget class="QWidget" name="OdasLive">
+ <class>Conference</class>
+ <widget class="QWidget" name="Conference">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
     <width>368</width>
-    <height>248</height>
+    <height>281</height>
    </rect>
   </property>
   <property name="mouseTracking">
@@ -417,6 +417,27 @@
       </layout>
      </item>
      <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Output Directory :</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnSelectOutputFolder">
+         <property name="text">
+          <string>Select</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="outputFolder"/>
+       </item>
+      </layout>
+     </item>
+     <item>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
         <spacer name="horizontalSpacer">
@@ -451,6 +472,19 @@
          </property>
          <property name="text">
           <string>Start ODAS</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnStartStopAudioRecord">
+         <property name="text">
+          <string>Start Audio Recording</string>
+         </property>
+         <property name="checkable">
+          <bool>false</bool>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
          </property>
         </widget>
        </item>

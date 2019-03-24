@@ -23,32 +23,17 @@
       <string>Configuration</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
-      <item row="1" column="3">
-       <widget class="QLineEdit" name="cameraConfigPath"/>
-      </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="label">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>Odas path :</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="3">
-       <widget class="QLineEdit" name="micConfigPath"/>
-      </item>
-      <item row="4" column="3">
-       <widget class="QLineEdit" name="odasPath"/>
-      </item>
       <item row="3" column="1">
        <widget class="QPushButton" name="btnBrowseMicConfig">
         <property name="text">
          <string>Browse...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_4">
+        <property name="text">
+         <string>Google Service Account :</string>
         </property>
        </widget>
       </item>
@@ -68,10 +53,59 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_4">
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_2">
         <property name="text">
-         <string>Google Service Account :</string>
+         <string>Camera config :</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3">
+       <widget class="QLineEdit" name="cameraConfigPath"/>
+      </item>
+      <item row="4" column="3">
+       <widget class="QLineEdit" name="odasPath"/>
+      </item>
+      <item row="1" column="1">
+       <widget class="QPushButton" name="btnBrowseCameraConfig">
+        <property name="text">
+         <string>Browse...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="3">
+       <spacer name="verticalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>40</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="3" column="3">
+       <widget class="QLineEdit" name="micConfigPath"/>
+      </item>
+      <item row="2" column="1">
+       <widget class="QPushButton" name="btnBrowseServiceAccount">
+        <property name="text">
+         <string>Browse...</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="label">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Odas path :</string>
         </property>
        </widget>
       </item>
@@ -82,15 +116,8 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
-       <widget class="QPushButton" name="btnBrowseCameraConfig">
-        <property name="text">
-         <string>Browse...</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QPushButton" name="btnBrowseServiceAccount">
+      <item row="5" column="1">
+       <widget class="QPushButton" name="btnBrowseDefaultOutputFolder">
         <property name="text">
          <string>Browse...</string>
         </property>
@@ -109,25 +136,15 @@
         </property>
        </spacer>
       </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_2">
+      <item row="5" column="0">
+       <widget class="QLabel" name="label_5">
         <property name="text">
-         <string>Camera config :</string>
+         <string>Default output folder:</string>
         </property>
        </widget>
       </item>
       <item row="5" column="3">
-       <spacer name="verticalSpacer_2">
-        <property name="orientation">
-         <enum>Qt::Vertical</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>20</width>
-          <height>40</height>
-         </size>
-        </property>
-       </spacer>
+       <widget class="QLineEdit" name="defaultOutputFolder"/>
       </item>
      </layout>
     </widget>

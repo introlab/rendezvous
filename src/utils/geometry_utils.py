@@ -17,4 +17,6 @@ class GeometryUtils:
     @staticmethod
     def getUnitVector(x, y):
         module = math.sqrt(x ** 2 + y ** 2)
+        if module == 0:
+            return (0, 0)
         return (x / module, y / module)

@@ -5,7 +5,7 @@
         "BottomDistorsionFactor": 0,
         "InRadius": 400,
         "OutRadius": 1400,
-        "MiddleAngle": 90,
+        "MiddleAngle": 270,
         "AngleSpan": 90
     },
 

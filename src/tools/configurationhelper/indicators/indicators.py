@@ -73,7 +73,7 @@ class Indicators:
             xyHypotenuse = math.sqrt(x**2 + y**2)
             dThetaAz = math.sin(width / (2 * xyHypotenuse))
             azimuth = SphericalAnglesConverter.getAzimuthFromPosition(x, y)
-            print('Real azimuth for source {source} equals = {azimuth}'.format(source=index+1, azimuth=SphericalAnglesConverter.deg(azimuth)))
+            print('Real azimuth for source {source} equals = {azimuth}'.format(source=index+1, azimuth=np.rad2deg(azimuth)))
             azimuthBounds = { 'min' : azimuth - dThetaAz, 'max' : azimuth + dThetaAz }
 
             # Calculate the acceptable range of the elevation angle
@@ -81,7 +81,7 @@ class Indicators:
             dThetaEl = math.sin(height / (2* xyzHypotenuse))
 
             elevation = SphericalAnglesConverter.getElevationFromPosition(x, y, z)
-            print('Real elevation for source {source} equals = {elevation}'.format(source=index+1, elevation=SphericalAnglesConverter.deg(elevation)))
+            print('Real elevation for source {source} equals = {elevation}'.format(source=index+1, elevation=np.rad2deg(elevation)))
             elevationBounds = { 'min' : elevation - dThetaEl, 'max' : elevation + dThetaEl }
 
             self.configSources.append({'x' : x, 'y' : y, 'z' : z, 
