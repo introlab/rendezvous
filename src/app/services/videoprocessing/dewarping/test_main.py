@@ -8,6 +8,7 @@ import context
 from src.utils.dewarping_helper import DewarpingHelper
 from src.app.services.videoprocessing.dewarping.interface.fisheye_dewarping import FisheyeDewarping
 from src.app.services.videoprocessing.dewarping.interface.fisheye_dewarping import DonutSlice
+from src.app.services.videoprocessing.dewarping.interface.fisheye_dewarping import DewarpingParameters
 
 DebugImageInfoParam = namedtuple('DebugImageInfoParam', 'donutSlice \
     newDonutSlice center newCenter bottomLeft bottomRight centerRadius')
@@ -33,8 +34,8 @@ def main():
 	channels = len(cam.read()[1].shape)
 
 	# Output size
-	outputWidth = 1280
-	outputHeight = 720
+	outputWidth = int(1280 / 2)
+	outputHeight = int(720 / 2)
 
 	# Factor near zero means the dewarped image will follow the fisheye image curvature
 	topDistorsionFactor = 0.08
@@ -48,26 +49,46 @@ def main():
 	middleAngle = 90
 	angleSpan = 90
 
+	# Variables to get same dewarping but with less data from source image on y axis (to create virtual cameras)
+	topOffset = 200
+	bottomOffset = 200
+
+	outputHeightVC = 200
+	outputWidthVC = 100
+
 	donutSlice = DonutSlice(width / 2.0, height / 2.0, inRadius, outRadius, np.deg2rad(middleAngle), np.deg2rad(angleSpan))
-	donutSlice2 = DonutSlice(width / 2.0, height / 2.0, inRadius, outRadius, np.deg2rad(middleAngle + 90), np.deg2rad(angleSpan))
+	donutSlice2 = DonutSlice(width / 2.0, height / 2.0, inRadius, outRadius, np.deg2rad(middleAngle), np.deg2rad(angleSpan - 45))
+	donutSlice3 = DonutSlice(width / 2.0, height / 2.0, inRadius + topOffset, outRadius, np.deg2rad(middleAngle), np.deg2rad(angleSpan - 45))
 
+	outputPortraitWidth = int(outputWidth / 2)
+	outputPortraitHeight = int(outputHeight * ((outRadius - inRadius - topOffset - bottomOffset) / (outRadius - inRadius)))
 
-	dewarpedImage = np.zeros((outputHeight, outputWidth, channels), dtype=np.uint8)
-	dewarpedPortrait = np.zeros((int(outputHeight / 5), int(outputWidth / 5), channels), dtype=np.uint8)
+	dewarpedImage = np.empty((outputHeight, outputWidth, channels), dtype=np.uint8)
+	dewarpedPortrait = np.empty((outputPortraitHeight, outputPortraitWidth, channels), dtype=np.uint8)
 
 	dewarper = FisheyeDewarping(width, height, channels, True)
-	bufferId = dewarper.bindDewarpingBuffer(dewarpedImage)
-	bufferPortraitId = dewarper.bindDewarpingBuffer(dewarpedPortrait)
+	bufferId = dewarper.createRenderContext(outputWidth, outputHeight, channels)
+	bufferPortraitId = dewarper.createRenderContext(outputPortraitWidth, outputPortraitHeight, channels)
 
 	dewarpedImages = {}
 	dewarpedImages[bufferId] = dewarpedImage
 	dewarpedImages[bufferPortraitId] = dewarpedPortrait
 
+	dewarpingParameters = DewarpingHelper.getDewarpingParameters(donutSlice, topDistorsionFactor, bottomDistorsionFactor)
+	dewarpingParameters.topOffset = 0
+	dewarpingParameters.bottomOffset = 0
+	dewarpingParameters2 = DewarpingHelper.getDewarpingParameters(donutSlice2, topDistorsionFactor, bottomDistorsionFactor)
+	dewarpingParameters2.topOffset = topOffset
+	dewarpingParameters2.bottomOffset = bottomOffset
+
+	rect = (dewarpingParameters.dewarpWidth / 4, 0, (dewarpingParameters.dewarpWidth * 3) / 4, dewarpingParameters.dewarpHeight)
+	vcDewarpingParameters = DewarpingHelper.getVirtualCameraDewarpingParameters(rect, donutSlice, dewarpingParameters, topDistorsionFactor)
+
 	debugImageInfoParam = None
 
 	if debug:
-		print('DEBUG enabled')
 		debugImageInfoParam = createDebugImageInfoParam(donutSlice, topDistorsionFactor)
+		debugImageInfoParam2 = createDebugImageInfoParam(donutSlice3, topDistorsionFactor)
 
 	while True:
 		success, frame = cam.read()
@@ -76,19 +97,19 @@ def main():
 
 			if debugImageInfoParam:
 				addDebugInfoToImage(frame, debugImageInfoParam)
+				addDebugInfoToImage(frame, debugImageInfoParam2)
 
 			dewarper.loadFisheyeImage(frame)
 
-			dewarpingParameters = DewarpingHelper.getDewarpingParameters(donutSlice, topDistorsionFactor, bottomDistorsionFactor)
-			dewarpingParameters2 = DewarpingHelper.getDewarpingParameters(donutSlice2, topDistorsionFactor, bottomDistorsionFactor)
-			
-			dewarper.queueDewarping(bufferId, dewarpingParameters)
-			dewarper.queueDewarping(bufferPortraitId, dewarpingParameters2)
+			dewarper.queueDewarping(bufferId, dewarpingParameters, dewarpedImage)
+			dewarper.queueDewarping(bufferPortraitId, dewarpingParameters2, dewarpedPortrait)
 
 			buffer = 0
 			while buffer != -1:
 				cv2.imshow("{buffer}".format(buffer=buffer), dewarpedImages[buffer])
 				buffer = dewarper.dewarpNextImage()
+
+			cv2.imshow('360', cv2.resize(frame, (640, 480)))
 
 		k = cv2.waitKey(1)
 		if k & 0xFF == ord('w'):

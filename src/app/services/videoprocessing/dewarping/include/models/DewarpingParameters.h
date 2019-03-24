@@ -18,6 +18,8 @@ public:
     float outRadiusDiff;
     float xOffset;
     float bottomDistorsionFactor;
+    float topOffset;
+    float bottomOffset;
 
 };
 

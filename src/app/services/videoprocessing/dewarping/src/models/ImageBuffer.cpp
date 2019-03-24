@@ -1,7 +1,7 @@
 #include <models/ImageBuffer.h>
 
 ImageBuffer::ImageBuffer()
-   : image(0),
+   : image(nullptr),
    width(0),
    height(0),
    channels(0),

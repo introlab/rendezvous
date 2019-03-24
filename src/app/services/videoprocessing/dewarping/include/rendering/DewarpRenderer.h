@@ -14,7 +14,7 @@ class DewarpRenderer
 {
 public:
 
-    DewarpRenderer(std::shared_ptr<ShaderProgram> shader, VertexObjectLoader& loader);
+    DewarpRenderer(std::shared_ptr<ShaderProgram>& shader, std::shared_ptr<VertexObjectLoader>& loader);
     virtual ~DewarpRenderer();
 
     void render(FisheyeTexture& fisheyeTexture, DewarpingParameters& dewarpingParameters);

@@ -33,19 +33,16 @@ void FisheyeDewarping::loadFisheyeImage(unsigned char * fisheyeImage, int height
     m_frameLoader->load(fisheyeImage, width, height, channels);
 }
 
-int FisheyeDewarping::bindDewarpingBuffer(unsigned char * dewarpedImageBuffer, int height, int width, int channels)
+int FisheyeDewarping::createRenderContext(int width, int height, int channels)
 {
-    ImageBuffer imageBuffer(dewarpedImageBuffer, width, height, channels);
-    
-    int renderContextId = m_frameLoader->createRenderContext(imageBuffer.width, imageBuffer.height, imageBuffer.size);
-    m_dewarpedImageBuffers.insert(pair<int, ImageBuffer>(renderContextId, imageBuffer));
-
-    return renderContextId;
+    return m_frameLoader->createRenderContext(width, height, width * height * channels);
 }
 
-void FisheyeDewarping::queueDewarping(int renderContextId, DewarpingParameters& dewarpingParameters)
+void FisheyeDewarping::queueDewarping(int renderContextId, DewarpingParameters& dewarpingParameters, 
+    unsigned char * dewarpedImageBuffer, int height, int width, int channels)
 {
-    m_dewarpingQueue.push_back(std::make_pair(renderContextId, dewarpingParameters));
+    ImageBuffer imageBuffer(dewarpedImageBuffer, width, height, channels);
+    m_dewarpingQueue.push_back(std::make_tuple(renderContextId, dewarpingParameters, imageBuffer));
 }
 
 int FisheyeDewarping::dewarpNextImage()
@@ -57,12 +54,12 @@ int FisheyeDewarping::dewarpNextImage()
     }
 
     // Retrieve next dewarping in queue
-    auto pair = m_dewarpingQueue.front();
-    int renderContextId = pair.first;
-    DewarpingParameters dewarpingParameters = pair.second;
+    auto tuple = m_dewarpingQueue.front();
+    int renderContextId = std::get<0>(tuple);
+    DewarpingParameters& dewarpingParameters = std::get<1>(tuple);
+    ImageBuffer& imageBuffer = std::get<2>(tuple);
     m_dewarpingQueue.pop_front();
     
-    ImageBuffer imageBuffer = m_dewarpedImageBuffers[renderContextId];
     m_frameLoader->setRenderingContext(renderContextId, imageBuffer.width, imageBuffer.height);
 
     // Dewarp the fisheye image with the dewarping parameters
@@ -87,9 +84,9 @@ void FisheyeDewarping::initialize(int inputWidth, int inputHeight, int channels,
     else
         m_shader = make_shared<RegularShader>();
 
-    m_vertexObjectLoader = make_unique<VertexObjectLoader>();
+    m_vertexObjectLoader = make_shared<VertexObjectLoader>();
     m_frameLoader = make_unique<FrameLoader>(inputWidth, inputHeight, channels, GL_BGR, SinglePBO);
-    m_dewarpRenderer = make_unique<DewarpRenderer>(m_shader, *m_vertexObjectLoader);
+    m_dewarpRenderer = make_unique<DewarpRenderer>(m_shader, m_vertexObjectLoader);
     m_fisheyeTexture = make_unique<FisheyeTexture>(m_frameLoader->getTextureId(), glm::vec2(0, 0), glm::vec2(1, 1));    
 }
 

@@ -48,6 +48,9 @@ private:
     GLint m_location_centerRadius;
     GLint m_location_xOffset;
     GLint m_location_bottomDistorsionFactor;
+    GLint m_location_topOffset;
+    GLint m_location_bottomOffset;
+    
 };
 
 #endif // !SHADER_PROGRAM_H

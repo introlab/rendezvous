@@ -8,12 +8,13 @@
 
 #include <glad/glad.h>
 #include <math.h>
+#include <iostream>
 
-DewarpRenderer::DewarpRenderer(std::shared_ptr<ShaderProgram> shader, VertexObjectLoader& loader)
+DewarpRenderer::DewarpRenderer(std::shared_ptr<ShaderProgram>& shader, std::shared_ptr<VertexObjectLoader>& loader)
     : m_shader(shader)
 {
     float positions[] = { -1, 1, -1, -1, 1, 1, 1, -1 };
-    m_quad = loader.loadToVAO(positions, 8);
+    m_quad = loader->loadToVAO(positions, 8);
     initializeGlContext();
 }
 

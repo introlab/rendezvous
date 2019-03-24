@@ -80,11 +80,8 @@ class VideoProcessor(QObject):
 
             dewarper = FisheyeDewarping(cameraConfig.imageWidth, cameraConfig.imageHeight, channels, True)
 
-            dewarpedImageBuffers = np.zeros((2, outputHeight, outputWidth, channels), dtype=np.uint8)
-            dewarpedImageBuffersId = []
-            dewarpedImageBuffersId.append(dewarper.bindDewarpingBuffer(dewarpedImageBuffers[0]))
-            dewarpedImageBuffersId.append(dewarper.bindDewarpingBuffer(dewarpedImageBuffers[1]))
-            dewarpedImageBuffersIndex = 0
+            dewarpedImageBuffer = np.zeros((outputHeight, outputWidth, channels), dtype=np.uint8)
+            dewarpedImageBufferId = dewarper.createRenderContext(outputHeight, outputWidth, channels)
 
             print('Video processor started')
 
@@ -98,18 +95,17 @@ class VideoProcessor(QObject):
                     dewarper.loadFisheyeImage(frame)
 
                     for i in range(0, 1):
-                        dewarpedImageBuffersIndex = (dewarpedImageBuffersIndex + 1) % 2
 
-                        dewarper.queueDewarping(dewarpedImageBuffersId[dewarpedImageBuffersIndex], dewarpingParameters[2])
+                        dewarper.queueDewarping(dewarpedImageBufferId, dewarpingParameters[2], dewarpedImageBuffer)
                         dewarper.dewarpNextImage()
-                        dewarpedFrame = dewarpedImageBuffers[dewarpedImageBuffersIndex]
+                        dewarpedFrame = dewarpedImageBuffer
 
                         faces = self.faceDetector.detectFaces(dewarpedFrame)
 
                         frameHeight, frameWidth, colors = dewarpedFrame.shape
                         self.virtualCameraManager.update(faces.tolist(), frameWidth, frameHeight)
 
-                        self.signalFrameData.emit(dewarpedFrame, self.virtualCameraManager.getVirtualCameras())
+                        self.signalFrameData.emit(dewarpedFrame.copy(), self.virtualCameraManager.getVirtualCameras())
 
         except Exception as e:
 

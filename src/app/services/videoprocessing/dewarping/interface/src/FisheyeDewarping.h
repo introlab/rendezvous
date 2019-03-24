@@ -28,8 +28,9 @@ public:
     virtual ~FisheyeDewarping();
 
     void loadFisheyeImage(unsigned char * fisheyeImage, int height, int width, int channels);
-    int bindDewarpingBuffer(unsigned char * dewarpedImageBuffer, int height, int width, int channels);
-    void queueDewarping(int renderContextId, DewarpingParameters& dewarpingParameters);
+    int createRenderContext(int width, int height, int channels);
+    void queueDewarping(int renderContextId, DewarpingParameters& dewarpingParameters, 
+        unsigned char * dewarpedImageBuffer, int height, int width, int channels);
     int dewarpNextImage();
 
 private:
@@ -39,14 +40,13 @@ private:
 
 private:
 
-    std::deque<std::pair<int, DewarpingParameters>> m_dewarpingQueue;
-    std::map<int, ImageBuffer> m_dewarpedImageBuffers;
+    std::deque<std::tuple<int, DewarpingParameters, ImageBuffer>> m_dewarpingQueue;
 
     std::unique_ptr<DewarpRenderer> m_dewarpRenderer;
     std::unique_ptr<FisheyeTexture> m_fisheyeTexture;
     std::unique_ptr<FrameLoader> m_frameLoader;
     std::shared_ptr<ShaderProgram> m_shader;
-    std::unique_ptr<VertexObjectLoader> m_vertexObjectLoader;
+    std::shared_ptr<VertexObjectLoader> m_vertexObjectLoader;
     
 };
 

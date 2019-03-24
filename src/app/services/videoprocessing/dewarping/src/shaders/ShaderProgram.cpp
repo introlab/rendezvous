@@ -50,6 +50,8 @@ void ShaderProgram::loadDewarpingParameters(DewarpingParameters& dewarpingParame
     loadFloat(m_location_outRadiusDiff, dewarpingParameters.outRadiusDiff);
     loadFloat(m_location_xOffset, dewarpingParameters.xOffset);
     loadFloat(m_location_bottomDistorsionFactor, dewarpingParameters.bottomDistorsionFactor);
+    loadFloat(m_location_topOffset, dewarpingParameters.topOffset);
+    loadFloat(m_location_bottomOffset, dewarpingParameters.bottomOffset);
 }
 
 void ShaderProgram::start()
@@ -151,4 +153,6 @@ void ShaderProgram::getAllUniformLocations()
     m_location_outRadiusDiff = getUniformLocation("outRadiusDiff");
     m_location_xOffset = getUniformLocation("xOffset");
     m_location_bottomDistorsionFactor = getUniformLocation("bottomDistorsionFactor");
+    m_location_topOffset = getUniformLocation("topOffset");
+    m_location_bottomOffset = getUniformLocation("bottomOffset");
 }
