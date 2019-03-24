@@ -3,7 +3,7 @@ import unittest
 
 import numpy as np
 
-#from src.utils.spherical_angles_converter import SphericalAnglesConverter
+from src.utils.spherical_angles_converter import SphericalAnglesConverter
 
 
 class TestAngles3DConverter(unittest.TestCase):
@@ -13,18 +13,18 @@ class TestAngles3DConverter(unittest.TestCase):
         pass
 
         
-    #def test_azimuthCalculation(self):
-    #    azimuth1 = SphericalAnglesConverter.getAzimuthFromPosition(1, 2)
-    #    azimuth2 = SphericalAnglesConverter.getAzimuthFromPosition(10, 5)
-    #    self.assertAlmostEqual(azimuth1, 1.107, 3)
-    #    self.assertAlmostEqual(azimuth2, 0.464, 3)
+    def test_azimuthCalculation(self):
+       azimuth1 = SphericalAnglesConverter.getAzimuthFromPosition(1, 2)
+       azimuth2 = SphericalAnglesConverter.getAzimuthFromPosition(10, 5)
+       self.assertAlmostEqual(azimuth1, 1.107, 3)
+       self.assertAlmostEqual(azimuth2, 0.464, 3)
 
 
-    #def test_elevationCalculation(self):
-    #    elevation1 = SphericalAnglesConverter.getElevationFromPosition(1, 2, 10)
-    #    elevation2 = SphericalAnglesConverter.getElevationFromPosition(5, 10, 11)
-    #    self.assertAlmostEqual(elevation1, 1.35, 2)
-    #    self.assertAlmostEqual(elevation2, 0.78, 2)
+    def test_elevationCalculation(self):
+       elevation1 = SphericalAnglesConverter.getElevationFromPosition(1, 2, 10)
+       elevation2 = SphericalAnglesConverter.getElevationFromPosition(5, 10, 11)
+       self.assertAlmostEqual(elevation1, 1.35, 2)
+       self.assertAlmostEqual(elevation2, 0.78, 2)
 
 
     def test_degreeToRad(self):
