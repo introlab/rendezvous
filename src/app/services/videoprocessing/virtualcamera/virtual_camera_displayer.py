@@ -20,6 +20,11 @@ class VirtualCameraDisplayer:
         self.virtualCameras = virtualCameras
 
 
+    def clear(self):
+        self.image = []
+        self.virtualCameras = []
+
+
     # Draw every virtual cameras on the frame.
     # Is called automatically by Qt when the frame is ready for an update
     def __paintEvent(self, event):

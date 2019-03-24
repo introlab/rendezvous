@@ -7,28 +7,21 @@ from src.utils.geometry_utils import GeometryUtils
 class VirtualCameraManager:
 
     def __init__(self):
-        self.virtualCameras = []
+        self.__virtualCameras = []
+
+        self.virtualCameraMinHeight = 300
 
         # 3:4 (portrait)
         self.aspectRatio = 3 / 4
 
-        # Distance from existing virtual cameras at which new virtual cameras are created,
-        # If it is closer, it means we detected an existing virtual camera
-        self.newCameraPositionThreshold = 50
-
         # Change in position that cause a move of the virtual camera
-        self.positionChangedThreshold = 10
+        self.positionChangedThreshold = 25
 
         # Change in dimension that cause a resize of the virtual camera
-        self.dimensionChangeThreshold = 10
-
-        # Factors to smooth out movements and resizing of virtual cameras
-        # Smaller factor means smoother but slower movements
-        self.resizeSmoothingFactor = 1 / 4
-        self.moveSmoothingFactor = 1 / 2
+        self.dimensionChangeThreshold = 30
 
         # Face scale factor to get the person's portrait (with shoulders)
-        self.portraitScaleFactor = 3
+        self.portraitScaleFactor = 5
 
         # Garbage collector unused virtual cameras. Ticks every second
         self.timer = QTimer()
@@ -36,51 +29,65 @@ class VirtualCameraManager:
         self.timer.start(1000)
 
 
-    def update(self, faces, imageWidth, imageHeight):
+    # Updates virtual camera move and resize animations every frame based on time since last frame
+    def update(self, frameTime, imageWidth, imageHeight):      
+        for vc in self.__virtualCameras:
+            distance = GeometryUtils.distanceBetweenTwoPoints(vc.getPosition(), vc.positionGoal)
+            if distance > self.positionChangedThreshold:    
+                x, y = vc.getPosition()
+                goal = vc.positionGoal
+                distx = goal[0] - x
+                disty = goal[1] - y
+                dx = distx * frameTime * 2
+                dy = disty * frameTime * 2
+                self.__tryMoveVirtualCamera(vc,
+                                            (vc.xPos + dx, vc.yPos + dy),
+                                            imageWidth,
+                                            imageHeight)
 
+            if abs(vc.sizeGoal[0] - vc.width)  > self.dimensionChangeThreshold and \
+               abs(vc.sizeGoal[1] - vc.height) > self.dimensionChangeThreshold:
+                dw = vc.sizeGoal[1] - vc.height
+                resizeFactor = (vc.height + dw * frameTime) / vc.height
+                self.__tryResizeVirtualCamera(vc,
+                                              resizeFactor, 
+                                              imageWidth,
+                                              imageHeight)
+
+
+    # Updates the associated face (if any) for each virtual camera
+    def updateFaces(self, faces, imageWidth, imageHeight):
         # Find matches between existing virtual cameras and detected faces
-        matches = dict.fromkeys(self.virtualCameras, [])
+        matches = dict.fromkeys(self.__virtualCameras, None)
         matches, unmatchedFaces = self.__tryFindMatches(matches, faces)
 
         # Create new virtual cameras from faces that were not associated with a vc
         for unmatchedFace in unmatchedFaces:
             newVirtualCamera = VirtualCamera.createFromFace(unmatchedFace)
-            self.__tryResizeVirtualCamera(newVirtualCamera, self.portraitScaleFactor, imageWidth, imageHeight)
-            self.virtualCameras.append(newVirtualCamera)
+            ratio = max(self.portraitScaleFactor, self.virtualCameraMinHeight / newVirtualCamera.height)
+            self.__tryResizeVirtualCamera(newVirtualCamera, ratio, imageWidth, imageHeight)
+            newVirtualCamera.sizeGoal = (newVirtualCamera.width, newVirtualCamera.height)
+            self.__virtualCameras.append(newVirtualCamera)
 
         for vc, face in matches.items():       
             # Found a face to associate the vc with, so we update the vc with its matched face
-            if face != []:
+            if face:
                 vc.resetTimeToLive()
-                self.__updateVirtualCamera(vc, face, imageWidth, imageHeight)
+                vc.positionGoal = face.getPosition()
+                heightGoal = max(self.virtualCameraMinHeight, face.height * self.portraitScaleFactor)
+                vc.sizeGoal = (heightGoal * self.aspectRatio, heightGoal)
 
 
-    # Updates the size and position of the virtual camera if it has changed
-    def __updateVirtualCamera(self, existingVirtualCamera, face, imageWidth, imageHeight):
+    # Returns a copy of the virtual cameras so the caller can't modify the original ones
+    def getVirtualCameras(self):
+        vcs = []
+        for vc in self.__virtualCameras:
+            vcs.append(VirtualCamera.copy(vc))
+        return vcs
 
-        # Create virtual camera from face to compare with the vc we are updating
-        newVirtualCamera = VirtualCamera.createFromFace(face)
-        self.__tryResizeVirtualCamera(newVirtualCamera, self.portraitScaleFactor, imageWidth, imageHeight)
 
-        if abs(newVirtualCamera.width - existingVirtualCamera.width) > self.dimensionChangeThreshold and \
-           abs(newVirtualCamera.height - existingVirtualCamera.height) > self.dimensionChangeThreshold:
-            dw = newVirtualCamera.width - existingVirtualCamera.width
-            resizeFactor = (existingVirtualCamera.width + dw * self.resizeSmoothingFactor) / existingVirtualCamera.width
-            self.__tryResizeVirtualCamera(existingVirtualCamera,
-                                          resizeFactor, imageWidth,
-                                          imageHeight)
-
-        distance = GeometryUtils.distanceBetweenTwoPoints(existingVirtualCamera.getPosition(), newVirtualCamera.getPosition())
-        if distance > self.positionChangedThreshold:
-            x, y = existingVirtualCamera.getPosition()
-            newX, newY = newVirtualCamera.getPosition()
-            (unitX, unitY) = GeometryUtils.getUnitVector(newX - x, newY - y)
-            smoothDx = distance * self.moveSmoothingFactor * unitX
-            smoothDy = distance * self.moveSmoothingFactor * unitY
-            self.__tryMoveVirtualCamera(existingVirtualCamera,
-                                        (existingVirtualCamera.xPos + smoothDx, existingVirtualCamera.yPos + smoothDy),
-                                        imageWidth,
-                                        imageHeight)
+    def clear(self):
+        self.__virtualCameras.clear()
 
      
     # Try to move the vc to the desired position. If a move in a certain dimension
@@ -103,7 +110,7 @@ class VirtualCameraManager:
     # If the new dimensions overflow the image, we move the image to remove the overflow
     def __tryResizeVirtualCamera(self, virtualCamera, scaleFactor, imageWidth, imageHeight):
         # Find the desired dimensions respecting the aspect ratio
-        virtualCamera.height = min(virtualCamera.height * scaleFactor, imageHeight * 0.9)
+        virtualCamera.height = min(virtualCamera.height * scaleFactor, imageHeight)
         virtualCamera.width = virtualCamera.height * self.aspectRatio
 
         # Remove caused overflow, if any
@@ -115,7 +122,7 @@ class VirtualCameraManager:
     def __tryFindMatches(self, matches, unmatchedFaces):
 
         # Returns if there is no unmatched vc's left or no unmatched faces left 
-        noMatches = {vc: face for vc, face in matches.items() if face == []}
+        noMatches = {vc: face for vc, face in matches.items() if face is None}
         if len(noMatches) < 1 or len(unmatchedFaces) < 1:
             return matches, unmatchedFaces
 
@@ -134,7 +141,7 @@ class VirtualCameraManager:
             (distance, vc) = faceDistanceVcMap[closestFaceIndex]
             closestFace = facesToMatch[closestFaceIndex]
             matches[vc] = closestFace
-            unmatchedFaces = [face for face in unmatchedFaces if not (face==closestFace).all()]
+            unmatchedFaces = [face for face in unmatchedFaces if not face == closestFace]
 
         # Call the method recursively to match the remaining unmatched vc's
         return self.__tryFindMatches(matches, unmatchedFaces)
@@ -146,9 +153,7 @@ class VirtualCameraManager:
         closestDistance = None
 
         for i in range(len(faces)):
-            (facex1, facey1, facex2, facey2) = faces[i]
-            facePosition = (facex1 + (facex2 - facex1) / 2, facey1 + (facey2 - facey1) / 2)
-
+            facePosition = faces[i].getPosition()
             distance = GeometryUtils.distanceBetweenTwoPoints(virtualCamera.getPosition(), facePosition)
             if not closestDistance or distance < closestDistance:
                 closestDistance = distance
@@ -161,8 +166,8 @@ class VirtualCameraManager:
 
 
     # Finds by how much the rectangle overflows the image
-    def __findOverflow(self, rect, imageWidth, imageHeight):
-        (x1, y1, x2, y2) = rect
+    def __findOverflow(self, rectCoordinates, imageWidth, imageHeight):
+        (x1, y1, x2, y2) = rectCoordinates
         xOverflow = 0
         yOverflow = 0
 
@@ -181,7 +186,7 @@ class VirtualCameraManager:
 
     # Removes the virtual cameras that were not associated with a face for some time
     def __garbageCollect(self):
-        for vc in self.virtualCameras:
+        for vc in self.__virtualCameras:
             vc.decreaseTimeToLive()
             if not vc.isAlive():
-                self.virtualCameras.remove(vc)
+                self.__virtualCameras.remove(vc)

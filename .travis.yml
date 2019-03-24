@@ -1,8 +1,31 @@
-language: python
+sudo: required
+language: 
+  - python
+  - cpp
 python:
   - "3.5.2"
-cache: pip
+cache: 
+  - pip
+  - ccache
+compiler: g++
+before_install:
+  - sudo apt-get -y update
 install:
   - pip install -r ./requirements.txt
+  - sudo apt-get install -y xorg-dev libglu1-mesa-dev
+  - sudo apt-get install -y swig
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - gcc-6
+      - g++-6
 script:
+  - sudo ln -s /usr/bin/gcc-6 /usr/local/bin/gcc
+  - sudo ln -s /usr/bin/g++-6 /usr/local/bin/g++
+  - export CC=/usr/bin/gcc-6
+  - export CXX=/usr/bin/g++-6
+  - make
+  - make dewarping_lib
   - pytest -v --cov=./ tests/

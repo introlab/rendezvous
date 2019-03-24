@@ -37,4 +37,7 @@ class FaceDetection(multiprocessing.Process):
                 self.facesQueue.put(faces)
                 self.requestImage = True
 
+            time.sleep(0.01)
+
+
         print("Face detection terminated")
