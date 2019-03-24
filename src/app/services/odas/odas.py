@@ -158,6 +158,7 @@ class ClientHandler(QObject, Thread):
         self.sock = sock
         self.isVerbose = isVerbose
         self.isConnected = True
+        self.daemon = True
 
 
     def stop(self):
