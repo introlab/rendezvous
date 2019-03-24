@@ -111,10 +111,13 @@ class Odas(QObject, Thread):
     def closeConnections(self):
         if self.__workers:
             for worker in self.__workers:
-                worker.signalAudio.connect(self.audioReceived)
-                worker.signalPositions.connect(self.positionsReceived)
-                worker.signalConnectionClosed.connect(self.workerTerminated)
+                worker.signalAudio.disconnect(self.audioReceived)
+                worker.signalPositions.disconnect(self.positionsReceived)
+                worker.signalConnectionClosed.disconnect(self.workerTerminated)
                 worker.stop()
+            
+            self.__workers = []
+                
 
         self.signalClientsConnected.emit(False)
 
@@ -167,7 +170,6 @@ class ClientHandler(QObject, Thread):
             self.isConnected = False
             self.sock = None
 
-            self.join()
             print('connection closed') if self.isVerbose else None
             self.signalConnectionClosed.emit(self)
 
