@@ -1,6 +1,6 @@
 import queue
 import time
-from multiprocessing import Queue
+import multiprocessing
 from threading import Thread
 
 from PyQt5.QtCore import QObject, pyqtSignal
@@ -20,8 +20,11 @@ class VideoProcessor(QObject):
         super(VideoProcessor, self).__init__(parent)
         self.virtualCameraManager = VirtualCameraManager()
         self.isRunning = False
-        self.imageQueue = Queue()
-        self.facesQueue = Queue()
+        self.manager = multiprocessing.Manager()
+        self.imageQueue = self.manager.Queue()
+        self.facesQueue = self.manager.Queue()
+        self.semaphore = self.manager.Semaphore()
+        
 
 
     def start(self, cameraConfigPath):
@@ -55,7 +58,7 @@ class VideoProcessor(QObject):
             videoStream = VideoStream(cameraConfig)
             videoStream.initializeStream()
 
-            faceDetection = FaceDetection(self.imageQueue, self.facesQueue)
+            faceDetection = FaceDetection(self.imageQueue, self.facesQueue, self.semaphore)
             faceDetection.start()
             
             print('Video processor started')
@@ -76,8 +79,9 @@ class VideoProcessor(QObject):
                 success, frame = videoStream.readFrame()
                 frameHeight, frameWidth, colors = frame.shape
 
-                if faceDetection.requestImage:
-                    self.imageQueue.put_nowait(frame)
+                if self.semaphore.acquire(blocking = False):
+                    self.semaphore.release()
+                    self.imageQueue.put_nowait(frame.copy())
 
                 if newFaces is not None:
                     self.virtualCameraManager.updateFaces(newFaces, frameWidth, frameHeight)
