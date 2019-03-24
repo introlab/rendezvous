@@ -7,6 +7,7 @@ from PyQt5.QtCore import QObject, pyqtSignal
 
 from .streaming.video_stream import VideoStream
 from .facedetection.face_detection import FaceDetection
+from .virtualcamera.virtual_camera_manager import VirtualCameraManager
 from src.utils.file_helper import FileHelper
 
 
@@ -17,6 +18,7 @@ class VideoProcessor(QObject):
 
     def __init__(self, parent=None):
         super(VideoProcessor, self).__init__(parent)
+        self.virtualCameraManager = VirtualCameraManager()
         self.isRunning = False
         self.imageQueue = Queue()
         self.facesQueue = Queue()
@@ -55,28 +57,36 @@ class VideoProcessor(QObject):
 
             faceDetection = FaceDetection(self.imageQueue, self.facesQueue)
             faceDetection.start()
-
+            
             print('Video processor started')
 
+            prevTime = time.perf_counter()
             self.isRunning = True
-            faces = []
             while self.isRunning:
+
+                currentTime = time.perf_counter()
+                frameTime = currentTime - prevTime
+
                 newFaces = None
-                try:
+                try:                  
                     newFaces = self.facesQueue.get_nowait()
                 except queue.Empty:
                     time.sleep(0)
 
-                if newFaces is not None:
-                    faces = newFaces
-
                 success, frame = videoStream.readFrame()
+                frameHeight, frameWidth, colors = frame.shape
 
                 if faceDetection.requestImage:
                     self.imageQueue.put_nowait(frame)
 
+                if newFaces is not None:
+                    self.virtualCameraManager.updateFaces(newFaces, frameWidth, frameHeight)
+
                 if success:
-                    self.signalFrameData.emit(frame, faces)
+                    self.virtualCameraManager.update(frameTime, frameWidth, frameHeight)
+                    self.signalFrameData.emit(frame.copy(), self.virtualCameraManager.getVirtualCameras())
+
+                prevTime = currentTime
 
         except Exception as e:
 
@@ -93,6 +103,5 @@ class VideoProcessor(QObject):
 
             if videoStream:
                 videoStream.destroy()
-                videoStream = None
-                
+
         print('Video stream terminated')
