@@ -32,7 +32,7 @@ class OdasLiveProcess(QObject, Thread):
             if not os.path.exists(self.micConfigPath):
                 raise Exception('no file found at {}'.format(self.micConfigPath))
 
-            self.process = subprocess.Popen([self.odasPath, '-c', self.micConfigPath], shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            self.process = subprocess.Popen([self.odasPath, '-c', self.micConfigPath], shell=False)
 
             while True:
                 if self.process and self.process.poll():
