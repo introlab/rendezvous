@@ -67,7 +67,7 @@ class Odas(QObject, Thread):
                             worker.start()
                             self.__workers.append(worker)
 
-                            worker = self.__initWorker(clientAudio, 1024)
+                            worker = self.__initWorker(clientAudio, 128)
                             worker.start()
                             self.__workers.append(worker)
 
@@ -192,7 +192,7 @@ class ClientHandler(QObject, Thread):
                     self.isConnected = False
                     return
                 if self.bufferSize:
-                    data = self.sock.recv(self.bufferSize, socket.MSG_WAITALL)
+                    data = self.sock.recv(self.bufferSize)
                 else:
                     data = self.sock.recv(10000)
                 # If there is no data incomming close the stream.
@@ -203,12 +203,9 @@ class ClientHandler(QObject, Thread):
                 if JsonUtils.isJson(data):
                     self.__parseOdasObject(data)
                 else:
-                    while len(data) % 4 != 0:
-                        data += b'\x00'
-
                     self.signalAudio.emit(data)
                             
-                sleep(0.001)
+                sleep(0.00001)
 
         except Exception as e:
             self.signalConnectionClosed.emit(self)
