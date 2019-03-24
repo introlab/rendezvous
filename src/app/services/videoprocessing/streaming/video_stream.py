@@ -30,10 +30,11 @@ class VideoStream:
 
         # Initialization of C++ dewarping library requires number of channels in the video
         success, frame = self.camera.read()
-        channels = len(frame.shape)
 
         if not success:
-            raise Exception('Could not read image from camera')
+            raise Exception('Could not read image from camera at port {port}'.format(port=self.config.cameraPort))
+
+        channels = len(frame.shape)
 
         donutSlice = DonutSlice(self.config.imageWidth / 2, self.config.imageHeight / 2, self.config.inRadius, \
             self.config.outRadius, np.deg2rad(self.config.middleAngle), np.deg2rad(self.config.angleSpan))

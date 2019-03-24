@@ -7,8 +7,7 @@ from src.app.gui.conference_ui import Ui_Conference
 from src.app.controllers.conference_controller import ConferenceController
 
 from src.app.services.videoprocessing.video_processor import VideoProcessor
-from src.app.services.virtualcamera.virtual_camera_displayer import VirtualCameraDisplayer
-from src.app.services.virtualcamera.virtual_camera_manager import VirtualCameraManager
+from src.app.services.videoprocessing.virtualcamera.virtual_camera_displayer import VirtualCameraDisplayer
 
 
 @unique
@@ -32,7 +31,6 @@ class Conference(QWidget, Ui_Conference):
         self.outputFolder.setText(self.window().getSetting('outputFolder'))
 
         self.videoProcessor = VideoProcessor()
-        self.virtualCameraManager = VirtualCameraManager()
         self.virtualCameraDisplayer = VirtualCameraDisplayer(self.virtualCameraFrame)
 
         self.btnStartStopAudioRecord.setDisabled(True)
@@ -122,10 +120,8 @@ class Conference(QWidget, Ui_Conference):
 
 
     @pyqtSlot(object, object)
-    def imageReceived(self, image, faces):
-        imageHeight, imageWidth, colors = image.shape
-        self.virtualCameraManager.update(faces, imageWidth, imageHeight)
-        self.virtualCameraDisplayer.updateDisplay(image, self.virtualCameraManager.virtualCameras)
+    def imageReceived(self, image, virtualCameras):
+        self.virtualCameraDisplayer.updateDisplay(image, virtualCameras)
 
 
     @pyqtSlot(bool)
@@ -187,5 +183,5 @@ class Conference(QWidget, Ui_Conference):
         if self.videoProcessor and self.videoProcessor.isRunning:
             self.videoProcessor.stop()
             self.videoProcessor.signalFrameData.disconnect(self.imageReceived)
-            self.virtualCameraManager.virtualCameras.clear()
+            self.virtualCameraDisplayer.clear()
 
