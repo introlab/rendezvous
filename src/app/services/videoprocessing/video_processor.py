@@ -84,7 +84,7 @@ class VideoProcessor(QObject):
             dewarper = FisheyeDewarping(cameraConfig.imageWidth, cameraConfig.imageHeight, channels, True)
 
             dewarpedImageBuffer = np.zeros((outputHeight, outputWidth, channels), dtype=np.uint8)
-            dewarpedImageBufferId = dewarper.createRenderContext(outputHeight, outputWidth, channels)
+            dewarpedImageBufferId = dewarper.createRenderContext(outputWidth, outputHeight, channels)
 
             faceDetection = FaceDetection(self.imageQueue, self.facesQueue)
             faceDetection.start()
