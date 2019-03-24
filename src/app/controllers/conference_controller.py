@@ -13,7 +13,7 @@ class ConferenceController(QObject):
     def __init__(self, parent=None):
         super(ConferenceController, self).__init__(parent)
 
-        self.__odas = Odas(hostIP='127.0.0.1', port= 10020, isVerbose=False)
+        self.__odas = Odas(hostIP='127.0.0.1', port= 10020, isVerbose=True)
         self.__odas.start()
 
         self.__audioWriter = AudioWriter()

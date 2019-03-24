@@ -191,7 +191,7 @@ class ClientHandler(QObject, Thread):
 
                     self.signalAudio.emit(data)
                             
-                sleep(0.0001)
+                sleep(0.00001)
 
         except Exception as e:
             self.signalConnectionClosed.emit(self)
