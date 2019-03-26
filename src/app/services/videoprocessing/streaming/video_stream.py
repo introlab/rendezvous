@@ -52,7 +52,15 @@ class VideoStream:
 
         self.dewarpedImageBuffers = np.zeros((2, outputHeight, outputWidth, channels), dtype=np.uint8)
         self.dewarpedImageBuffersIndex = 0
+
+        self.baseDonutSlice = donutSlice
+        self.dewarpingParameters = dewarpingParameters
        
+    def getDewarpingParameters():
+        return self.dewarpingParameters
+    
+    def getBaseDonutSlice():
+        return self.baseDonutSlice
 
     def destroy(self):
         self.camera.release()

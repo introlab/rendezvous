@@ -8,6 +8,7 @@ from src.app.controllers.conference_controller import ConferenceController
 
 from src.app.services.videoprocessing.video_processor import VideoProcessor
 from src.app.services.videoprocessing.virtualcamera.virtual_camera_displayer import VirtualCameraDisplayer
+from src.app.services.sourceclassifier.source_classifier import SourceClassifier
 
 
 @unique
@@ -118,9 +119,14 @@ class Conference(QWidget, Ui_Conference):
         self.source3ElevationValueLabel.setText('%.5f' % values[2]['elevation'])
         self.source4ElevationValueLabel.setText('%.5f' % values[3]['elevation'])
 
+        self.soundSources = values
+
 
     @pyqtSlot(object, object)
     def imageReceived(self, image, virtualCameras):
+        cameraParams = self.videoProcessor.getCameraParams()
+        sourceClassifier = SourceClassifier(cameraParams)
+        sourceClassifier.drawSoundSources(image, virtualCameras, self.soundSources)
         self.virtualCameraDisplayer.updateDisplay(image, virtualCameras)
 
 
