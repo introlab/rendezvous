@@ -68,7 +68,7 @@ class Odas(QObject, Thread):
                             worker.start()
                             self.__workers.append(worker)
 
-                            worker = self.__initWorker(clientAudio, 128)
+                            worker = self.__initWorker(clientAudio, 1024)
                             worker.start()
                             self.__workers.append(worker)
 
@@ -193,7 +193,7 @@ class ClientHandler(QObject, Thread):
                     self.isConnected = False
                     return
                 if self.bufferSize:
-                    data = self.sock.recv(self.bufferSize)
+                    data = self.sock.recv(self.bufferSize, socket.MSG_WAITALL)
                 else:
                     data = self.sock.recv(10000)
                 # If there is no data incomming close the stream.
