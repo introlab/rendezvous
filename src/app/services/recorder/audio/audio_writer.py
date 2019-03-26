@@ -1,26 +1,12 @@
 import wave
 import os
-from threading import Thread
-import queue
-from enum import Enum, unique
 
-from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5.QtCore import QObject
 
-
-@unique
-class WriterActions(Enum):
-    STOP = 'stop'
-    SAVE_FILES = 'savefiles'
-    NEW_RECORDING = 'newrecording'
-
-
-class AudioWriter(QObject, Thread):
-
-    signalException = pyqtSignal(Exception)
+class AudioWriter(QObject):
 
     def __init__(self, parent=None):
         super(AudioWriter, self).__init__(parent)
-        Thread.__init__(self)
 
         self.isRecording = False
         self.wavFiles = []
@@ -30,7 +16,6 @@ class AudioWriter(QObject, Thread):
         self.byteDepth = 2
         self.sampleRate = 48000
         self.sourcesBuffer = {'0' :bytearray(), '1': bytearray(), '2': bytearray(), '3': bytearray()}
-        self.mailbox = queue.Queue()
 
 
     def changeWavSettings(self, outputFolder, nChannels, nChannelFile, byteDepth, sampleRate):
@@ -40,65 +25,37 @@ class AudioWriter(QObject, Thread):
         self.byteDepth = byteDepth
         self.sampleRate = sampleRate
 
-
-    def stop(self):
-        if self.isRunning:
-            self.mailbox.put(WriterActions.STOP)
-            # Wait until the thread terminate.
-            self.join()
-
-            for wavFile in self.wavFiles:
-                if wavFile:
-                    wavFile.close()
-        
-            self.wavFiles = []
-            self.isRunning = False
+    
+    def createNewFiles(self):
+        for i in range(0, self.nChannels):
+            outputFile = os.path.join(self.outputFolder, 'outputsrc-{}.wav'.format(i))
+            self.wavFiles.append(wave.open(outputFile, 'wb'))
+            self.wavFiles[i].setnchannels(self.nChannelsFile)
+            self.wavFiles[i].setsampwidth(self.byteDepth)
+            self.wavFiles[i].setframerate(self.sampleRate)
+            self.sourcesBuffer[str(i)] = bytearray()
 
 
-    def run(self):
-        try:
-            self.isRunning = True
-            while True:
-                    data = self.mailbox.get()
+    def write(self, data):
+        offset = 0
+        while offset < len(data):
+            for key, _ in self.sourcesBuffer.items():
+                currentByte = int(offset + int(key))
+                self.sourcesBuffer[key] += data[currentByte:currentByte + 2]
 
-                    if isinstance(data, bytes):
-                        offset = 0
-                        while offset < len(data):
-                            for key, _ in self.sourcesBuffer.items():
-                                currentByte = int(offset + int(key))
-                                self.sourcesBuffer[key] += data[currentByte:currentByte + 2]
-
-                            offset += self.nChannels * 2
-
-                    elif data == WriterActions.SAVE_FILES:
-                        self.__writeWavFiles()
-
-                    elif data == WriterActions.NEW_RECORDING:
-                        for i in range(0, self.nChannels):
-                            outputFile = os.path.join(self.outputFolder, 'outputsrc-{}.wav'.format(i))
-                            self.wavFiles.append(wave.open(outputFile, 'wb'))
-                            self.wavFiles[i].setnchannels(self.nChannelsFile)
-                            self.wavFiles[i].setsampwidth(self.byteDepth)
-                            self.wavFiles[i].setframerate(self.sampleRate)
-                            self.sourcesBuffer[str(i)] = bytearray()
-
-                    elif data == WriterActions.STOP:
-                        break
-        
-        except Exception as e:
-            self.signalException.emit(e)
-
-        finally:
-            self.isRunning = False
+            offset += self.nChannels * 2
 
 
-    def __writeWavFiles(self):
+    def close(self):
         for index, wavFile in enumerate(self.wavFiles):
             audioRaw = self.sourcesBuffer[str(index)]
-            if wavFile and audioRaw:
+            if audioRaw and wavFile:
                 wavFile.writeframesraw(audioRaw)
+             
+            if wavFile:
                 wavFile.close()
-                self.sourcesBuffer[str(index)] = bytearray()
+            
+            self.sourcesBuffer[str(index)] = bytearray()
         
         self.wavFiles = []
 

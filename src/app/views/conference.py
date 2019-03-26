@@ -100,10 +100,10 @@ class Conference(QWidget, Ui_Conference):
         QApplication.processEvents()
 
         if self.btnStartStopAudioRecord.text() == BtnAudioRecordLabels.START_RECORDING.value:
-            self.conferenceController.startAudioRecording(self.outputFolder.text())
+            self.conferenceController.startRecording(self.outputFolder.text())
 
         else:
-            self.conferenceController.saveAudioRecording()
+            self.conferenceController.saveRecording()
 
 
     @pyqtSlot(object)
@@ -142,7 +142,7 @@ class Conference(QWidget, Ui_Conference):
         else:
             self.btnStartStopOdas.setText(BtnOdasLabels.START_ODAS.value)
             self.btnStartStopAudioRecord.setText(BtnAudioRecordLabels.START_RECORDING.value)
-            self.conferenceController.saveAudioRecording()
+            self.conferenceController.saveRecording()
             self.btnStartStopAudioRecord.setDisabled(True)
 
         self.btnStartStopOdas.setDisabled(False)
@@ -168,7 +168,7 @@ class Conference(QWidget, Ui_Conference):
     def closeEvent(self, event):
         if event:
             self.stopVideoProcessor()
-            self.conferenceController.stopAudioRecording()
+            self.conferenceController.stopRecording()
             self.conferenceController.stopOdasServer()
             event.accept()
 
