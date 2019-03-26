@@ -20,11 +20,24 @@ class VideoProcessor(QObject):
         super(VideoProcessor, self).__init__(parent)
         self.virtualCameraManager = VirtualCameraManager()
         self.isRunning = False
+<<<<<<< 7058a0170ae3a678a2e2eddb95037a00e2fdfc3f
         self.manager = multiprocessing.Manager()
         self.imageQueue = self.manager.Queue()
         self.facesQueue = self.manager.Queue()
         self.semaphore = self.manager.Semaphore()
         self.heartbeatQueue = self.manager.Queue(1)
+=======
+        self.imageQueue = Queue()
+        self.facesQueue = Queue()
+
+    def getCameraParams():
+        cameraParams = []
+        cameraParams['fisheyeAngle'] = self.cameraConfig.FisheyeAngle
+        cameraParams['baseDonutSlice'] = self.baseDonutSlice
+        cameraParams['dewarpingParameters'] = self.dewarpingParameters
+
+        return cameraParams
+>>>>>>> source classifier class
 
     def start(self, cameraConfigPath):
         print("Starting video processor...")
@@ -56,6 +69,9 @@ class VideoProcessor(QObject):
             cameraConfig = FileHelper.readJsonFile(cameraConfigPath)
             videoStream = VideoStream(cameraConfig)
             videoStream.initializeStream()
+
+            self.baseDonutSlice = videoStream.getBaseDonutSlice(videoStream)
+            self.dewarpingParameters = videoStream.getDewarpingParameters(videoStream)
 
             faceDetection = FaceDetection(self.imageQueue, self.facesQueue, self.heartbeatQueue, self.semaphore)
             faceDetection.start()
