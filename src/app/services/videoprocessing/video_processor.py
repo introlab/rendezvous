@@ -21,12 +21,21 @@ class VideoProcessor(QObject):
         super(VideoProcessor, self).__init__(parent)
         self.virtualCameraManager = VirtualCameraManager()
         self.isRunning = False
+<<<<<<< 1b1fdcad0b2c2d982461f95977c792d860ec66a1
         self.imageQueue = Queue()
         self.facesQueue = Queue()
         self.semaphore = Semaphore()
         self.heartbeatQueue = Queue(1)
 
 
+=======
+        self.manager = multiprocessing.Manager()
+        self.imageQueue = self.manager.Queue()
+        self.facesQueue = self.manager.Queue()
+        self.semaphore = self.manager.Semaphore()
+        self.heartbeatQueue = self.manager.Queue(1)
+
+>>>>>>> fix self errors
     def getCameraParams(self):
         cameraParams = []
         cameraParams['fisheyeAngle'] = self.cameraConfig.FisheyeAngle
