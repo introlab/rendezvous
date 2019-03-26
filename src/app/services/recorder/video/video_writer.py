@@ -7,14 +7,22 @@ from PyQt5.QtCore import QObject, pyqtSignal
 
 class VideoWriter(QObject):
 
-    def __init__(self, parent=None):
+    def __init__(self, filepath, fourCC, fps, parent=None):
         super(VideoWriter, self).__init__(parent)
+        
+        self.filepath = filepath
+        self.fourCC = cv2.VideoWriter_fourcc(*fourCC)
+        self.fps = fps
+        self.__writer = None
 
 
-if __name__ == '__main__':
+    def write(self, frame):
+        if not self.__writer:
+            height, width, _ = frame.shape
+            self.__writer = cv2.VideoWriter(self.filepath, self.fourCC, self.fps, (width, height))
+        
+        self.__writer.write(frame)
+    
 
-    frameWidth = self.virtualCameraFrame.size().width()
-    frameHeight = self.virtualCameraFrame.size().height()
-    writer = cv2.VideoWriter('video.avi', 'MJPEG', '20', (frameWidth, frameHeight))
-    writer.release()
-
+    def close(self):
+        self.__writer.release()

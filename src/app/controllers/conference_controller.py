@@ -39,7 +39,7 @@ class ConferenceController(QObject):
     @pyqtSlot(bytes)
     def audioDataReceived(self, streamData):
         if self.__isRecording and self.__recorder and self.__recorder.mailbox:
-            self.__recorder.mailbox.put(streamData)
+            self.__recorder.mailbox.put(('audio', streamData))
 
 
     @pyqtSlot(object)

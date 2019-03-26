@@ -19,11 +19,11 @@ class Recorder(QObject, Thread):
     
     signalException = pyqtSignal(Exception)
     
-    def __init__(self, parent=None):
+    def __init__(self, outputFolder, parent=None):
         super(Recorder, self).__init__(parent)
 
         self.__audioWriter = AudioWriter()
-        self.__videoWriter = VideoWriter()
+        self.__videoWriter = VideoWriter(outputFolder=outputFolder, fourCC='MJPEG', fps=20)
         self.mailbox = queue.Queue()
         self.isRunning = False
         self.isRecording = False
@@ -36,8 +36,8 @@ class Recorder(QObject, Thread):
             self.join()
 
             self.__audioWriter.close()
+            self.__videoWriter.close()
         
-            self.wavFiles = []
             self.isRunning = False
 
 
@@ -47,8 +47,14 @@ class Recorder(QObject, Thread):
             while True:
                     data = self.mailbox.get()
 
-                    if isinstance(data, bytes):
-                        self.__audioWriter.write(data)
+                    if isinstance(data, tuple):
+                        dataType = data[0]
+                        if dataType == 'audio':
+                            self.__audioWriter.write(data[1])
+                        elif dataType == 'video':
+                            self.__videoWriter.write(data[1])
+                        else:
+                            raise Exception('data type not supported for recording')
 
                     elif data == RecorderActions.SAVE_FILES:
                         self.__audioWriter.close()
