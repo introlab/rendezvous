@@ -20,7 +20,11 @@ class VideoProcessor(QObject):
         super(VideoProcessor, self).__init__(parent)
         self.virtualCameraManager = VirtualCameraManager()
         self.isRunning = False
+<<<<<<< a6e404872a046c24e9d945ffec0fbe0a0c8b9b49
 <<<<<<< 7058a0170ae3a678a2e2eddb95037a00e2fdfc3f
+=======
+<<<<<<< f2c890b08bd8337a7dfb58710b59de54c22fc049
+>>>>>>> source classifier class
         self.manager = multiprocessing.Manager()
         self.imageQueue = self.manager.Queue()
         self.facesQueue = self.manager.Queue()
