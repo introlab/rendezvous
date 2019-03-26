@@ -3,6 +3,7 @@ import json
 import socket
 from threading import Thread
 from time import sleep
+import numpy as np
 
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 
@@ -218,8 +219,8 @@ class ClientHandler(QObject, Thread):
 
         sources = {}
         for index, jsonSource in enumerate(jsonSources):
-            jsonSource['azimuth'] = SphericalAnglesConverter.getAzimuthFromPosition(jsonSource['x'], jsonSource['y'])
-            jsonSource['elevation'] = SphericalAnglesConverter.getElevationFromPosition(jsonSource['x'], jsonSource['y'], jsonSource['z'])
+            jsonSource['azimuth'] = np.rad2deg(SphericalAnglesConverter.getAzimuthFromPosition(jsonSource['x'], jsonSource['y']))
+            jsonSource['elevation'] = np.rad2deg(SphericalAnglesConverter.getElevationFromPosition(jsonSource['x'], jsonSource['y'], jsonSource['z']))
             sources[index] = jsonSource
 
         if sources:
