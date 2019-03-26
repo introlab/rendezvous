@@ -26,6 +26,7 @@ class VideoProcessor(QObject):
         self.semaphore = Semaphore()
         self.heartbeatQueue = Queue(1)
 
+
     def getCameraParams():
         cameraParams = []
         cameraParams['fisheyeAngle'] = self.cameraConfig.FisheyeAngle
@@ -65,6 +66,9 @@ class VideoProcessor(QObject):
             videoStream = VideoStream(cameraConfig)
             videoStream.initializeStream()
              
+            self.baseDonutSlice = videoStream.getBaseDonutSlice(videoStream)
+            self.dewarpingParameters = videoStream.getDewarpingParameters(videoStream)
+            
             self.baseDonutSlice = videoStream.getBaseDonutSlice(videoStream)
             self.dewarpingParameters = videoStream.getDewarpingParameters(videoStream)
 
