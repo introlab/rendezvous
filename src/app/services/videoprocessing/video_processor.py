@@ -27,7 +27,7 @@ class VideoProcessor(QObject):
         self.heartbeatQueue = Queue(1)
 
 
-    def getCameraParams():
+    def getCameraParams(self):
         cameraParams = []
         cameraParams['fisheyeAngle'] = self.cameraConfig.FisheyeAngle
         cameraParams['baseDonutSlice'] = self.baseDonutSlice
@@ -65,12 +65,9 @@ class VideoProcessor(QObject):
             cameraConfig = FileHelper.readJsonFile(cameraConfigPath)
             videoStream = VideoStream(cameraConfig)
             videoStream.initializeStream()
-             
-            self.baseDonutSlice = videoStream.getBaseDonutSlice(videoStream)
-            self.dewarpingParameters = videoStream.getDewarpingParameters(videoStream)
-            
-            self.baseDonutSlice = videoStream.getBaseDonutSlice(videoStream)
-            self.dewarpingParameters = videoStream.getDewarpingParameters(videoStream)
+
+            self.baseDonutSlice = videoStream.getBaseDonutSlice()
+            self.dewarpingParameters = videoStream.getDewarpingParameters()
 
             faceDetection = FaceDetection(self.imageQueue, self.facesQueue, self.heartbeatQueue, self.semaphore)
             faceDetection.start()
