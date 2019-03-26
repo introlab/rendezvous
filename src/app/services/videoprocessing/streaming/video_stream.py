@@ -56,10 +56,10 @@ class VideoStream:
         self.baseDonutSlice = donutSlice
         self.dewarpingParameters = dewarpingParameters
        
-    def getDewarpingParameters():
+    def getDewarpingParameters(self):
         return self.dewarpingParameters
     
-    def getBaseDonutSlice():
+    def getBaseDonutSlice(self):
         return self.baseDonutSlice
 
     def destroy(self):
