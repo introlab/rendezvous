@@ -24,8 +24,7 @@ class VideoProcessor(QObject):
         self.imageQueue = self.manager.Queue()
         self.facesQueue = self.manager.Queue()
         self.semaphore = self.manager.Semaphore()
-        
-
+        self.heartbeatQueue = Queue(1)
 
     def start(self, cameraConfigPath):
         print("Starting video processor...")
@@ -58,15 +57,20 @@ class VideoProcessor(QObject):
             videoStream = VideoStream(cameraConfig)
             videoStream.initializeStream()
 
-            faceDetection = FaceDetection(self.imageQueue, self.facesQueue, self.semaphore)
+            faceDetection = FaceDetection(self.imageQueue, self.facesQueue, self.semaphore, self.heartbeatQueue)
             faceDetection.start()
-            
+
             print('Video processor started')
 
             prevTime = time.perf_counter()
             self.isRunning = True
             while self.isRunning:
 
+                try:
+                    self.heartbeatQueue.put_nowait(True)
+                except queue.Full:
+                    pass
+                
                 currentTime = time.perf_counter()
                 frameTime = currentTime - prevTime
 
@@ -74,7 +78,7 @@ class VideoProcessor(QObject):
                 try:                  
                     newFaces = self.facesQueue.get_nowait()
                 except queue.Empty:
-                    time.sleep(0)
+                    pass
 
                 success, frame = videoStream.readFrame()
                 frameHeight, frameWidth, colors = frame.shape
@@ -89,9 +93,9 @@ class VideoProcessor(QObject):
                 if success:
                     self.virtualCameraManager.update(frameTime, frameWidth, frameHeight)
                     self.signalFrameData.emit(frame.copy(), self.virtualCameraManager.getVirtualCameras())
-
+                    
                 prevTime = currentTime
-
+                
         except Exception as e:
 
             self.isRunning = False
