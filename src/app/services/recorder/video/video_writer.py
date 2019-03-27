@@ -1,4 +1,3 @@
-import os
 from threading import Thread
 import numpy as np
 import cv2
@@ -25,4 +24,5 @@ class VideoWriter(QObject):
     
 
     def close(self):
-        self.__writer.release()
+        if self.__writer:
+            self.__writer.release()

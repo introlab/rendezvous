@@ -23,7 +23,12 @@ class Recorder(QObject, Thread):
         super(Recorder, self).__init__(parent)
 
         self.__audioWriter = AudioWriter()
-        self.__videoWriter = VideoWriter(outputFolder=outputFolder, fourCC='MJPEG', fps=20)
+        self.__videoSources = {
+            '0': VideoWriter(os.path.join(outputFolder, 'video-0.avi'), fourCC='MJPG', fps=20),
+            '1': VideoWriter(os.path.join(outputFolder, 'video-1.avi'), fourCC='MJPG', fps=20),
+            '2': VideoWriter(os.path.join(outputFolder, 'video-2.avi'), fourCC='MJPG', fps=20),
+            '3': VideoWriter(os.path.join(outputFolder, 'video-3.avi'), fourCC='MJPG', fps=20)
+        }
         self.mailbox = queue.Queue()
         self.isRunning = False
         self.isRecording = False
@@ -51,8 +56,18 @@ class Recorder(QObject, Thread):
                         dataType = data[0]
                         if dataType == 'audio':
                             self.__audioWriter.write(data[1])
+
                         elif dataType == 'video':
-                            self.__videoWriter.write(data[1])
+                            sourceIndex = data[1]
+
+                            if sourceIndex in self.__videoSources.keys():
+                                self.__videoSources[sourceIndex].write(data[2])
+
+                            else:
+                                fileFullPath = os.path.join(outputFolder, 'video-{}.avi'.format(str(sourceIndex)))
+                                self.__videoSources[sourceIndex] = VideoWriter(fileFullPath, fourCC='MJPEG', fps=20)
+                                self.__videoSources[sourceIndex].write(data[2])
+
                         else:
                             raise Exception('data type not supported for recording')
 
