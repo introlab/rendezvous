@@ -20,7 +20,7 @@ class OdasLiveProcess(QObject, Thread):
 
     def stop(self):
         if self.process:
-            self.process.terminate()
+            self.process.kill()
         self.join()
 
 

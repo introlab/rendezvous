@@ -1,6 +1,6 @@
 import queue
 import time
-from multiprocessing import Queue
+import multiprocessing
 from threading import Thread
 
 from PyQt5.QtCore import QObject, pyqtSignal
@@ -20,9 +20,11 @@ class VideoProcessor(QObject):
         super(VideoProcessor, self).__init__(parent)
         self.virtualCameraManager = VirtualCameraManager()
         self.isRunning = False
-        self.imageQueue = Queue()
-        self.facesQueue = Queue()
-
+        self.manager = multiprocessing.Manager()
+        self.imageQueue = self.manager.Queue()
+        self.facesQueue = self.manager.Queue()
+        self.semaphore = self.manager.Semaphore()
+        self.heartbeatQueue = self.manager.Queue(1)
 
     def start(self, cameraConfigPath):
         print("Starting video processor...")
@@ -55,15 +57,20 @@ class VideoProcessor(QObject):
             videoStream = VideoStream(cameraConfig)
             videoStream.initializeStream()
 
-            faceDetection = FaceDetection(self.imageQueue, self.facesQueue)
+            faceDetection = FaceDetection(self.imageQueue, self.facesQueue, self.semaphore, self.heartbeatQueue)
             faceDetection.start()
-            
+
             print('Video processor started')
 
             prevTime = time.perf_counter()
             self.isRunning = True
             while self.isRunning:
 
+                try:
+                    self.heartbeatQueue.put_nowait(True)
+                except queue.Full:
+                    pass
+                
                 currentTime = time.perf_counter()
                 frameTime = currentTime - prevTime
 
@@ -71,13 +78,14 @@ class VideoProcessor(QObject):
                 try:                  
                     newFaces = self.facesQueue.get_nowait()
                 except queue.Empty:
-                    time.sleep(0)
+                    pass
 
                 success, frame = videoStream.readFrame()
                 frameHeight, frameWidth, colors = frame.shape
 
-                if faceDetection.requestImage:
-                    self.imageQueue.put_nowait(frame)
+                if self.semaphore.acquire(blocking = False):
+                    self.semaphore.release()
+                    self.imageQueue.put_nowait(frame.copy())
 
                 if newFaces is not None:
                     self.virtualCameraManager.updateFaces(newFaces, frameWidth, frameHeight)
@@ -85,9 +93,9 @@ class VideoProcessor(QObject):
                 if success:
                     self.virtualCameraManager.update(frameTime, frameWidth, frameHeight)
                     self.signalFrameData.emit(frame.copy(), self.virtualCameraManager.getVirtualCameras())
-
+                    
                 prevTime = currentTime
-
+                
         except Exception as e:
 
             self.isRunning = False
