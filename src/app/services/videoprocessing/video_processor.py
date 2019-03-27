@@ -2,6 +2,7 @@ import queue
 import time
 import multiprocessing
 from threading import Thread
+from collections import deque
 
 from PyQt5.QtCore import QObject, pyqtSignal
 import numpy as np
@@ -30,6 +31,7 @@ class VideoProcessor(QObject):
         self.facesQueue = self.manager.Queue()
         self.semaphore = self.manager.Semaphore()
         self.heartbeatQueue = self.manager.Queue(1)
+        
 
     def start(self, cameraConfigPath):
         print("Starting video processor...")
@@ -72,12 +74,12 @@ class VideoProcessor(QObject):
 
             dewarpCount = 4
             fdDewarpingParameters = self.__getFaceDetectionDewarpingParameters(cameraConfig, dewarpCount)
-            cvDewarpingParameters = self.__getVirtualCameraDewarpingParameters(cameraConfig)
+            vcDewarpingParameters = self.__getVirtualCameraDewarpingParameters(cameraConfig)
             
-            fdOutputWidth = int((fdDewarpingParameters[0].dewarpWidth / 2) - (fdDewarpingParameters[0].dewarpWidth / 2) % 4)
-            fdOutputHeight = int((fdDewarpingParameters[0].dewarpHeight / 2) - (fdDewarpingParameters[0].dewarpHeight / 2) % 4)
-            vcOutputWidth = 400
-            vcOutputHeight = 300
+            fdOutputWidth = int((fdDewarpingParameters[0].dewarpWidth / 4) - (fdDewarpingParameters[0].dewarpWidth / 4) % 4)
+            fdOutputHeight = int((fdDewarpingParameters[0].dewarpHeight / 4) - (fdDewarpingParameters[0].dewarpHeight / 4) % 4)
+            vcOutputWidth = 600
+            vcOutputHeight = 800
 
             dewarper = FisheyeDewarping(cameraConfig.imageWidth, cameraConfig.imageHeight, channels, True)
 
@@ -90,8 +92,8 @@ class VideoProcessor(QObject):
             faceDetection = FaceDetection(self.imageQueue, self.facesQueue, self.semaphore, self.heartbeatQueue)
             faceDetection.start()
 
-            fdBufferQueue = Queue()
-            vcBufferQueue = Queue()
+            fdBufferQueue = deque()
+            vcBufferQueue = deque()
             
             print('Video processor started')
 
@@ -103,7 +105,7 @@ class VideoProcessor(QObject):
                     self.heartbeatQueue.put_nowait(True)
                 except queue.Full:
                     pass
-                
+
                 currentTime = time.perf_counter()
                 frameTime = currentTime - prevTime
 
@@ -117,7 +119,7 @@ class VideoProcessor(QObject):
                     self.virtualCameraManager.updateFaces(newFaces, frameWidth, frameHeight)
 
                 self.virtualCameraManager.update(frameTime, frameWidth, frameHeight)
-
+                
                 success, frame = videoStream.readFrame()
 
                 if success:
@@ -129,13 +131,13 @@ class VideoProcessor(QObject):
                         for i in range(0, dewarpCount):
                             fdBuffer = np.empty((fdOutputHeight, fdOutputWidth, channels), dtype=np.uint8)
                             dewarper.queueDewarping(fdBufferId, fdDewarpingParameters[i], fdBuffer)
-                            fdBufferQueue.put(fdBuffer)
+                            fdBufferQueue.append(fdBuffer)
 
                     for vc in self.virtualCameraManager.getVirtualCameras():
                         vcBuffer = np.empty((vcOutputHeight, vcOutputWidth, channels), dtype=np.uint8)
                         # Generate dewarping params for vc
-                        dewarper.queueDewarping(vcBufferId, cvDewarpingParameters, vcBuffer)
-                        vcBufferQueue.put(vcBuffer)
+                        dewarper.queueDewarping(vcBufferId, vcDewarpingParameters, vcBuffer)
+                        vcBufferQueue.append(vcBuffer)
 
                     bufferId = 0
                     while bufferId != -1:
@@ -143,10 +145,11 @@ class VideoProcessor(QObject):
                         
                         if bufferId == fdBufferId:
                             frameHeight, frameWidth, colors = fdBuffer.shape
-                            self.imageQueue.put_nowait(fdBufferQueue.get())
+                            buffer = fdBufferQueue.pop()
+                            self.imageQueue.put_nowait(buffer)
 
                     self.signalFrameData.emit(vcBufferQueue)
-                    
+
                 prevTime = currentTime
                 
         except Exception as e:
@@ -184,7 +187,7 @@ class VideoProcessor(QObject):
 
 
     def __getVirtualCameraDewarpingParameters(self, cameraConfig):
-        donutSlice = DonutSlice(cameraConfig.imageWidth / 4, cameraConfig.imageHeight / 4, cameraConfig.inRadius, \
+        donutSlice = DonutSlice(cameraConfig.imageWidth / 2, cameraConfig.imageHeight / 2, cameraConfig.inRadius, \
             cameraConfig.outRadius, np.deg2rad(0), np.deg2rad(cameraConfig.angleSpan))
 
         return DewarpingHelper.getDewarpingParameters(donutSlice, \
