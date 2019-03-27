@@ -27,5 +27,4 @@ script:
   - export CC=/usr/bin/gcc-6
   - export CXX=/usr/bin/g++-6
   - make
-  - make dewarping_lib
   - pytest -v --cov=./ tests/

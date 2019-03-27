@@ -7,11 +7,13 @@ from .facedetector.dnn_face_detector import DnnFaceDetector
 
 class FaceDetection(multiprocessing.Process):
 
-    def __init__(self, imageQueue, facesQueue):
+    def __init__(self, imageQueue, facesQueue, heartbeatQueue, semaphore):
         super(FaceDetection, self).__init__()
         self.requestImage = True
         self.imageQueue = imageQueue
         self.facesQueue = facesQueue
+        self.heartbeatQueue = heartbeatQueue
+        self.semaphore = semaphore
         self.faceDetector = DnnFaceDetector()
         self.exit = multiprocessing.Event()
 
@@ -26,12 +28,14 @@ class FaceDetection(multiprocessing.Process):
         numberOfImagesProcessed = 0
         faces = []
 
-        while not self.exit.is_set():
+        lastHeartBeat = time.perf_counter()
+
+        while not self.exit.is_set() and time.perf_counter() - lastHeartBeat < 0.5:
 
             frame = []
             try:
                 frame = self.imageQueue.get_nowait()
-                self.requestImage = False
+                self.semaphore.acquire()
             except queue.Empty:
                 time.sleep(0.01)
 
@@ -42,6 +46,14 @@ class FaceDetection(multiprocessing.Process):
                     self.facesQueue.put(faces)
                     numberOfImagesProcessed = 0
                     faces = []
-                    self.requestImage = True
+                self.semaphore.release()
+                
+
+            try:
+                self.heartbeatQueue.get_nowait()
+                lastHeartBeat = time.perf_counter()
+            except queue.Empty:
+                pass
 
         print("Face detection terminated")
+        

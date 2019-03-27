@@ -1,6 +1,6 @@
 import queue
 import time
-from multiprocessing import Queue
+import multiprocessing
 from threading import Thread
 
 from PyQt5.QtCore import QObject, pyqtSignal
@@ -25,9 +25,11 @@ class VideoProcessor(QObject):
         super(VideoProcessor, self).__init__(parent)
         self.virtualCameraManager = VirtualCameraManager()
         self.isRunning = False
-        self.imageQueue = Queue()
-        self.facesQueue = Queue()
-
+        self.manager = multiprocessing.Manager()
+        self.imageQueue = self.manager.Queue()
+        self.facesQueue = self.manager.Queue()
+        self.semaphore = self.manager.Semaphore()
+        self.heartbeatQueue = self.manager.Queue(1)
 
     def start(self, cameraConfigPath):
         print("Starting video processor...")
@@ -85,7 +87,7 @@ class VideoProcessor(QObject):
             #vcBuffer = np.empty((vcOutputHeight, vcOutputWidth, channels), dtype=np.uint8)
             vcBufferId = dewarper.createRenderContext(vcOutputWidth, vcOutputHeight, channels)
 
-            faceDetection = FaceDetection(self.imageQueue, self.facesQueue)
+            faceDetection = FaceDetection(self.imageQueue, self.facesQueue, self.semaphore, self.heartbeatQueue)
             faceDetection.start()
 
             fdBufferQueue = Queue()
@@ -97,6 +99,11 @@ class VideoProcessor(QObject):
             self.isRunning = True
             while self.isRunning:
 
+                try:
+                    self.heartbeatQueue.put_nowait(True)
+                except queue.Full:
+                    pass
+                
                 currentTime = time.perf_counter()
                 frameTime = currentTime - prevTime
 
@@ -104,7 +111,7 @@ class VideoProcessor(QObject):
                 try:                  
                     newFaces = self.facesQueue.get_nowait()
                 except queue.Empty:
-                    time.sleep(0)
+                    pass
 
                 if newFaces is not None:
                     self.virtualCameraManager.updateFaces(newFaces, frameWidth, frameHeight)
@@ -117,7 +124,8 @@ class VideoProcessor(QObject):
 
                     dewarper.loadFisheyeImage(frame)
 
-                    if faceDetection.requestImage:
+                    if self.semaphore.acquire(blocking = False):
+                        self.semaphore.release()
                         for i in range(0, dewarpCount):
                             fdBuffer = np.empty((fdOutputHeight, fdOutputWidth, channels), dtype=np.uint8)
                             dewarper.queueDewarping(fdBufferId, fdDewarpingParameters[i], fdBuffer)
