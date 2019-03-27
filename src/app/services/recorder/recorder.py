@@ -41,7 +41,8 @@ class Recorder(QObject, Thread):
             self.join()
 
             self.__audioWriter.close()
-            self.__videoWriter.close()
+            for key, videoWriter in self.__videoSources.items():
+                videoWriter.close()
         
             self.isRunning = False
 
@@ -65,7 +66,7 @@ class Recorder(QObject, Thread):
 
                             else:
                                 fileFullPath = os.path.join(outputFolder, 'video-{}.avi'.format(str(sourceIndex)))
-                                self.__videoSources[sourceIndex] = VideoWriter(fileFullPath, fourCC='MJPEG', fps=20)
+                                self.__videoSources[sourceIndex] = VideoWriter(fileFullPath, fourCC='MJPG', fps=20)
                                 self.__videoSources[sourceIndex].write(data[2])
 
                         else:
@@ -89,4 +90,9 @@ class Recorder(QObject, Thread):
 
     def changeAudioSettings(self, outputFolder, nChannels, nChannelFile, byteDepth, sampleRate):
         self.__audioWriter.changeWavSettings(outputFolder, nChannels, nChannelFile, byteDepth, sampleRate)
+
+    
+    def changeVideoSettings(self, outputFolder):
+        for key, writer in self.__videoSources.items():
+            writer.setFilePath(os.path.join(outputFolder, 'video-{}.avi'.format(str(key))))
 

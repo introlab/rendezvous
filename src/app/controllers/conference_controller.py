@@ -10,16 +10,16 @@ class ConferenceController(QObject):
     signalOdasState = pyqtSignal(bool)
     signalRecordingState = pyqtSignal(bool)
 
-    def __init__(self, parent=None):
+    def __init__(self, outputFolder, parent=None):
         super(ConferenceController, self).__init__(parent)
 
         self.__odas = Odas(hostIP='127.0.0.1', portPositions=10020, portAudio=10030, isVerbose=False)
         self.__odas.start()
 
-        self.__recorder = Recorder()
-        self.__recorder.changeAudioSettings(outputFolder='', nChannels=4, nChannelFile=1, byteDepth=2, sampleRate=48000)
+        self.__recorder = Recorder(outputFolder)
+        self.__recorder.changeAudioSettings(outputFolder=outputFolder, nChannels=4, nChannelFile=1, byteDepth=2, sampleRate=48000)
         self.__recorder.start()
-        self.__isRecording = False
+        self.isRecording = False
         self.__odasLiveConnected = False
 
         self.__recorder.signalException.connect(self.recorderExceptionHandling)
@@ -38,7 +38,7 @@ class ConferenceController(QObject):
 
     @pyqtSlot(bytes)
     def audioDataReceived(self, streamData):
-        if self.__isRecording and self.__recorder and self.__recorder.mailbox:
+        if self.isRecording and self.__recorder and self.__recorder.mailbox:
             self.__recorder.mailbox.put(('audio', streamData))
 
 
@@ -50,16 +50,16 @@ class ConferenceController(QObject):
     @pyqtSlot(Exception)
     def odasExceptionHandling(self, e):
         self.saveRecording()
-        self.__isRecording = False
-        self.signalRecordingState.emit(self.__isRecording)
+        self.isRecording = False
+        self.signalRecordingState.emit(self.isRecording)
         self.signalOdasState.emit(False)
         self.signalException.emit(e)
 
 
     @pyqtSlot(Exception)
     def recorderExceptionHandling(self, e):
-        self.__isRecording = False
-        self.signalRecordingState.emit(self.__isRecording)
+        self.isRecording = False
+        self.signalRecordingState.emit(self.isRecording)
         self.signalException.emit(e)
 
 
@@ -78,27 +78,29 @@ class ConferenceController(QObject):
 
     def startRecording(self, outputFolder):
         try:
-            if not self.__isRecording:
+            if not self.isRecording:
                 self.__recorder.changeAudioSettings(outputFolder=outputFolder, nChannels=4, nChannelFile=1, byteDepth=2, sampleRate=48000)
+                self.__recorder.changeVideoSettings(outputFolder=outputFolder)
                 self.__recorder.mailbox.put(RecorderActions.NEW_RECORDING)
-                self.__isRecording = True
-                self.signalRecordingState.emit(self.__isRecording)
+                self.isRecording = True
+                self.signalRecordingState.emit(self.isRecording)
 
         except Exception as e:
+            self.isRecording = False
             self.signalException.emit(e)
-
+            self.signalRecordingState.emit(self.isRecording)
 
     def saveRecording(self):
-        if self.__recorder and self.__isRecording:
+        if self.__recorder and self.isRecording:
             # stop data reception for recorder and save wave files
-            self.__isRecording = False
+            self.isRecording = False
             self.__recorder.mailbox.put(RecorderActions.SAVE_FILES)
-            self.signalRecordingState.emit(self.__isRecording)
+            self.signalRecordingState.emit(self.isRecording)
 
 
     def stopRecording(self):
         if self.__recorder:
-            self.__isRecording = False
+            self.isRecording = False
             self.__recorder.stop()
-            self.signalRecordingState.emit(self.__isRecording)
+            self.signalRecordingState.emit(self.isRecording)
 
