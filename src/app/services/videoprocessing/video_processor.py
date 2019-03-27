@@ -22,7 +22,7 @@ class VideoProcessor(QObject):
         self.isRunning = False
         self.imageQueue = Queue()
         self.facesQueue = Queue()
-        self.heartbeatQueue = Queue()
+        self.heartbeatQueue = Queue(1)
         
 
     def start(self, cameraConfigPath):
@@ -65,7 +65,10 @@ class VideoProcessor(QObject):
             self.isRunning = True
             while self.isRunning:
 
-                self.heartbeatQueue.put_nowait(True)
+                try:
+                    self.heartbeatQueue.put_nowait(True)
+                except queue.Full:
+                    pass
                 
                 currentTime = time.perf_counter()
                 frameTime = currentTime - prevTime
