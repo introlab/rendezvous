@@ -25,7 +25,7 @@ class VideoProcessor(QObject):
         self.facesQueue = self.manager.Queue()
         self.semaphore = self.manager.Semaphore()
         self.heartbeatQueue = self.manager.Queue(1)
-
+        
     def getCameraParams(self):
         cameraParams = []
         cameraParams['fisheyeAngle'] = self.cameraConfig.FisheyeAngle
