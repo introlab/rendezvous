@@ -22,7 +22,8 @@ class VideoProcessor(QObject):
         self.isRunning = False
         self.imageQueue = Queue()
         self.facesQueue = Queue()
-
+        self.heartbeatQueue = Queue()
+        
 
     def start(self, cameraConfigPath):
         print("Starting video processor...")
@@ -55,15 +56,17 @@ class VideoProcessor(QObject):
             videoStream = VideoStream(cameraConfig)
             videoStream.initializeStream()
 
-            faceDetection = FaceDetection(self.imageQueue, self.facesQueue)
+            faceDetection = FaceDetection(self.imageQueue, self.facesQueue, self.heartbeatQueue)
             faceDetection.start()
-            
+
             print('Video processor started')
 
             prevTime = time.perf_counter()
             self.isRunning = True
             while self.isRunning:
 
+                self.heartbeatQueue.put_nowait(True)
+                
                 currentTime = time.perf_counter()
                 frameTime = currentTime - prevTime
 
@@ -71,7 +74,7 @@ class VideoProcessor(QObject):
                 try:                  
                     newFaces = self.facesQueue.get_nowait()
                 except queue.Empty:
-                    time.sleep(0)
+                    pass
 
                 success, frame = videoStream.readFrame()
                 frameHeight, frameWidth, colors = frame.shape
@@ -79,15 +82,15 @@ class VideoProcessor(QObject):
                 if faceDetection.requestImage:
                     self.imageQueue.put_nowait(frame)
 
-                if newFaces is not None:
-                    self.virtualCameraManager.updateFaces(newFaces, frameWidth, frameHeight)
+                    if newFaces is not None:
+                        self.virtualCameraManager.updateFaces(newFaces, frameWidth, frameHeight)
 
                 if success:
                     self.virtualCameraManager.update(frameTime, frameWidth, frameHeight)
                     self.signalFrameData.emit(frame.copy(), self.virtualCameraManager.getVirtualCameras())
-
+                    
                 prevTime = currentTime
-
+                
         except Exception as e:
 
             self.isRunning = False
