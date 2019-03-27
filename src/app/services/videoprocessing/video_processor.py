@@ -24,7 +24,7 @@ class VideoProcessor(QObject):
         self.imageQueue = self.manager.Queue()
         self.facesQueue = self.manager.Queue()
         self.semaphore = self.manager.Semaphore()
-        self.heartbeatQueue = Queue(1)
+        self.heartbeatQueue = self.manager.Queue(1)
 
     def start(self, cameraConfigPath):
         print("Starting video processor...")
