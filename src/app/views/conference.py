@@ -119,9 +119,9 @@ class Conference(QWidget, Ui_Conference):
         self.source4ElevationValueLabel.setText('%.5f' % values[3]['elevation'])
 
 
-    @pyqtSlot(object, object)
-    def imageReceived(self, image, virtualCameras):
-        self.virtualCameraDisplayer.updateDisplay(image, virtualCameras)
+    @pyqtSlot(object)
+    def imageReceived(self, vcBufferQueue):
+        pass
 
 
     @pyqtSlot(bool)

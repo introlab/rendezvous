@@ -18,7 +18,7 @@ from src.app.services.videoprocessing.dewarping.interface.fisheye_dewarping impo
 
 class VideoProcessor(QObject):
 
-    signalFrameData = pyqtSignal(object, object)
+    signalFrameData = pyqtSignal(object)
     signalException = pyqtSignal(Exception)
 
     def __init__(self, parent=None):
@@ -106,6 +106,11 @@ class VideoProcessor(QObject):
                 except queue.Empty:
                     time.sleep(0)
 
+                if newFaces is not None:
+                    self.virtualCameraManager.updateFaces(newFaces, frameWidth, frameHeight)
+
+                self.virtualCameraManager.update(frameTime, frameWidth, frameHeight)
+
                 success, frame = videoStream.readFrame()
 
                 if success:
@@ -118,6 +123,12 @@ class VideoProcessor(QObject):
                             dewarper.queueDewarping(fdBufferId, fdDewarpingParameters[i], fdBuffer)
                             fdBufferQueue.put(fdBuffer)
 
+                    for vc in self.virtualCameraManager.getVirtualCameras():
+                        vcBuffer = np.empty((vcOutputHeight, vcOutputWidth, channels), dtype=np.uint8)
+                        # Generate dewarping params for vc
+                        dewarper.queueDewarping(vcBufferId, cvDewarpingParameters, vcBuffer)
+                        vcBufferQueue.put(vcBuffer)
+
                     bufferId = 0
                     while bufferId != -1:
                         bufferId = dewarper.dewarpNextImage()
@@ -126,16 +137,7 @@ class VideoProcessor(QObject):
                             frameHeight, frameWidth, colors = fdBuffer.shape
                             self.imageQueue.put_nowait(fdBufferQueue.get())
 
-                        if bufferId == vcBufferId:
-                            frameHeight, frameWidth, colors = vcBuffer.shape
-                            self.virtualCameraManager.update(frameTime, frameWidth, frameHeight)
-                            #self.signalFrameData.emit(vcBufferQueue.get(), self.virtualCameraManager.getVirtualCameras())
-
-                    if newFaces is not None:
-                        vcBuffer = np.empty((vcOutputHeight, vcOutputWidth, channels), dtype=np.uint8)
-                        dewarper.queueDewarping(vcBufferId, cvDewarpingParameters, vcBuffer)
-                        vcBufferQueue.put(vcBuffer)
-                        #self.virtualCameraManager.updateFaces(newFaces, frameWidth, frameHeight)
+                    self.signalFrameData.emit(vcBufferQueue)
                     
                 prevTime = currentTime
                 

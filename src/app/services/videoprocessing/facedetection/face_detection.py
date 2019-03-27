@@ -23,6 +23,9 @@ class FaceDetection(multiprocessing.Process):
     def run(self):
         print("Starting face detection")
 
+        numberOfImagesProcessed = 0
+        faces = []
+
         while not self.exit.is_set():
 
             frame = []
@@ -33,11 +36,12 @@ class FaceDetection(multiprocessing.Process):
                 time.sleep(0.01)
 
             if frame != []:
-                faces = self.faceDetector.detectFaces(frame)
-                self.facesQueue.put(faces)
-                self.requestImage = True
-
-            time.sleep(0.01)
-
+                faces.extend(self.faceDetector.detectFaces(frame))
+                numberOfImagesProcessed += 1
+                if numberOfImagesProcessed == 3:
+                    self.facesQueue.put(faces)
+                    numberOfImagesProcessed = 0
+                    faces = []
+                    self.requestImage = True
 
         print("Face detection terminated")
