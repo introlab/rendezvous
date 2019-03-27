@@ -27,8 +27,8 @@ class VideoProcessor(QObject):
         self.heartbeatQueue = self.manager.Queue(1)
         
     def getCameraParams(self):
-        cameraParams = []
-        cameraParams['fisheyeAngle'] = self.cameraConfig.FisheyeAngle
+        cameraParams = {}
+        cameraParams['fisheyeAngle'] = self.cameraConfig['Image']['FisheyeAngle']
         cameraParams['baseDonutSlice'] = self.baseDonutSlice
         cameraParams['dewarpingParameters'] = self.dewarpingParameters
 
@@ -61,8 +61,8 @@ class VideoProcessor(QObject):
 
         try:
 
-            cameraConfig = FileHelper.readJsonFile(cameraConfigPath)
-            videoStream = VideoStream(cameraConfig)
+            self.cameraConfig = FileHelper.readJsonFile(cameraConfigPath)
+            videoStream = VideoStream(self.cameraConfig)
             videoStream.initializeStream()
 
             self.baseDonutSlice = videoStream.getBaseDonutSlice()

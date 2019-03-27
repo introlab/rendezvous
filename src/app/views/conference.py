@@ -124,9 +124,10 @@ class Conference(QWidget, Ui_Conference):
 
     @pyqtSlot(object, object)
     def imageReceived(self, image, virtualCameras):
-        cameraParams = self.videoProcessor.getCameraParams()
-        sourceClassifier = SourceClassifier(cameraParams)
-        sourceClassifier.drawSoundSources(image, virtualCameras, self.soundSources)
+        if(self.soundSources):
+            cameraParams = self.videoProcessor.getCameraParams()
+            sourceClassifier = SourceClassifier(cameraParams)
+            sourceClassifier.drawSoundSources(image, virtualCameras, self.soundSources)
         self.virtualCameraDisplayer.updateDisplay(image, virtualCameras)
 
 

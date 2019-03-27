@@ -9,7 +9,7 @@ class SourceClassifier():
 
     def drawSoundSources(self, image, virtualCameras, soundSources):
         for virtualCamera in virtualCameras:
-            face = []
+            face = {}
             face['x'], face['y'] = virtualCamera.getPosition()
             face['azimuth'], face['elevation'] = SphericalAnglesConverter.getSphericalAnglesFromImage(face['xPos'], 
                                                                                                       face['yPos'],
