@@ -82,8 +82,8 @@ class VideoProcessor(QObject):
                 if faceDetection.requestImage:
                     self.imageQueue.put_nowait(frame)
 
-                    if newFaces is not None:
-                        self.virtualCameraManager.updateFaces(newFaces, frameWidth, frameHeight)
+                if newFaces is not None:
+                    self.virtualCameraManager.updateFaces(newFaces, frameWidth, frameHeight)
 
                 if success:
                     self.virtualCameraManager.update(frameTime, frameWidth, frameHeight)
