@@ -2,7 +2,7 @@
 #define FISHEYE_DEWARPING_H
 
 #include <memory>
-#include <queue>
+#include <deque>
 #include <map>
 #include <utility> 
 #include <tuple>
