@@ -41,9 +41,9 @@ class AudioWriter(QObject):
         while offset < len(data):
             for key, _ in self.sourcesBuffer.items():
                 currentByte = int(offset + int(key))
-                self.sourcesBuffer[key] += data[currentByte:currentByte + 2]
-
-            offset += self.nChannels * 2
+                self.sourcesBuffer[key] += data[currentByte:currentByte + self.byteDepth]
+        
+            offset += self.nChannels * self.byteDepth
 
 
     def close(self):
