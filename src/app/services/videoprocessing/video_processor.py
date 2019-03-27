@@ -30,14 +30,21 @@ class VideoProcessor(QObject):
         self.imageQueue = Queue()
         self.facesQueue = Queue()
 
+<<<<<<< HEAD
     def getCameraParams(self):
+=======
+    def getCameraParams():
+>>>>>>> 3519c827049ec78fdabd20fb37fe24bab49be023
         cameraParams = []
         cameraParams['fisheyeAngle'] = self.cameraConfig.FisheyeAngle
         cameraParams['baseDonutSlice'] = self.baseDonutSlice
         cameraParams['dewarpingParameters'] = self.dewarpingParameters
 
         return cameraParams
+<<<<<<< HEAD
 >>>>>>> source classifier class
+=======
+>>>>>>> 3519c827049ec78fdabd20fb37fe24bab49be023
 
     def start(self, cameraConfigPath):
         print("Starting video processor...")
