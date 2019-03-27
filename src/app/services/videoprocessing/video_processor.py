@@ -1,6 +1,7 @@
 import queue
 import time
-import multiprocessing
+from multiprocessing import Queue
+from multiprocessing import Semaphore
 from threading import Thread
 
 from PyQt5.QtCore import QObject, pyqtSignal
@@ -20,11 +21,10 @@ class VideoProcessor(QObject):
         super(VideoProcessor, self).__init__(parent)
         self.virtualCameraManager = VirtualCameraManager()
         self.isRunning = False
-        self.manager = multiprocessing.Manager()
-        self.imageQueue = self.manager.Queue()
-        self.facesQueue = self.manager.Queue()
-        self.semaphore = self.manager.Semaphore()
-        self.heartbeatQueue = self.manager.Queue(1)
+        self.imageQueue = Queue()
+        self.facesQueue = Queue()
+        self.semaphore = Semaphore()
+        self.heartbeatQueue = Queue(1)
 
     def start(self, cameraConfigPath):
         print("Starting video processor...")
@@ -83,7 +83,7 @@ class VideoProcessor(QObject):
                 success, frame = videoStream.readFrame()
                 frameHeight, frameWidth, colors = frame.shape
 
-                if self.semaphore.acquire(blocking = False):
+                if self.semaphore.acquire(False):
                     self.semaphore.release()
                     self.imageQueue.put_nowait(frame.copy())
 
