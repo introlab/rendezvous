@@ -57,7 +57,7 @@ class VideoProcessor(QObject):
             videoStream = VideoStream(cameraConfig)
             videoStream.initializeStream()
 
-            faceDetection = FaceDetection(self.imageQueue, self.facesQueue, self.semaphore, self.heartbeatQueue)
+            faceDetection = FaceDetection(self.imageQueue, self.facesQueue, self.heartbeatQueue, self.semaphore)
             faceDetection.start()
 
             print('Video processor started')
