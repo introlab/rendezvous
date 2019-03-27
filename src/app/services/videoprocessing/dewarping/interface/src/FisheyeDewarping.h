@@ -5,6 +5,7 @@
 #include <queue>
 #include <map>
 #include <utility> 
+#include <tuple>
 #include <models/DewarpingParameters.h>
 #include <models/ImageBuffer.h>
 
