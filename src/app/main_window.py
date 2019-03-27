@@ -1,11 +1,14 @@
 import os
 from pathlib import Path
 
-from PyQt5.QtWidgets import QMainWindow
+from PyQt5.QtWidgets import QMainWindow, QStackedWidget
+from PyQt5.QtCore import pyqtSlot
 from src.app.gui.main_window_ui import Ui_MainWindow
 
 from src.app.managers.exceptions import Exceptions
 from src.app.managers.settings import Settings
+
+from src.app.components.side_bar import SideBar
 
 from src.app.views.conference import Conference
 from src.app.views.transcription import Transcription
@@ -18,7 +21,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
-        self.setupUi(self)
 
         # Exception manager.
         self.__exceptionsManager = Exceptions()
@@ -26,33 +28,57 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Settings manager.
         self.__settingsManager = Settings()
 
-        # Tabs of the main layout.
-        self.conferenceTab = Conference(parent=self)   
-        self.tabWidget.addTab(self.conferenceTab, 'Conference')
+        # Initilization of the UI from QtCreator.
+        self.setupUi(self)
 
-        self.transcriptionTab = Transcription(parent=self)   
-        self.tabWidget.addTab(self.transcriptionTab, 'Transcription')
+        # Initialization of the application side bar.
+        self.sideBar = SideBar() 
+        self.sideBar.currentRowChanged.connect(self.onSideBarCurrentRowChanged) 
+        self.mainLayout.addWidget(self.sideBar)
+
+        # Initializaion of the views container.
+        self.views = QStackedWidget()
+        self.mainLayout.addWidget(self.views)
+    
+        # Views of the main layout.
+        self.conferenceView = Conference(parent=self)
+        self.sideBar.insertItem(0, 'Conference')
+        self.views.addWidget(self.conferenceView)
+        self.sideBar.setCurrentRow(0)       
+
+        self.transcriptionView = Transcription(parent=self)   
+        self.sideBar.insertItem(1, 'Transcription')
+        self.views.addWidget(self.transcriptionView)
         
-        self.settingsTab = ChangeSettings(parent=self)   
-        self.tabWidget.addTab(self.settingsTab, 'Settings')
-  
+        self.settingsView = ChangeSettings(parent=self)   
+        self.sideBar.insertItem(2, 'Settings')
+        self.views.addWidget(self.settingsView)
+
 
     # Handles the event where the user closes the window with the X button.
     def closeEvent(self, event):
         if event:
-            self.conferenceTab.closeEvent(event)
-            self.transcriptionTab.closeEvent(event)
+            self.conferenceView.closeEvent(event)
+            self.transcriptionView.closeEvent(event)
             event.accept()
 
 
-    # Used by tab modules to tell the exception manager that an exception occured.    
+    # Used by tab modules to tell the exception manager that anfrom PyQt5.QtCore import pyqtSlotption occured.    
     def emitToExceptionsManager(self, exception):
         self.__exceptionsManager.signalException.emit(exception)
+
 
     # Used by tab modules to set an application setting.
     def setSetting(self, setting, value):
         self.__settingsManager.setValue(setting, value)
     
+
     # Used by tab modules to get an application setting.
     def getSetting(self, setting):
         return self.__settingsManager.getValue(setting)
+
+
+    @pyqtSlot(int)
+    def onSideBarCurrentRowChanged(self, i):
+        self.views.setCurrentIndex(i)
+
