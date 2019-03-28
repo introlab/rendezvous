@@ -19,7 +19,6 @@ class Transcription(QWidget, Ui_Transcription):
         self.transcriptionController = TranscriptionController()
 
 
-
         # Populate UI.
         self.encoding.addItems([encodingType.value for encodingType in self.transcriptionController.getEncodingTypes()])
         self.sampleRate.setRange(self.transcriptionController.getMinSampleRate(), self.transcriptionController.getMaxSampleRate())
@@ -82,3 +81,4 @@ class Transcription(QWidget, Ui_Transcription):
         self.window().emitToExceptionsManager(e)
         self.transcriptionResult.setText('')
         self.setDisabled(False)
+

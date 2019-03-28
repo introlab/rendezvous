@@ -12,6 +12,7 @@ from src.app.components.side_bar import SideBar
 
 from src.app.views.conference import Conference
 from src.app.views.transcription import Transcription
+from src.app.views.playback import Playback
 from src.app.views.change_settings import ChangeSettings
 
 
@@ -42,16 +43,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     
         # Views of the main layout.
         self.conferenceView = Conference(parent=self)
-        self.sideBar.insertItem(0, 'Conference')
+        self.sideBar.addItem('Conference')
         self.views.addWidget(self.conferenceView)
         self.sideBar.setCurrentRow(0)       
 
         self.transcriptionView = Transcription(parent=self)   
-        self.sideBar.insertItem(1, 'Transcription')
+        self.sideBar.addItem('Transcription')
         self.views.addWidget(self.transcriptionView)
-        
+
+        self.playback = Playback(parent=self)   
+        self.sideBar.addItem('Playback')
+        self.views.addWidget(self.playback)
+
         self.settingsView = ChangeSettings(parent=self)   
-        self.sideBar.insertItem(2, 'Settings')
+        self.sideBar.addItem('Settings')
         self.views.addWidget(self.settingsView)
 
 

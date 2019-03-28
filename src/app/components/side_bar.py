@@ -23,8 +23,8 @@ class SideBar(QListWidget):
         """) 
 
     # Override of insertItem from QListWidget to customize items.
-    def insertItem(self, index, name):
+    def addItem(self, name):
         item = QListWidgetItem(name)
         item.setSizeHint(QSize(0, 40))
-        super().insertItem(index, item)
+        super().addItem(item)
 
