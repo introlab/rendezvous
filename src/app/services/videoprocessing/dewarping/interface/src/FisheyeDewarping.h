@@ -3,8 +3,6 @@
 
 #include <memory>
 #include <deque>
-#include <map>
-#include <utility> 
 #include <tuple>
 #include <models/DewarpingParameters.h>
 #include <models/ImageBuffer.h>
@@ -33,12 +31,12 @@ public:
     void queueDewarping(int renderContextId, DewarpingParameters& dewarpingParameters, 
         unsigned char * dewarpedImageBuffer, int height, int width, int channels);
     int dewarpNextImage();
+    void cleanUp();
 
 private:
 
     void initialize(int inputWidth, int inputHeight, int channels, bool isDewarping);
-    void cleanUp();
-
+    
 private:
 
     std::deque<std::tuple<int, DewarpingParameters, ImageBuffer>> m_dewarpingQueue;

@@ -1,6 +1,7 @@
 import queue
 import time
-import multiprocessing
+from multiprocessing import Queue
+from multiprocessing import Semaphore
 from threading import Thread
 from collections import deque
 
@@ -26,22 +27,23 @@ class VideoProcessor(QObject):
         super(VideoProcessor, self).__init__(parent)
         self.virtualCameraManager = VirtualCameraManager()
         self.isRunning = False
-        self.manager = multiprocessing.Manager()
-        self.imageQueue = self.manager.Queue()
-        self.facesQueue = self.manager.Queue()
-        self.semaphore = self.manager.Semaphore()
-        self.heartbeatQueue = self.manager.Queue(1)
-        
+        self.imageQueue = Queue()
+        self.facesQueue = Queue()
+        self.semaphore = Semaphore()
+        self.heartbeatQueue = Queue(1)
+
 
     def start(self, cameraConfigPath):
         print("Starting video processor...")
 
         try:
-                               
+            
             if not cameraConfigPath:
                 raise Exception('cameraConfigPath needs to be set in the settings')
 
             Thread(target=self.run, args=(cameraConfigPath,)).start()
+
+            self.isRunning = True
 
         except Exception as e:
             
@@ -89,7 +91,7 @@ class VideoProcessor(QObject):
             #vcBuffer = np.empty((vcOutputHeight, vcOutputWidth, channels), dtype=np.uint8)
             vcBufferId = dewarper.createRenderContext(vcOutputWidth, vcOutputHeight, channels)
 
-            faceDetection = FaceDetection(self.imageQueue, self.facesQueue, self.semaphore, self.heartbeatQueue)
+            faceDetection = FaceDetection(self.imageQueue, self.facesQueue, self.heartbeatQueue, self.semaphore)
             faceDetection.start()
 
             fdBufferQueue = deque()
@@ -98,7 +100,6 @@ class VideoProcessor(QObject):
             print('Video processor started')
 
             prevTime = time.perf_counter()
-            self.isRunning = True
             while self.isRunning:
 
                 try:
@@ -165,8 +166,13 @@ class VideoProcessor(QObject):
                 faceDetection.terminate()
                 faceDetection = None
 
+            self.__emptyQueue(self.imageQueue)
+            self.__emptyQueue(self.facesQueue)
+            self.__emptyQueue(self.heartbeatQueue)
+
             if videoStream:
                 videoStream.destroy()
+                videoStream = None
 
             self.virtualCameraManager.clear()
 
@@ -192,3 +198,12 @@ class VideoProcessor(QObject):
 
         return DewarpingHelper.getDewarpingParameters(donutSlice, \
                 cameraConfig.topDistorsionFactor, cameraConfig.bottomDistorsionFactor)
+
+                
+    def __emptyQueue(self, queue):
+
+        try:
+            while True:
+                queue.get_nowait()
+        except:
+            pass

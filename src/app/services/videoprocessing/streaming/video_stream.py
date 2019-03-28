@@ -35,6 +35,7 @@ class VideoStream:
 
     def destroy(self):
         self.camera.release()
+        self.dewarper.cleanUp()
 
 
     def readFrame(self):

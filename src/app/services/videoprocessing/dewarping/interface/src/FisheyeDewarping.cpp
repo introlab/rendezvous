@@ -25,7 +25,6 @@ FisheyeDewarping::FisheyeDewarping(int inputWidth, int inputHeight, int channels
 
 FisheyeDewarping::~FisheyeDewarping()
 {
-    cleanUp();
 }
 
 void FisheyeDewarping::loadFisheyeImage(unsigned char * fisheyeImage, int height, int width, int channels)
