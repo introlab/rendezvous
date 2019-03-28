@@ -5,7 +5,7 @@ import numpy as np
 import cv2
 
 from .iface_detector import IFaceDetector
-from src.utils.rect import Rect
+from src.app.services.videoprocessing.virtualcamera.face import Face
 
 rootDirectory = str(Path(__file__).resolve().parents[6])
 
@@ -43,7 +43,7 @@ class DnnFaceDetector(IFaceDetector):
                 if x1 >= 0 and x2 <= w and y1 >= 0 and y2 <= h:
                     width = x2 - x1
                     height = y2 - y1
-                    faces[numDetections] = Rect(x1 + width / 2, y1 + height / 2, width, height)
+                    faces[numDetections] = Face(x1 + width / 2, y1 + height / 2, width, height)
                     numDetections += 1
         
         return faces[:numDetections]

@@ -24,7 +24,7 @@ class SphericalAnglesConverter:
 
 
     @staticmethod
-    def getSphericalAnglesFromImage(xPixel, yPixel, fisheyeAngle, baseDonutSlice, dewarpingParameters):
+    def getSphericalAnglesFromImage(xPixel, yPixel, fisheyeAngle, baseDonutSlice, dewarpingParameters, isClockwise):
         xSourcePixel, ySourcePixel = DewarpingHelper.getSourcePixelFromDewarpedImage(xPixel, yPixel, dewarpingParameters)
 
         if fisheyeAngle > 2 * np.pi:
@@ -47,6 +47,9 @@ class SphericalAnglesConverter:
             azimuth = np.arctan(-dy / dx) + np.pi / 2
         elif dx < 0 and dy >= 0:
             azimuth = np.arctan(dy / -dx) + 3 * np.pi / 2
+
+        if isClockwise == False:
+            azimuth = (2 * np.pi) - azimuth
 
         return azimuth, elevation
 
