@@ -26,15 +26,18 @@ class VideoProcessor(QObject):
         self.semaphore = Semaphore()
         self.heartbeatQueue = Queue(1)
 
+
     def start(self, cameraConfigPath):
         print("Starting video processor...")
 
         try:
-                               
+            
             if not cameraConfigPath:
                 raise Exception('cameraConfigPath needs to be set in the settings')
 
             Thread(target=self.run, args=(cameraConfigPath,)).start()
+
+            self.isRunning = True
 
         except Exception as e:
             
@@ -63,7 +66,6 @@ class VideoProcessor(QObject):
             print('Video processor started')
 
             prevTime = time.perf_counter()
-            self.isRunning = True
             while self.isRunning:
 
                 try:
@@ -109,7 +111,21 @@ class VideoProcessor(QObject):
                 faceDetection.terminate()
                 faceDetection = None
 
+            self.__emptyQueue(self.imageQueue)
+            self.__emptyQueue(self.facesQueue)
+            self.__emptyQueue(self.heartbeatQueue)
+
             if videoStream:
                 videoStream.destroy()
+                videoStream = None
 
         print('Video stream terminated')
+
+
+    def __emptyQueue(self, queue):
+
+        try:
+            while True:
+                queue.get_nowait()
+        except:
+            pass
