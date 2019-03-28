@@ -39,10 +39,12 @@ class DnnFaceDetector(IFaceDetector):
                 # Compute the (x, y) coordinates of the bounding box for the object
                 box = (detections[0, 0, i, 3:7] * np.array([w, h, w, h])).astype("int")
                 (x1, y1, x2, y2) = box
-                width = x2 - x1
-                height = y2 - y1
-                faces[i] = Rect(x1 + width / 2, y1 + height / 2, width, height)
-                numDetections += 1
+
+                if x1 >= 0 and x2 <= w and y1 >= 0 and y2 <= h:
+                    width = x2 - x1
+                    height = y2 - y1
+                    faces[numDetections] = Rect(x1 + width / 2, y1 + height / 2, width, height)
+                    numDetections += 1
         
         return faces[:numDetections]
 
