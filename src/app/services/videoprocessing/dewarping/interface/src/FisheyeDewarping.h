@@ -21,9 +21,6 @@ public:
     void setDewarpingParameters(DewarpingParameters& dewarpingParameters);
     void loadFisheyeImage(int width, int height, int channels, unsigned char * fisheyeImage);
     void dewarpImage(int width, int height, int channels, unsigned char * dewarpedImage);
-
-private:
-
     void cleanUp();
 
 private:

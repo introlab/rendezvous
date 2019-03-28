@@ -95,6 +95,7 @@ void FisheyeDewarping::cleanUp()
 {
     if (m_isInitialized)
     {
+        m_isInitialized = false;
         m_shader->cleanUp();
         m_frameLoader->cleanUp();
         m_vertexObjectLoader->cleanUp();

@@ -73,6 +73,7 @@ class VirtualCameraManager:
             # Found a face to associate the vc with, so we update the vc with its matched face
             if face:
                 vc.resetTimeToLive()
+                vc.face = face
                 vc.positionGoal = face.getPosition()
                 heightGoal = max(self.virtualCameraMinHeight, face.height * self.portraitScaleFactor)
                 vc.sizeGoal = (heightGoal * self.aspectRatio, heightGoal)
