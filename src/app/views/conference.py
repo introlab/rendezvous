@@ -9,6 +9,9 @@ from src.app.controllers.conference_controller import ConferenceController
 from src.app.services.videoprocessing.video_processor import VideoProcessor
 from src.app.services.videoprocessing.virtualcamera.virtual_camera_displayer import VirtualCameraDisplayer
 from src.app.services.sourceclassifier.source_classifier import SourceClassifier
+from src.utils.spherical_angles_converter import SphericalAnglesConverter
+
+import math
 
 
 @unique
@@ -48,6 +51,8 @@ class Conference(QWidget, Ui_Conference):
         self.conferenceController.signalException.connect(self.exceptionReceived)
         
         self.videoProcessor.signalException.connect(self.videoExceptionHandling)
+
+        self.soundSources = {}
 
 
     @pyqtSlot()
@@ -126,8 +131,10 @@ class Conference(QWidget, Ui_Conference):
     def imageReceived(self, image, virtualCameras):
         if(self.soundSources):
             cameraParams = self.videoProcessor.getCameraParams()
-            sourceClassifier = SourceClassifier(cameraParams)
-            sourceClassifier.drawSoundSources(image, virtualCameras, self.soundSources)
+            rangeThreshold = 15
+            sourceClassifier = SourceClassifier(cameraParams, rangeThreshold)
+            sourceClassifier.classifySources(virtualCameras, self.soundSources)
+        
         self.virtualCameraDisplayer.updateDisplay(image, virtualCameras)
 
 

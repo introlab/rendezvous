@@ -24,7 +24,7 @@ class SphericalAnglesConverter:
 
 
     @staticmethod
-    def getSphericalAnglesFromImage(xPixel, yPixel, fisheyeAngle, baseDonutSlice, dewarpingParameters, isClockwise):
+    def getSphericalAnglesFromImage(xPixel, yPixel, fisheyeAngle, baseDonutSlice, dewarpingParameters, isClockwise = False):
         xSourcePixel, ySourcePixel = DewarpingHelper.getSourcePixelFromDewarpedImage(xPixel, yPixel, dewarpingParameters)
 
         if fisheyeAngle > 2 * np.pi:
