@@ -11,6 +11,7 @@ import numpy as np
 from .streaming.video_stream import VideoStream
 from .facedetection.face_detection import FaceDetection
 from .virtualcamera.virtual_camera_manager import VirtualCameraManager
+from .virtualcamera.face import Face
 from src.utils.file_helper import FileHelper
 from src.app.services.videoprocessing.streaming.camera_config import CameraConfig
 from src.utils.dewarping_helper import DewarpingHelper
@@ -25,7 +26,7 @@ class VideoProcessor(QObject):
 
     def __init__(self, parent=None):
         super(VideoProcessor, self).__init__(parent)
-        self.virtualCameraManager = VirtualCameraManager()
+        self.virtualCameraManager = VirtualCameraManager(0, 100)
         self.isRunning = False
         self.imageQueue = Queue()
         self.facesQueue = Queue()
@@ -117,9 +118,9 @@ class VideoProcessor(QObject):
                     pass
 
                 if newFaces is not None:
-                    self.virtualCameraManager.updateFaces(newFaces, fdOutputWidth, fdOutputHeight)
+                    self.virtualCameraManager.updateFaces(newFaces)
 
-                self.virtualCameraManager.update(frameTime, fdOutputWidth, fdOutputHeight)
+                self.virtualCameraManager.update(frameTime)
                 
                 success, frame = videoStream.readFrame()
 

@@ -11,44 +11,30 @@ class VirtualCameraDisplayer:
 
         self.spacing = 10
 
-        self.image = []
-        self.virtualCameras = []
+        self.images = []
 
     
-    def updateDisplay(self, openCVImage, virtualCameras):
-        self.image = openCVImage
-        self.virtualCameras = virtualCameras
-
-    
-    def clear(self):
-        self.image = []
-        self.virtualCameras = []
+    def updateDisplay(self, images):
+        self.images = images
 
 
     def clear(self):
-        self.image = []
-        self.virtualCameras = []
+        self.images = []
 
 
     # Draw every virtual cameras on the frame.
     # Is called automatically by Qt when the frame is ready for an update
     def __paintEvent(self, event):
-        numberOfVCs = len(self.virtualCameras)
-        if numberOfVCs == 0 or self.image == []:
+        if self.images == []:
             self.virtualCameraFrame.update()
             return
         
         displayPositions, vcWidth, vcHeight = self.__buildDisplay(numberOfVCs)
         painters = []
-        for i in range(0, numberOfVCs):
+        for i in range(0, len(self.images)):
             (xPos, yPos) = displayPositions[i] 
 
-            vc = self.virtualCameras[i]
-            (x1, y1, x2, y2) = vc.getBoundingRect()
-            
-            # Crops the image to the virtual camera
-            croppedImage = self.image[y1:y2, x1:x2].copy()
-            qImage = self.__createQImageFromOpenCVImage(croppedImage)
+            qImage = self.__createQImageFromOpenCVImage(self.images[i].copy())
 
             # Draw the image on screen
             painter = QPainter(self.virtualCameraFrame)

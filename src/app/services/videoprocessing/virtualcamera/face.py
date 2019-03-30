@@ -1,11 +1,11 @@
-from src.utils.rect import Rect
+from src.utils.spherical_angles_rect import SphericalAnglesRect
 
-class Face(Rect):
+class Face(SphericalAnglesRect):
     
-    def __init__(self, xPos, yPos, width, height):
-        super().__init__(xPos, yPos, width, height)
+    def __init__(self, azimuthLeft, azimuthRight, elevationBottom, elevationTop):
+        super().__init__(azimuthLeft, azimuthRight, elevationBottom, elevationTop)
 
     @staticmethod
     def copy(face):
-        newFace = Face(face.xPos, face.yPos, face.width, face.height)
+        newFace = Face(face.azimuthLeft, face.azimuthRight, face.elevationBottom, face.elevationTop)
         return newFace

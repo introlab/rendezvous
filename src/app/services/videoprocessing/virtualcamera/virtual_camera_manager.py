@@ -1,15 +1,20 @@
+import math
+import numpy as np
+
 from PyQt5.QtCore import QTimer
 
 from .virtual_camera import VirtualCamera
-from src.utils.geometry_utils import GeometryUtils
 
 
 class VirtualCameraManager:
 
-    def __init__(self):
+    def __init__(self, imgMinElevation, imgMaxElevation):
         self.__virtualCameras = []
 
         self.virtualCameraMinHeight = 300
+
+        self.imgMinElevation = imgMinElevation
+        self.imgMaxElevation = imgMaxElevation
 
         # 3:4 (portrait)
         self.aspectRatio = 3 / 4
@@ -30,33 +35,27 @@ class VirtualCameraManager:
 
 
     # Updates virtual camera move and resize animations every frame based on time since last frame
-    def update(self, frameTime, imageWidth, imageHeight):      
+    def update(self, frameTime):      
         for vc in self.__virtualCameras:
-            distance = GeometryUtils.distanceBetweenTwoPoints(vc.getPosition(), vc.positionGoal)
+            distance = self.__distanceBetweenTwoSphericalAngles(vc.getMiddlePosition(), vc.positionGoal)
             if distance > self.positionChangedThreshold:    
-                x, y = vc.getPosition()
+                azimuth, elevation = vc.getMiddlePosition()
                 goal = vc.positionGoal
-                distx = goal[0] - x
-                disty = goal[1] - y
-                dx = distx * frameTime * 2
-                dy = disty * frameTime * 2
-                self.__tryMoveVirtualCamera(vc,
-                                            (vc.xPos + dx, vc.yPos + dy),
-                                            imageWidth,
-                                            imageHeight)
+                dista = goal[0] - azimuth
+                diste = goal[1] - elevation
+                da = dista * frameTime
+                de = diste * frameTime
+                self.__tryMoveVirtualCamera(vc, ((azimuth + da), elevation + de))
 
-            if abs(vc.sizeGoal[0] - vc.width)  > self.dimensionChangeThreshold and \
-               abs(vc.sizeGoal[1] - vc.height) > self.dimensionChangeThreshold:
-                dw = vc.sizeGoal[1] - vc.height
-                resizeFactor = (vc.height + dw * frameTime) / vc.height
-                self.__tryResizeVirtualCamera(vc,
-                                              resizeFactor, 
-                                              imageWidth,
-                                              imageHeight)
+            if abs(vc.sizeGoal[0] - vc.getAzimuthSpan())  > self.dimensionChangeThreshold and \
+               abs(vc.sizeGoal[1] - vc.getElevationSpan()) > self.dimensionChangeThreshold:
+                dh = vc.sizeGoal[1] - vc.getElevationSpan()
+                resizeFactor = (vc.getElevationSpan() + dh * frameTime) / vc.getElevationSpan()
+                self.__tryResizeVirtualCamera(vc, resizeFactor)
 
 
     # Updates the associated face (if any) for each virtual camera
-    def updateFaces(self, faces, imageWidth, imageHeight):
+    def updateFaces(self, faces):
         # Find matches between existing virtual cameras and detected faces
         matches = dict.fromkeys(self.__virtualCameras, None)
         matches, unmatchedFaces = self.__tryFindMatches(matches, faces)
@@ -64,9 +63,9 @@ class VirtualCameraManager:
         # Create new virtual cameras from faces that were not associated with a vc
         for unmatchedFace in unmatchedFaces:
             newVirtualCamera = VirtualCamera.createFromFace(unmatchedFace)
-            ratio = max(self.portraitScaleFactor, self.virtualCameraMinHeight / newVirtualCamera.height)
-            self.__tryResizeVirtualCamera(newVirtualCamera, ratio, imageWidth, imageHeight)
-            newVirtualCamera.sizeGoal = (newVirtualCamera.width, newVirtualCamera.height)
+            ratio = max(self.portraitScaleFactor, self.virtualCameraMinHeight / newVirtualCamera.getElevationSpan())
+            self.__tryResizeVirtualCamera(newVirtualCamera, ratio)
+            newVirtualCamera.sizeGoal = (newVirtualCamera.getAzimuthSpan(), newVirtualCamera.getElevationSpan())
             self.__virtualCameras.append(newVirtualCamera)
 
         for vc, face in matches.items():       
@@ -74,8 +73,8 @@ class VirtualCameraManager:
             if face:
                 vc.resetTimeToLive()
                 vc.face = face
-                vc.positionGoal = face.getPosition()
-                heightGoal = max(self.virtualCameraMinHeight, face.height * self.portraitScaleFactor)
+                vc.positionGoal = face.getMiddlePosition()
+                heightGoal = max(self.virtualCameraMinHeight, face.getElevationSpan() * self.portraitScaleFactor)
                 vc.sizeGoal = (heightGoal * self.aspectRatio, heightGoal)
 
 
@@ -88,34 +87,32 @@ class VirtualCameraManager:
 
 
     def clear(self):
-        self.__virtualCameras.clear()
+        self.__virtualCameras = []
 
      
     # Try to move the vc to the desired position. If a move in a certain dimension
     # makes the vc overflow the image, we disallow that move
-    def __tryMoveVirtualCamera(self, virtualCamera, newPosition, imageWidth, imageHeight):
-        (newPosX, newPosY) = newPosition
-        virtualCamera.xPos = newPosX
-        virtualCamera.yPos = newPosY
-
-        (xOverflow, yOverflow) = self.__findOverflow(virtualCamera.getBoundingRect(), imageWidth, imageHeight)
-
+    def __tryMoveVirtualCamera(self, virtualCamera, newPosition):
+        (newAzimuth, newElevation) = newPosition
+        elevationOverflow = self.__findElevationOverflow(newPosition)
+        
         # There is an overflow, we need to remove it so the vc does not exit the image
-        if xOverflow != 0:
-            virtualCamera.xPos -= xOverflow
-        if yOverflow != 0:
-            virtualCamera.yPos -= yOverflow
+        if elevationOverflow != 0:
+            newElevation -= elevationOverflow
+
+        virtualCamera.setMiddlePosition((newAzimuth, newElevation))
 
 
     # Try to resize the vc with the desired scale factor. 
     # If the new dimensions overflow the image, we move the image to remove the overflow
-    def __tryResizeVirtualCamera(self, virtualCamera, scaleFactor, imageWidth, imageHeight):
+    def __tryResizeVirtualCamera(self, virtualCamera, scaleFactor):
         # Find the desired dimensions respecting the aspect ratio
-        virtualCamera.height = min(virtualCamera.height * scaleFactor, imageHeight)
-        virtualCamera.width = virtualCamera.height * self.aspectRatio
+        virtualCamera.setElevationSpan(min(virtualCamera.getElevationSpan() * scaleFactor,
+                                           self.imgMaxElevation - self.imgMinElevation))
+        virtualCamera.setAzimuthSpan(virtualCamera.getElevationSpan() * self.aspectRatio)
 
         # Remove caused overflow, if any
-        self.__tryMoveVirtualCamera(virtualCamera, virtualCamera.getPosition(), imageWidth, imageHeight)
+        self.__tryMoveVirtualCamera(virtualCamera, virtualCamera.getMiddlePosition())
 
 
     # Recursive method to find matches between virtual cameras and detected faces.
@@ -152,10 +149,8 @@ class VirtualCameraManager:
     def __findClosestFace(self, virtualCamera, faces):
         closestIndex = None
         closestDistance = None
-
         for i in range(len(faces)):
-            facePosition = faces[i].getPosition()
-            distance = GeometryUtils.distanceBetweenTwoPoints(virtualCamera.getPosition(), facePosition)
+            distance = self.__distanceBetweenTwoSphericalAngles(virtualCamera.getMiddlePosition(), faces[i].getMiddlePosition())
             if not closestDistance or distance < closestDistance:
                 closestDistance = distance
                 closestIndex = i
@@ -167,22 +162,28 @@ class VirtualCameraManager:
 
 
     # Finds by how much the rectangle overflows the image
-    def __findOverflow(self, rectCoordinates, imageWidth, imageHeight):
-        (x1, y1, x2, y2) = rectCoordinates
-        xOverflow = 0
-        yOverflow = 0
+    def __findElevationOverflow(self, position):
+        azimuth, elevation = position
+        elevationOverflow = 0
 
-        if x1 < 0:
-            xOverflow = x1
-        elif imageWidth - x2 < 0:
-            xOverflow = x2 - imageWidth
+        if elevation < self.imgMinElevation:
+            elevationOverflow = elevation
+        elif elevation > self.imgMaxElevation:
+            elevationOverflow = elevation - self.imgMaxElevation
 
-        if y1 < 0:
-            yOverflow = y1
-        elif imageHeight - y2 < 0:
-            yOverflow = y2 - imageHeight
+        return elevationOverflow
 
-        return (xOverflow, yOverflow)
+
+    def __distanceBetweenTwoSphericalAngles(self, angle1, angle2):
+        angle1Azimuth, angle1Elevation = angle1
+        angle2Azimuth, angle2Elevation = angle2
+
+        azimuthDistance = angle1Azimuth - angle2Azimuth
+        if abs(azimuthDistance) > np.pi:
+            azimuthDistance = (np.pi * 2) - abs(azimuthDistance)
+        elevationDistance = angle1Elevation - angle2Elevation
+
+        return math.sqrt(azimuthDistance ** 2 + elevationDistance ** 2)
 
 
     # Removes the virtual cameras that were not associated with a face for some time
