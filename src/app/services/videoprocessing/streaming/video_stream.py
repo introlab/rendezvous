@@ -9,7 +9,6 @@ class VideoStream:
 
     def __init__(self, cameraConfig):
         self.config = cameraConfig
-        self.dewarper = None
         self.camera = None
 
 
@@ -35,7 +34,6 @@ class VideoStream:
 
     def destroy(self):
         self.camera.release()
-        self.dewarper.cleanUp()
 
 
     def readFrame(self):

@@ -91,7 +91,7 @@ class VideoProcessor(QObject):
             #vcBuffer = np.empty((vcOutputHeight, vcOutputWidth, channels), dtype=np.uint8)
             vcBufferId = dewarper.createRenderContext(vcOutputWidth, vcOutputHeight, channels)
 
-            faceDetection = FaceDetection(self.imageQueue, self.facesQueue, self.heartbeatQueue, self.semaphore)
+            faceDetection = FaceDetection(self.imageQueue, self.facesQueue, self.heartbeatQueue, self.semaphore, dewarpCount)
             faceDetection.start()
 
             fdBufferQueue = deque()
@@ -117,9 +117,9 @@ class VideoProcessor(QObject):
                     pass
 
                 if newFaces is not None:
-                    self.virtualCameraManager.updateFaces(newFaces, frameWidth, frameHeight)
+                    self.virtualCameraManager.updateFaces(newFaces, fdOutputWidth, fdOutputHeight)
 
-                self.virtualCameraManager.update(frameTime, frameWidth, frameHeight)
+                self.virtualCameraManager.update(frameTime, fdOutputWidth, fdOutputHeight)
                 
                 success, frame = videoStream.readFrame()
 
@@ -127,7 +127,7 @@ class VideoProcessor(QObject):
 
                     dewarper.loadFisheyeImage(frame)
 
-                    if self.semaphore.acquire(blocking = False):
+                    if self.semaphore.acquire(False):
                         self.semaphore.release()
                         for i in range(0, dewarpCount):
                             fdBuffer = np.empty((fdOutputHeight, fdOutputWidth, channels), dtype=np.uint8)
