@@ -21,7 +21,7 @@ class VirtualCameraManager:
         self.dimensionChangeThreshold = 30
 
         # Face scale factor to get the person's portrait (with shoulders)
-        self.portraitScaleFactor = 5
+        self.portraitScaleFactor = 1
 
         # Garbage collector unused virtual cameras. Ticks every second
         self.timer = QTimer()

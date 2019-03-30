@@ -1,11 +1,12 @@
+from threading import Thread
 import multiprocessing
 import queue
 import time
 
-from .facedetector.dnn_face_detector import DnnFaceDetector
+from .facedetector.yolo_face_detector import YoloFaceDetector
 
 
-class FaceDetection(multiprocessing.Process):
+class FaceDetection(Thread):
 
     def __init__(self, imageQueue, facesQueue, heartbeatQueue, semaphore):
         super(FaceDetection, self).__init__()
@@ -14,7 +15,7 @@ class FaceDetection(multiprocessing.Process):
         self.facesQueue = facesQueue
         self.heartbeatQueue = heartbeatQueue
         self.semaphore = semaphore
-        self.faceDetector = DnnFaceDetector()
+        self.faceDetector = YoloFaceDetector()
         self.exit = multiprocessing.Event()
 
 
@@ -28,7 +29,7 @@ class FaceDetection(multiprocessing.Process):
         lastHeartBeat = time.perf_counter()
 
         while not self.exit.is_set() and time.perf_counter() - lastHeartBeat < 0.5:
-
+            
             frame = []
             try:
                 frame = self.imageQueue.get_nowait()

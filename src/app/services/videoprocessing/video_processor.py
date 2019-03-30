@@ -1,8 +1,6 @@
-import queue
 import time
-from multiprocessing import Queue
-from multiprocessing import Semaphore
-from threading import Thread
+import queue
+from threading import Thread, Semaphore
 
 from PyQt5.QtCore import QObject, pyqtSignal
 
@@ -21,10 +19,10 @@ class VideoProcessor(QObject):
         super(VideoProcessor, self).__init__(parent)
         self.virtualCameraManager = VirtualCameraManager()
         self.isRunning = False
-        self.imageQueue = Queue()
-        self.facesQueue = Queue()
+        self.imageQueue = queue.Queue()
+        self.facesQueue = queue.Queue()
         self.semaphore = Semaphore()
-        self.heartbeatQueue = Queue(1)
+        self.heartbeatQueue = queue.Queue(1)
 
 
     def start(self, cameraConfigPath):
@@ -108,7 +106,6 @@ class VideoProcessor(QObject):
             if faceDetection:
                 faceDetection.stop()
                 faceDetection.join()
-                faceDetection.terminate()
                 faceDetection = None
 
             self.__emptyQueue(self.imageQueue)
