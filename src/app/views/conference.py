@@ -140,6 +140,7 @@ class Conference(QWidget, Ui_Conference):
             rangeThreshold = 15
             sourceClassifier = SourceClassifier(cameraParams, rangeThreshold)
             sourceClassifier.classifySources(virtualCameras, self.soundSources)
+            print('human sources = ' + str(sourceClassifier.getHumanSources()))
         
         self.virtualCameraDisplayer.updateDisplay(image, virtualCameras)
 
