@@ -1,3 +1,5 @@
+import traceback
+
 from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtWidgets import QMessageBox
 
@@ -13,6 +15,8 @@ class Exceptions(QObject):
 
     def exceptionHandling(self, e):
         if e:
+            print('Exception : ', e)
+            traceback.print_tb(e.__traceback__)
             dlg = QMessageBox()
             dlg.setIcon(QMessageBox.Warning)
             dlg.setText(str(e))
