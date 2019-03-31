@@ -26,7 +26,7 @@ class FaceDetection(multiprocessing.Process):
     def run(self):
         print("Starting face detection")
 
-        dewarpIndex = 0
+        dewarpIndex = -1
         faces = []
 
         lastHeartBeat = time.perf_counter()
@@ -59,7 +59,7 @@ class FaceDetection(multiprocessing.Process):
             except queue.Empty:
                 pass
 
-        if dewarpIndex != 0:
+        if dewarpIndex != self.dewarpCount - 1:
             self.faceDetectionSemaphore.release()
 
         print("Face detection terminated")
