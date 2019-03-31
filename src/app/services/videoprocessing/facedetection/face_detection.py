@@ -59,7 +59,7 @@ class FaceDetection(multiprocessing.Process):
             except queue.Empty:
                 pass
 
-        if dewarpIndex != self.dewarpCount - 1:
+        if dewarpIndex != -1 and dewarpIndex != self.dewarpCount - 1:
             self.faceDetectionSemaphore.release()
 
         print("Face detection terminated")
