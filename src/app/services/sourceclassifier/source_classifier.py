@@ -6,10 +6,10 @@ class SourceClassifier():
     def __init__(self, cameraParams, rangeThreshold):
         self.rangeThreshold = radians(rangeThreshold)
         self.cameraParams = cameraParams
-        self.humanSources = []
+        self.humanSources = {}
 
     def classifySources(self, virtualCameras, soundSources):
-        for source in soundSources:
+        for index, source in enumerate(soundSources):
             # there is no sound detected if the elevation is less than 0
             if source['elevation'] > 0:
                 for virtualCamera in virtualCameras:
@@ -18,7 +18,7 @@ class SourceClassifier():
 
                     if self.__inRange(azimuthFace, source['azimuth']):
                         if self.__inRange(elevationFace, source['elevation']):
-                            self.humanSources.append(source)
+                            self.humanSources[index] = source
 
     def getHumanSources(self):
         return self.humanSources
