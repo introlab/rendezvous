@@ -24,17 +24,20 @@ class SphericalAnglesConverter:
 
 
     @staticmethod
-    def getSphericalAnglesFromImage(xPixel, yPixel, fisheyeAngle, baseDonutSlice, dewarpingParameters, isClockwise):
+    def getSphericalAnglesFromImage(xPixel, yPixel, fisheyeAngle, fisheyeCenter, dewarpingParameters, isClockwise):
         xSourcePixel, ySourcePixel = DewarpingHelper.getSourcePixelFromDewarpedImage(xPixel, yPixel, dewarpingParameters)
 
         if fisheyeAngle > 2 * np.pi:
             raise Exception("Fisheye angle must be in radian!")
 
-        dx = xSourcePixel - baseDonutSlice.xCenter
-        dy = ySourcePixel - baseDonutSlice.yCenter
+        xCenter = fisheyeCenter[0]
+        yCenter = fisheyeCenter[1]
+
+        dx = xSourcePixel - xCenter
+        dy = ySourcePixel - yCenter
         distanceFromCenter = np.sqrt(dx**2 + dy**2)
-        distanceFromBorder = baseDonutSlice.xCenter - distanceFromCenter
-        ratio = (distanceFromBorder / baseDonutSlice.xCenter)
+        distanceFromBorder = xCenter - distanceFromCenter
+        ratio = (distanceFromBorder / xCenter)
 
         elevation = ratio * (fisheyeAngle / 2) + (np.pi / 2 - (fisheyeAngle / 2))
         azimuth = 0

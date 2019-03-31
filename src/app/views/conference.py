@@ -120,8 +120,8 @@ class Conference(QWidget, Ui_Conference):
 
 
     @pyqtSlot(object)
-    def imageReceived(self, vcBufferQueue):
-        pass
+    def imageReceived(self, vcImages):
+        self.virtualCameraDisplayer.updateDisplay(vcImages)
 
 
     @pyqtSlot(bool)
@@ -177,11 +177,12 @@ class Conference(QWidget, Ui_Conference):
         if self.videoProcessor and not self.videoProcessor.isRunning:
             self.videoProcessor.signalFrameData.connect(self.imageReceived)
             self.videoProcessor.start(self.window().getSetting('cameraConfigPath'))
+            self.virtualCameraDisplayer.startDisplaying()
 
 
     def stopVideoProcessor(self):
         if self.videoProcessor and self.videoProcessor.isRunning:
             self.videoProcessor.stop()
             self.videoProcessor.signalFrameData.disconnect(self.imageReceived)
-            self.virtualCameraDisplayer.clear()
+            self.virtualCameraDisplayer.stopDisplaying()
 

@@ -14,7 +14,8 @@ FrameLoader::FrameLoader(GLsizei inputWidth, GLsizei inputHeight,
     m_inputSize(inputWidth * inputHeight * channels),
     m_channels(channels),
     m_pixelFormat(pixelFormat),
-    m_frameLoaderType(frameLoader360Type)
+    m_frameLoaderType(frameLoader360Type),
+    m_currentRenderContextId(-1)
 {
     generateTexture(m_textureData, m_texture, m_inputWidth, m_inputHeight, m_inputSize, m_pixelFormat);
     generatePBOs(m_unpackPBOs, m_inputSize, GL_PIXEL_UNPACK_BUFFER, GL_STREAM_DRAW);
@@ -100,6 +101,10 @@ GLuint FrameLoader::createRenderContext(GLsizei width, GLsizei height, GLsizei s
 
 void FrameLoader::setRenderingContext(GLuint renderContextId, GLsizei width, GLsizei height)
 {
+    if (m_currentRenderContextId == renderContextId)
+        return;
+
+    m_currentRenderContextId = renderContextId;
     RenderContext& renderContext = m_renderContexts[renderContextId];
     glViewport(0, 0, width, height);
     glBindFramebuffer(GL_FRAMEBUFFER, renderContext.fbo);

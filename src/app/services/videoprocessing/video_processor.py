@@ -13,8 +13,10 @@ from .facedetection.face_detection import FaceDetection
 from .virtualcamera.virtual_camera_manager import VirtualCameraManager
 from .virtualcamera.face import Face
 from src.utils.file_helper import FileHelper
-from src.app.services.videoprocessing.streaming.camera_config import CameraConfig
+from src.utils.spherical_angles_rect import SphericalAnglesRect
 from src.utils.dewarping_helper import DewarpingHelper
+from src.utils.spherical_angles_converter import SphericalAnglesConverter
+from src.app.services.videoprocessing.streaming.camera_config import CameraConfig
 from src.app.services.videoprocessing.dewarping.interface.fisheye_dewarping import DonutSlice
 from src.app.services.videoprocessing.dewarping.interface.fisheye_dewarping import FisheyeDewarping
 
@@ -30,7 +32,7 @@ class VideoProcessor(QObject):
         self.isRunning = False
         self.imageQueue = Queue()
         self.facesQueue = Queue()
-        self.semaphore = Semaphore()
+        self.faceDetectionSemaphore = Semaphore()
         self.heartbeatQueue = Queue(1)
 
 
@@ -60,6 +62,7 @@ class VideoProcessor(QObject):
 
         videoStream = None
         faceDetection = None
+        show360DegAsVcs = False
 
         try:
 
@@ -76,27 +79,31 @@ class VideoProcessor(QObject):
             channels = len(frame.shape)
 
             dewarpCount = 4
-            fdDewarpingParameters = self.__getFaceDetectionDewarpingParameters(cameraConfig, dewarpCount)
-            vcDewarpingParameters = self.__getVirtualCameraDewarpingParameters(cameraConfig)
+            fdDewarpingParameters = self.__getFaceDetectionDewarpingParametersList(cameraConfig, dewarpCount)
             
-            fdOutputWidth = int((fdDewarpingParameters[0].dewarpWidth / 4) - (fdDewarpingParameters[0].dewarpWidth / 4) % 4)
-            fdOutputHeight = int((fdDewarpingParameters[0].dewarpHeight / 4) - (fdDewarpingParameters[0].dewarpHeight / 4) % 4)
+            # Increasing these will make face detection slower, but yield better detections
+            fdOutputWidth = int((fdDewarpingParameters[0].dewarpWidth / 2) - (fdDewarpingParameters[0].dewarpWidth / 2) % 4)
+            fdOutputHeight = int((fdDewarpingParameters[0].dewarpHeight / 2) - (fdDewarpingParameters[0].dewarpHeight / 2) % 4)
+
+            dewarpWidthFactor = fdDewarpingParameters[0].dewarpWidth / fdOutputWidth
+            dewarpHeightFactor = fdDewarpingParameters[0].dewarpHeight / fdOutputHeight
+
             vcOutputWidth = 600
             vcOutputHeight = 800
 
+            fisheyeCenter = (cameraConfig.imageWidth / 2, cameraConfig.imageHeight / 2)
+            fisheyeAngle = np.deg2rad(cameraConfig.fisheyeAngle)
+
             dewarper = FisheyeDewarping(cameraConfig.imageWidth, cameraConfig.imageHeight, channels, True)
 
-            #fdBuffer = np.empty((fdOutputHeight, fdOutputWidth, channels), dtype=np.uint8)
             fdBufferId = dewarper.createRenderContext(fdOutputWidth, fdOutputHeight, channels)
-
-            #vcBuffer = np.empty((vcOutputHeight, vcOutputWidth, channels), dtype=np.uint8)
             vcBufferId = dewarper.createRenderContext(vcOutputWidth, vcOutputHeight, channels)
 
-            faceDetection = FaceDetection(self.imageQueue, self.facesQueue, self.heartbeatQueue, self.semaphore, dewarpCount)
+            faceDetection = FaceDetection(self.imageQueue, self.facesQueue, self.heartbeatQueue, self.faceDetectionSemaphore, dewarpCount)
             faceDetection.start()
 
             fdBufferQueue = deque()
-            vcBufferQueue = deque()
+            fdBuffers = []
             
             print('Video processor started')
 
@@ -117,8 +124,30 @@ class VideoProcessor(QObject):
                 except queue.Empty:
                     pass
 
+                # Update virtual camera with detected faces
                 if newFaces is not None:
-                    self.virtualCameraManager.updateFaces(newFaces)
+                    allFaces = []
+                    for (faces, dewarpIndex) in newFaces:
+
+                        for face in faces:
+                            (x1, y1, x2, y2) = face.getBoundingRect()
+                            
+                            azimuthLeft, elevationTop = SphericalAnglesConverter.getSphericalAnglesFromImage( \
+                                x1 * dewarpWidthFactor , y1 * dewarpHeightFactor, \
+                                fisheyeAngle, fisheyeCenter, fdDewarpingParameters[dewarpIndex], True)
+
+                            azimuthRight, elevationBottom = SphericalAnglesConverter.getSphericalAnglesFromImage( \
+                                x2 * dewarpWidthFactor , y2 * dewarpHeightFactor, \
+                                fisheyeAngle, fisheyeCenter, fdDewarpingParameters[dewarpIndex], True)
+
+                            xSourcePixel, ySourcePixel = DewarpingHelper.getSourcePixelFromDewarpedImage( \
+                                x1 * dewarpWidthFactor , y1 * dewarpHeightFactor, fdDewarpingParameters[dewarpIndex])
+
+                            angleRect = SphericalAnglesRect(azimuthLeft, azimuthRight, elevationBottom, elevationTop)
+
+                            allFaces.append(angleRect)
+
+                    self.virtualCameraManager.updateFaces(allFaces)
 
                 self.virtualCameraManager.update(frameTime)
                 
@@ -126,31 +155,47 @@ class VideoProcessor(QObject):
 
                 if success:
 
+                    vcBuffers = []
+
                     dewarper.loadFisheyeImage(frame)
 
-                    if self.semaphore.acquire(False):
-                        self.semaphore.release()
-                        for i in range(0, dewarpCount):
+                    # Queue dewarping for face detection
+                    if self.faceDetectionSemaphore.acquire(False):
+                        self.faceDetectionSemaphore.release()
+                        fdBuffers = []
+                        for dewarpIndex in range(0, dewarpCount):
                             fdBuffer = np.empty((fdOutputHeight, fdOutputWidth, channels), dtype=np.uint8)
-                            dewarper.queueDewarping(fdBufferId, fdDewarpingParameters[i], fdBuffer)
-                            fdBufferQueue.append(fdBuffer)
+                            dewarper.queueDewarping(fdBufferId, fdDewarpingParameters[dewarpIndex], fdBuffer)
+                            fdBufferQueue.append((fdBuffer, dewarpIndex))
 
+                    # Queue dewarping for each virtual camera
                     for vc in self.virtualCameraManager.getVirtualCameras():
                         vcBuffer = np.empty((vcOutputHeight, vcOutputWidth, channels), dtype=np.uint8)
-                        # Generate dewarping params for vc
-                        dewarper.queueDewarping(vcBufferId, vcDewarpingParameters, vcBuffer)
-                        vcBufferQueue.append(vcBuffer)
 
+                         # Generate dewarping params for vc
+                        azimuth, elevation = vc.getMiddlePosition()
+                        azimuthSpan = vc.getAzimuthSpan()
+                        vcDewarpingParameters = self.__getVirtualCameraDewarpingParameters(cameraConfig, azimuth, azimuthSpan)
+ 
+                        dewarper.queueDewarping(vcBufferId, vcDewarpingParameters, vcBuffer)
+                        vcBuffers.append(vcBuffer)
+
+                    # Execute all queued dewarping for face detection and virtual cameras
                     bufferId = 0
                     while bufferId != -1:
                         bufferId = dewarper.dewarpNextImage()
                         
                         if bufferId == fdBufferId:
-                            frameHeight, frameWidth, colors = fdBuffer.shape
-                            buffer = fdBufferQueue.pop()
-                            self.imageQueue.put_nowait(buffer)
+                            buffer, dewarpIndex = fdBufferQueue.popleft()
+                            fdBuffers.append(buffer)
+                            self.imageQueue.put_nowait((buffer, dewarpIndex))
+                    
+                    # Dislay 360 dewarping as virtual cameras for debugging
+                    if show360DegAsVcs and len(fdBuffers) != 0:
+                        vcBuffers.extend(fdBuffers)
 
-                    self.signalFrameData.emit(vcBufferQueue)
+                    # Send the virtual camera images
+                    self.signalFrameData.emit(vcBuffers)
 
                 prevTime = currentTime
                 
@@ -175,30 +220,33 @@ class VideoProcessor(QObject):
                 videoStream.destroy()
                 videoStream = None
 
+            dewarper.cleanUp()
             self.virtualCameraManager.clear()
 
         print('Video stream terminated')
 
 
-    def __getFaceDetectionDewarpingParameters(self, cameraConfig, dewarpCount):
-        dewarpingParameters = []
+    def __getFaceDetectionDewarpingParametersList(self, cameraConfig, dewarpCount):
+        dewarpingParametersList = []
         donutSlice = DonutSlice(cameraConfig.imageWidth / 2, cameraConfig.imageHeight / 2, cameraConfig.inRadius, \
             cameraConfig.outRadius, np.deg2rad(0), np.deg2rad(cameraConfig.angleSpan))
 
         for i in range(0, dewarpCount):
-            dewarpingParameters.append(DewarpingHelper.getDewarpingParameters(donutSlice, \
+            dewarpingParametersList.append(DewarpingHelper.getDewarpingParameters(donutSlice, \
                 cameraConfig.topDistorsionFactor, cameraConfig.bottomDistorsionFactor))
             donutSlice.middleAngle = (donutSlice.middleAngle + np.deg2rad(360 / dewarpCount)) % (2 * np.pi)
 
-        return dewarpingParameters
+        return dewarpingParametersList
 
 
-    def __getVirtualCameraDewarpingParameters(self, cameraConfig):
+    def __getVirtualCameraDewarpingParameters(self, cameraConfig, middleAngle, angleSpan):
         donutSlice = DonutSlice(cameraConfig.imageWidth / 2, cameraConfig.imageHeight / 2, cameraConfig.inRadius, \
-            cameraConfig.outRadius, np.deg2rad(0), np.deg2rad(cameraConfig.angleSpan))
+            cameraConfig.outRadius, middleAngle, angleSpan)
 
-        return DewarpingHelper.getDewarpingParameters(donutSlice, \
-                cameraConfig.topDistorsionFactor, cameraConfig.bottomDistorsionFactor)
+        dewarpingParameters = DewarpingHelper.getDewarpingParameters(donutSlice, \
+            cameraConfig.topDistorsionFactor, cameraConfig.bottomDistorsionFactor)
+
+        return dewarpingParameters
 
                 
     def __emptyQueue(self, queue):

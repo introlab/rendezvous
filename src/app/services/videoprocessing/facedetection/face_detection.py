@@ -7,13 +7,13 @@ from .facedetector.dnn_face_detector import DnnFaceDetector
 
 class FaceDetection(multiprocessing.Process):
 
-    def __init__(self, imageQueue, facesQueue, heartbeatQueue, semaphore, dewarpCount):
+    def __init__(self, imageQueue, facesQueue, heartbeatQueue, faceDetectionSemaphore, dewarpCount):
         super(FaceDetection, self).__init__()
         self.requestImage = True
         self.imageQueue = imageQueue
         self.facesQueue = facesQueue
         self.heartbeatQueue = heartbeatQueue
-        self.semaphore = semaphore
+        self.faceDetectionSemaphore = faceDetectionSemaphore
         self.dewarpCount = dewarpCount
         self.faceDetector = DnnFaceDetector()
         self.exit = multiprocessing.Event()
@@ -26,29 +26,30 @@ class FaceDetection(multiprocessing.Process):
     def run(self):
         print("Starting face detection")
 
-        numberOfImagesProcessed = 0
+        dewarpIndex = 0
         faces = []
 
         lastHeartBeat = time.perf_counter()
 
         while not self.exit.is_set() and time.perf_counter() - lastHeartBeat < 0.5:
 
-            frame = None
+            image = None
             try:
-                frame = self.imageQueue.get_nowait()
-                if numberOfImagesProcessed == 0:
-                    self.semaphore.acquire()
+                image, dewarpIndex = self.imageQueue.get_nowait()
+                if dewarpIndex == 0:
+                    self.faceDetectionSemaphore.acquire()
             except queue.Empty:
                 time.sleep(0.01)
 
-            if frame is not None:
-                faces.extend(self.faceDetector.detectFaces(frame))
+            if image is not None:
 
-                numberOfImagesProcessed += 1
-                if numberOfImagesProcessed == self.dewarpCount:
-                    self.semaphore.release()
-                    numberOfImagesProcessed = 0
-                    if faces != []:
+                imageFaces = self.faceDetector.detectFaces(image)
+                if len(imageFaces) != 0:
+                    faces.append((imageFaces, dewarpIndex))
+
+                if dewarpIndex == self.dewarpCount - 1:
+                    self.faceDetectionSemaphore.release()
+                    if len(faces) != 0:
                         self.facesQueue.put(faces)
                         faces = []
             
@@ -57,6 +58,9 @@ class FaceDetection(multiprocessing.Process):
                 lastHeartBeat = time.perf_counter()
             except queue.Empty:
                 pass
+
+        if dewarpIndex != 0:
+            self.faceDetectionSemaphore.release()
 
         print("Face detection terminated")
         

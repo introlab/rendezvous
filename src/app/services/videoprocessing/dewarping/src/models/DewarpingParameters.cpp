@@ -9,12 +9,14 @@ DewarpingParameters::DewarpingParameters()
     centerRadius(0),
     outRadiusDiff(0),
     xOffset(0),
-    bottomDistorsionFactor(0)
+    bottomDistorsionFactor(0),
+    topOffset(0),
+    bottomOffset(0)
 {
 }
 
-DewarpingParameters::DewarpingParameters(float xCenter, float yCenter, float dewarpWidth, float dewarpHeight,
-    float inRadius, float centerRadius, float outRadiusDiff, float xOffset, float bottomDistorsionFactor)
+DewarpingParameters::DewarpingParameters(float xCenter, float yCenter, float dewarpWidth, float dewarpHeight, float inRadius, 
+    float centerRadius, float outRadiusDiff, float xOffset, float bottomDistorsionFactor, float topOffset, float bottomOffset)
     : xCenter(xCenter),
     yCenter(yCenter),
     dewarpWidth(dewarpWidth),
@@ -23,6 +25,8 @@ DewarpingParameters::DewarpingParameters(float xCenter, float yCenter, float dew
     centerRadius(centerRadius),
     outRadiusDiff(outRadiusDiff),
     xOffset(xOffset),
-    bottomDistorsionFactor(bottomDistorsionFactor)
+    bottomDistorsionFactor(bottomDistorsionFactor),
+    topOffset(topOffset),
+    bottomOffset(bottomOffset)
 {
 }
