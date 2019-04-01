@@ -11,22 +11,22 @@ class VirtualCameraManager:
     def __init__(self, imgMinElevation, imgMaxElevation):
         self.__virtualCameras = []
 
-        self.virtualCameraMinHeight = 300
+        self.virtualCameraMinHeight = 0.5
 
         self.imgMinElevation = imgMinElevation
         self.imgMaxElevation = imgMaxElevation
 
         # 3:4 (portrait)
-        self.aspectRatio = 3 / 4
+        self.aspectRatio = 1
 
         # Change in position that cause a move of the virtual camera
-        self.positionChangedThreshold = 25
+        self.positionChangedThreshold = 0
 
         # Change in dimension that cause a resize of the virtual camera
-        self.dimensionChangeThreshold = 30
+        self.dimensionChangeThreshold = 0
 
         # Face scale factor to get the person's portrait (with shoulders)
-        self.portraitScaleFactor = 5
+        self.portraitScaleFactor = 1
 
         # Garbage collector unused virtual cameras. Ticks every second
         self.timer = QTimer()
@@ -68,7 +68,11 @@ class VirtualCameraManager:
             newVirtualCamera.sizeGoal = (newVirtualCamera.getAzimuthSpan(), newVirtualCamera.getElevationSpan())
             self.__virtualCameras.append(newVirtualCamera)
 
-        for vc, face in matches.items():       
+        for vc, face in matches.items(): 
+            print("---------------------------")   
+            vc.print()
+            print("")
+            face.print()   
             # Found a face to associate the vc with, so we update the vc with its matched face
             if face:
                 vc.resetTimeToLive()
@@ -98,7 +102,9 @@ class VirtualCameraManager:
         
         # There is an overflow, we need to remove it so the vc does not exit the image
         if elevationOverflow != 0:
+            print(elevationOverflow)
             newElevation -= elevationOverflow
+            print(newElevation)
 
         virtualCamera.setMiddlePosition((newAzimuth, newElevation))
 
