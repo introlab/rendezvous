@@ -57,4 +57,3 @@ class SphericalAnglesConverter:
 
         return azimuth, elevation
 
-    

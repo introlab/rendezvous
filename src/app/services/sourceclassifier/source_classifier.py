@@ -30,4 +30,3 @@ class SourceClassifier():
         if faceAngle <= maxDetectionAngle and faceAngle >= minDetectionAngle:
             return True
 
-            

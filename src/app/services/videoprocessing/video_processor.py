@@ -140,3 +140,4 @@ class VideoProcessor(QObject):
                 queue.get_nowait()
         except:
             pass
+
