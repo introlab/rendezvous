@@ -46,7 +46,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QSlider" name="timeSlider">
+      <widget class="QSlider" name="mediaPositionSlider">
        <property name="maximum">
         <number>1000</number>
        </property>

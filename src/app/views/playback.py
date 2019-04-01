@@ -21,10 +21,16 @@ class Playback(QWidget, Ui_Playback):
         self.timer = QTimer(self)
         self.timer.setInterval(100)
 
+
+        # Populate UI.
+        self.volumeSlider.setMaximum(100)
+        self.volumeSlider.setToolTip('Audio Slider')
+        self.volumeSlider.sliderMoved.connect(self.onVolume)
+
+
         # Qt signal slots.
-        self.timeSlider.sliderMoved.connect(self.setTime)
-        self.timeSlider.sliderPressed.connect(self.setTime)
-        self.volumeSlider.valueChanged.connect(self.setVolume)
+        self.mediaPositionSlider.sliderMoved.connect(self.onMediaPosition)
+        self.mediaPositionSlider.sliderPressed.connect(self.onMediaPosition)
         self.playPauseBtn.clicked.connect(self.onPlayPauseClicked)
         self.stopBtn.clicked.connect(self.onStopClicked)
         self.importMediaBtn.clicked.connect(self.onImportMediaClicked)
@@ -38,27 +44,34 @@ class Playback(QWidget, Ui_Playback):
 
 
     def updateUI(self):
-        mediaTime = int(self.playbackController.getTime())
-        self.timeSlider.setValue(mediaTime)
+        mediaPosition = int(self.playbackController.getPosition())
+        self.mediaPositionSlider.setValue(mediaPosition)
 
         if not self.playbackController.isPlaying():
             self.timer.stop()
 
             if not self.playbackController.isPaused():
                 self.playbackController.stop()
+        
+        volume = self.playbackController.getVolume()
+        print(volume)
+        self.volumeSlider.setValue(volume)
 
 
-    def setTime(self):
+    @pyqtSlot()
+    def onMediaPosition(self):
         self.timer.stop()
-        time = self.timeSlider.value()
-        self.playbackController.setTime(time)
+        position = self.timeSlider.value()
+        self.playbackController.setPosition(position)
         self.timer.start()
     
 
-    def setVolume(self, volume):
+    @pyqtSlot(int)
+    def onVolume(self, volume):
         self.playbackController.setVolume(volume)
 
 
+    @pyqtSlot()
     def onPlayPauseClicked(self):
         if self.playbackController.isPlaying():
             self.playbackController.pause()
@@ -73,6 +86,7 @@ class Playback(QWidget, Ui_Playback):
             self.timer.start()
 
     
+    @pyqtSlot()
     def onStopClicked(self):
         self.playbackController.stop()
         self.playPauseBtn.setText('Play')
@@ -88,7 +102,6 @@ class Playback(QWidget, Ui_Playback):
             if mediaPath:
                 self.playbackController.loadMediaFile(mediaPath, self.videoFrame.winId())
                 self.mediaPlaying.setText(self.playbackController.getPlayingMediaName())
-
         except Exception as e:
             self.window().emitToExceptionsManager(e)
             self.mediaPath.setText('No Media Playing')

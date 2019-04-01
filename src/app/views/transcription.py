@@ -26,6 +26,7 @@ class Transcription(QWidget, Ui_Transcription):
         self.language.addItems([languageCode.value for languageCode in self.transcriptionController.getLanguageCodes()])
         self.model.addItems([model.value for model in self.transcriptionController.getModels()])    
 
+
         # Qt signal slots.
         self.btnImportAudio.clicked.connect(self.onImportAudioClicked)
         self.btnTranscribe.clicked.connect(self.onTranscribeClicked)

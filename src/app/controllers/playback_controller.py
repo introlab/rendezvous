@@ -63,21 +63,26 @@ class PlaybackController(QObject):
         except Exception as e:
             self.onException(e)
 
-    def setTime(self, time):
+
+    def getVolume(self):
+        return self.__mediaPlayer.audio_get_volume()
+ 
+
+    def setPosition(self, position):
         try:
-            self.__mediaPlayer.set_position(time / 1000.0)
+            self.__mediaPlayer.set_position(position / 1000.0)
 
         except Exception as e:
             self.onException(e)            
 
 
-    def getTime(self):
+    def getPosition(self):
         return self.__mediaPlayer.get_position() * 1000
-
 
 
     def getPlayingMediaName(self):
         return self.__media.get_meta(0)
+
 
     def loadMediaFile(self, file, winId):
         try:
