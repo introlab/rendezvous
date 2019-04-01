@@ -1,7 +1,12 @@
 from enum import Enum, unique
+import random
 
-from PyQt5.QtWidgets import QWidget, QFileDialog, QApplication
-from PyQt5.QtCore import pyqtSlot
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
+
+from PyQt5.QtWidgets import QWidget, QFileDialog, QApplication, QLabel, QVBoxLayout, QSizePolicy
+from PyQt5.QtCore import pyqtSlot, QTimer
 
 from src.app.gui.conference_ui import Ui_Conference
 from src.app.controllers.conference_controller import ConferenceController
@@ -34,6 +39,24 @@ class Conference(QWidget, Ui_Conference):
         self.virtualCameraDisplayer = VirtualCameraDisplayer(self.virtualCameraFrame)
 
         self.btnStartStopAudioRecord.setDisabled(True)
+
+        # positions graphs initialization
+        SMALL_SIZE = 9
+        MEDIUM_SIZE = 10
+        BIGGER_SIZE = 12
+
+        plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
+        plt.rc('axes', titlesize=SMALL_SIZE)     # fontsize of the axes title
+        plt.rc('axes', labelsize=MEDIUM_SIZE)    # fontsize of the x and y labels
+        plt.rc('xtick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+        plt.rc('ytick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
+        plt.rc('legend', fontsize=SMALL_SIZE)    # legend fontsize
+        plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
+
+        azimuthGraph = AzimuthGraph(None, width=1, height=0.5, dpi=100, title='Azimuth Positions')
+        elevationGraph = AzimuthGraph(None, width=1, height=0.5, dpi=100, title='Elevation Positions')
+        self.soundPositionsVerticalLayout.addWidget(azimuthGraph)
+        self.soundPositionsVerticalLayout.addWidget(elevationGraph)
 
         # Qt signal slots
         self.btnSelectOutputFolder.clicked.connect(self.selectOutputFolder)
@@ -184,4 +207,44 @@ class Conference(QWidget, Ui_Conference):
             self.videoProcessor.stop()
             self.videoProcessor.signalFrameData.disconnect(self.imageReceived)
             self.virtualCameraDisplayer.clear()
+
+
+class Graph(FigureCanvas):
+
+    def __init__(self, parent=None, width=5, height=4, dpi=100, title=None):
+        fig = Figure(figsize=(width, height), dpi=dpi)
+        self.axes = fig.add_subplot(111)
+        self.title = title
+        if self.title:
+            self.axes.set_title(title)
+
+        self.computeInitialFigure()
+
+        FigureCanvas.__init__(self, fig)
+        self.setParent(parent)
+
+        FigureCanvas.setSizePolicy(self, QSizePolicy.Expanding, QSizePolicy.Expanding)
+        FigureCanvas.updateGeometry(self)
+
+    def computeInitialFigure(self):
+        pass
+
+class AzimuthGraph(Graph): 
+	
+    def __init__(self, *args, **kwargs):
+        Graph.__init__(self, *args, **kwargs)
+        timer = QTimer(self)
+        timer.timeout.connect(self.updateFigure)
+        timer.start(1000)
+
+    def computeInitialFigure(self):
+        self.axes.plot([0, 1, 2, 3], [1, 2, 0, 4], 'r')
+
+    def updateFigure(self, data=None):
+        l = [random.randint(0, 10) for i in range(4)]
+        self.axes.cla()
+        self.axes.plot([0, 1, 2, 3], l, 'r')
+        self.axes.set_title(self.title)
+
+        self.draw()
 
