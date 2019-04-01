@@ -27,6 +27,12 @@ class BtnOdasLabels(Enum):
     STOP_ODAS = 'Stop ODAS'
 
 
+@unique
+class FontSizes(Enum):
+    SMALL_SIZE = 9
+    MEDIUM_SIZE = 10
+    BIGGER_SIZE = 12
+
 class Conference(QWidget, Ui_Conference):
 
     def __init__(self, parent=None):
@@ -41,22 +47,18 @@ class Conference(QWidget, Ui_Conference):
         self.btnStartStopAudioRecord.setDisabled(True)
 
         # positions graphs initialization
-        SMALL_SIZE = 9
-        MEDIUM_SIZE = 10
-        BIGGER_SIZE = 12
+        plt.rc('font', size=FontSizes.SMALL_SIZE.value)          # controls default text sizes
+        plt.rc('axes', titlesize=FontSizes.SMALL_SIZE.value)     # fontsize of the axes title
+        plt.rc('axes', labelsize=FontSizes.MEDIUM_SIZE.value)    # fontsize of the x and y labels
+        plt.rc('xtick', labelsize=FontSizes.SMALL_SIZE.value)    # fontsize of the tick labels
+        plt.rc('ytick', labelsize=FontSizes.SMALL_SIZE.value)    # fontsize of the tick labels
+        plt.rc('legend', fontsize=FontSizes.SMALL_SIZE.value)    # legend fontsize
+        plt.rc('figure', titlesize=FontSizes.BIGGER_SIZE.value)  # fontsize of the figure title
 
-        plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
-        plt.rc('axes', titlesize=SMALL_SIZE)     # fontsize of the axes title
-        plt.rc('axes', labelsize=MEDIUM_SIZE)    # fontsize of the x and y labels
-        plt.rc('xtick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
-        plt.rc('ytick', labelsize=SMALL_SIZE)    # fontsize of the tick labels
-        plt.rc('legend', fontsize=SMALL_SIZE)    # legend fontsize
-        plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
-
-        azimuthGraph = AzimuthGraph(None, width=1, height=0.5, dpi=100, title='Azimuth Positions')
-        elevationGraph = AzimuthGraph(None, width=1, height=0.5, dpi=100, title='Elevation Positions')
-        self.soundPositionsVerticalLayout.addWidget(azimuthGraph)
-        self.soundPositionsVerticalLayout.addWidget(elevationGraph)
+        self.azimuthGraph = AzimuthGraph(None, width=1, height=0.5, dpi=100, title='Azimuth Positions')
+        self.elevationGraph = AzimuthGraph(None, width=1, height=0.5, dpi=100, title='Elevation Positions')
+        self.soundPositionsVerticalLayout.addWidget(self.azimuthGraph)
+        self.soundPositionsVerticalLayout.addWidget(self.elevationGraph)
 
         # Qt signal slots
         self.btnSelectOutputFolder.clicked.connect(self.selectOutputFolder)
@@ -131,15 +133,13 @@ class Conference(QWidget, Ui_Conference):
 
     @pyqtSlot(object)
     def positionDataReceived(self, values):
-        self.source1AzimuthValueLabel.setText('%.5f' % values[0]['azimuth'])
-        self.source2AzimuthValueLabel.setText('%.5f' % values[1]['azimuth'])
-        self.source3AzimuthValueLabel.setText('%.5f' % values[2]['azimuth'])
-        self.source4AzimuthValueLabel.setText('%.5f' % values[3]['azimuth'])
-
-        self.source1ElevationValueLabel.setText('%.5f' % values[0]['elevation'])
-        self.source2ElevationValueLabel.setText('%.5f' % values[1]['elevation'])
-        self.source3ElevationValueLabel.setText('%.5f' % values[2]['elevation'])
-        self.source4ElevationValueLabel.setText('%.5f' % values[3]['elevation'])
+        azimuthNewData = []
+        elevationNewData = []
+        for _, angles in values.items():
+            azimuthNewData.append(float(angles['azimuth']))
+            elevationNewData.append(float(angles['elevation']))
+        self.azimuthGraph.updateFigure(azimuthNewData)
+        self.elevationGraph.updateFigure(elevationNewData)
 
 
     @pyqtSlot(object, object)
@@ -218,6 +218,8 @@ class Graph(FigureCanvas):
         if self.title:
             self.axes.set_title(title)
 
+        self.data = []
+
         self.computeInitialFigure()
 
         FigureCanvas.__init__(self, fig)
@@ -226,24 +228,25 @@ class Graph(FigureCanvas):
         FigureCanvas.setSizePolicy(self, QSizePolicy.Expanding, QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
 
+
     def computeInitialFigure(self):
         pass
+
 
 class AzimuthGraph(Graph): 
 	
     def __init__(self, *args, **kwargs):
         Graph.__init__(self, *args, **kwargs)
-        timer = QTimer(self)
-        timer.timeout.connect(self.updateFigure)
-        timer.start(1000)
+
 
     def computeInitialFigure(self):
-        self.axes.plot([0, 1, 2, 3], [1, 2, 0, 4], 'r')
+        self.axes.plot([], self.data, 'r')
 
-    def updateFigure(self, data=None):
-        l = [random.randint(0, 10) for i in range(4)]
+
+    def updateFigure(self, data):
         self.axes.cla()
-        self.axes.plot([0, 1, 2, 3], l, 'r')
+        self.data.append(data)
+        self.axes.plot(range(0, len(self.data)), self.data, 'r')
         self.axes.set_title(self.title)
 
         self.draw()
