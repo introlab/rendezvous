@@ -154,8 +154,8 @@ class Odas(QObject, Thread):
         if self.odasProcess:
             if self.isConnected:
                 self.closeConnections()
-            self.odasProcess.signalException.disconnect(self.odasLiveExceptionHandling)
             self.odasProcess.stop()
+            self.odasProcess.signalException.disconnect(self.odasLiveExceptionHandling)
             self.odasProcess = None
             print('odas subprocess stopped...') if self.isVerbose else None
 

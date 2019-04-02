@@ -24,7 +24,8 @@ class ConferenceController(QObject):
         self.__recorder.changeAudioSettings(outputFolder=outputFolder, nChannels=4, nChannelFile=1, byteDepth=2, sampleRate=48000)
         self.__recorder.start()
         self.isRecording = False
-        self.__odasLiveConnected = False
+        self.isOdasLiveConnected = False
+        self.videoProcessorState = False
 
         self.__recorder.signalException.connect(self.recorderExceptionHandling)
         self.__odas.signalException.connect(self.odasExceptionHandling)
@@ -41,11 +42,13 @@ class ConferenceController(QObject):
 
     @pyqtSlot(bool)
     def odasClientConnected(self, isConnected):
+        self.isOdasLiveConnected = isConnected
         self.signalOdasState.emit(isConnected)
 
 
     @pyqtSlot(bool)
     def videoProcessorStateChanged(self, state):
+        self.videoProcessorState = state
         self.signalVideoProcessorState.emit(state)
 
 
@@ -67,8 +70,7 @@ class ConferenceController(QObject):
 
     @pyqtSlot(Exception)
     def odasExceptionHandling(self, e):
-        if self.isRecording:
-            self.__stopServices()
+        self.__stopServices()
         self.isRecording = False
         self.signalRecordingState.emit(self.isRecording)
         self.signalOdasState.emit(False)
@@ -87,7 +89,8 @@ class ConferenceController(QObject):
     def videoProcessorExceptionHandling(self, e):
         if self.isRecording:
             self.__stopServices()
-        self.stopVideoProcessor()
+        else:
+            self.stopVideoProcessor()
         self.signalException.emit(e)
 
 
