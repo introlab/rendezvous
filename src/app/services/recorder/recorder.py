@@ -23,16 +23,12 @@ class Recorder(QObject, Thread):
         super(Recorder, self).__init__(parent)
 
         self.__audioWriter = AudioWriter()
-        self.__videoSources = {
-            '0': VideoWriter(os.path.join(outputFolder, 'video-0.avi'), fourCC='MJPG', fps=10),
-            '1': VideoWriter(os.path.join(outputFolder, 'video-1.avi'), fourCC='MJPG', fps=10),
-            '2': VideoWriter(os.path.join(outputFolder, 'video-2.avi'), fourCC='MJPG', fps=10),
-            '3': VideoWriter(os.path.join(outputFolder, 'video-3.avi'), fourCC='MJPG', fps=10)
-        }
+        self.__videoSources = {}
+        self.__initNewVideoWriters(outputFolder)
         self.mailbox = queue.Queue()
         self.isRunning = False
         self.isRecording = False
-        self.outputFolder = outputFolder
+        self.__outputFolder = outputFolder
 
     
     def stop(self):
@@ -80,6 +76,7 @@ class Recorder(QObject, Thread):
 
                     elif data == RecorderActions.NEW_RECORDING:
                         self.__audioWriter.createNewFiles()
+                        self.__initNewVideoWriters(self.__outputFolder)
 
                     elif data == RecorderActions.STOP:
                         break
@@ -91,11 +88,21 @@ class Recorder(QObject, Thread):
             self.isRunning = False
 
 
+    def setOutputFolder(self, folderpath):
+        if not folderpath or not os.path.exists(folderpath):
+            self.signalException(Exception("folder's path does not exists."))
+
+        self.__outputFolder = folderpath
+
+
     def changeAudioSettings(self, outputFolder, nChannels, nChannelFile, byteDepth, sampleRate):
         self.__audioWriter.changeWavSettings(outputFolder, nChannels, nChannelFile, byteDepth, sampleRate)
 
-    
-    def changeVideoSettings(self, outputFolder):
-        for key, writer in self.__videoSources.items():
-            writer.setFilePath(os.path.join(outputFolder, 'video-{}.avi'.format(str(key))))
 
+    def __initNewVideoWriters(self, outputFolder):
+        self.__videoSources = {
+            '0': VideoWriter(os.path.join(outputFolder, 'video-0.avi'), fourCC='MJPG', fps=10),
+            '1': VideoWriter(os.path.join(outputFolder, 'video-1.avi'), fourCC='MJPG', fps=10),
+            '2': VideoWriter(os.path.join(outputFolder, 'video-2.avi'), fourCC='MJPG', fps=10),
+            '3': VideoWriter(os.path.join(outputFolder, 'video-3.avi'), fourCC='MJPG', fps=10)
+        }

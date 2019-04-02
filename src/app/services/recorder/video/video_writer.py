@@ -27,7 +27,3 @@ class VideoWriter(QObject):
         if self.__writer:
             self.__writer.release()
 
-
-    def setFilePath(self, filepath):
-        self.__filepath = filepath
-

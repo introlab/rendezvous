@@ -114,7 +114,7 @@ class ConferenceController(QObject):
         try:
             if not self.isRecording:
                 self.__recorder.changeAudioSettings(outputFolder=outputFolder, nChannels=4, nChannelFile=1, byteDepth=2, sampleRate=48000)
-                self.__recorder.changeVideoSettings(outputFolder=outputFolder)
+                self.__recorder.setOutputFolder(folderpath=outputFolder)
                 self.__recorder.mailbox.put(RecorderActions.NEW_RECORDING)
                 self.isRecording = True
                 self.signalRecordingState.emit(self.isRecording)
