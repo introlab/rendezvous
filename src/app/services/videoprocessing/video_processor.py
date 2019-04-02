@@ -1,6 +1,6 @@
 import queue
 import time
-import math
+from math import radians
 from multiprocessing import Queue
 from multiprocessing import Semaphore
 from threading import Thread
@@ -27,13 +27,16 @@ class VideoProcessor(QObject):
         self.semaphore = Semaphore()
         self.heartbeatQueue = Queue(1)
 
+
     def getCameraParams(self):
-        cameraParams = {}
-        cameraParams['fisheyeAngle'] = math.radians(self.cameraConfig['Image']['FisheyeAngle'])
-        cameraParams['baseDonutSlice'] = self.baseDonutSlice
-        cameraParams['dewarpingParameters'] = self.dewarpingParameters
+        cameraParams = {
+            'fisheyeAngle': radians(self.cameraConfig['Image']['FisheyeAngle']),
+            'baseDonutSlice': self.baseDonutSlice,
+            'dewarpingParameters': self.dewarpingParameters
+        }
 
         return cameraParams
+
 
     def start(self, cameraConfigPath):
         print("Starting video processor...")

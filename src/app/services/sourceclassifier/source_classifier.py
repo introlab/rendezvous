@@ -6,7 +6,8 @@ class SourceClassifier():
     def __init__(self, cameraParams, rangeThreshold):
         self.rangeThreshold = radians(rangeThreshold)
         self.cameraParams = cameraParams
-        self.humanSources = {}
+        self.__humanSources = {}
+
 
     def classifySources(self, virtualCameras, soundSources):
         for index, source in enumerate(soundSources):
@@ -16,17 +17,17 @@ class SourceClassifier():
                     xFace, yFace = virtualCamera.face.getPosition()
                     azimuthFace, elevationFace = SphericalAnglesConverter.getSphericalAnglesFromImage(xFace, yFace, self.cameraParams)
 
-                    if self.__inRange(azimuthFace, source['azimuth']):
-                        if self.__inRange(elevationFace, source['elevation']):
-                            self.humanSources[index] = source
+                    if self.__isInRange(azimuthFace, source['azimuth']) and self.__isInRange(elevationFace, source['elevation']):
+                            self.__humanSources[index] = source
+
 
     def getHumanSources(self):
-        return self.humanSources
+        return self.__humanSources
 
-    def __inRange(self, faceAngle, soundAngle):
+
+    def __isInRange(self, faceAngle, soundAngle):
         maxDetectionAngle = soundAngle + self.rangeThreshold
         minDetectionAngle = soundAngle - self.rangeThreshold
 
-        if faceAngle <= maxDetectionAngle and faceAngle >= minDetectionAngle:
-            return True
+        return faceAngle <= maxDetectionAngle and faceAngle >= minDetectionAngle
 

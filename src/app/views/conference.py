@@ -130,30 +130,14 @@ class Conference(QWidget, Ui_Conference):
     @pyqtSlot(object, object)
     def imageReceived(self, image, virtualCameras):
         if(self.soundSources):
-            cameraParams = self.videoProcessor.getCameraParams()
+            # range threshold in degrees
             rangeThreshold = 15
+            cameraParams = self.videoProcessor.getCameraParams()
             sourceClassifier = SourceClassifier(cameraParams, rangeThreshold)
             sourceClassifier.classifySources(virtualCameras, self.soundSources)
             self.__showHumanSources(sourceClassifier.getHumanSources())
         
         self.virtualCameraDisplayer.updateDisplay(image, virtualCameras)
-
-    def __showHumanSources(self, humanSources):
-        for index, source in enumerate(self.soundSources):
-            if index in humanSources:
-                self.__setSourceBackgroundColor(index, 'yellow')
-            else:
-                self.__setSourceBackgroundColor(index, 'transparent')
-
-    def __setSourceBackgroundColor(self, index, color):
-        if index == 0:
-            self.source1.setStyleSheet('background-color: %s' % color)
-        elif index == 1:
-            self.source2.setStyleSheet('background-color: %s' % color)
-        elif index == 2:
-            self.source3.setStyleSheet('background-color: %s' % color)
-        elif index == 3:
-            self.source4.setStyleSheet('background-color: %s' % color)
 
 
     @pyqtSlot(bool)
@@ -216,4 +200,23 @@ class Conference(QWidget, Ui_Conference):
             self.videoProcessor.stop()
             self.videoProcessor.signalFrameData.disconnect(self.imageReceived)
             self.virtualCameraDisplayer.clear()
+    
+
+    def __showHumanSources(self, humanSources):
+        for index, source in enumerate(self.soundSources):
+            if index in humanSources:
+                self.__setSourceBackgroundColor(index, 'yellow')
+            else:
+                self.__setSourceBackgroundColor(index, 'transparent')
+
+
+    def __setSourceBackgroundColor(self, index, color):
+        if index == 0:
+            self.source1.setStyleSheet('background-color: %s' % color)
+        elif index == 1:
+            self.source2.setStyleSheet('background-color: %s' % color)
+        elif index == 2:
+            self.source3.setStyleSheet('background-color: %s' % color)
+        elif index == 3:
+            self.source4.setStyleSheet('background-color: %s' % color)
 
