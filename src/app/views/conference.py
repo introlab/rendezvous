@@ -176,19 +176,6 @@ class Conference(QWidget, Ui_Conference):
             self.conferenceController.stopAudioRecording()
             self.conferenceController.stopOdasServer()
             event.accept()
-
-
-    def startVideoProcessor(self):
-        if self.videoProcessor and not self.videoProcessor.isRunning:
-            self.videoProcessor.signalFrameData.connect(self.imageReceived)
-            self.videoProcessor.start(self.window().getSetting('cameraConfigPath'))
-
-
-    def stopVideoProcessor(self):
-        if self.videoProcessor and self.videoProcessor.isRunning:
-            self.videoProcessor.stop()
-            self.videoProcessor.signalFrameData.disconnect(self.imageReceived)
-            self.virtualCameraDisplayer.clear()
     
 
     def showHumanSources(self, humanSources):
