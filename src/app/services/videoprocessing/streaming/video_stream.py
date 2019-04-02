@@ -45,7 +45,7 @@ class VideoStream:
         outputWidth = int(dewarpingParameters.dewarpWidth)
         outputHeight = int(dewarpingParameters.dewarpHeight)
 
-        if self.dewarper.initialize(self.config.imageWidth, self.config.imageHeight, outputWidth, outputHeight, channels, False) == -1:
+        if self.dewarper.initialize(self.config.imageWidth, self.config.imageHeight, outputWidth, outputHeight, channels, True) == -1:
             raise Exception('Error during c++ dewarping library initialization')
 
         self.printCameraSettings()

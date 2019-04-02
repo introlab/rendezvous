@@ -11,14 +11,14 @@
 
     "Image":
     {
-        "Width": 1280,
-        "Height": 720,
+        "Width": 2880,
+        "Height": 2160,
         "FisheyeAngle": 220
     },
 
     "Camera":
     {
-        "Port": 0,
+        "Port": 1,
         "FPS": 20,
         "Fourcc": "UYVY",
         "BufferSize": 2
