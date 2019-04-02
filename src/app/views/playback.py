@@ -6,11 +6,11 @@ from PyQt5.QtCore import pyqtSlot, QTimer
 from src.app.controllers.playback_controller import PlaybackController
 from src.app.gui.playback_ui import Ui_Playback
 
+
 class Playback(QWidget, Ui_Playback):
 
     rootDirectory = str(Path(__file__).resolve().parents[3])
     __positionResolution = 1000
-
 
     def __init__(self, parent=None):
         super(Playback, self).__init__(parent)
@@ -23,14 +23,12 @@ class Playback(QWidget, Ui_Playback):
         self.uiUpdateTimer = QTimer(self)
         self.uiUpdateTimer.setInterval(100)
 
-
         # Populate UI.
         self.volumeSlider.setMaximum(100)
         self.volumeSlider.setValue(50)
         self.volumeSlider.setToolTip('Audio Slider')
         self.volumeSlider.sliderMoved.connect(self.onVolume)
         self.mediaPositionSlider.setMaximum(self.__positionResolution)
-
 
         # Qt signal slots.
         self.mediaPositionSlider.sliderMoved.connect(self.onMediaPositionMoved)
@@ -41,6 +39,7 @@ class Playback(QWidget, Ui_Playback):
         self.importMediaBtn.clicked.connect(self.onImportMediaClicked)
         self.uiUpdateTimer.timeout.connect(self.onUiUpdateTimerTimeout)
         self.playbackController.mediaPlayerEndReached.connect(self.onMediaPlayerEndReached)
+
 
     def closeEvent(self, event):
         if event:
@@ -128,6 +127,7 @@ class Playback(QWidget, Ui_Playback):
                 self.playbackController.loadMediaFile(mediaPath, self.videoFrame.winId())
                 self.playbackController.setVolume(self.volumeSlider.value())
                 self.updatePlayingMediaName(self.playbackController.getPlayingMediaName())
+                
         except Exception as e:
             self.emitException(e)
             self.updatePlayingMediaName('No Media Playing')

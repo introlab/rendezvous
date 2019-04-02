@@ -68,7 +68,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             event.accept()
 
 
-    # Used by tab modules to tell the exception manager that anfrom PyQt5.QtCore import pyqtSlotption occured.    
+    # Used by tab modules to tell the exception manager that an exception occured.    
     def emitToExceptionsManager(self, exception):
         self.__exceptionsManager.signalException.emit(exception)
 
