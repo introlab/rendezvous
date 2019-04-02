@@ -9,6 +9,8 @@ from src.app.gui.playback_ui import Ui_Playback
 class Playback(QWidget, Ui_Playback):
 
     rootDirectory = str(Path(__file__).resolve().parents[3])
+    __positionResolution = 1000
+
 
     def __init__(self, parent=None):
         super(Playback, self).__init__(parent)
@@ -18,52 +20,69 @@ class Playback(QWidget, Ui_Playback):
         self.playbackController = PlaybackController(parent=self)
 
         # Timer to update the UI.
-        self.timer = QTimer(self)
-        self.timer.setInterval(100)
+        self.uiUpdateTimer = QTimer(self)
+        self.uiUpdateTimer.setInterval(100)
 
 
         # Populate UI.
         self.volumeSlider.setMaximum(100)
+        self.volumeSlider.setValue(50)
         self.volumeSlider.setToolTip('Audio Slider')
         self.volumeSlider.sliderMoved.connect(self.onVolume)
+        self.mediaPositionSlider.setMaximum(self.__positionResolution)
 
 
         # Qt signal slots.
-        self.mediaPositionSlider.sliderMoved.connect(self.onMediaPosition)
-        self.mediaPositionSlider.sliderPressed.connect(self.onMediaPosition)
+        self.mediaPositionSlider.sliderMoved.connect(self.onMediaPositionMoved)
+        self.mediaPositionSlider.sliderPressed.connect(self.onMediaPositionPressed)
+        self.mediaPositionSlider.sliderReleased.connect(self.onMediaPositionReleased)
         self.playPauseBtn.clicked.connect(self.onPlayPauseClicked)
         self.stopBtn.clicked.connect(self.onStopClicked)
         self.importMediaBtn.clicked.connect(self.onImportMediaClicked)
-        self.playbackController.exception.connect(self.onException)
-        self.timer.timeout.connect(self.updateUI)
-
+        self.uiUpdateTimer.timeout.connect(self.onUiUpdateTimerTimeout)
+        self.playbackController.mediaPlayerEndReached.connect(self.onMediaPlayerEndReached)
 
     def closeEvent(self, event):
         if event:
             event.accept()
 
 
-    def updateUI(self):
-        mediaPosition = int(self.playbackController.getPosition())
-        self.mediaPositionSlider.setValue(mediaPosition)
+    def emitException(self, e):
+        self.window().emitToExceptionsManager(e)
 
-        if not self.playbackController.isPlaying():
-            self.timer.stop()
 
-            if not self.playbackController.isPaused():
-                self.playbackController.stop()
-        
-        volume = self.playbackController.getVolume()
-        print(volume)
-        self.volumeSlider.setValue(volume)
+    def updatePlayingMediaName(self, name):
+        self.mediaPlaying.setText(name if name != None else 'No Media Playing')
 
 
     @pyqtSlot()
-    def onMediaPosition(self):
-        self.timer.stop()
-        position = self.timeSlider.value()
-        self.playbackController.setPosition(position)
-        self.timer.start()
+    def onUiUpdateTimerTimeout(self):
+        if not self.playbackController.isPlaying():
+            self.uiUpdateTimer.stop()
+
+            if not self.playbackController.isPaused():
+                self.playbackController.stop()
+                self.playPauseBtn.setText('Play')
+
+         # Update the value of the position slider.
+        mediaPosition = self.playbackController.getPosition()
+        mediaPosition = int(mediaPosition * self.__positionResolution) if mediaPosition != self.playbackController.errorCode else 0 
+        self.mediaPositionSlider.setValue(mediaPosition) 
+
+
+    @pyqtSlot(int)
+    def onMediaPositionMoved(self, value):
+        self.playbackController.setPosition(self.mediaPositionSlider.value() / float(self.__positionResolution))
+
+
+    @pyqtSlot()
+    def onMediaPositionPressed(self):
+        self.uiUpdateTimer.stop()
+
+
+    @pyqtSlot()
+    def onMediaPositionReleased(self):
+        self.uiUpdateTimer.start()
     
 
     @pyqtSlot(int)
@@ -73,18 +92,19 @@ class Playback(QWidget, Ui_Playback):
 
     @pyqtSlot()
     def onPlayPauseClicked(self):
-        if self.playbackController.isPlaying():
-            self.playbackController.pause()
-            self.playPauseBtn.setText('Play')
-            self.timer.stop()
-        else:
-            if self.mediaPlaying.text() == 'No Media Playing':
-                return
+        try:
+            if self.playbackController.isPlaying():
+                self.uiUpdateTimer.stop()
+                self.playbackController.pause()
+                self.playPauseBtn.setText('Play')
+            else:
+                self.uiUpdateTimer.start()
+                self.playbackController.play()
+                self.playPauseBtn.setText('Pause')
 
-            self.playbackController.play()
-            self.playPauseBtn.setText('Pause')
-            self.timer.start()
-
+        except Exception as e:
+            self.emitException(e)
+    
     
     @pyqtSlot()
     def onStopClicked(self):
@@ -93,21 +113,22 @@ class Playback(QWidget, Ui_Playback):
 
 
     @pyqtSlot()
+    def onMediaPlayerEndReached(self):
+        self.mediaPositionSlider.setValue(self.mediaPositionSlider.maximum())
+
+
+    @pyqtSlot()
     def onImportMediaClicked(self):
         try:
             mediaPath, _ = QFileDialog.getOpenFileName(parent=self, 
-                                                        caption='Import Media File', 
-                                                        directory=self.window().rootDirectory,
-                                                        options=QFileDialog.DontUseNativeDialog)
+                                                       caption='Import Media File', 
+                                                       directory=self.window().rootDirectory,
+                                                       options=QFileDialog.DontUseNativeDialog)
             if mediaPath:
                 self.playbackController.loadMediaFile(mediaPath, self.videoFrame.winId())
-                self.mediaPlaying.setText(self.playbackController.getPlayingMediaName())
+                self.playbackController.setVolume(self.volumeSlider.value())
+                self.updatePlayingMediaName(self.playbackController.getPlayingMediaName())
         except Exception as e:
-            self.window().emitToExceptionsManager(e)
-            self.mediaPath.setText('No Media Playing')
-
-
-    @pyqtSlot(Exception)
-    def onException(self, e):
-        self.window().emitToExceptionsManager(e)
+            self.emitException(e)
+            self.updatePlayingMediaName('No Media Playing')
 

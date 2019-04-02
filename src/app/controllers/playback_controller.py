@@ -1,34 +1,33 @@
 import platform
 import os
 
-from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import QObject, pyqtSignal
 
 import vlc
 
 
 class PlaybackController(QObject):  
 
-    exception = pyqtSignal(Exception)
+    mediaPlayerEndReached = pyqtSignal()
+    errorCode = -1
+    __isPaused = False
+    __media = None
 
     def __init__(self, parent=None):
         super(PlaybackController, self).__init__(parent)
 
         self.__instance = vlc.Instance('-q --no-xlib')
-
-        self.__media = None
-
         self.__mediaPlayer = self.__instance.media_player_new()
 
-        self.__isPaused = False
+        # self.events = self.__mediaPlayer.event_manager()
+        self.__mediaPlayer.event_manager().event_attach(vlc.EventType.MediaPlayerEndReached, self.onEventManage)
 
 
     def play(self):
-        try:
-            self.__mediaPlayer.play()
+        if self.__mediaPlayer.play() == self.errorCode:
+            raise Exception('Failed to play media {}'.format(self.__media))
+        else:
             self.__isPaused = False
-        
-        except Exception as e:
-            self.onException(e)
 
 
     def isPlaying(self):
@@ -36,12 +35,9 @@ class PlaybackController(QObject):
 
 
     def pause(self):
-        try:
+        if self.isPlaying():
             self.__mediaPlayer.pause()
             self.__isPaused = True
-
-        except Exception as e:
-            self.onException(e)
 
 
     def isPaused(self):
@@ -49,19 +45,12 @@ class PlaybackController(QObject):
 
 
     def stop(self):
-        try:
-            self.__mediaPlayer.stop()
-
-        except Exception as e:
-            self.onException(e)
+        self.__mediaPlayer.stop()
 
 
     def setVolume(self, volume):
-        try:
+        if self.__mediaPlayer.get_media() != None:
             self.__mediaPlayer.audio_set_volume(volume)
-
-        except Exception as e:
-            self.onException(e)
 
 
     def getVolume(self):
@@ -69,15 +58,12 @@ class PlaybackController(QObject):
  
 
     def setPosition(self, position):
-        try:
-            self.__mediaPlayer.set_position(position / 1000.0)
-
-        except Exception as e:
-            self.onException(e)            
+        if self.__mediaPlayer.get_media() != None:
+            self.__mediaPlayer.set_position(position)       
 
 
     def getPosition(self):
-        return self.__mediaPlayer.get_position() * 1000
+        return self.__mediaPlayer.get_position()    
 
 
     def getPlayingMediaName(self):
@@ -85,24 +71,23 @@ class PlaybackController(QObject):
 
 
     def loadMediaFile(self, file, winId):
-        try:
-            if not os.path.exists(file):
-                raise Exception('No media file found at : {}'.format(file))
+        if not os.path.exists(file):
+            raise Exception('No media file found at : {}'.format(file))
 
-            self.__media = self.__instance.media_new(file)
-            self.__mediaPlayer.set_media(self.__media)  
-            self.__media.parse()
+        self.__media = self.__instance.media_new(file)
+        if self.__media == None:
+            raise Exception('Media file {} can\'t be loaded'.format(file))
+        self.__media.parse()
 
-            if platform.system() == "Linux": # for Linux using the X Server
-                self.__mediaPlayer.set_xwindow(int(winId))
-            elif platform.system() == "Windows": # for Windows
-                self.__mediaPlayer.set_hwnd(int(winId))
-            elif platform.system() == "Darwin": # for MacOS
-                self.__mediaPlayer.set_nsobject(int(winId))
+        self.__mediaPlayer.set_media(self.__media)  
 
-        except Exception as e:
-            self.onException(e)
+        if platform.system() == "Linux":
+            self.__mediaPlayer.set_xwindow(int(winId))
+        else:
+            raise Exception('Playback is not supported on this operating system')
 
-    def onException(self, e):
-        self.exception.emit(e)
+
+    def onEventManage(self, event):
+        if event.type == vlc.EventType.MediaPlayerEndReached:
+            self.mediaPlayerEndReached.emit()
 
