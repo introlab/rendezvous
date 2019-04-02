@@ -1,13 +1,15 @@
 import math
 
 from src.utils.rect import Rect
-
+from .face import Face
 
 class VirtualCamera(Rect):
 
-    def __init__(self, xPos, yPos, width, height):
+    def __init__(self, face, xPos, yPos, width, height):
         super().__init__(xPos, yPos, width, height)
+
         self.timeToLive = 5
+        self.face = face
 
         # New position and size to move to every frame (is updated when a new face is associated with this vc) 
         self.positionGoal = xPos, yPos
@@ -16,7 +18,7 @@ class VirtualCamera(Rect):
 
     @staticmethod
     def copy(vc):
-        virtualCamera = VirtualCamera(vc.xPos, vc.yPos, vc.width, vc.height)
+        virtualCamera = VirtualCamera(Face.copy(vc.face), vc.xPos, vc.yPos, vc.width, vc.height)
         virtualCamera.timeToLive = vc.timeToLive
         return virtualCamera
 
@@ -24,7 +26,7 @@ class VirtualCamera(Rect):
     @staticmethod
     def createFromFace(face):
         faceX, faceY = face.getPosition()
-        return VirtualCamera(faceX, faceY, face.width, face.height)
+        return VirtualCamera(face, faceX, faceY, face.width, face.height)
 
 
     def isAlive(self):
