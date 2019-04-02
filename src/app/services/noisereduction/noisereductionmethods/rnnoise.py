@@ -12,12 +12,13 @@ class RNNoise(object):
         self._native.rnnoise_create.restype = c_void_p
         self._handle = self._native.rnnoise_create()
         self._buf = (c_float * self.frame_size)()
+        self._frameSize = 480
 
     @property
-    def frame_size(self):
-        return 480
+    def getFrameSize(self):
+        return self._frameSize
 
-    def process_frame(self, samples):
+    def processFrame(self, samples):
         if len(samples) > self.frame_size:
             raise ValueError
         for i in range(len(samples)):
