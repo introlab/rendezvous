@@ -1,4 +1,5 @@
 from enum import Enum, unique
+from math import degrees
 
 from PyQt5.QtWidgets import QWidget, QFileDialog, QApplication
 from PyQt5.QtCore import pyqtSlot
@@ -50,6 +51,7 @@ class Conference(QWidget, Ui_Conference):
         self.conferenceController.signalRecordingState.connect(self.recordingStateChanged)
         self.conferenceController.signalVideoProcessorState.connect(self.videoProcessorStateChanged)
         self.conferenceController.signalVirtualCamerasReceived.connect(self.updateVirtualCamerasDispay)
+        self.conferenceController.signalHumanSourcesDetected.connect(self.showHumanSources)
         self.conferenceController.signalException.connect(self.exceptionReceived)
 
 
@@ -109,18 +111,21 @@ class Conference(QWidget, Ui_Conference):
 
     @pyqtSlot(object)
     def positionDataReceived(self, values):
-        self.source1AzimuthValueLabel.setText('%.5f' % values[0]['azimuth'])
-        self.source2AzimuthValueLabel.setText('%.5f' % values[1]['azimuth'])
-        self.source3AzimuthValueLabel.setText('%.5f' % values[2]['azimuth'])
-        self.source4AzimuthValueLabel.setText('%.5f' % values[3]['azimuth'])
 
-        self.source1ElevationValueLabel.setText('%.5f' % values[0]['elevation'])
-        self.source2ElevationValueLabel.setText('%.5f' % values[1]['elevation'])
-        self.source3ElevationValueLabel.setText('%.5f' % values[2]['elevation'])
-        self.source4ElevationValueLabel.setText('%.5f' % values[3]['elevation'])
+        self.source1AzimuthValueLabel.setText('%.5f' % degrees(values[0]['azimuth']))
+        self.source2AzimuthValueLabel.setText('%.5f' % degrees(values[1]['azimuth']))
+        self.source3AzimuthValueLabel.setText('%.5f' % degrees(values[2]['azimuth']))
+        self.source4AzimuthValueLabel.setText('%.5f' % degrees(values[3]['azimuth']))
+
+        self.source1ElevationValueLabel.setText('%.5f' % degrees(values[0]['elevation']))
+        self.source2ElevationValueLabel.setText('%.5f' % degrees(values[1]['elevation']))
+        self.source3ElevationValueLabel.setText('%.5f' % degrees(values[2]['elevation']))
+        self.source4ElevationValueLabel.setText('%.5f' % degrees(values[3]['elevation']))
+
+        self.soundSources = values
 
 
-    @pyqtSlot(object, object)
+    @pyqtSlot(object, object)        
     def updateVirtualCamerasDispay(self, image, virtualCameras):
         self.virtualCameraDisplayer.updateDisplay(image, virtualCameras)
 
@@ -171,4 +176,23 @@ class Conference(QWidget, Ui_Conference):
             self.conferenceController.stopAudioRecording()
             self.conferenceController.stopOdasServer()
             event.accept()
+    
+
+    def showHumanSources(self, humanSources):
+        for index, source in enumerate(self.soundSources):
+            if index in humanSources:
+                self.__setSourceBackgroundColor(index, 'yellow')
+            else:
+                self.__setSourceBackgroundColor(index, 'transparent')
+
+
+    def __setSourceBackgroundColor(self, index, color):
+        if index == 0:
+            self.source1.setStyleSheet('background-color: %s' % color)
+        elif index == 1:
+            self.source2.setStyleSheet('background-color: %s' % color)
+        elif index == 2:
+            self.source3.setStyleSheet('background-color: %s' % color)
+        elif index == 3:
+            self.source4.setStyleSheet('background-color: %s' % color)
 

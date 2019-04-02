@@ -1,5 +1,6 @@
 import queue
 import time
+from math import radians
 from multiprocessing import Queue
 from multiprocessing import Semaphore
 from threading import Thread
@@ -27,6 +28,16 @@ class VideoProcessor(QObject):
         self.facesQueue = Queue()
         self.semaphore = Semaphore()
         self.heartbeatQueue = Queue(1)
+
+
+    def getCameraParams(self):
+        cameraParams = {
+            'fisheyeAngle': radians(self.cameraConfig['Image']['FisheyeAngle']),
+            'baseDonutSlice': self.baseDonutSlice,
+            'dewarpingParameters': self.dewarpingParameters
+        }
+
+        return cameraParams
 
 
     def start(self, cameraConfigPath, faceDetectionMethod):
@@ -58,9 +69,12 @@ class VideoProcessor(QObject):
 
         try:
 
-            cameraConfig = FileHelper.readJsonFile(cameraConfigPath)
-            videoStream = VideoStream(cameraConfig)
+            self.cameraConfig = FileHelper.readJsonFile(cameraConfigPath)
+            videoStream = VideoStream(self.cameraConfig)
             videoStream.initializeStream()
+
+            self.baseDonutSlice = videoStream.getBaseDonutSlice()
+            self.dewarpingParameters = videoStream.getDewarpingParameters()
 
             faceDetection = FaceDetection(faceDetectionMethod, self.imageQueue, self.facesQueue, self.heartbeatQueue, self.semaphore)
             faceDetection.start()
@@ -134,3 +148,4 @@ class VideoProcessor(QObject):
                 queue.get_nowait()
         except:
             pass
+
