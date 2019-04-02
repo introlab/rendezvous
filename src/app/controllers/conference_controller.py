@@ -2,6 +2,8 @@ from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 
 from src.app.services.odas.odas import Odas
 from src.app.services.recorder.audio.audio_writer import AudioWriter, WriterActions
+from src.app.services.videoprocessing.video_processor import VideoProcessor
+
 
 class ConferenceController(QObject):
 
@@ -9,6 +11,8 @@ class ConferenceController(QObject):
     signalAudioPositions = pyqtSignal(object)
     signalOdasState = pyqtSignal(bool)
     signalRecordingState = pyqtSignal(bool)
+    signalVideoProcessorState = pyqtSignal(bool)
+    signalVirtualCamerasReceived = pyqtSignal(object, object)
 
     def __init__(self, parent=None):
         super(ConferenceController, self).__init__(parent)
@@ -25,15 +29,24 @@ class ConferenceController(QObject):
         self.__audioWriter.signalException.connect(self.audioWriterExceptionHandling)
         self.__odas.signalException.connect(self.odasExceptionHandling)
         
-
         self.__odas.signalAudioData.connect(self.audioDataReceived)
         self.__odas.signalPositionData.connect(self.positionDataReceived)
         self.__odas.signalClientsConnected.connect(self.odasClientConnected)
+
+        self.__videoProcessor = VideoProcessor()
+        self.__videoProcessor.signalException.connect(self.videoProcessorExceptionHandling)
+        self.__videoProcessor.signalFrameData.connect(self.virtualCamerasReceived)
+        self.__videoProcessor.signalStateChanged.connect(self.videoProcessorStateChanged)
 
 
     @pyqtSlot(bool)
     def odasClientConnected(self, isConnected):
         self.signalOdasState.emit(isConnected)
+
+
+    @pyqtSlot(bool)
+    def videoProcessorStateChanged(self, state):
+        self.signalVideoProcessorState.emit(state)
 
 
     @pyqtSlot(bytes)
@@ -45,6 +58,11 @@ class ConferenceController(QObject):
     @pyqtSlot(object)
     def positionDataReceived(self, positions):
         self.signalAudioPositions.emit(positions)
+
+
+    @pyqtSlot(object, object)
+    def virtualCamerasReceived(self, image, virtualCameras):
+        self.signalVirtualCamerasReceived.emit(image, virtualCameras)
 
 
     @pyqtSlot(Exception)
@@ -60,6 +78,12 @@ class ConferenceController(QObject):
     def audioWriterExceptionHandling(self, e):
         self.__isRecording = False
         self.signalRecordingState.emit(self.__isRecording)
+        self.signalException.emit(e)
+
+        
+    @pyqtSlot(Exception)
+    def videoProcessorExceptionHandling(self, e):
+        self.stopVideoProcessor()
         self.signalException.emit(e)
 
 
@@ -101,4 +125,15 @@ class ConferenceController(QObject):
             self.__isRecording = False
             self.__audioWriter.stop()
             self.signalRecordingState.emit(self.__isRecording)
+
+
+    def startVideoProcessor(self, cameraConfigPath, faceDetection):
+        if self.__videoProcessor and not self.__videoProcessor.isRunning:
+            self.__videoProcessor.start(cameraConfigPath, faceDetection)
+
+
+    def stopVideoProcessor(self):
+        if self.__videoProcessor and self.__videoProcessor.isRunning:
+            self.__videoProcessor.stop()
+
 

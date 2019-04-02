@@ -6,7 +6,6 @@ from PyQt5.QtCore import pyqtSlot
 from src.app.gui.conference_ui import Ui_Conference
 from src.app.controllers.conference_controller import ConferenceController
 
-from src.app.services.videoprocessing.video_processor import VideoProcessor
 from src.app.services.videoprocessing.virtualcamera.virtual_camera_displayer import VirtualCameraDisplayer
 
 
@@ -22,6 +21,12 @@ class BtnOdasLabels(Enum):
     STOP_ODAS = 'Stop ODAS'
 
 
+@unique
+class BtnVideoLabels(Enum):
+    START_VIDEO = 'Start Video'
+    STOP_VIDEO = 'Stop Video'
+
+
 class Conference(QWidget, Ui_Conference):
 
     def __init__(self, parent=None):
@@ -30,7 +35,6 @@ class Conference(QWidget, Ui_Conference):
         self.conferenceController = ConferenceController()
         self.outputFolder.setText(self.window().getSetting('outputFolder'))
 
-        self.videoProcessor = VideoProcessor()
         self.virtualCameraDisplayer = VirtualCameraDisplayer(self.virtualCameraFrame)
 
         self.btnStartStopAudioRecord.setDisabled(True)
@@ -44,9 +48,9 @@ class Conference(QWidget, Ui_Conference):
         self.conferenceController.signalAudioPositions.connect(self.positionDataReceived)
         self.conferenceController.signalOdasState.connect(self.odasStateChanged)
         self.conferenceController.signalRecordingState.connect(self.recordingStateChanged)
+        self.conferenceController.signalVideoProcessorState.connect(self.videoProcessorStateChanged)
+        self.conferenceController.signalVirtualCamerasReceived.connect(self.updateVirtualCamerasDispay)
         self.conferenceController.signalException.connect(self.exceptionReceived)
-        
-        self.videoProcessor.signalException.connect(self.videoExceptionHandling)
 
 
     @pyqtSlot()
@@ -80,15 +84,12 @@ class Conference(QWidget, Ui_Conference):
     @pyqtSlot()
     def btnStartStopVideoClicked(self):
         self.btnStartStopVideo.setDisabled(True)
+        QApplication.processEvents()
 
-        if not self.videoProcessor.isRunning:
-            self.btnStartStopVideo.setText('Stop Video')
-            self.startVideoProcessor()
+        if self.btnStartStopVideo.text() == BtnVideoLabels.START_VIDEO.value:
+            self.conferenceController.startVideoProcessor(self.window().getSetting('cameraConfigPath'), self.window().getSetting('faceDetection'))
         else:
-            self.stopVideoProcessor()
-            self.btnStartStopVideo.setText('Start Video')
-        
-        self.btnStartStopVideo.setDisabled(False)
+            self.conferenceController.stopVideoProcessor()
 
 
     @pyqtSlot()
@@ -120,7 +121,7 @@ class Conference(QWidget, Ui_Conference):
 
 
     @pyqtSlot(object, object)
-    def imageReceived(self, image, virtualCameras):
+    def updateVirtualCamerasDispay(self, image, virtualCameras):
         self.virtualCameraDisplayer.updateDisplay(image, virtualCameras)
 
 
@@ -147,41 +148,27 @@ class Conference(QWidget, Ui_Conference):
 
         self.btnStartStopOdas.setDisabled(False)
 
+    
+    @pyqtSlot(bool)
+    def videoProcessorStateChanged(self, isRunning):
+        if isRunning:
+            self.btnStartStopVideo.setText(BtnVideoLabels.STOP_VIDEO.value)
+        else:
+            self.btnStartStopVideo.setText(BtnVideoLabels.START_VIDEO.value)
+
+        self.btnStartStopVideo.setDisabled(False)
+
 
     @pyqtSlot(Exception)
     def exceptionReceived(self, e):
         self.window().emitToExceptionsManager(e)
 
 
-    @pyqtSlot(Exception)
-    def videoExceptionHandling(self, e):
-        self.window().emitToExceptionsManager(e)
-
-        # We make sure the thread is stopped
-        self.stopVideoProcessor()
-
-        self.btnStartStopVideo.setText('Start Video')      
-        self.btnStartStopVideo.setDisabled(False)
-
-
     # Handles the event where the user closes the window with the X button
     def closeEvent(self, event):
         if event:
-            self.stopVideoProcessor()
+            self.conferenceController.stopVideoProcessor()
             self.conferenceController.stopAudioRecording()
             self.conferenceController.stopOdasServer()
             event.accept()
-
-
-    def startVideoProcessor(self):
-        if self.videoProcessor and not self.videoProcessor.isRunning:
-            self.videoProcessor.signalFrameData.connect(self.imageReceived)
-            self.videoProcessor.start(self.window().getSetting('cameraConfigPath'))
-
-
-    def stopVideoProcessor(self):
-        if self.videoProcessor and self.videoProcessor.isRunning:
-            self.videoProcessor.stop()
-            self.videoProcessor.signalFrameData.disconnect(self.imageReceived)
-            self.virtualCameraDisplayer.clear()
 
