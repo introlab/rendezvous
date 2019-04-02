@@ -67,6 +67,9 @@ class ConferenceController(QObject):
     def virtualCamerasReceived(self, image, virtualCameras):
         self.signalVirtualCamerasReceived.emit(image, virtualCameras)
 
+        if self.isRecording and self.__recorder and self.__recorder.mailbox:
+            self.__recorder.mailbox.put(('video', '0', image))
+
 
     @pyqtSlot(Exception)
     def odasExceptionHandling(self, e):

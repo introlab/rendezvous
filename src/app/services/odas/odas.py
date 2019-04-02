@@ -68,7 +68,7 @@ class Odas(QObject, Thread):
                             worker.start()
                             self.__workers.append(worker)
 
-                            worker = self.__initWorker(clientAudio, 1024)
+                            worker = self.__initWorker(clientAudio, 3072)
                             worker.start()
                             self.__workers.append(worker)
 

@@ -24,14 +24,15 @@ class Recorder(QObject, Thread):
 
         self.__audioWriter = AudioWriter()
         self.__videoSources = {
-            '0': VideoWriter(os.path.join(outputFolder, 'video-0.avi'), fourCC='MJPG', fps=20),
-            '1': VideoWriter(os.path.join(outputFolder, 'video-1.avi'), fourCC='MJPG', fps=20),
-            '2': VideoWriter(os.path.join(outputFolder, 'video-2.avi'), fourCC='MJPG', fps=20),
-            '3': VideoWriter(os.path.join(outputFolder, 'video-3.avi'), fourCC='MJPG', fps=20)
+            '0': VideoWriter(os.path.join(outputFolder, 'video-0.avi'), fourCC='MJPG', fps=10),
+            '1': VideoWriter(os.path.join(outputFolder, 'video-1.avi'), fourCC='MJPG', fps=10),
+            '2': VideoWriter(os.path.join(outputFolder, 'video-2.avi'), fourCC='MJPG', fps=10),
+            '3': VideoWriter(os.path.join(outputFolder, 'video-3.avi'), fourCC='MJPG', fps=10)
         }
         self.mailbox = queue.Queue()
         self.isRunning = False
         self.isRecording = False
+        self.outputFolder = outputFolder
 
     
     def stop(self):
@@ -65,8 +66,8 @@ class Recorder(QObject, Thread):
                                 self.__videoSources[sourceIndex].write(data[2])
 
                             else:
-                                fileFullPath = os.path.join(outputFolder, 'video-{}.avi'.format(str(sourceIndex)))
-                                self.__videoSources[sourceIndex] = VideoWriter(fileFullPath, fourCC='MJPG', fps=20)
+                                fileFullPath = os.path.join(self.outputFolder, 'video-{}.avi'.format(str(sourceIndex)))
+                                self.__videoSources[sourceIndex] = VideoWriter(fileFullPath, fourCC='MJPG', fps=10)
                                 self.__videoSources[sourceIndex].write(data[2])
 
                         else:
@@ -74,6 +75,8 @@ class Recorder(QObject, Thread):
 
                     elif data == RecorderActions.SAVE_FILES:
                         self.__audioWriter.close()
+                        for _, writer in self.__videoSources.items():
+                            writer.close()
 
                     elif data == RecorderActions.NEW_RECORDING:
                         self.__audioWriter.createNewFiles()
