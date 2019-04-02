@@ -5,10 +5,10 @@ from PyQt5.QtWidgets import QWidget, QFileDialog
 from PyQt5.QtCore import pyqtSlot
 
 from src.app.gui.change_settings_ui import Ui_ChangeSettings
+from src.app.services.videoprocessing.facedetection.facedetector.face_detection_methods import FaceDetectionMethods
 
 
 class ChangeSettings(QWidget, Ui_ChangeSettings):
-
 
     def __init__(self, parent=None):
         super(ChangeSettings, self).__init__(parent)
@@ -21,6 +21,7 @@ class ChangeSettings(QWidget, Ui_ChangeSettings):
         self.btnBrowseMicConfig.clicked.connect(self.btnBrowseMicConfigClicked)
         self.btnBrowseOdas.clicked.connect(self.btnBrowseOdasClicked)
         self.btnBrowseDefaultOutputFolder.clicked.connect(self.btnBrowseDefaultOutputFolderClicked)
+        self.cbFaceDetection.currentIndexChanged.connect(self.cbFaceDetectionIndexChanged)
 
 
     # Handles the event where the user closes the window with the X button
@@ -79,10 +80,19 @@ class ChangeSettings(QWidget, Ui_ChangeSettings):
             self.window().setSetting('defaultOutputFolder', defaultOutputFolder)
 
 
+    @pyqtSlot()
+    def cbFaceDetectionIndexChanged(self):
+        self.window().setSetting('faceDetection', self.cbFaceDetection.currentText())
+
+
     def __loadSettings(self, parent):
         self.cameraConfigPath.setText(parent.getSetting('cameraConfigPath'))
         self.serviceAccountPath.setText(parent.getSetting('serviceAccountPath'))
         self.micConfigPath.setText(parent.getSetting('micConfigPath'))
         self.odasPath.setText(parent.getSetting('odasPath'))
         self.defaultOutputFolder.setText(parent.getSetting('defaultOutputFolder'))
+
+        self.cbFaceDetection.addItems([faceDetectionMethod.value for faceDetectionMethod in FaceDetectionMethods])
+        self.cbFaceDetection.setCurrentIndex(self.cbFaceDetection.findText(parent.getSetting('faceDetection')))
+        
         

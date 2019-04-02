@@ -7,14 +7,16 @@ from threading import Thread
 from PyQt5.QtCore import QObject, pyqtSignal
 
 from .streaming.video_stream import VideoStream
-from .facedetection.face_detection import FaceDetection
 from .virtualcamera.virtual_camera_manager import VirtualCameraManager
 from src.utils.file_helper import FileHelper
+from .facedetection.face_detection import FaceDetection
+from .facedetection.facedetector.face_detection_methods import FaceDetectionMethods
 
 
 class VideoProcessor(QObject):
 
     signalFrameData = pyqtSignal(object, object)
+    signalStateChanged = pyqtSignal(bool)
     signalException = pyqtSignal(Exception)
 
     def __init__(self, parent=None):
@@ -27,7 +29,7 @@ class VideoProcessor(QObject):
         self.heartbeatQueue = Queue(1)
 
 
-    def start(self, cameraConfigPath):
+    def start(self, cameraConfigPath, faceDetectionMethod):
         print("Starting video processor...")
 
         try:
@@ -35,13 +37,13 @@ class VideoProcessor(QObject):
             if not cameraConfigPath:
                 raise Exception('cameraConfigPath needs to be set in the settings')
 
-            Thread(target=self.run, args=(cameraConfigPath,)).start()
+            if not faceDetectionMethod in [fdMethod.value for fdMethod in FaceDetectionMethods]:
+                raise Exception('{} is not a supported face detection method'.format(self.faceDetectionMethod))
 
-            self.isRunning = True
+            Thread(target=self.run, args=(cameraConfigPath, faceDetectionMethod)).start()
 
         except Exception as e:
             
-            self.isRunning = False
             self.signalException.emit(e)
 
 
@@ -49,7 +51,7 @@ class VideoProcessor(QObject):
          self.isRunning = False
 
 
-    def run(self, cameraConfigPath):
+    def run(self, cameraConfigPath, faceDetectionMethod):
 
         videoStream = None
         faceDetection = None
@@ -60,11 +62,14 @@ class VideoProcessor(QObject):
             videoStream = VideoStream(cameraConfig)
             videoStream.initializeStream()
 
-            faceDetection = FaceDetection(self.imageQueue, self.facesQueue, self.heartbeatQueue, self.semaphore)
+            faceDetection = FaceDetection(faceDetectionMethod, self.imageQueue, self.facesQueue, self.heartbeatQueue, self.semaphore)
             faceDetection.start()
 
             print('Video processor started')
 
+            self.isRunning = True
+            self.signalStateChanged.emit(True)
+            
             prevTime = time.perf_counter()
             while self.isRunning:
 
@@ -99,8 +104,6 @@ class VideoProcessor(QObject):
                 prevTime = currentTime
                 
         except Exception as e:
-
-            self.isRunning = False
             self.signalException.emit(e)
 
         finally:
@@ -118,6 +121,8 @@ class VideoProcessor(QObject):
             if videoStream:
                 videoStream.destroy()
                 videoStream = None
+
+            self.signalStateChanged.emit(False)
 
         print('Video stream terminated')
 
