@@ -40,7 +40,7 @@ class VideoProcessor(QObject):
         return cameraParams
 
 
-    def start(self, cameraConfigPath):
+    def start(self, cameraConfigPath, faceDetectionMethod):
         print("Starting video processor...")
 
         try:

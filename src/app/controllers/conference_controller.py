@@ -3,6 +3,7 @@ from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 from src.app.services.odas.odas import Odas
 from src.app.services.recorder.audio.audio_writer import AudioWriter, WriterActions
 from src.app.services.videoprocessing.video_processor import VideoProcessor
+from src.app.services.sourceclassifier.source_classifier import SourceClassifier
 
 
 class ConferenceController(QObject):
@@ -13,6 +14,7 @@ class ConferenceController(QObject):
     signalRecordingState = pyqtSignal(bool)
     signalVideoProcessorState = pyqtSignal(bool)
     signalVirtualCamerasReceived = pyqtSignal(object, object)
+    signalHumanSourcesDetected = pyqtSignal(object)
 
     def __init__(self, parent=None):
         super(ConferenceController, self).__init__(parent)
@@ -38,6 +40,8 @@ class ConferenceController(QObject):
         self.__videoProcessor.signalFrameData.connect(self.virtualCamerasReceived)
         self.__videoProcessor.signalStateChanged.connect(self.videoProcessorStateChanged)
 
+        self.__positions = {}
+
 
     @pyqtSlot(bool)
     def odasClientConnected(self, isConnected):
@@ -57,11 +61,20 @@ class ConferenceController(QObject):
 
     @pyqtSlot(object)
     def positionDataReceived(self, positions):
+        self.__positions = positions
         self.signalAudioPositions.emit(positions)
 
 
     @pyqtSlot(object, object)
     def virtualCamerasReceived(self, image, virtualCameras):
+        if(self.__positions):
+            # range threshold in degrees
+            rangeThreshold = 15
+            cameraParams = self.__videoProcessor.getCameraParams()
+            sourceClassifier = SourceClassifier(cameraParams, rangeThreshold)
+            sourceClassifier.classifySources(virtualCameras, self.__positions)
+            self.signalHumanSourcesDetected.emit(sourceClassifier.humanSources)
+
         self.signalVirtualCamerasReceived.emit(image, virtualCameras)
 
 

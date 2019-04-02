@@ -8,8 +8,6 @@ from src.app.gui.conference_ui import Ui_Conference
 from src.app.controllers.conference_controller import ConferenceController
 
 from src.app.services.videoprocessing.virtualcamera.virtual_camera_displayer import VirtualCameraDisplayer
-from src.app.services.sourceclassifier.source_classifier import SourceClassifier
-from src.utils.spherical_angles_converter import SphericalAnglesConverter
 
 
 @unique
@@ -53,9 +51,8 @@ class Conference(QWidget, Ui_Conference):
         self.conferenceController.signalRecordingState.connect(self.recordingStateChanged)
         self.conferenceController.signalVideoProcessorState.connect(self.videoProcessorStateChanged)
         self.conferenceController.signalVirtualCamerasReceived.connect(self.updateVirtualCamerasDispay)
+        self.conferenceController.signalHumanSourcesDetected.connect(self.showHumanSources)
         self.conferenceController.signalException.connect(self.exceptionReceived)
-
-        self.soundSources = {}
 
 
     @pyqtSlot()
@@ -130,13 +127,6 @@ class Conference(QWidget, Ui_Conference):
 
     @pyqtSlot(object, object)        
     def updateVirtualCamerasDispay(self, image, virtualCameras):
-        if(self.soundSources):
-            # range threshold in degrees
-            rangeThreshold = 15
-            cameraParams = self.videoProcessor.getCameraParams()
-            sourceClassifier = SourceClassifier(cameraParams, rangeThreshold)
-            sourceClassifier.classifySources(virtualCameras, self.soundSources)
-            self.__showHumanSources(sourceClassifier.getHumanSources())
         self.virtualCameraDisplayer.updateDisplay(image, virtualCameras)
 
 
@@ -201,7 +191,7 @@ class Conference(QWidget, Ui_Conference):
             self.virtualCameraDisplayer.clear()
     
 
-    def __showHumanSources(self, humanSources):
+    def showHumanSources(self, humanSources):
         for index, source in enumerate(self.soundSources):
             if index in humanSources:
                 self.__setSourceBackgroundColor(index, 'yellow')
