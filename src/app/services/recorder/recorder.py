@@ -90,7 +90,7 @@ class Recorder(QObject, Thread):
 
     def setOutputFolder(self, folderpath):
         if not folderpath or not os.path.exists(folderpath):
-            self.signalException(Exception("folder's path does not exists."))
+            self.signalException.emit(Exception("folder's path does not exists."))
 
         self.__outputFolder = folderpath
 
