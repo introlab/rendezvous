@@ -1,5 +1,4 @@
 import os
-import time
 from pathlib import Path
 
 from pydarknet import Detector, Image
@@ -18,22 +17,16 @@ class YoloFaceDetector(IFaceDetector):
         self.data = os.path.join(rootDirectory, "config/yolo/cfg/azface.data")
         self.net = Detector(bytes(self.cfg, encoding="utf-8"), bytes(self.weights, encoding="utf-8"), 0,
                             bytes(self.data, encoding="utf-8"))
-        self.probabilityThreshold = 0.25
+        self.probabilityThreshold = 0.35
 
 
     def detectFaces(self, image):
-        startTime = time.time()
-
         darkFrame = Image(image)
         results = self.net.detect(darkFrame)
         del darkFrame
 
-        endTime = time.time()
-        print("Elapsed Time:", endTime - startTime)
-
         faces = []
         for cat, score, bounds in results:
-            print(cat, score, bounds)
             if score > self.probabilityThreshold:
                 x, y, w, h = bounds
                 faces.append(Face(x, y, w, h))
