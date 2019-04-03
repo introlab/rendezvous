@@ -56,4 +56,56 @@ class SphericalAnglesConverter:
 
         return azimuth, elevation
 
+
+    @staticmethod
+    def getElevationFromImage(xPixel, yPixel, fisheyeAngle, fisheyeCenter, dewarpingParameters):
+        xSourcePixel, ySourcePixel = DewarpingHelper.getSourcePixelFromDewarpedImage(xPixel, yPixel, dewarpingParameters)
+
+        if fisheyeAngle > 2 * np.pi:
+            raise Exception("Fisheye angle must be in radian!")
+
+        xCenter = fisheyeCenter[0]
+        yCenter = fisheyeCenter[1]
+
+        dx = xSourcePixel - xCenter
+        dy = ySourcePixel - yCenter
+        distanceFromCenter = np.sqrt(dx**2 + dy**2)
+        distanceFromBorder = xCenter - distanceFromCenter
+        ratio = (distanceFromBorder / xCenter)
+
+        elevation = ratio * (fisheyeAngle / 2) + (np.pi / 2 - (fisheyeAngle / 2))
+
+        return elevation
+
+    @staticmethod
+    def getAzimuthFromImage(xPixel, yPixel, fisheyeAngle, fisheyeCenter, dewarpingParameters, isClockwise):
+        xSourcePixel, ySourcePixel = DewarpingHelper.getSourcePixelFromDewarpedImage(xPixel, yPixel, dewarpingParameters)
+
+        if fisheyeAngle > 2 * np.pi:
+            raise Exception("Fisheye angle must be in radian!")
+
+        xCenter = fisheyeCenter[0]
+        yCenter = fisheyeCenter[1]
+
+        dx = xSourcePixel - xCenter
+        dy = ySourcePixel - yCenter
+        distanceFromCenter = np.sqrt(dx**2 + dy**2)
+        distanceFromBorder = xCenter - distanceFromCenter
+        ratio = (distanceFromBorder / xCenter)
+
+        azimuth = 0
+
+        if dx >= 0 and dy > 0:
+            azimuth = np.arctan(dx / dy)
+        elif dx <= 0 and dy < 0:
+            azimuth = np.arctan(-dx / -dy) + np.pi
+        elif dx > 0 and dy <= 0:
+            azimuth = np.arctan(-dy / dx) + np.pi / 2
+        elif dx < 0 and dy >= 0:
+            azimuth = np.arctan(dy / -dx) + 3 * np.pi / 2
+
+        if isClockwise == False:
+            azimuth = (2 * np.pi) - azimuth
+
+        return azimuth
     

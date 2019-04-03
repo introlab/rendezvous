@@ -85,16 +85,13 @@ class VideoProcessor(QObject):
             fdOutputWidth = int((fdDewarpingParameters[0].dewarpWidth / 2) - (fdDewarpingParameters[0].dewarpWidth / 2) % 4)
             fdOutputHeight = int((fdDewarpingParameters[0].dewarpHeight / 2) - (fdDewarpingParameters[0].dewarpHeight / 2) % 4)
 
-            dewarpWidthFactor = fdDewarpingParameters[0].dewarpWidth / fdOutputWidth
-            dewarpHeightFactor = fdDewarpingParameters[0].dewarpHeight / fdOutputHeight
-
             vcOutputWidth = 600
             vcOutputHeight = 800
 
             fisheyeCenter = (cameraConfig.imageWidth / 2, cameraConfig.imageHeight / 2)
             fisheyeAngle = np.deg2rad(cameraConfig.fisheyeAngle)
 
-            dewarper = FisheyeDewarping(cameraConfig.imageWidth, cameraConfig.imageHeight, channels, True)
+            dewarper = FisheyeDewarping(cameraConfig.imageWidth, cameraConfig.imageHeight, channels)
 
             fdBufferId = dewarper.createRenderContext(fdOutputWidth, fdOutputHeight, channels)
             vcBufferId = dewarper.createRenderContext(vcOutputWidth, vcOutputHeight, channels)
@@ -128,24 +125,10 @@ class VideoProcessor(QObject):
                 if newFaces is not None:
                     allFaces = []
                     for (faces, dewarpIndex) in newFaces:
-
                         for face in faces:
-                            (x1, y1, x2, y2) = face.getBoundingRect()
-                            
-                            azimuthLeft, elevationTop = SphericalAnglesConverter.getSphericalAnglesFromImage( \
-                                x1 * dewarpWidthFactor , y1 * dewarpHeightFactor, \
-                                fisheyeAngle, fisheyeCenter, fdDewarpingParameters[dewarpIndex], True)
-
-                            azimuthRight, elevationBottom = SphericalAnglesConverter.getSphericalAnglesFromImage( \
-                                x2 * dewarpWidthFactor , y2 * dewarpHeightFactor, \
-                                fisheyeAngle, fisheyeCenter, fdDewarpingParameters[dewarpIndex], True)
-
-                            xSourcePixel, ySourcePixel = DewarpingHelper.getSourcePixelFromDewarpedImage( \
-                                x1 * dewarpWidthFactor , y1 * dewarpHeightFactor, fdDewarpingParameters[dewarpIndex])
-
-                            angleRect = SphericalAnglesRect(azimuthLeft, azimuthRight, elevationBottom, elevationTop)
-
-                            allFaces.append(angleRect)
+                            sphericalAnglesRect = self.__getSphericalAnglesRectFromFace(face, fdDewarpingParameters[dewarpIndex], \
+                                fdOutputWidth, fdOutputHeight, fisheyeAngle, fisheyeCenter)
+                            allFaces.append(sphericalAnglesRect)
 
                     self.virtualCameraManager.updateFaces(allFaces)
 
@@ -172,10 +155,8 @@ class VideoProcessor(QObject):
                     for vc in self.virtualCameraManager.getVirtualCameras():
                         vcBuffer = np.empty((vcOutputHeight, vcOutputWidth, channels), dtype=np.uint8)
 
-                         # Generate dewarping params for vc
-                        azimuth, elevation = vc.getMiddlePosition()
-                        azimuthSpan = vc.getAzimuthSpan()
-                        vcDewarpingParameters = self.__getVirtualCameraDewarpingParameters(cameraConfig, azimuth, azimuthSpan)
+                        # Generate dewarping params for vc
+                        vcDewarpingParameters = self.__getVirtualCameraDewarpingParameters(vc, fisheyeCenter, cameraConfig)
  
                         dewarper.queueDewarping(vcBufferId, vcDewarpingParameters, vcBuffer)
                         vcBuffers.append(vcBuffer)
@@ -239,15 +220,65 @@ class VideoProcessor(QObject):
         return dewarpingParametersList
 
 
-    def __getVirtualCameraDewarpingParameters(self, cameraConfig, middleAngle, angleSpan):
-        donutSlice = DonutSlice(cameraConfig.imageWidth / 2, cameraConfig.imageHeight / 2, cameraConfig.inRadius, \
-            cameraConfig.outRadius, middleAngle, angleSpan)
+    def __getVirtualCameraDewarpingParameters(self, virtualCamera, fisheyeCenter, cameraConfig):
+        azimuth, elevation = virtualCamera.getMiddlePosition()
+        azimuthSpan = virtualCamera.getAzimuthSpan()
+        azimuthLeft, azimuthRight, elevationBottom, elevationTop = virtualCamera.getAngleCoordinates()
+
+        donutSlice = DonutSlice(fisheyeCenter[0], fisheyeCenter[1], \
+            cameraConfig.inRadius, cameraConfig.outRadius, azimuth, azimuthSpan)
 
         dewarpingParameters = DewarpingHelper.getDewarpingParameters(donutSlice, \
             cameraConfig.topDistorsionFactor, cameraConfig.bottomDistorsionFactor)
 
+        maxElevation = SphericalAnglesConverter.getElevationFromImage(dewarpingParameters.dewarpWidth / 2, 0, \
+            np.deg2rad(cameraConfig.fisheyeAngle), fisheyeCenter, dewarpingParameters)
+        minElevation = SphericalAnglesConverter.getElevationFromImage(dewarpingParameters.dewarpWidth / 2, dewarpingParameters.dewarpHeight, \
+            np.deg2rad(cameraConfig.fisheyeAngle), fisheyeCenter, dewarpingParameters)
+
+        deltaElevation = maxElevation - minElevation
+        deltaElevationTop = maxElevation - elevationTop
+        deltaElevationBottom = elevationBottom - minElevation
+
+        dewarpingParameters.topOffset = (deltaElevationTop * dewarpingParameters.dewarpHeight) / deltaElevation
+        dewarpingParameters.bottomOffset = (deltaElevationBottom * dewarpingParameters.dewarpHeight) / deltaElevation
+
         return dewarpingParameters
 
+    
+    def __getSphericalAnglesRectFromFace(self, face, dewarpingParameters, outputWidth, outputHeight, fisheyeAngle, fisheyeCenter):
+        (x1, y1, x2, y2) = face.getBoundingRect()
+        xCenter, yCenter = face.getPosition()
+
+        dewarpWidthFactor = dewarpingParameters.dewarpWidth / outputWidth
+        dewarpHeightFactor = dewarpingParameters.dewarpHeight / outputHeight
+
+        xNew1 = x1 * dewarpWidthFactor
+        yNew1 = y1 * dewarpHeightFactor
+        xNew2 = x2 * dewarpWidthFactor
+        yNew2 = y2 * dewarpHeightFactor
+
+        if xCenter > outputWidth / 2:
+            xMostTop = xNew1
+            xMostBottom = xNew2
+            yMostLeft = yNew2
+            yMostRight = yNew1
+        else:
+            xMostTop = xNew2
+            xMostBottom = xNew1
+            yMostLeft = yNew1
+            yMostRight = yNew2
+
+        azimuthLeft = SphericalAnglesConverter.getAzimuthFromImage(xNew1, yMostLeft, \
+            fisheyeAngle, fisheyeCenter, dewarpingParameters, True)
+        azimuthRight = SphericalAnglesConverter.getAzimuthFromImage(xNew2, yMostRight, \
+            fisheyeAngle, fisheyeCenter, dewarpingParameters, True)
+        elevationTop = SphericalAnglesConverter.getElevationFromImage(xMostTop, yNew1, \
+            fisheyeAngle, fisheyeCenter, dewarpingParameters)
+        elevationBottom = SphericalAnglesConverter.getElevationFromImage(xMostBottom, yNew2, \
+            fisheyeAngle, fisheyeCenter, dewarpingParameters)
+
+        return SphericalAnglesRect(azimuthLeft, azimuthRight, elevationBottom, elevationTop)
                 
     def __emptyQueue(self, queue):
 
