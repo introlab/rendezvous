@@ -84,8 +84,9 @@ class ConferenceController(QObject):
     def recorderExceptionHandling(self, e):
         self.__stopServices()
         self.isRecording = False
-        self.signalRecordingState.emit(self.isRecording)
-        self.signalException.emit(e)
+        self.stopOdasLive()
+        self.stopVideoProcessor()
+        self.saveRecording()
 
         
     @pyqtSlot(Exception)
@@ -123,6 +124,7 @@ class ConferenceController(QObject):
             self.isRecording = False
             self.signalException.emit(e)
             self.signalRecordingState.emit(self.isRecording)
+
 
     def saveRecording(self):
         if self.__recorder and self.isRecording:

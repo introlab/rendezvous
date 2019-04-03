@@ -29,11 +29,12 @@ class AudioWriter(QObject):
     def createNewFiles(self):
         for i in range(0, self.nChannels):
             outputFile = os.path.join(self.outputFolder, 'outputsrc-{}.wav'.format(i))
-            self.wavFiles.append(wave.open(outputFile, 'wb'))
-            self.wavFiles[i].setnchannels(self.nChannelsFile)
-            self.wavFiles[i].setsampwidth(self.byteDepth)
-            self.wavFiles[i].setframerate(self.sampleRate)
-            self.sourcesBuffer[str(i)] = bytearray()
+            if outputFile and os.path.exists(outputFile):
+                self.wavFiles.append(wave.open(outputFile, 'wb'))
+                self.wavFiles[i].setnchannels(self.nChannelsFile)
+                self.wavFiles[i].setsampwidth(self.byteDepth)
+                self.wavFiles[i].setframerate(self.sampleRate)
+                self.sourcesBuffer[str(i)] = bytearray()
 
 
     def write(self, data):
