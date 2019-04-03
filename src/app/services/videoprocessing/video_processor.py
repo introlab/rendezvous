@@ -1,31 +1,45 @@
 import time
+from math import radians
+from multiprocessing import Queue, Semaphore
+from threading import Thread
 import queue
-from threading import Thread, Semaphore
 
 from PyQt5.QtCore import QObject, pyqtSignal
 
 from .streaming.video_stream import VideoStream
-from .facedetection.face_detection import FaceDetection
 from .virtualcamera.virtual_camera_manager import VirtualCameraManager
 from src.utils.file_helper import FileHelper
+from .facedetection.face_detection import FaceDetection
+from .facedetection.facedetector.face_detection_methods import FaceDetectionMethods
 
 
 class VideoProcessor(QObject):
 
     signalFrameData = pyqtSignal(object, object)
+    signalStateChanged = pyqtSignal(bool)
     signalException = pyqtSignal(Exception)
 
     def __init__(self, parent=None):
         super(VideoProcessor, self).__init__(parent)
         self.virtualCameraManager = VirtualCameraManager()
         self.isRunning = False
-        self.imageQueue = queue.Queue()
-        self.facesQueue = queue.Queue()
+        self.imageQueue = Queue()
+        self.facesQueue = Queue()
         self.semaphore = Semaphore()
-        self.heartbeatQueue = queue.Queue(1)
+        self.heartbeatQueue = Queue(1)
 
 
-    def start(self, cameraConfigPath):
+    def getCameraParams(self):
+        cameraParams = {
+            'fisheyeAngle': radians(self.cameraConfig['Image']['FisheyeAngle']),
+            'baseDonutSlice': self.baseDonutSlice,
+            'dewarpingParameters': self.dewarpingParameters
+        }
+
+        return cameraParams
+
+
+    def start(self, cameraConfigPath, faceDetectionMethod):
         print("Starting video processor...")
 
         try:
@@ -33,13 +47,13 @@ class VideoProcessor(QObject):
             if not cameraConfigPath:
                 raise Exception('cameraConfigPath needs to be set in the settings')
 
-            Thread(target=self.run, args=(cameraConfigPath,)).start()
+            if not faceDetectionMethod in [fdMethod.value for fdMethod in FaceDetectionMethods]:
+                raise Exception('{} is not a supported face detection method'.format(self.faceDetectionMethod))
 
-            self.isRunning = True
+            Thread(target=self.run, args=(cameraConfigPath, faceDetectionMethod)).start()
 
         except Exception as e:
             
-            self.isRunning = False
             self.signalException.emit(e)
 
 
@@ -47,22 +61,28 @@ class VideoProcessor(QObject):
          self.isRunning = False
 
 
-    def run(self, cameraConfigPath):
+    def run(self, cameraConfigPath, faceDetectionMethod):
 
         videoStream = None
         faceDetection = None
 
         try:
 
-            cameraConfig = FileHelper.readJsonFile(cameraConfigPath)
-            videoStream = VideoStream(cameraConfig)
+            self.cameraConfig = FileHelper.readJsonFile(cameraConfigPath)
+            videoStream = VideoStream(self.cameraConfig)
             videoStream.initializeStream()
 
-            faceDetection = FaceDetection(self.imageQueue, self.facesQueue, self.heartbeatQueue, self.semaphore)
+            self.baseDonutSlice = videoStream.getBaseDonutSlice()
+            self.dewarpingParameters = videoStream.getDewarpingParameters()
+
+            faceDetection = FaceDetection(faceDetectionMethod, self.imageQueue, self.facesQueue, self.heartbeatQueue, self.semaphore)
             faceDetection.start()
 
             print('Video processor started')
 
+            self.isRunning = True
+            self.signalStateChanged.emit(True)
+            
             prevTime = time.perf_counter()
             while self.isRunning:
 
@@ -97,8 +117,6 @@ class VideoProcessor(QObject):
                 prevTime = currentTime
                 
         except Exception as e:
-
-            self.isRunning = False
             self.signalException.emit(e)
 
         finally:
@@ -116,6 +134,8 @@ class VideoProcessor(QObject):
                 videoStream.destroy()
                 videoStream = None
 
+            self.signalStateChanged.emit(False)
+
         print('Video stream terminated')
 
 
@@ -126,3 +146,4 @@ class VideoProcessor(QObject):
                 queue.get_nowait()
         except:
             pass
+
