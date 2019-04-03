@@ -23,23 +23,24 @@ class FisheyeDewarping
 {
 public:
 
-    FisheyeDewarping(int inputWidth, int inputHeight, int channels, bool isDewarping = true);
+    FisheyeDewarping(int inputWidth, int inputHeight, int channels);
     virtual ~FisheyeDewarping();
 
     void loadFisheyeImage(unsigned char * fisheyeImage, int height, int width, int channels);
     int createRenderContext(int width, int height, int channels);
     void queueDewarping(int renderContextId, DewarpingParameters& dewarpingParameters, 
         unsigned char * dewarpedImageBuffer, int height, int width, int channels);
+    void queueRendering(int renderContextId, unsigned char * dewarpedImageBuffer, int height, int width, int channels);
     int dewarpNextImage();
     void cleanUp();
 
 private:
 
-    void initialize(int inputWidth, int inputHeight, int channels, bool isDewarping);
+    void initialize(int inputWidth, int inputHeight, int channels);
     
 private:
 
-    std::deque<std::tuple<int, DewarpingParameters, ImageBuffer>> m_dewarpingQueue;
+    std::deque<std::tuple<int, DewarpingParameters, ImageBuffer, bool>> m_dewarpingQueue;
 
     std::unique_ptr<DewarpRenderer> m_dewarpRenderer;
     std::unique_ptr<FisheyeTexture> m_fisheyeTexture;

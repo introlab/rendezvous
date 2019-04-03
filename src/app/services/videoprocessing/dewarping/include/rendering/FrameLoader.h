@@ -47,9 +47,6 @@ private:
 
 private:
 
-    std::vector<RenderContext> m_renderContexts;
-    GLuint m_currentRenderContextId;
-
     GLuint m_unpackPBOs[2];
     GLubyte* m_textureData;
     GLuint m_texture;
@@ -61,6 +58,9 @@ private:
     GLuint m_channels;
     GLenum m_pixelFormat;
     FrameLoaderType m_frameLoaderType;
+
+    std::vector<RenderContext> m_renderContexts;
+    GLuint m_currentRenderContextId;
 
 };
 
