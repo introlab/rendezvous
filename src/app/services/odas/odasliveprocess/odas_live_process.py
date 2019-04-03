@@ -48,3 +48,4 @@ class OdasLiveProcess(QObject, Thread):
 
         except Exception as e:
             self.signalException.emit(e)
+
