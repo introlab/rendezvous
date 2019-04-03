@@ -28,7 +28,7 @@ class VideoProcessor(QObject):
 
     def __init__(self, parent=None):
         super(VideoProcessor, self).__init__(parent)
-        self.virtualCameraManager = VirtualCameraManager(0, 100)
+        self.virtualCameraManager = VirtualCameraManager(0, np.pi * 2)
         self.isRunning = False
         self.imageQueue = Queue()
         self.facesQueue = Queue()
@@ -78,7 +78,7 @@ class VideoProcessor(QObject):
 
             channels = len(frame.shape)
 
-            dewarpCount = 4
+            dewarpCount = 1
             fdDewarpingParameters = self.__getFaceDetectionDewarpingParametersList(cameraConfig, dewarpCount)
             
             # Increasing these will make face detection slower, but yield better detections
