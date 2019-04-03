@@ -11,6 +11,9 @@ class VirtualCameraManager:
 
         self.virtualCameraMinHeight = 300
 
+        # Distance at which a new vc will be created instead of moved
+        self.newVirtualCameraThreshold = 500
+
         # 3:4 (portrait)
         self.aspectRatio = 3 / 4
 
@@ -57,8 +60,9 @@ class VirtualCameraManager:
 
     # Updates the associated face (if any) for each virtual camera
     def updateFaces(self, faces, imageWidth, imageHeight):
+
         # Find matches between existing virtual cameras and detected faces
-        matches = dict.fromkeys(self.__virtualCameras, None)
+        matches = dict.fromkeys(self.__virtualCameras, (None, False))
         matches, unmatchedFaces = self.__tryFindMatches(matches, faces)
 
         # Create new virtual cameras from faces that were not associated with a vc
@@ -69,7 +73,7 @@ class VirtualCameraManager:
             newVirtualCamera.sizeGoal = (newVirtualCamera.width, newVirtualCamera.height)
             self.__virtualCameras.append(newVirtualCamera)
 
-        for vc, face in matches.items():       
+        for vc, (face, processed) in matches.items():       
             # Found a face to associate the vc with, so we update the vc with its matched face
             if face:
                 vc.resetTimeToLive()
@@ -123,13 +127,13 @@ class VirtualCameraManager:
     def __tryFindMatches(self, matches, unmatchedFaces):
 
         # Returns if there is no unmatched vc's left or no unmatched faces left 
-        noMatches = {vc: face for vc, face in matches.items() if face is None}
-        if len(noMatches) < 1 or len(unmatchedFaces) < 1:
+        unprocessed = {vc: (face, processed) for vc, (face, processed) in matches.items() if not processed}
+        if len(unprocessed) < 1 or len(unmatchedFaces) < 1:
             return matches, unmatchedFaces
 
         # Map containing the closest vc to a face by distance
         faceDistanceVcMap = {}
-        for vc, face in noMatches.items():  
+        for vc, (face, processed) in unprocessed.items():  
             closestFaceIndex, distance = self.__findClosestFace(vc, unmatchedFaces)
             if closestFaceIndex is not None:
                 currentFaceBestDistance, currentBestVc = faceDistanceVcMap.get(closestFaceIndex, (None, None))
@@ -140,9 +144,11 @@ class VirtualCameraManager:
         facesToMatch = unmatchedFaces
         for closestFaceIndex in faceDistanceVcMap.keys(): 
             (distance, vc) = faceDistanceVcMap[closestFaceIndex]
-            closestFace = facesToMatch[closestFaceIndex]
-            matches[vc] = closestFace
-            unmatchedFaces = [face for face in unmatchedFaces if not face == closestFace]
+            closestFace = None
+            if distance < self.newVirtualCameraThreshold:
+                closestFace = facesToMatch[closestFaceIndex]
+                unmatchedFaces = [face for face in unmatchedFaces if not face == closestFace]
+            matches[vc] = (closestFace, True)
 
         # Call the method recursively to match the remaining unmatched vc's
         return self.__tryFindMatches(matches, unmatchedFaces)
