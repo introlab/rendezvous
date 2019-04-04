@@ -19,7 +19,7 @@ class ConferenceController(QObject):
     def __init__(self, outputFolder, parent=None):
         super(ConferenceController, self).__init__(parent)
 
-        self.__odas = Odas(hostIP='127.0.0.1', portPositions=10020, portAudio=10030, isVerbose=False)
+        self.__odas = Odas(hostIP='127.0.0.1', portPositions=10020, portAudio=10030, isVerbose=True)
         self.__odas.start()
 
         self.__recorder = Recorder(outputFolder)
@@ -86,30 +86,46 @@ class ConferenceController(QObject):
 
     @pyqtSlot(Exception)
     def odasExceptionHandling(self, e):
-        self.__stopServices()
-        self.isRecording = False
-        self.signalRecordingState.emit(self.isRecording)
-        self.signalOdasState.emit(False)
+        if self.isRecording:
+            print('a')
+            self.stopOdasLive()
+            self.stopVideoProcessor()
+            self.isRecording = False
+            self.signalRecordingState.emit(self.isRecording)
+        
+        else:
+            print('b')
+            self.stopOdasLive()
+            self.signalOdasState.emit(False)
+        
         self.signalException.emit(e)
 
 
     @pyqtSlot(Exception)
     def recorderExceptionHandling(self, e):
-        self.__stopServices()
         self.isRecording = False
-        self.stopOdasLive()
-        self.stopVideoProcessor()
-        self.saveRecording()
+        if self.isOdasLiveConnected:
+            self.stopOdasLive()
+        if self.videoProcessorState:
+            self.stopVideoProcessor()
+        
+        self.signalRecordingState.emit(self.isRecording)
+        self.signalException.emit(e)
 
         
     @pyqtSlot(Exception)
     def videoProcessorExceptionHandling(self, e):
         if self.isRecording:
-            self.__stopServices()
+            self.stopOdasLive()
+            self.stopVideoProcessor()
+            self.isRecording = False
+            self.signalRecordingState.emit(self.isRecording)
+        
         else:
             self.stopVideoProcessor()
-        self.signalException.emit(e)
+            self.signalException.emit(e)
 
+        self.signalException.emit(e)
 
     def startOdasLive(self, odasPath, micConfigPath):
         self.__odas.startOdasLive(odasPath, micConfigPath)
@@ -162,10 +178,4 @@ class ConferenceController(QObject):
     def stopVideoProcessor(self):
         if self.__videoProcessor and self.__videoProcessor.isRunning:
             self.__videoProcessor.stop()
-
-    
-    def __stopServices(self):
-        self.stopVideoProcessor()
-        self.stopOdasLive()
-        self.saveRecording()
 

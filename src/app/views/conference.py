@@ -106,14 +106,14 @@ class Conference(QWidget, Ui_Conference):
         QApplication.processEvents()
 
         if self.btnStartStopRecord.text() == BtnRecordLabels.START_RECORDING.value:
+            self.conferenceController.startRecording(self.outputFolder.text())
             self.conferenceController.startOdasLive(self.window().getSetting('odasPath'), self.window().getSetting('micConfigPath'))
             self.conferenceController.startVideoProcessor(self.window().getSetting('cameraConfigPath'), self.window().getSetting('faceDetection'))
-            self.conferenceController.startRecording(self.outputFolder.text())
 
         else:
+            self.conferenceController.saveRecording()
             self.conferenceController.stopOdasLive()
             self.conferenceController.stopVideoProcessor()
-            self.conferenceController.saveRecording()
 
 
     @pyqtSlot(object)
@@ -141,46 +141,45 @@ class Conference(QWidget, Ui_Conference):
     def recordingStateChanged(self, isRunning):
         if isRunning:
             self.btnStartStopRecord.setText(BtnRecordLabels.STOP_RECORDING.value)
+
         else:
             self.btnStartStopRecord.setText(BtnRecordLabels.START_RECORDING.value)
             self.btnStartStopOdas.setDisabled(False)
+            self.btnStartStopOdas.setText(BtnOdasLabels.START_ODAS.value)
             self.btnStartStopVideo.setDisabled(False)
+            self.btnStartStopVideo.setText(BtnVideoLabels.START_VIDEO.value)
 
         self.btnStartStopRecord.setDisabled(False)
 
 
     @pyqtSlot(bool)
     def odasStateChanged(self, isRunning):
-        if isRunning:
-            if not self.conferenceController.isRecording:
-                self.btnStartStopOdas.setText(BtnOdasLabels.STOP_ODAS.value)
-            if self.conferenceController.isRecording:
-                self.btnStartStopRecord.setDisabled(False)
-        else:
-            if not self.conferenceController.isRecording:
-                self.btnStartStopOdas.setText(BtnOdasLabels.START_ODAS.value)
-                if not self.conferenceController.videoProcessorState:
-                    self.btnStartStopRecord.setDisabled(False)
-            self.btnStartStopRecord.setText(BtnRecordLabels.START_RECORDING.value)
-            self.conferenceController.saveRecording()
+        if self.conferenceController and not self.conferenceController.isRecording:
 
-        self.btnStartStopOdas.setDisabled(False)
-        if self.conferenceController.isRecording:
-            self.btnStartStopOdas.setDisabled(True)
+            if isRunning:
+                self.btnStartStopOdas.setText(BtnOdasLabels.STOP_ODAS.value)
+
+            else:
+                self.btnStartStopOdas.setText(BtnOdasLabels.START_ODAS.value)
+                if self.conferenceController and not self.conferenceController.videoProcessorState:
+                    self.btnStartStopRecord.setDisabled(False)
+
+            self.btnStartStopOdas.setDisabled(False)
 
     
     @pyqtSlot(bool)
     def videoProcessorStateChanged(self, isRunning):
-        if isRunning:
-            self.btnStartStopVideo.setText(BtnVideoLabels.STOP_VIDEO.value)
-        else:
-            self.btnStartStopVideo.setText(BtnVideoLabels.START_VIDEO.value)
-            if not self.conferenceController.isRecording and not self.conferenceController.isOdasLiveConnected:
-                self.btnStartStopRecord.setDisabled(False)
+        if self.conferenceController and not self.conferenceController.isRecording:
 
-        self.btnStartStopVideo.setDisabled(False)
-        if self.conferenceController.isRecording:
-            self.btnStartStopVideo.setDisabled(True)
+            if isRunning:
+                self.btnStartStopVideo.setText(BtnVideoLabels.STOP_VIDEO.value)
+
+            else:
+                self.btnStartStopVideo.setText(BtnVideoLabels.START_VIDEO.value)
+                if self.conferenceController and not self.conferenceController.isOdasLiveConnected:
+                    self.btnStartStopRecord.setDisabled(False)
+
+            self.btnStartStopVideo.setDisabled(False)
 
 
     @pyqtSlot(Exception)
