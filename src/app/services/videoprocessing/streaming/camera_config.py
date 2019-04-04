@@ -18,7 +18,6 @@ class CameraConfig:
         self.bottomDistorsionFactor = cameraConfigJson['Distorsion']['BottomDistorsionFactor']
         self.inRadius = cameraConfigJson['Distorsion']['InRadius']
         self.outRadius = cameraConfigJson['Distorsion']['OutRadius']
-        self.middleAngle = cameraConfigJson['Distorsion']['MiddleAngle']
         self.angleSpan = cameraConfigJson['Distorsion']['AngleSpan']
 
 
