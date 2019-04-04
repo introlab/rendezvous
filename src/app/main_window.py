@@ -14,6 +14,7 @@ from src.app.views.conference import Conference
 from src.app.views.transcription import Transcription
 from src.app.views.playback import Playback
 from src.app.views.change_settings import ChangeSettings
+from src.app.views.recording import Recording
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -45,7 +46,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.conferenceView = Conference(parent=self)
         self.sideBar.addItem('Conference')
         self.views.addWidget(self.conferenceView)
-        self.sideBar.setCurrentRow(0)       
+        self.sideBar.setCurrentRow(0)      
+
+        self.recordingView = Recording(parent=self)
+        self.sideBar.addItem('Recording')
+        self.views.addWidget(self.recordingView) 
 
         self.transcriptionView = Transcription(parent=self)   
         self.sideBar.addItem('Transcription')

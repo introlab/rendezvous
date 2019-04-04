@@ -11,12 +11,6 @@ from src.app.services.videoprocessing.virtualcamera.virtual_camera_displayer imp
 
 
 @unique
-class BtnRecordLabels(Enum):
-    START_RECORDING = 'Start Recording'
-    STOP_RECORDING = 'Stop Recording'
-
-
-@unique
 class BtnOdasLabels(Enum):
     START_ODAS = 'Start ODAS'
     STOP_ODAS = 'Stop ODAS'
@@ -33,41 +27,20 @@ class Conference(QWidget, Ui_Conference):
     def __init__(self, parent=None):
         super(Conference, self).__init__(parent)
         self.setupUi(self)
-        self.outputFolder.setText(self.window().getSetting('outputFolder'))
-        self.conferenceController = ConferenceController(self.outputFolder.text())
+        self.conferenceController = ConferenceController()
 
         self.virtualCameraDisplayer = VirtualCameraDisplayer(self.virtualCameraFrame)
 
         # Qt signal slots
-        self.btnSelectOutputFolder.clicked.connect(self.selectOutputFolder)
         self.btnStartStopOdas.clicked.connect(self.btnStartStopOdasClicked)
         self.btnStartStopVideo.clicked.connect(self.btnStartStopVideoClicked)
-        self.btnStartStopRecord.clicked.connect(self.btnStartStopRecordClicked)
 
         self.conferenceController.signalAudioPositions.connect(self.positionDataReceived)
         self.conferenceController.signalOdasState.connect(self.odasStateChanged)
-        self.conferenceController.signalRecordingState.connect(self.recordingStateChanged)
         self.conferenceController.signalVideoProcessorState.connect(self.videoProcessorStateChanged)
         self.conferenceController.signalVirtualCamerasReceived.connect(self.updateVirtualCamerasDispay)
         self.conferenceController.signalHumanSourcesDetected.connect(self.showHumanSources)
         self.conferenceController.signalException.connect(self.exceptionReceived)
-
-
-    @pyqtSlot()
-    def selectOutputFolder(self):
-        try:
-            outputFolder = QFileDialog.getExistingDirectory(
-                parent=self, 
-                caption='Select Output Directory', 
-                directory=self.window().rootDirectory,
-                options=QFileDialog.DontUseNativeDialog
-            )
-            if outputFolder:
-                self.outputFolder.setText(outputFolder)
-                self.window().setSetting('outputFolder', outputFolder)
-
-        except Exception as e:
-            self.window().emitToExceptionManager(e)
 
 
     @pyqtSlot()
@@ -76,7 +49,6 @@ class Conference(QWidget, Ui_Conference):
         QApplication.processEvents()
 
         if self.btnStartStopOdas.text() == BtnOdasLabels.START_ODAS.value:
-            self.btnStartStopRecord.setDisabled(True)
             self.conferenceController.startOdasLive(odasPath=self.window().getSetting('odasPath'), micConfigPath=self.window().getSetting('micConfigPath'))
         else:
             self.conferenceController.stopOdasLive()
@@ -85,34 +57,11 @@ class Conference(QWidget, Ui_Conference):
     @pyqtSlot()
     def btnStartStopVideoClicked(self):
         self.btnStartStopVideo.setDisabled(True)
-        self.btnStartStopRecord.setDisabled(True)
         QApplication.processEvents()
 
         if self.btnStartStopVideo.text() == BtnVideoLabels.START_VIDEO.value:
-            self.btnStartStopRecord.setDisabled(True)
             self.conferenceController.startVideoProcessor(self.window().getSetting('cameraConfigPath'), self.window().getSetting('faceDetection'))
         else:
-            self.conferenceController.stopVideoProcessor()
-
-
-    @pyqtSlot()
-    def btnStartStopRecordClicked(self):
-        if not self.outputFolder.text():
-            self.window().emitToExceptionsManager(Exception('output folder cannot be empty'))
-
-        self.btnStartStopRecord.setDisabled(True)
-        self.btnStartStopOdas.setDisabled(True)
-        self.btnStartStopVideo.setDisabled(True)
-        QApplication.processEvents()
-
-        if self.btnStartStopRecord.text() == BtnRecordLabels.START_RECORDING.value:
-            self.conferenceController.startRecording(self.outputFolder.text())
-            self.conferenceController.startOdasLive(self.window().getSetting('odasPath'), self.window().getSetting('micConfigPath'))
-            self.conferenceController.startVideoProcessor(self.window().getSetting('cameraConfigPath'), self.window().getSetting('faceDetection'))
-
-        else:
-            self.conferenceController.saveRecording()
-            self.conferenceController.stopOdasLive()
             self.conferenceController.stopVideoProcessor()
 
 
@@ -138,48 +87,25 @@ class Conference(QWidget, Ui_Conference):
 
 
     @pyqtSlot(bool)
-    def recordingStateChanged(self, isRunning):
-        if isRunning:
-            self.btnStartStopRecord.setText(BtnRecordLabels.STOP_RECORDING.value)
-
-        else:
-            self.btnStartStopRecord.setText(BtnRecordLabels.START_RECORDING.value)
-            self.btnStartStopOdas.setDisabled(False)
-            self.btnStartStopOdas.setText(BtnOdasLabels.START_ODAS.value)
-            self.btnStartStopVideo.setDisabled(False)
-            self.btnStartStopVideo.setText(BtnVideoLabels.START_VIDEO.value)
-
-        self.btnStartStopRecord.setDisabled(False)
-
-
-    @pyqtSlot(bool)
     def odasStateChanged(self, isRunning):
-        if self.conferenceController and not self.conferenceController.isRecording:
+        if isRunning:
+            self.btnStartStopOdas.setText(BtnOdasLabels.STOP_ODAS.value)
+        
+        else:
+            self.btnStartStopOdas.setText(BtnOdasLabels.START_ODAS.value)
 
-            if isRunning:
-                self.btnStartStopOdas.setText(BtnOdasLabels.STOP_ODAS.value)
-
-            else:
-                self.btnStartStopOdas.setText(BtnOdasLabels.START_ODAS.value)
-                if self.conferenceController and not self.conferenceController.videoProcessorState:
-                    self.btnStartStopRecord.setDisabled(False)
-
-            self.btnStartStopOdas.setDisabled(False)
+        self.btnStartStopOdas.setDisabled(False)
 
     
     @pyqtSlot(bool)
     def videoProcessorStateChanged(self, isRunning):
-        if self.conferenceController and not self.conferenceController.isRecording:
+        if isRunning:
+            self.btnStartStopVideo.setText(BtnVideoLabels.STOP_VIDEO.value)
+        
+        else:
+            self.btnStartStopVideo.setText(BtnVideoLabels.START_VIDEO.value)
 
-            if isRunning:
-                self.btnStartStopVideo.setText(BtnVideoLabels.STOP_VIDEO.value)
-
-            else:
-                self.btnStartStopVideo.setText(BtnVideoLabels.START_VIDEO.value)
-                if self.conferenceController and not self.conferenceController.isOdasLiveConnected:
-                    self.btnStartStopRecord.setDisabled(False)
-
-            self.btnStartStopVideo.setDisabled(False)
+        self.btnStartStopVideo.setDisabled(False)
 
 
     @pyqtSlot(Exception)
@@ -192,7 +118,6 @@ class Conference(QWidget, Ui_Conference):
         if event:
             self.conferenceController.stopOdasServer()
             self.conferenceController.stopVideoProcessor()
-            self.conferenceController.stopRecording()
             event.accept()
     
 

@@ -1,7 +1,6 @@
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 
 from src.app.services.odas.odas import Odas
-from src.app.services.recorder.recorder import Recorder, RecorderActions
 from src.app.services.videoprocessing.video_processor import VideoProcessor
 from src.app.services.sourceclassifier.source_classifier import SourceClassifier
 
@@ -11,28 +10,22 @@ class ConferenceController(QObject):
     signalException = pyqtSignal(Exception)
     signalAudioPositions = pyqtSignal(object)
     signalOdasState = pyqtSignal(bool)
-    signalRecordingState = pyqtSignal(bool)
     signalVideoProcessorState = pyqtSignal(bool)
     signalVirtualCamerasReceived = pyqtSignal(object, object)
     signalHumanSourcesDetected = pyqtSignal(object)
 
-    def __init__(self, outputFolder, parent=None):
+    def __init__(self, parent=None):
         super(ConferenceController, self).__init__(parent)
 
         self.__odas = Odas(hostIP='127.0.0.1', portPositions=10020, portAudio=10030, isVerbose=True)
         self.__odas.start()
 
-        self.__recorder = Recorder(outputFolder)
-        self.__recorder.changeAudioSettings(outputFolder=outputFolder, nChannels=4, nChannelFile=1, byteDepth=2, sampleRate=48000)
-        self.__recorder.start()
         self.isRecording = False
         self.isOdasLiveConnected = False
         self.videoProcessorState = False
 
-        self.__recorder.signalException.connect(self.recorderExceptionHandling)
         self.__odas.signalException.connect(self.odasExceptionHandling)
         
-        self.__odas.signalAudioData.connect(self.audioDataReceived)
         self.__odas.signalPositionData.connect(self.positionDataReceived)
         self.__odas.signalClientsConnected.connect(self.odasClientConnected)
 
@@ -56,12 +49,6 @@ class ConferenceController(QObject):
         self.signalVideoProcessorState.emit(state)
 
 
-    @pyqtSlot(bytes)
-    def audioDataReceived(self, streamData):
-        if self.isRecording and self.__recorder and self.__recorder.mailbox:
-            self.__recorder.mailbox.put(('audio', streamData))
-
-
     @pyqtSlot(object)
     def positionDataReceived(self, positions):
         self.__positions = positions
@@ -80,47 +67,20 @@ class ConferenceController(QObject):
 
         self.signalVirtualCamerasReceived.emit(image, virtualCameras)
 
-        if self.isRecording and self.__recorder and self.__recorder.mailbox:
-            self.__recorder.mailbox.put(('video', '0', image))
-
 
     @pyqtSlot(Exception)
     def odasExceptionHandling(self, e):
-        if self.isRecording:
-            self.stopOdasLive()
-            self.stopVideoProcessor()
-            self.isRecording = False
-            self.signalRecordingState.emit(self.isRecording)
-        
-        else:
-            self.stopOdasLive()
-            self.signalOdasState.emit(False)
-        
-        self.signalException.emit(e)
-
-
-    @pyqtSlot(Exception)
-    def recorderExceptionHandling(self, e):
         self.stopOdasLive()
-        self.stopVideoProcessor()
-        self.isRecording = False
-        self.signalRecordingState.emit(self.isRecording)
+        self.signalOdasState.emit(False)
         self.signalException.emit(e)
 
         
     @pyqtSlot(Exception)
     def videoProcessorExceptionHandling(self, e):
-        if self.isRecording:
-            self.stopOdasLive()
-            self.stopVideoProcessor()
-            self.isRecording = False
-            self.signalRecordingState.emit(self.isRecording)
-        
-        else:
-            self.stopVideoProcessor()
-            self.signalException.emit(e)
-
+        self.stopVideoProcessor()
+        self.signalVideoProcessorState.emit(False)
         self.signalException.emit(e)
+
 
     def startOdasLive(self, odasPath, micConfigPath):
         self.__odas.startOdasLive(odasPath, micConfigPath)
@@ -133,36 +93,6 @@ class ConferenceController(QObject):
     def stopOdasServer(self):
         if self.__odas.isRunning:
             self.__odas.stop()
-
-
-    def startRecording(self, outputFolder):
-        try:
-            if not self.isRecording:
-                self.__recorder.changeAudioSettings(outputFolder=outputFolder, nChannels=4, nChannelFile=1, byteDepth=2, sampleRate=48000)
-                self.__recorder.setOutputFolder(folderpath=outputFolder)
-                self.__recorder.mailbox.put(RecorderActions.NEW_RECORDING)
-                self.isRecording = True
-                self.signalRecordingState.emit(self.isRecording)
-
-        except Exception as e:
-            self.isRecording = False
-            self.signalException.emit(e)
-            self.signalRecordingState.emit(self.isRecording)
-
-
-    def saveRecording(self):
-        if self.__recorder and self.isRecording:
-            # stop data reception for recorder and save wave files
-            self.isRecording = False
-            self.__recorder.mailbox.put(RecorderActions.SAVE_FILES)
-            self.signalRecordingState.emit(self.isRecording)
-
-
-    def stopRecording(self):
-        if self.__recorder:
-            self.isRecording = False
-            self.__recorder.stop()
-            self.signalRecordingState.emit(self.isRecording)
 
 
     def startVideoProcessor(self, cameraConfigPath, faceDetection):
