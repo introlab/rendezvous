@@ -1,6 +1,5 @@
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 
-from src.app.services.odas.odas import Odas
 from src.app.services.videoprocessing.video_processor import VideoProcessor
 from src.app.services.sourceclassifier.source_classifier import SourceClassifier
 
@@ -8,26 +7,22 @@ from src.app.services.sourceclassifier.source_classifier import SourceClassifier
 class ConferenceController(QObject):
 
     signalException = pyqtSignal(Exception)
-    signalAudioPositions = pyqtSignal(object)
     signalOdasState = pyqtSignal(bool)
     signalVideoProcessorState = pyqtSignal(bool)
     signalVirtualCamerasReceived = pyqtSignal(object, object)
     signalHumanSourcesDetected = pyqtSignal(object)
+    signalAudioPositions = pyqtSignal(object)
 
-    def __init__(self, parent=None):
+    def __init__(self, odasserver, parent=None):
         super(ConferenceController, self).__init__(parent)
 
-        self.__odas = Odas(hostIP='127.0.0.1', portPositions=10020, portAudio=10030, isVerbose=True)
-        self.__odas.start()
-
-        self.isRecording = False
         self.isOdasLiveConnected = False
         self.videoProcessorState = False
 
-        self.__odas.signalException.connect(self.odasExceptionHandling)
-        
-        self.__odas.signalPositionData.connect(self.positionDataReceived)
-        self.__odas.signalClientsConnected.connect(self.odasClientConnected)
+        self.__odasserver = odasserver
+        self.__odasserver.signalException.connect(self.odasExceptionHandling)
+        self.__odasserver.signalPositionData.connect(self.positionDataReceived)
+        self.__odasserver.signalClientsConnected.connect(self.odasClientConnected)
 
         self.__videoProcessor = VideoProcessor()
         self.__videoProcessor.signalException.connect(self.videoProcessorExceptionHandling)
@@ -43,16 +38,16 @@ class ConferenceController(QObject):
         self.signalOdasState.emit(isConnected)
 
 
-    @pyqtSlot(bool)
-    def videoProcessorStateChanged(self, state):
-        self.videoProcessorState = state
-        self.signalVideoProcessorState.emit(state)
-
-
     @pyqtSlot(object)
     def positionDataReceived(self, positions):
         self.__positions = positions
         self.signalAudioPositions.emit(positions)
+
+
+    @pyqtSlot(bool)
+    def videoProcessorStateChanged(self, state):
+        self.videoProcessorState = state
+        self.signalVideoProcessorState.emit(state)
 
 
     @pyqtSlot(object, object)
@@ -83,16 +78,16 @@ class ConferenceController(QObject):
 
 
     def startOdasLive(self, odasPath, micConfigPath):
-        self.__odas.startOdasLive(odasPath, micConfigPath)
+        self.__odasserver.startOdasLive(odasPath, micConfigPath)
 
 
     def stopOdasLive(self):
-        self.__odas.stopOdasLive()
+        self.__odasserver.stopOdasLive()
 
 
     def stopOdasServer(self):
-        if self.__odas.isRunning:
-            self.__odas.stop()
+        if self.__odasserver.isRunning:
+            self.__odasserver.stop()
 
 
     def startVideoProcessor(self, cameraConfigPath, faceDetection):

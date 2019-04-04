@@ -25,6 +25,7 @@ class OdasLiveProcess(QObject, Thread):
         self.stopCommand = True
         self.join()
 
+
     def run(self):
         try:
             if not os.path.exists(self.odasPath):

@@ -1,6 +1,5 @@
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 
-from src.app.services.odas.odas import Odas
 from src.app.services.recorder.recorder import Recorder, RecorderActions
 from src.app.services.videoprocessing.video_processor import VideoProcessor
 
@@ -8,38 +7,34 @@ from src.app.services.videoprocessing.video_processor import VideoProcessor
 class RecordingController(QObject):
 
     signalException = pyqtSignal(Exception)
-    signalAudioPositions = pyqtSignal(object)
     signalOdasState = pyqtSignal(bool)
     signalRecordingState = pyqtSignal(bool)
     signalVideoProcessorState = pyqtSignal(bool)
     signalVirtualCamerasReceived = pyqtSignal(object, object)
-    signalHumanSourcesDetected = pyqtSignal(object)
 
-    def __init__(self, outputFolder, parent=None):
+    def __init__(self, outputFolder, odasserver, parent=None):
         super(RecordingController, self).__init__(parent)
-
-        #self.__odas = Odas(hostIP='127.0.0.1', portPositions=10020, portAudio=10030, isVerbose=True)
-        self.__odas.start()
+        self.__odasserver = odasserver
 
         self.__recorder = Recorder(outputFolder)
         self.__recorder.changeAudioSettings(outputFolder=outputFolder, nChannels=4, nChannelFile=1, byteDepth=2, sampleRate=48000)
         self.__recorder.start()
+
         self.isRecording = False
         self.isOdasLiveConnected = False
         self.videoProcessorState = False
 
         self.__recorder.signalException.connect(self.exceptionHandling)
-        self.__odas.signalException.connect(self.exceptionHandling)
-        
-        self.__odas.signalAudioData.connect(self.audioDataReceived)
-        self.__odas.signalClientsConnected.connect(self.odasClientConnected)
+
+        self.__odasserver.signalException.connect(self.exceptionHandling)
+        self.__odasserver.signalAudioData.connect(self.audioDataReceived)
+        self.__odasserver.signalClientsConnected.connect(self.odasClientConnected)
 
         self.__videoProcessor = VideoProcessor()
         self.__videoProcessor.signalException.connect(self.exceptionHandling)
         self.__videoProcessor.signalFrameData.connect(self.virtualCamerasReceived)
         self.__videoProcessor.signalStateChanged.connect(self.videoProcessorStateChanged)
 
-        self.__positions = {}
 
 
     @pyqtSlot(bool)
@@ -78,16 +73,16 @@ class RecordingController(QObject):
 
 
     def startOdasLive(self, odasPath, micConfigPath):
-        self.__odas.startOdasLive(odasPath, micConfigPath)
+        self.__odasserver.startOdasLive(odasPath, micConfigPath)
 
 
     def stopOdasLive(self):
-        self.__odas.stopOdasLive()
+        self.__odasserver.stopOdasLive()
 
 
     def stopOdasServer(self):
-        if self.__odas.isRunning:
-            self.__odas.stop()
+        if self.__odasserver.isRunning:
+            self.__odasserver.stop()
 
 
     def startRecording(self, outputFolder):

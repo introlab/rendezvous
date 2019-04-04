@@ -16,6 +16,8 @@ from src.app.views.playback import Playback
 from src.app.views.change_settings import ChangeSettings
 from src.app.views.recording import Recording
 
+from src.app.services.odas.odas import Odas
+
 
 class MainWindow(QMainWindow, Ui_MainWindow):
 
@@ -42,13 +44,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.views = QStackedWidget()
         self.mainLayout.addWidget(self.views)
     
+        odasServer = Odas(hostIP='127.0.0.1', portPositions=10020, portAudio=10030, isVerbose=True)
+        odasServer.start()
+
         # Views of the main layout.
-        self.conferenceView = Conference(parent=self)
+        self.conferenceView = Conference(odasServer, parent=self)
         self.sideBar.addItem('Conference')
         self.views.addWidget(self.conferenceView)
-        self.sideBar.setCurrentRow(0)      
+        self.sideBar.setCurrentRow(0)
 
-        self.recordingView = Recording(parent=self)
+        self.recordingView = Recording(odasServer, parent=self)
         self.sideBar.addItem('Recording')
         self.views.addWidget(self.recordingView) 
 

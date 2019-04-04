@@ -18,11 +18,11 @@ class BtnRecordLabels(Enum):
 
 class Recording(QWidget, Ui_Recording):
 
-    def __init__(self, parent=None):
+    def __init__(self, odasserver, parent=None):
         super(Recording, self).__init__(parent)
         self.setupUi(self)
         self.outputFolder.setText(self.window().getSetting('outputFolder'))
-        self.recordingController = RecordingController(self.outputFolder.text())
+        self.recordingController = RecordingController(self.outputFolder.text(), odasserver)
 
         self.virtualCameraDisplayer = VirtualCameraDisplayer(self.virtualCameraFrame)
 
@@ -60,8 +60,6 @@ class Recording(QWidget, Ui_Recording):
             self.window().emitToExceptionsManager(Exception('output folder cannot be empty'))
 
         self.btnStartStopRecord.setDisabled(True)
-        self.btnStartStopOdas.setDisabled(True)
-        self.btnStartStopVideo.setDisabled(True)
         QApplication.processEvents()
 
         if self.btnStartStopRecord.text() == BtnRecordLabels.START_RECORDING.value:
