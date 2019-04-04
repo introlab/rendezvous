@@ -4,4 +4,4 @@ from enum import Enum, unique
 class FaceDetectionMethods(Enum):
     OPENCV_DNN = 'OpenCV dnn'
     OPENCV_HAAR_CASCADES = 'OpenCV Haar cascades'
-    YOLO_V3 = 'YOLOv3'
+    #YOLO_V3 = 'YOLOv3'

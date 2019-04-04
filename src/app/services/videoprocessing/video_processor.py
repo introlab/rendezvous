@@ -45,10 +45,10 @@ class VideoProcessor(QObject):
         try:
             
             if not cameraConfigPath:
-                raise Exception('cameraConfigPath needs to be set in the settings')
+                raise Exception('cameraConfigPath needs to be set in the settings tab')
 
             if not faceDetectionMethod in [fdMethod.value for fdMethod in FaceDetectionMethods]:
-                raise Exception('{} is not a supported face detection method'.format(self.faceDetectionMethod))
+                raise Exception('Unsupported face detection method: {}. Set a correct method in the settings tab.'.format(faceDetectionMethod))
 
             Thread(target=self.run, args=(cameraConfigPath, faceDetectionMethod)).start()
 
