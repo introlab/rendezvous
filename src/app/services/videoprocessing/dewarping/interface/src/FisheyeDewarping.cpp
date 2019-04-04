@@ -39,13 +39,13 @@ void FisheyeDewarping::queueDewarping(int renderContextId, DewarpingParameters& 
     unsigned char * dewarpedImageBuffer, int height, int width, int channels)
 {
     ImageBuffer imageBuffer(dewarpedImageBuffer, width, height, channels);
-    m_dewarpingQueue.push_back(std::make_tuple(renderContextId, dewarpingParameters, imageBuffer, true));
+    m_dewarpingQueue.push_back(DewarpingObject{renderContextId, imageBuffer, dewarpingParameters});
 }
 
 void FisheyeDewarping::queueRendering(int renderContextId, unsigned char * dewarpedImageBuffer, int height, int width, int channels)
 {
     ImageBuffer imageBuffer(dewarpedImageBuffer, width, height, channels);
-    m_dewarpingQueue.push_back(std::make_tuple(renderContextId, DewarpingParameters{}, imageBuffer, false));
+    m_dewarpingQueue.push_back(DewarpingObject{renderContextId, imageBuffer});
 }
 
 int FisheyeDewarping::dewarpNextImage()
@@ -57,19 +57,18 @@ int FisheyeDewarping::dewarpNextImage()
     }
 
     // Retrieve next dewarping in queue
-    auto tuple = m_dewarpingQueue.front();
-    int renderContextId = std::get<0>(tuple);
-    DewarpingParameters& dewarpingParameters = std::get<1>(tuple);
-    ImageBuffer& imageBuffer = std::get<2>(tuple);
-    bool isDewarping = std::get<3>(tuple);
+    DewarpingObject dewarpingObject = m_dewarpingQueue.front();
     m_dewarpingQueue.pop_front();
+
+    int renderContextId = dewarpingObject.renderContextId;
+    ImageBuffer& imageBuffer = dewarpingObject.imageBuffer;
     
     m_frameLoader->setRenderingContext(renderContextId, imageBuffer.width, imageBuffer.height);
 
-    if (isDewarping)
+    if (dewarpingObject.isDewarping)
     {
         // Dewarp the fisheye image with the dewarping parameters
-        m_dewarpRenderer->renderDewarping(*m_fisheyeTexture, dewarpingParameters);
+        m_dewarpRenderer->renderDewarping(*m_fisheyeTexture, dewarpingObject.dewarpingParameters);
     }
     else
     {

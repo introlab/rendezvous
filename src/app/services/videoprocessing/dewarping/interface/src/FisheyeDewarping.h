@@ -4,8 +4,8 @@
 #include <memory>
 #include <deque>
 #include <tuple>
-#include <models/DewarpingParameters.h>
-#include <models/ImageBuffer.h>
+
+#include <models/DewarpingObject.h>
 
 class DewarpRenderer;
 class FisheyeTexture;
@@ -46,10 +46,7 @@ private:
     
 private:
 
-    std::deque<std::tuple<int, int> test;
-    std::deque<std::tuple<DewarpingParameters, ImageBuffer> test2;
-    std::tuple<int, int, int, int> test3;
-    std::deque<std::tuple<int, DewarpingParameters, ImageBuffer, bool>> m_dewarpingQueue;
+    std::deque<DewarpingObject> m_dewarpingQueue;
 
     std::unique_ptr<DewarpRenderer> m_dewarpRenderer;
     std::unique_ptr<FisheyeTexture> m_fisheyeTexture;
