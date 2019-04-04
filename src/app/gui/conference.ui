@@ -496,8 +496,4 @@
  </widget>
  <resources/>
  <connections/>
- <slots>
-  <slot>btnStartOdasClicked()</slot>
-  <slot>btnStopOdasClicked()</slot>
- </slots>
 </ui>
