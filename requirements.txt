@@ -42,6 +42,7 @@ PyQt5-sip==4.19.14
 pytest==4.3.0
 pytest-cov==2.6.1
 python-dateutil==2.8.0
+python-vlc==3.0.6108
 python-xlib==0.25
 pytz==2018.9
 requests==2.21.0
