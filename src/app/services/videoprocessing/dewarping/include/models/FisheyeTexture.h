@@ -8,7 +8,8 @@ struct FisheyeTexture
 {
 public:
 
-    FisheyeTexture(GLuint texture, glm::vec2 position, glm::vec2 scale);
+    FisheyeTexture(GLuint texture, glm::vec2& position, glm::vec2& scale);
+    FisheyeTexture(GLuint texture, glm::vec2&& position, glm::vec2&& scale);
 
     GLuint texture;
     glm::vec2 position;

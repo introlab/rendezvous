@@ -1,19 +1,14 @@
 from pathlib import Path
 
 import cv2
-import numpy as np
 
 from .camera_config import CameraConfig
-from src.utils.dewarping_helper import DewarpingHelper
-from src.app.services.videoprocessing.dewarping.interface.fisheye_dewarping import FisheyeDewarping
-from src.app.services.videoprocessing.dewarping.interface.fisheye_dewarping import DonutSlice
 
 
 class VideoStream:
 
     def __init__(self, cameraConfig):
-        self.config = CameraConfig(cameraConfig)
-        self.dewarper = FisheyeDewarping()
+        self.config = cameraConfig
         self.camera = None
 
 
@@ -34,50 +29,18 @@ class VideoStream:
         if not success:
             raise Exception('Could not read image from camera at port {port}'.format(port=self.config.cameraPort))
 
-        channels = len(frame.shape)
-
-        donutSlice = DonutSlice(self.config.imageWidth / 2, self.config.imageHeight / 2, self.config.inRadius, \
-            self.config.outRadius, np.deg2rad(self.config.middleAngle), np.deg2rad(self.config.angleSpan))
-
-        dewarpingParameters = DewarpingHelper.getDewarpingParameters(donutSlice, self.config.topDistorsionFactor, self.config.bottomDistorsionFactor)
-        self.dewarper.setDewarpingParameters(dewarpingParameters)
-
-        outputWidth = int(dewarpingParameters.dewarpWidth)
-        outputHeight = int(dewarpingParameters.dewarpHeight)
-
-        if self.dewarper.initialize(self.config.imageWidth, self.config.imageHeight, outputWidth, outputHeight, channels, True) == -1:
-            raise Exception('Error during c++ dewarping library initialization')
-
         self.printCameraSettings()
-
-        self.dewarpedImageBuffers = np.zeros((2, outputHeight, outputWidth, channels), dtype=np.uint8)
-        self.dewarpedImageBuffersIndex = 0
-
-        self.__baseDonutSlice = donutSlice
-        self.__dewarpingParameters = dewarpingParameters
-
-
-    def getDewarpingParameters(self):
-        return self.__dewarpingParameters
-
-
-    def getBaseDonutSlice(self):
-        return self.__baseDonutSlice
-
+       
 
     def destroy(self):
         self.camera.release()
-        self.dewarper.cleanUp()
 
 
     def readFrame(self):
         success, frame = self.camera.read()
 
         if success:
-            self.dewarper.loadFisheyeImage(frame)
-            self.dewarpedImageBuffersIndex = (self.dewarpedImageBuffersIndex + 1) % 2
-            self.dewarper.dewarpImage(self.dewarpedImageBuffers[self.dewarpedImageBuffersIndex])
-            return success, self.dewarpedImageBuffers[self.dewarpedImageBuffersIndex]
+            return success, frame
         else:
             return success, None
 
