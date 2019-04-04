@@ -9,7 +9,6 @@ from src.app.gui.playback_ui import Ui_Playback
 
 class Playback(QWidget, Ui_Playback):
 
-    rootDirectory = str(Path(__file__).resolve().parents[3])
     __positionResolution = 1000
 
     def __init__(self, parent=None):
