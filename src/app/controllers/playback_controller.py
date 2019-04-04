@@ -79,7 +79,9 @@ class PlaybackController(QObject):
         if self.__media == None:
             raise Exception('Media file {} can\'t be loaded'.format(file))
 
-        self.__media.parse_with_options(vlc.MediaParseFlag.local, 10)
+        # This function could block indefinitely. Use libvlc_media_parse_with_options() instead
+        # We use parse(), since it's the only option on the version of the lib supported by the Jetson Tx2.
+        self.__media.parse()
 
         self.__mediaPlayer.set_media(self.__media) 
 
