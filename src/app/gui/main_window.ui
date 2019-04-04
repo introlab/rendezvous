@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>494</width>
-    <height>356</height>
+    <width>1012</width>
+    <height>651</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,44 +15,32 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
+    <property name="spacing">
+     <number>0</number>
+    </property>
     <item row="0" column="0">
-     <widget class="QTabWidget" name="tabWidget">
-      <property name="currentIndex">
-       <number>-1</number>
+     <layout class="QHBoxLayout" name="mainLayout">
+      <property name="spacing">
+       <number>0</number>
       </property>
-     </widget>
+     </layout>
     </item>
    </layout>
   </widget>
-  <widget class="QMenuBar" name="menuBar">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>0</y>
-     <width>494</width>
-     <height>22</height>
-    </rect>
-   </property>
-   <widget class="QMenu" name="menuFIle">
-    <property name="title">
-     <string>File</string>
-    </property>
-    <addaction name="actionSettings"/>
-   </widget>
-   <addaction name="menuFIle"/>
-  </widget>
-  <widget class="QStatusBar" name="statusBar"/>
-  <action name="actionSettings">
-   <property name="text">
-    <string>Settings...</string>
-   </property>
-  </action>
  </widget>
- <layoutdefault spacing="6" margin="11"/>
+ <layoutdefault spacing="0" margin="0"/>
  <resources/>
  <connections/>
- <slots>
-  <slot>btnStartOdasClicked()</slot>
-  <slot>btnStopOdasClicked()</slot>
- </slots>
 </ui>

@@ -19,13 +19,13 @@ class Transcription(QWidget, Ui_Transcription):
         self.transcriptionController = TranscriptionController()
 
 
-
         # Populate UI.
         self.encoding.addItems([encodingType.value for encodingType in self.transcriptionController.getEncodingTypes()])
         self.sampleRate.setRange(self.transcriptionController.getMinSampleRate(), self.transcriptionController.getMaxSampleRate())
         self.sampleRate.setValue(self.transcriptionController.getDefaultSampleRate())
         self.language.addItems([languageCode.value for languageCode in self.transcriptionController.getLanguageCodes()])
         self.model.addItems([model.value for model in self.transcriptionController.getModels()])    
+
 
         # Qt signal slots.
         self.btnImportAudio.clicked.connect(self.onImportAudioClicked)
@@ -82,3 +82,4 @@ class Transcription(QWidget, Ui_Transcription):
         self.window().emitToExceptionsManager(e)
         self.transcriptionResult.setText('')
         self.setDisabled(False)
+
