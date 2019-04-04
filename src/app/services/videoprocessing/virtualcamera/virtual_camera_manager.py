@@ -11,22 +11,22 @@ class VirtualCameraManager:
     def __init__(self, imgMinElevation, imgMaxElevation):
         self.__virtualCameras = []
 
-        self.virtualCameraMinHeight = 0.5
+        self.virtualCameraMinHeight = 0.3
 
         self.imgMinElevation = imgMinElevation
         self.imgMaxElevation = imgMaxElevation
 
         # 3:4 (portrait)
-        self.aspectRatio = 1
+        self.aspectRatio = 3 / 4
 
         # Change in position that cause a move of the virtual camera
-        self.positionChangedThreshold = 0
+        self.positionChangedThreshold = 0.005
 
         # Change in dimension that cause a resize of the virtual camera
         self.dimensionChangeThreshold = 0
 
         # Face scale factor to get the person's portrait (with shoulders)
-        self.portraitScaleFactor = 1
+        self.portraitScaleFactor = 4
 
         # Garbage collector unused virtual cameras. Ticks every second
         self.timer = QTimer()
@@ -41,7 +41,7 @@ class VirtualCameraManager:
             if distance > self.positionChangedThreshold:    
                 azimuth, elevation = vc.getMiddlePosition()
                 goal = vc.positionGoal
-                dista = goal[0] - azimuth
+                dista = self.__findSignedAzimuth360Distance(azimuth, goal[0])
                 diste = goal[1] - elevation
                 da = dista * frameTime
                 de = diste * frameTime
@@ -51,6 +51,7 @@ class VirtualCameraManager:
                abs(vc.sizeGoal[1] - vc.getElevationSpan()) > self.dimensionChangeThreshold:
                 dh = vc.sizeGoal[1] - vc.getElevationSpan()
                 resizeFactor = (vc.getElevationSpan() + dh * frameTime) / vc.getElevationSpan()
+                print(resizeFactor)
                 self.__tryResizeVirtualCamera(vc, resizeFactor)
 
 
@@ -69,10 +70,6 @@ class VirtualCameraManager:
             self.__virtualCameras.append(newVirtualCamera)
 
         for vc, face in matches.items(): 
-            print("---------------------------")   
-            vc.print()
-            print("")
-            face.print()   
             # Found a face to associate the vc with, so we update the vc with its matched face
             if face:
                 vc.resetTimeToLive()
@@ -102,9 +99,7 @@ class VirtualCameraManager:
         
         # There is an overflow, we need to remove it so the vc does not exit the image
         if elevationOverflow != 0:
-            print(elevationOverflow)
             newElevation -= elevationOverflow
-            print(newElevation)
 
         virtualCamera.setMiddlePosition((newAzimuth, newElevation))
 
@@ -180,16 +175,26 @@ class VirtualCameraManager:
         return elevationOverflow
 
 
-    def __distanceBetweenTwoSphericalAngles(self, angle1, angle2):
-        angle1Azimuth, angle1Elevation = angle1
-        angle2Azimuth, angle2Elevation = angle2
+    def __distanceBetweenTwoSphericalAngles(self, srcAngle, dstAngle):
+        srcAngleAzimuth, srcAngleElevation = srcAngle
+        dstAngleAzimuth, dstAngleElevation = dstAngle
 
-        azimuthDistance = angle1Azimuth - angle2Azimuth
-        if abs(azimuthDistance) > np.pi:
-            azimuthDistance = (np.pi * 2) - abs(azimuthDistance)
-        elevationDistance = angle1Elevation - angle2Elevation
+        azimuthDistance = self.__findSignedAzimuth360Distance(srcAngleAzimuth, dstAngleAzimuth)
+        elevationDistance = srcAngleElevation - dstAngleElevation
 
         return math.sqrt(azimuthDistance ** 2 + elevationDistance ** 2)
+
+
+    def __findSignedAzimuth360Distance(self, srcAzimuth, dstAzimuth):
+        distance = dstAzimuth - srcAzimuth
+        absDistance = abs(distance)
+        if absDistance > np.pi:
+            absDistance = np.pi * 2 - absDistance
+            
+        if (distance + np.pi * 2) % (np.pi * 2) < np.pi:
+            return absDistance
+        else:
+            return -absDistance
 
 
     # Removes the virtual cameras that were not associated with a face for some time

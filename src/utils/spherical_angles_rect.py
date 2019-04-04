@@ -50,13 +50,7 @@ class SphericalAnglesRect:
 
     
     def setMiddlePosition(self, newMiddlePosition):
-        diffAzimuth = newMiddlePosition[0] - self.getMiddlePosition()[0]
-        diffElevation = newMiddlePosition[1] - self.getMiddlePosition()[1]
-        self.azimuthLeft = (self.azimuthLeft + diffAzimuth) % (np.pi * 2)
-        self.azimuthRight = (self.azimuthRight + diffAzimuth) % (np.pi * 2)
-        self.elevationBottom = (self.elevationBottom + diffElevation) % (np.pi * 2)
-        self.elevationTop = (self.elevationTop + diffElevation) % (np.pi * 2)
-
-
-    def print(self):
-        print("azimuthLeft    = {azimuthLeft} \nazimuthRight   = {azimuthRight} \nelevationBottom= {elevationBottom} \nelevationTop   = {elevationTop} \nmiddlePosition = {middlePosition} \nazimuthSpan    = {azimuthSpan} \nelevationSpan  = {elevationSpan} \n".format(azimuthLeft=self.azimuthLeft,azimuthRight=self.azimuthRight,elevationBottom=self.elevationBottom,elevationTop=self.elevationTop,middlePosition=self.getMiddlePosition(),azimuthSpan=self.getAzimuthSpan(),elevationSpan=self.getElevationSpan()))
+        self.azimuthLeft = (newMiddlePosition[0] - self.getAzimuthSpan() / 2) % (np.pi * 2)
+        self.azimuthRight = (newMiddlePosition[0] + self.getAzimuthSpan() / 2) % (np.pi * 2)
+        self.elevationBottom = newMiddlePosition[1] - self.getElevationSpan() / 2
+        self.elevationTop = newMiddlePosition[1] + self.getElevationSpan() / 2
