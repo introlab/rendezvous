@@ -10,6 +10,7 @@ from src.app.managers.settings import Settings
 from src.app.views.conference import Conference
 from src.app.views.transcription import Transcription
 from src.app.views.change_settings import ChangeSettings
+from src.app.views.audio_processing import AudioProcessing
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -35,6 +36,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         
         self.settingsTab = ChangeSettings(parent=self)   
         self.tabWidget.addTab(self.settingsTab, 'Settings')
+
+        self.audioProcessingTab = AudioProcessing(parent=self)
+        self.tabWidget.addTab(self.audioProcessingTab, 'Audio Processing')
   
 
     # Handles the event where the user closes the window with the X button.
@@ -42,6 +46,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if event:
             self.conferenceTab.closeEvent(event)
             self.transcriptionTab.closeEvent(event)
+            self.audioProcessingTab.closeEvent(event)
             event.accept()
 
 
