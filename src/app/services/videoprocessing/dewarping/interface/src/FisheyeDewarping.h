@@ -19,6 +19,12 @@ class VertexObjectLoader;
  * because numpy arrays have row and col inverted from OpenGL arrays
  */
 
+enum DewarpImageCode
+{
+    NoDewarpingRead = -2,
+    NoQueuedDewarping = -1
+};
+
 class FisheyeDewarping
 {
 public:

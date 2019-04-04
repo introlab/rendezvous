@@ -53,7 +53,7 @@ int FisheyeDewarping::dewarpNextImage()
     // Calling code knows all dewarping is completed when -1 is returned
     if (m_dewarpingQueue.empty())
     {
-        return -1;
+        return NoQueuedDewarping;
     }
 
     // Retrieve next dewarping in queue

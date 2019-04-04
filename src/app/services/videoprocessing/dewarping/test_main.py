@@ -109,9 +109,9 @@ def main():
 		yMostRight = yNew2
 
 	azimuthLeft = SphericalAnglesConverter.getAzimuthFromImage(xNew1, yMostLeft, \
-		fisheyeAngle, fisheyeCenter, dewarpingParameters, True)
+		fisheyeAngle, fisheyeCenter, dewarpingParameters)
 	azimuthRight = SphericalAnglesConverter.getAzimuthFromImage(xNew2, yMostRight, \
-		fisheyeAngle, fisheyeCenter, dewarpingParameters, True)
+		fisheyeAngle, fisheyeCenter, dewarpingParameters)
 	elevationTop = SphericalAnglesConverter.getElevationFromImage(xMostTop, yNew1, \
 		fisheyeAngle, fisheyeCenter, dewarpingParameters)
 	elevationBottom = SphericalAnglesConverter.getElevationFromImage(xMostBottom, yNew2, \
