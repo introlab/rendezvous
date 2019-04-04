@@ -46,8 +46,8 @@ private:
     
 private:
 
-    std::tuple<DewarpingParameters, int> test;
-    std::deque<ImageBuffer> test2;
+    std::deque<std::tuple<int, int> test;
+    std::deque<std::tuple<DewarpingParameters, ImageBuffer> test2;
     std::tuple<int, int, int, int> test3;
     std::deque<std::tuple<int, DewarpingParameters, ImageBuffer, bool>> m_dewarpingQueue;
 
