@@ -17,7 +17,7 @@ class VirtualCameraManager:
         self.imgMaxElevation = imgMaxElevation
 
         # Distance at which a new vc will be created instead of moved
-        self.newVirtualCameraThreshold = 500
+        self.newVirtualCameraThreshold = 0.5
 
         # 3:4 (portrait)
         self.aspectRatio = 3 / 4

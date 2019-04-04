@@ -35,7 +35,7 @@ class VideoProcessor(QObject):
         self.isRunning = False
         self.imageQueue = Queue()
         self.facesQueue = Queue()
-        self.detectFacesSemaphore = Semaphore()
+        self.isBusySemaphore = Semaphore()
         self.heartbeatQueue = Queue(1)
 
 
@@ -88,8 +88,8 @@ class VideoProcessor(QObject):
             fdOutputWidth = int((fdDewarpingParameters[0].dewarpWidth / 2) - (fdDewarpingParameters[0].dewarpWidth / 2) % 4)
             fdOutputHeight = int((fdDewarpingParameters[0].dewarpHeight / 2) - (fdDewarpingParameters[0].dewarpHeight / 2) % 4)
 
-            vcOutputWidth = 600
-            vcOutputHeight = 800
+            vcOutputWidth = 300
+            vcOutputHeight = 400
 
             fisheyeCenter = (cameraConfig.imageWidth / 2, cameraConfig.imageHeight / 2)
             fisheyeAngle = np.deg2rad(cameraConfig.fisheyeAngle)
@@ -100,7 +100,7 @@ class VideoProcessor(QObject):
             vcBufferId = dewarper.createRenderContext(vcOutputWidth, vcOutputHeight, channels)
 
             faceDetection = FaceDetection(faceDetectionMethod, self.imageQueue, \
-                self.facesQueue, self.heartbeatQueue, self.detectFacesSemaphore, dewarpCount)
+                self.facesQueue, self.heartbeatQueue, self.isBusySemaphore, dewarpCount)
             faceDetection.start()
 
             fdBufferQueue = deque()
@@ -151,8 +151,8 @@ class VideoProcessor(QObject):
                     dewarper.loadFisheyeImage(frame)
 
                     # Queue dewarping for face detection
-                    if self.detectFacesSemaphore.acquire(False):
-                        self.detectFacesSemaphore.release()
+                    if self.isBusySemaphore.acquire(False):
+                        self.isBusySemaphore.release()
                         fdBuffers = []
                         for dewarpIndex in range(0, dewarpCount):
                             fdBuffer = np.empty((fdOutputHeight, fdOutputWidth, channels), dtype=np.uint8)
