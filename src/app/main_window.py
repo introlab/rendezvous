@@ -74,6 +74,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def closeEvent(self, event):
         if event:
             self.conferenceView.closeEvent(event)
+            self.recordingView.closeEvent(event)
             self.transcriptionView.closeEvent(event)
             event.accept()
 
