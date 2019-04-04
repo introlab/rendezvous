@@ -1,9 +1,8 @@
-import queue
 import time
 from math import radians
-from multiprocessing import Queue
-from multiprocessing import Semaphore
+from multiprocessing import Queue, Semaphore
 from threading import Thread
+import queue
 
 from PyQt5.QtCore import QObject, pyqtSignal
 
@@ -46,10 +45,10 @@ class VideoProcessor(QObject):
         try:
             
             if not cameraConfigPath:
-                raise Exception('cameraConfigPath needs to be set in the settings')
+                raise Exception('cameraConfigPath needs to be set in the settings tab')
 
             if not faceDetectionMethod in [fdMethod.value for fdMethod in FaceDetectionMethods]:
-                raise Exception('{} is not a supported face detection method'.format(self.faceDetectionMethod))
+                raise Exception('Unsupported face detection method: {}. Set a correct method in the settings tab.'.format(faceDetectionMethod))
 
             Thread(target=self.run, args=(cameraConfigPath, faceDetectionMethod)).start()
 
@@ -125,7 +124,6 @@ class VideoProcessor(QObject):
             if faceDetection:
                 faceDetection.stop()
                 faceDetection.join()
-                faceDetection.terminate()
                 faceDetection = None
 
             self.__emptyQueue(self.imageQueue)
