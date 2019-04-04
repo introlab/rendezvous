@@ -78,7 +78,7 @@ class VideoProcessor(QObject):
 
             channels = len(frame.shape)
 
-            dewarpCount = 1
+            dewarpCount = 4
             fdDewarpingParameters = self.__getFaceDetectionDewarpingParametersList(cameraConfig, dewarpCount)
             
             # Increasing these will make face detection slower, but yield better detections
@@ -123,14 +123,30 @@ class VideoProcessor(QObject):
 
                 # Update virtual camera with detected faces
                 if newFaces is not None:
-                    allFaces = []
+                    uniqueFaces = []
+                    facePositions = []
+
                     for (faces, dewarpIndex) in newFaces:
                         for face in faces:
                             sphericalAnglesRect = self.__getSphericalAnglesRectFromFace(face, fdDewarpingParameters[dewarpIndex], \
                                 fdOutputWidth, fdOutputHeight, fisheyeAngle, fisheyeCenter)
-                            allFaces.append(sphericalAnglesRect)
+                            currentFacePosition = sphericalAnglesRect.getMiddlePosition()
 
-                    self.virtualCameraManager.updateFaces(allFaces)
+                            angleRange = 0.05
+                            faceAlreadyExist = False
+                            for facePosition in facePositions:
+                                if currentFacePosition[0] > facePosition[0] - angleRange \
+                                   and currentFacePosition[0] < facePosition[0] + angleRange \
+                                   and currentFacePosition[1] > facePosition[1] - angleRange \
+                                   and currentFacePosition[1] < facePosition[1] + angleRange :
+                                    faceAlreadyExist = True
+                                    break
+                                    
+                            if not faceAlreadyExist:
+                                uniqueFaces.append(sphericalAnglesRect)
+                                facePositions.append(currentFacePosition)
+
+                    self.virtualCameraManager.updateFaces(uniqueFaces)
 
                 self.virtualCameraManager.update(frameTime)
                 
