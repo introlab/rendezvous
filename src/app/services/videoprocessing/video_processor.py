@@ -1,9 +1,8 @@
-import queue
 import time
 from math import radians
-from multiprocessing import Queue
-from multiprocessing import Semaphore
+from multiprocessing import Queue, Semaphore
 from threading import Thread
+import queue
 
 from PyQt5.QtCore import QObject, pyqtSignal
 
@@ -125,7 +124,6 @@ class VideoProcessor(QObject):
             if faceDetection:
                 faceDetection.stop()
                 faceDetection.join()
-                faceDetection.terminate()
                 faceDetection = None
 
             self.__emptyQueue(self.imageQueue)

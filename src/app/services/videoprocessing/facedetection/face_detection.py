@@ -2,6 +2,7 @@ import multiprocessing
 import queue
 import time
 
+from .facedetector.yolo_face_detector import YoloFaceDetector
 from .facedetector.dnn_face_detector import DnnFaceDetector
 from .facedetector.haar_face_detector import HaarFaceDetector
 from .facedetector.face_detection_methods import FaceDetectionMethods
@@ -32,7 +33,7 @@ class FaceDetection(multiprocessing.Process):
         lastHeartBeat = time.perf_counter()
 
         while not self.exit.is_set() and time.perf_counter() - lastHeartBeat < 0.5:
-
+            
             frame = []
             try:
                 frame = self.imageQueue.get_nowait()
@@ -59,5 +60,7 @@ class FaceDetection(multiprocessing.Process):
             return DnnFaceDetector()
         elif faceDetectionMethod == FaceDetectionMethods.OPENCV_HAAR_CASCADES.value:
             return HaarFaceDetector()
+        elif faceDetectionMethod == FaceDetectionMethods.YOLO_V3.value:
+            return YoloFaceDetector()
         else:
             return HaarFaceDetector()        
