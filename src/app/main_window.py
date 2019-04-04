@@ -1,14 +1,18 @@
 import os
 from pathlib import Path
 
-from PyQt5.QtWidgets import QMainWindow
+from PyQt5.QtWidgets import QMainWindow, QStackedWidget
+from PyQt5.QtCore import pyqtSlot
 from src.app.gui.main_window_ui import Ui_MainWindow
 
 from src.app.managers.exceptions import Exceptions
 from src.app.managers.settings import Settings
 
+from src.app.components.side_bar import SideBar
+
 from src.app.views.conference import Conference
 from src.app.views.transcription import Transcription
+from src.app.views.playback import Playback
 from src.app.views.change_settings import ChangeSettings
 from src.app.views.audio_processing import AudioProcessing
 
@@ -19,7 +23,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
-        self.setupUi(self)
 
         # Exception manager.
         self.__exceptionsManager = Exceptions()
@@ -27,19 +30,40 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Settings manager.
         self.__settingsManager = Settings()
 
-        # Tabs of the main layout.
-        self.conferenceTab = Conference(parent=self)   
-        self.tabWidget.addTab(self.conferenceTab, 'Conference')
+        # Initilization of the UI from QtCreator.
+        self.setupUi(self)
 
-        self.transcriptionTab = Transcription(parent=self)   
-        self.tabWidget.addTab(self.transcriptionTab, 'Transcription')
-        
-        self.settingsTab = ChangeSettings(parent=self)   
-        self.tabWidget.addTab(self.settingsTab, 'Settings')
+        # Initialization of the application side bar.
+        self.sideBar = SideBar() 
+        self.sideBar.currentRowChanged.connect(self.onSideBarCurrentRowChanged) 
+        self.mainLayout.addWidget(self.sideBar)
 
-        self.audioProcessingTab = AudioProcessing(parent=self)
-        self.tabWidget.addTab(self.audioProcessingTab, 'Audio Processing')
-  
+        # Initializaion of the views container.
+        self.views = QStackedWidget()
+        self.mainLayout.addWidget(self.views)
+    
+        # Views of the main layout.
+        self.conferenceView = Conference(parent=self)
+        self.sideBar.addItem('Conference')
+        self.views.addWidget(self.conferenceView)
+        self.sideBar.setCurrentRow(0)       
+
+        self.audioProcessingView = AudioProcessing(parent=self)
+        self.sideBar.addItem('Audio Processing')
+        self.views.addWidget(self.audioProcessingView)
+
+        self.transcriptionView = Transcription(parent=self)   
+        self.sideBar.addItem('Transcription')
+        self.views.addWidget(self.transcriptionView)
+
+        self.playback = Playback(parent=self)   
+        self.sideBar.addItem('Playback')
+        self.views.addWidget(self.playback)
+
+        self.settingsView = ChangeSettings(parent=self)   
+        self.sideBar.addItem('Settings')
+        self.views.addWidget(self.settingsView)
+
 
     # Handles the event where the user closes the window with the X button.
     def closeEvent(self, event):
@@ -54,10 +78,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def emitToExceptionsManager(self, exception):
         self.__exceptionsManager.signalException.emit(exception)
 
+
     # Used by tab modules to set an application setting.
     def setSetting(self, setting, value):
         self.__settingsManager.setValue(setting, value)
     
+
     # Used by tab modules to get an application setting.
     def getSetting(self, setting):
         return self.__settingsManager.getValue(setting)
+
+
+    @pyqtSlot(int)
+    def onSideBarCurrentRowChanged(self, i):
+        self.views.setCurrentIndex(i)
+
