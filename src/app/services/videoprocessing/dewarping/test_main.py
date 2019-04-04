@@ -218,8 +218,6 @@ def getFaceDetectionDewarpingParameters(imageWidth, imageHeight, inRadius, outRa
 
 	for i in range(0, dewarpCount):
 		dewarpingParameters = DewarpingHelper.getDewarpingParameters(donutSlice, topDistorsionFactor, bottomDistorsionFactor)
-		dewarpingParameters.topOffset = 0
-		dewarpingParameters.bottomOffset = 0
 		dewarpingParametersList.append(dewarpingParameters)
 		donutSlice.middleAngle = (donutSlice.middleAngle + np.deg2rad(360 / dewarpCount)) % (2 * np.pi)
 
