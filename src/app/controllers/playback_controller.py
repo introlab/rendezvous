@@ -7,7 +7,7 @@ import vlc
 
 
 class PlaybackController(QObject):  
-
+    
     mediaPlayerEndReached = pyqtSignal()
     errorCode = -1
     __isPaused = False
@@ -19,8 +19,9 @@ class PlaybackController(QObject):
         self.__instance = vlc.Instance('-q --no-xlib')
         self.__mediaPlayer = self.__instance.media_player_new()
 
-        # self.events = self.__mediaPlayer.event_manager()
-        self.__mediaPlayer.event_manager().event_attach(vlc.EventType.MediaPlayerEndReached, self.onEventManage)
+        self.events = self.__mediaPlayer.event_manager()
+        self.events.event_attach(vlc.EventType.MediaPlayerEndReached, self.onEventManage)
+        self.events.event_attach(vlc.EventType.MediaPlayerEncounteredError, self.onEventManage)
 
 
     def play(self):
@@ -77,12 +78,14 @@ class PlaybackController(QObject):
         self.__media = self.__instance.media_new(file)
         if self.__media == None:
             raise Exception('Media file {} can\'t be loaded'.format(file))
-        self.__media.parse()
 
-        self.__mediaPlayer.set_media(self.__media)  
+        self.__media.parse_with_options(vlc.MediaParseFlag.local, 10)
 
+        self.__mediaPlayer.set_media(self.__media) 
+
+         
         if platform.system() == "Linux":
-            self.__mediaPlayer.set_xwindow(int(winId))
+            self.__mediaPlayer.set_xwindow(winId)
         else:
             raise Exception('Playback is not supported on this operating system')
 
@@ -90,4 +93,6 @@ class PlaybackController(QObject):
     def onEventManage(self, event):
         if event.type == vlc.EventType.MediaPlayerEndReached:
             self.mediaPlayerEndReached.emit()
+        elif event.type == vlc.EventType.MediaPlayerEncounteredError: 
+            raise Exception(event)
 
