@@ -87,14 +87,12 @@ class ConferenceController(QObject):
     @pyqtSlot(Exception)
     def odasExceptionHandling(self, e):
         if self.isRecording:
-            print('a')
             self.stopOdasLive()
             self.stopVideoProcessor()
             self.isRecording = False
             self.signalRecordingState.emit(self.isRecording)
         
         else:
-            print('b')
             self.stopOdasLive()
             self.signalOdasState.emit(False)
         
@@ -103,12 +101,9 @@ class ConferenceController(QObject):
 
     @pyqtSlot(Exception)
     def recorderExceptionHandling(self, e):
+        self.stopOdasLive()
+        self.stopVideoProcessor()
         self.isRecording = False
-        if self.isOdasLiveConnected:
-            self.stopOdasLive()
-        if self.videoProcessorState:
-            self.stopVideoProcessor()
-        
         self.signalRecordingState.emit(self.isRecording)
         self.signalException.emit(e)
 

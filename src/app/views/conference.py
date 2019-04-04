@@ -190,9 +190,9 @@ class Conference(QWidget, Ui_Conference):
     # Handles the event where the user closes the window with the X button
     def closeEvent(self, event):
         if event:
+            self.conferenceController.stopOdasServer()
             self.conferenceController.stopVideoProcessor()
             self.conferenceController.stopRecording()
-            self.conferenceController.stopOdasServer()
             event.accept()
     
 
