@@ -28,6 +28,9 @@ class VirtualCameraManager:
         # Face scale factor to get the person's portrait (with shoulders)
         self.portraitScaleFactor = 4
 
+        # Range in angles where we consider faces to be duplicate
+        self.duplicateFaceAngleRange = 0.05
+
         # Garbage collector unused virtual cameras. Ticks every second
         self.timer = QTimer()
         self.timer.timeout.connect(self.__garbageCollect)
@@ -51,15 +54,35 @@ class VirtualCameraManager:
                abs(vc.sizeGoal[1] - vc.getElevationSpan()) > self.dimensionChangeThreshold:
                 dh = vc.sizeGoal[1] - vc.getElevationSpan()
                 resizeFactor = (vc.getElevationSpan() + dh * frameTime) / vc.getElevationSpan()
-                print(resizeFactor)
                 self.__tryResizeVirtualCamera(vc, resizeFactor)
 
 
     # Updates the associated face (if any) for each virtual camera
     def updateFaces(self, faces):
+
+        uniqueFaces = []
+        facePositions = []
+
+        # Look for duplicate faces and ignore them
+        for face in faces:
+            currentFacePosition = face.getMiddlePosition()
+
+            faceAlreadyExist = False
+            for facePosition in facePositions:
+                if currentFacePosition[0] > facePosition[0] - self.duplicateFaceAngleRange \
+                   and currentFacePosition[0] < facePosition[0] + self.duplicateFaceAngleRange \
+                   and currentFacePosition[1] > facePosition[1] - self.duplicateFaceAngleRange \
+                   and currentFacePosition[1] < facePosition[1] + self.duplicateFaceAngleRange :
+                    faceAlreadyExist = True
+                    break
+                    
+            if not faceAlreadyExist:
+                facePositions.append(currentFacePosition)
+                uniqueFaces.append(face)
+
         # Find matches between existing virtual cameras and detected faces
         matches = dict.fromkeys(self.__virtualCameras, None)
-        matches, unmatchedFaces = self.__tryFindMatches(matches, faces)
+        matches, unmatchedFaces = self.__tryFindMatches(matches, uniqueFaces)
 
         # Create new virtual cameras from faces that were not associated with a vc
         for unmatchedFace in unmatchedFaces:

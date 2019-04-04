@@ -123,30 +123,15 @@ class VideoProcessor(QObject):
 
                 # Update virtual camera with detected faces
                 if newFaces is not None:
-                    uniqueFaces = []
-                    facePositions = []
+                    angleFaces = []
 
                     for (faces, dewarpIndex) in newFaces:
                         for face in faces:
-                            sphericalAnglesRect = self.__getSphericalAnglesRectFromFace(face, fdDewarpingParameters[dewarpIndex], \
+                            angleFace = self.__getSphericalAnglesRectFromFace(face, fdDewarpingParameters[dewarpIndex], \
                                 fdOutputWidth, fdOutputHeight, fisheyeAngle, fisheyeCenter)
-                            currentFacePosition = sphericalAnglesRect.getMiddlePosition()
+                            angleFaces.append(angleFace)
 
-                            angleRange = 0.05
-                            faceAlreadyExist = False
-                            for facePosition in facePositions:
-                                if currentFacePosition[0] > facePosition[0] - angleRange \
-                                   and currentFacePosition[0] < facePosition[0] + angleRange \
-                                   and currentFacePosition[1] > facePosition[1] - angleRange \
-                                   and currentFacePosition[1] < facePosition[1] + angleRange :
-                                    faceAlreadyExist = True
-                                    break
-                                    
-                            if not faceAlreadyExist:
-                                uniqueFaces.append(sphericalAnglesRect)
-                                facePositions.append(currentFacePosition)
-
-                    self.virtualCameraManager.updateFaces(uniqueFaces)
+                    self.virtualCameraManager.updateFaces(angleFaces)
 
                 self.virtualCameraManager.update(frameTime)
                 
