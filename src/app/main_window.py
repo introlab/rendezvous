@@ -56,9 +56,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.sideBar.addItem('Transcription')
         self.views.addWidget(self.transcriptionView)
 
-        self.playback = Playback(parent=self)   
+        self.playbackView = Playback(parent=self)   
         self.sideBar.addItem('Playback')
-        self.views.addWidget(self.playback)
+        self.views.addWidget(self.playbackView)
 
         self.settingsView = ChangeSettings(parent=self)   
         self.sideBar.addItem('Settings')
@@ -68,9 +68,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # Handles the event where the user closes the window with the X button.
     def closeEvent(self, event):
         if event:
-            self.conferenceTab.closeEvent(event)
-            self.transcriptionTab.closeEvent(event)
-            self.audioProcessingTab.closeEvent(event)
+            self.conferenceView.closeEvent(event)
+            self.audioProcessingView.closeEvent(event)
+            self.transcriptionView.closeEvent(event)
+            self.playbackView.closeEvent(event)
+            self.settingsView.closeEvent(event)
             event.accept()
 
 
