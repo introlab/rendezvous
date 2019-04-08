@@ -42,6 +42,8 @@ class Conference(QWidget, Ui_Conference):
         self.conferenceController.signalHumanSourcesDetected.connect(self.showHumanSources)
         self.conferenceController.signalException.connect(self.exceptionReceived)
 
+        self.soundSources = []
+
 
     @pyqtSlot()
     def btnStartStopOdasClicked(self):

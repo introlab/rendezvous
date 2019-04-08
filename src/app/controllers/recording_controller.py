@@ -10,7 +10,7 @@ class RecordingController(QObject):
     signalOdasState = pyqtSignal(bool)
     signalRecordingState = pyqtSignal(bool)
     signalVideoProcessorState = pyqtSignal(bool)
-    signalVirtualCamerasReceived = pyqtSignal(object, object)
+    signalVirtualCamerasReceived = pyqtSignal(object)
 
     def __init__(self, outputFolder, odasserver, parent=None):
         super(RecordingController, self).__init__(parent)
@@ -32,7 +32,7 @@ class RecordingController(QObject):
 
         self.__videoProcessor = VideoProcessor()
         self.__videoProcessor.signalException.connect(self.exceptionHandling)
-        self.__videoProcessor.signalFrameData.connect(self.virtualCamerasReceived)
+        self.__videoProcessor.signalVirtualCameras.connect(self.virtualCamerasReceived)
         self.__videoProcessor.signalStateChanged.connect(self.videoProcessorStateChanged)
 
 
@@ -56,11 +56,12 @@ class RecordingController(QObject):
 
 
     @pyqtSlot(object, object)
-    def virtualCamerasReceived(self, image, virtualCameras):
-        self.signalVirtualCamerasReceived.emit(image, virtualCameras)
+    def virtualCamerasReceived(self, images, virtualCameras):
+        self.signalVirtualCamerasReceived.emit(images)
 
-        if self.isRecording and self.__recorder and self.__recorder.mailbox:
-            self.__recorder.mailbox.put(('video', '0', image))
+        if images:
+            if self.isRecording and self.__recorder and self.__recorder.mailbox:
+                self.__recorder.mailbox.put(('video', '0', images[0]))
 
 
     @pyqtSlot(Exception)

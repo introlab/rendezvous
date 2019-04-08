@@ -74,8 +74,8 @@ class Recording(QWidget, Ui_Recording):
 
 
     @pyqtSlot(object, object)        
-    def updateVirtualCamerasDispay(self, image, virtualCameras):
-        self.virtualCameraDisplayer.updateDisplay(image, virtualCameras)
+    def updateVirtualCamerasDispay(self, virtualCameraImages):
+        self.virtualCameraDisplayer.updateDisplay(virtualCameraImages)
 
 
     @pyqtSlot(bool)
@@ -97,6 +97,11 @@ class Recording(QWidget, Ui_Recording):
     
     @pyqtSlot(bool)
     def videoProcessorStateChanged(self, isRunning):
+        if isRunning:
+            self.virtualCameraDisplayer.startDisplaying()
+        else:
+            self.virtualCameraDisplayer.stopDisplaying()
+
         if self.recordingController and not self.recordingController.isOdasLiveConnected:
             self.btnStartStopRecord.setDisabled(False)
 
@@ -113,4 +118,4 @@ class Recording(QWidget, Ui_Recording):
             self.recordingController.stopVideoProcessor()
             self.recordingController.stopRecording()
             event.accept()
-    
+

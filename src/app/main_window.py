@@ -44,7 +44,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.views = QStackedWidget()
         self.mainLayout.addWidget(self.views)
     
-        odasServer = Odas(hostIP='127.0.0.1', portPositions=10020, portAudio=10030, isVerbose=True)
+        odasServer = Odas(hostIP='127.0.0.1', portPositions=10020, portAudio=10030, isVerbose=False)
         odasServer.start()
 
         # Views of the main layout.

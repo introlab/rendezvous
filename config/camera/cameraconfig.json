@@ -17,7 +17,7 @@
 
     "Camera":
     {
-        "Port": 0,
+        "Port": 1,
         "FPS": 20,
         "Fourcc": "UYVY",
         "BufferSize": 2
