@@ -1,5 +1,6 @@
 from enum import Enum, unique
 from math import degrees
+import numpy as np
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -59,8 +60,8 @@ class Conference(QWidget, Ui_Conference):
         plt.rc('legend', fontsize=FontSizes.SMALL_SIZE.value)    # legend fontsize
         plt.rc('figure', titlesize=FontSizes.BIGGER_SIZE.value)  # fontsize of the figure title
 
-        self.azimuthGraph = AzimuthGraph(None, width=1, height=0.5, dpi=100, title='Azimuth Positions')
-        self.elevationGraph = AzimuthGraph(None, width=1, height=0.5, dpi=100, title='Elevation Positions')
+        self.azimuthGraph = Graph(None, width=1, height=0.5, dpi=100, title='Azimuth Positions')
+        self.elevationGraph = Graph(None, width=1, height=0.5, dpi=100, title='Elevation Positions')
         self.soundPositionsVerticalLayout.addWidget(self.azimuthGraph)
         self.soundPositionsVerticalLayout.addWidget(self.elevationGraph)
 
@@ -137,11 +138,11 @@ class Conference(QWidget, Ui_Conference):
     def positionDataReceived(self, values):
         azimuthNewData = []
         elevationNewData = []
-        for _, angles in values.items():
-            azimuthNewData.append(float(angles['azimuth']))
-            elevationNewData.append(float(angles['elevation']))
-        self.azimuthGraph.updateFigure(azimuthNewData)
-        self.elevationGraph.updateFigure(elevationNewData)
+        for angles in values:
+            azimuthNewData.append(float(np.rad2deg(angles['azimuth'])))
+            elevationNewData.append(float(np.rad2deg(angles['elevation'])))
+        self.azimuthGraph.addData(azimuthNewData)
+        self.elevationGraph.addData(elevationNewData)
 
         self.soundSources = values
 
@@ -221,7 +222,7 @@ class Conference(QWidget, Ui_Conference):
             self.source4.setStyleSheet('background-color: %s' % color)
 
 
-class Graph(FigureCanvas):
+class Canvas(FigureCanvas):
 
     def __init__(self, parent=None, width=5, height=4, dpi=100, title=None):
         fig = Figure(figsize=(width, height), dpi=dpi)
@@ -245,20 +246,29 @@ class Graph(FigureCanvas):
         pass
 
 
-class AzimuthGraph(Graph): 
+class Graph(Canvas): 
 	
     def __init__(self, *args, **kwargs):
-        Graph.__init__(self, *args, **kwargs)
+        Canvas.__init__(self, *args, **kwargs)
+        timer = QTimer(self)
+        timer.timeout.connect(self.updateFigure)
+        timer.start(500)
 
 
     def computeInitialFigure(self):
-        self.axes.plot([], self.data, 'r')
+        self.axes.plot([], self.data)
 
 
-    def updateFigure(self, data):
+    def addData(self, data):
+        if data:
+            self.data.append(data)
+
+
+    def updateFigure(self):
         self.axes.cla()
-        self.data.append(data)
-        self.axes.plot(range(0, len(self.data)), self.data, 'r')
+        yData = self.data
+        xData = range(0, len(self.data))
+        self.axes.plot(xData, yData)
         self.axes.set_title(self.title)
 
         self.draw()
