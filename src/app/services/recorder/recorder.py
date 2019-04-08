@@ -23,6 +23,7 @@ class Recorder(QObject, Thread):
         super(Recorder, self).__init__(parent)
 
         self.__audioWriter = AudioWriter()
+        self.changeAudioSettings(outputFolder, 4, 1, 2, 48000)
         self.__videoSources = {}
         self.__initNewVideoWriters(outputFolder)
         self.mailbox = queue.Queue()

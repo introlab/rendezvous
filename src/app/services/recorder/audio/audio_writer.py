@@ -29,7 +29,7 @@ class AudioWriter(QObject):
     def createNewFiles(self):
         for i in range(0, self.nChannels):
             outputFile = os.path.join(self.outputFolder, 'outputsrc-{}.wav'.format(i))
-            if outputFile and os.path.exists(outputFile):
+            if outputFile and os.path.exists(self.outputFolder):
                 self.wavFiles.append(wave.open(outputFile, 'wb'))
                 self.wavFiles[i].setnchannels(self.nChannelsFile)
                 self.wavFiles[i].setsampwidth(self.byteDepth)
