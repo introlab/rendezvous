@@ -5,8 +5,6 @@
 #include <glm/glm.hpp>
 #include <glad/glad.h>
 
-struct DewarpingParameters;
-
 class ShaderProgram
 {
 public:
@@ -16,7 +14,6 @@ public:
     
     GLint getUniformLocation(const GLchar * uniformName);
     void loadTransformation(glm::mat4& matrix);
-    void loadDewarpingParameters(DewarpingParameters& dewarpingParameters);
     void start();
     void stop();
     void cleanUp();
@@ -39,15 +36,7 @@ private:
     GLuint m_fragmentShaderID;
 
     GLint m_location_transformationMatrix;
-    GLint m_location_xCenter;
-    GLint m_location_yCenter;
-    GLint m_location_dewarpWidth;
-    GLint m_location_dewarpHeight;
-    GLint m_location_inRadius;
-    GLint m_location_outRadiusDiff;
-    GLint m_location_centerRadius;
-    GLint m_location_xOffset;
-    GLint m_location_bottomDistorsionFactor;
+    
 };
 
 #endif // !SHADER_PROGRAM_H

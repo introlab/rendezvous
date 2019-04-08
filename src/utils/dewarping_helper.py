@@ -9,6 +9,7 @@ class DewarpingHelper:
     def __init__(self):
         pass
 
+
     @staticmethod
     def getDewarpingParameters(baseDonutSlice, topDistorsionFactor, bottomDistorsionFactor):
         # Distance between center of baseDonutSlice and newDonutSlice to calculate
@@ -17,6 +18,11 @@ class DewarpingHelper:
         # Return a new donut mapping based on the one passed, which have properties to reduce the distorsion in the image
         newDonutSlice = DewarpingHelper.createDewarpingDonutSlice(baseDonutSlice, centersDistance)
 
+        return DewarpingHelper.getDewarpingParametersFromNewDonutSlice(baseDonutSlice, newDonutSlice, centersDistance, bottomDistorsionFactor)
+
+    
+    @staticmethod
+    def getDewarpingParametersFromNewDonutSlice(baseDonutSlice, newDonutSlice, centersDistance, bottomDistorsionFactor):
         # Radius of circle which would be in the middle of the dewarped image if no radius factor was applied to dewarping
         centerRadius = (newDonutSlice.inRadius + newDonutSlice.outRadius) / 2
 
@@ -32,6 +38,56 @@ class DewarpingHelper:
 
         return DewarpingParameters(newDonutSlice.xCenter, newDonutSlice.yCenter, dewarpWidth, dewarpHeight, \
             newDonutSlice.inRadius, centerRadius, outRadiusDiff, xOffset, bottomDistorsionFactor)
+
+
+    @staticmethod
+    def getVirtualCameraDewarpingParameters(rect, baseDonutSlice, dewarpingParameters, topDistorsionFactor):
+        (x1, y1, x2, y2) = rect
+        centersDistance = topDistorsionFactor * 10000
+
+        newDonutSlice = DewarpingHelper.createDewarpingDonutSlice(baseDonutSlice, centersDistance)
+
+        print('(x1, y1, x2, y2) = ', x1, ' ', y1, ' ', x2, ' ', y2)
+        print('newDonutSlice.angleSpan', newDonutSlice.angleSpan)
+        print('newDonutSlice.middleAngle', newDonutSlice.middleAngle)
+
+        vcWidth = x2 - x1
+        angleSpan = (newDonutSlice.angleSpan * vcWidth) / dewarpingParameters.dewarpWidth
+        newDonutSlice.angleSpan = angleSpan
+
+        middleVcX = (vcWidth) / 2 + x1
+        print('middleVcX', middleVcX)
+        dx = dewarpingParameters.dewarpWidth / 2 - middleVcX
+        print('dx', dx)
+        newDonutSlice.middleAngle = newDonutSlice.middleAngle - (newDonutSlice.angleSpan * dx) / dewarpingParameters.dewarpWidth
+        
+        inRadius = DewarpingHelper.getPixelDewarpedParameterRadius(x1, y1, dewarpingParameters)
+        outRadius = DewarpingHelper.getPixelDewarpedParameterRadius(x1, y2, dewarpingParameters)
+
+        print('inRadius', inRadius)
+        print('outRadius', outRadius)
+
+        newDewarpingParameters = DewarpingHelper.getDewarpingParametersFromNewDonutSlice(baseDonutSlice, \
+            newDonutSlice, centersDistance, dewarpingParameters.bottomDistorsionFactor)
+        newDewarpingParameters.topOffset = inRadius - dewarpingParameters.inRadius
+        newDewarpingParameters.bottomOffset = newDonutSlice.outRadius - outRadius
+
+        
+
+        print('topOffset', newDewarpingParameters.topOffset)
+        print('bottomOffset', newDewarpingParameters.bottomOffset)
+        print('angleSpan', newDonutSlice.angleSpan)
+        print('middleAngle', newDonutSlice.middleAngle)
+	   
+        return newDewarpingParameters
+
+
+    @staticmethod
+    def getPixelDewarpedParameterRadius(x, y, dewarpingParameters):
+        xSourcePixel, ySourcePixel = DewarpingHelper.getSourcePixelFromDewarpedImage(x, y, dewarpingParameters)
+        dx = dewarpingParameters.xCenter - xSourcePixel
+        dy = dewarpingParameters.yCenter - ySourcePixel
+        return np.sqrt(dx**2 + dy**2)
 
 
     @staticmethod

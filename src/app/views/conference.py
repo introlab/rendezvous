@@ -81,9 +81,9 @@ class Conference(QWidget, Ui_Conference):
         self.soundSources = values
 
 
-    @pyqtSlot(object, object)        
-    def updateVirtualCamerasDispay(self, image, virtualCameras):
-        self.virtualCameraDisplayer.updateDisplay(image, virtualCameras)
+    @pyqtSlot(object)        
+    def updateVirtualCamerasDispay(self, virtualCameraImages):
+        self.virtualCameraDisplayer.updateDisplay(virtualCameraImages)
 
 
     @pyqtSlot(bool)
@@ -101,9 +101,11 @@ class Conference(QWidget, Ui_Conference):
     def videoProcessorStateChanged(self, isRunning):
         if isRunning:
             self.btnStartStopVideo.setText(BtnVideoLabels.STOP_VIDEO.value)
-        
+            self.virtualCameraDisplayer.startDisplaying()
+            
         else:
             self.btnStartStopVideo.setText(BtnVideoLabels.START_VIDEO.value)
+            self.virtualCameraDisplayer.stopDisplaying()
 
         self.btnStartStopVideo.setDisabled(False)
 
