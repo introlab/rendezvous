@@ -60,8 +60,8 @@ class Conference(QWidget, Ui_Conference):
         plt.rc('legend', fontsize=FontSizes.SMALL_SIZE.value)    # legend fontsize
         plt.rc('figure', titlesize=FontSizes.BIGGER_SIZE.value)  # fontsize of the figure title
 
-        self.azimuthGraph = Graph(None, width=1, height=0.5, dpi=100, title='Azimuth Positions')
-        self.elevationGraph = Graph(None, width=1, height=0.5, dpi=100, title='Elevation Positions')
+        self.azimuthGraph = Graph(None, width=1, height=0.5, dpi=100, maxLength=1000, title='Azimuth Positions')
+        self.elevationGraph = Graph(None, width=1, height=0.5, dpi=100, maxLength=1000, title='Elevation Positions')
         self.soundPositionsVerticalLayout.addWidget(self.azimuthGraph)
         self.soundPositionsVerticalLayout.addWidget(self.elevationGraph)
 
@@ -224,7 +224,7 @@ class Conference(QWidget, Ui_Conference):
 
 class Canvas(FigureCanvas):
 
-    def __init__(self, parent=None, width=5, height=4, dpi=100, title=None):
+    def __init__(self, parent=None, width=5, height=4, dpi=100, maxLength=None, title=None):
         fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = fig.add_subplot(111)
         self.title = title
@@ -232,7 +232,9 @@ class Canvas(FigureCanvas):
             self.axes.set_title(title)
 
         self.data = []
-
+        self.maxLength = maxLength
+        self.currentIndex = 0
+        
         self.computeInitialFigure()
 
         FigureCanvas.__init__(self, fig)
@@ -266,8 +268,14 @@ class Graph(Canvas):
 
     def updateFigure(self):
         self.axes.cla()
-        yData = self.data
-        xData = range(0, len(self.data))
+        if self.maxLength:
+            xData = range(0, self.maxLength)
+            yData = self.data[self.currentIndex : self.currentIndex + self.maxLength]
+            self.currentIndex = self.currentIndex + self.maxLength - 1
+        else:
+            xData = range(0, len(self.data))
+            yData = self.data
+        
         self.axes.plot(xData, yData)
         self.axes.set_title(self.title)
 
