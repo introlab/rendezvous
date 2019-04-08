@@ -15,6 +15,7 @@ public:
     static bool isCloseRequested();
     static void processInput();
     static void registerInputCallback(InputCallback* callback);
+    static void resizeWindow(int width, int height);
 
 private:
 

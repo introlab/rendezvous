@@ -2,7 +2,7 @@ import multiprocessing
 import queue
 import time
 
-#from .facedetector.yolo_face_detector import YoloFaceDetector
+from .facedetector.yolo_face_detector import YoloFaceDetector
 from .facedetector.dnn_face_detector import DnnFaceDetector
 from .facedetector.haar_face_detector import HaarFaceDetector
 from .facedetector.face_detection_methods import FaceDetectionMethods
@@ -10,15 +10,16 @@ from .facedetector.face_detection_methods import FaceDetectionMethods
 
 class FaceDetection(multiprocessing.Process):
 
-    def __init__(self, faceDetectionMethod, imageQueue, facesQueue, heartbeatQueue, semaphore):
+    def __init__(self, faceDetectionMethod, imageQueue, facesQueue, heartbeatQueue, isBusySemaphore, dewarpCount):
         super(FaceDetection, self).__init__()
-        self.requestImage = True
+        self.faceDetectionMethod = faceDetectionMethod
         self.imageQueue = imageQueue
         self.facesQueue = facesQueue
         self.heartbeatQueue = heartbeatQueue
-        self.semaphore = semaphore
-        self.faceDetectionMethod = faceDetectionMethod
+        self.isBusySemaphore = isBusySemaphore
+        self.dewarpCount = dewarpCount
         self.exit = multiprocessing.Event()
+        self.requestImage = True
 
 
     def stop(self):
@@ -28,30 +29,48 @@ class FaceDetection(multiprocessing.Process):
     def run(self):
         print('Starting face detection')
 
+        self.isBusySemaphore.acquire()
+
         faceDetector = self.__createFaceDetector(self.faceDetectionMethod)
+
+        dewarpIndex = -1
+        faces = []
 
         lastHeartBeat = time.perf_counter()
 
+        self.isBusySemaphore.release()
+
         while not self.exit.is_set() and time.perf_counter() - lastHeartBeat < 0.5:
-            
-            frame = []
+
+            image = None
             try:
-                frame = self.imageQueue.get_nowait()
-                self.semaphore.acquire()
+                image, dewarpIndex = self.imageQueue.get_nowait()
+                if dewarpIndex == 0:
+                    self.isBusySemaphore.acquire()
             except queue.Empty:
                 time.sleep(0.01)
 
-            if frame != []:
-                faces = faceDetector.detectFaces(frame)
-                self.facesQueue.put(faces)
-                self.semaphore.release()
+            if image is not None:
 
+                imageFaces = faceDetector.detectFaces(image)
+                if len(imageFaces) != 0:
+                    faces.append((imageFaces, dewarpIndex))
+
+                if dewarpIndex == self.dewarpCount - 1:
+                    self.isBusySemaphore.release()
+                    if len(faces) != 0:
+                        self.facesQueue.put(faces)
+                        faces = []
+            
             try:
                 self.heartbeatQueue.get_nowait()
                 lastHeartBeat = time.perf_counter()
             except queue.Empty:
                 pass
 
+        if dewarpIndex != -1 and dewarpIndex != self.dewarpCount - 1:
+            self.isBusySemaphore.release()
+        
         print('Face detection terminated')
 
     
@@ -60,7 +79,7 @@ class FaceDetection(multiprocessing.Process):
             return DnnFaceDetector()
         elif faceDetectionMethod == FaceDetectionMethods.OPENCV_HAAR_CASCADES.value:
             return HaarFaceDetector()
-        #elif faceDetectionMethod == FaceDetectionMethods.YOLO_V3.value:
-        #    return YoloFaceDetector()
+        elif faceDetectionMethod == FaceDetectionMethods.YOLO_V3.value:
+            return YoloFaceDetector()
         else:
             return HaarFaceDetector()        

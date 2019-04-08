@@ -1,5 +1,4 @@
 #include <shaders/ShaderProgram.h>
-#include <models/DewarpingParameters.h>
 
 #include <iostream>
 #include <fstream>
@@ -37,19 +36,6 @@ GLint ShaderProgram::getUniformLocation(const GLchar * uniformName)
 void ShaderProgram::loadTransformation(glm::mat4& matrix)
 {
     loadMatrix(m_location_transformationMatrix, matrix);
-}
-
-void ShaderProgram::loadDewarpingParameters(DewarpingParameters& dewarpingParameters)
-{
-    loadFloat(m_location_xCenter, dewarpingParameters.xCenter);
-    loadFloat(m_location_yCenter, dewarpingParameters.yCenter);
-    loadFloat(m_location_dewarpWidth, dewarpingParameters.dewarpWidth);
-    loadFloat(m_location_dewarpHeight, dewarpingParameters.dewarpHeight);
-    loadFloat(m_location_inRadius, dewarpingParameters.inRadius);
-    loadFloat(m_location_centerRadius, dewarpingParameters.centerRadius);
-    loadFloat(m_location_outRadiusDiff, dewarpingParameters.outRadiusDiff);
-    loadFloat(m_location_xOffset, dewarpingParameters.xOffset);
-    loadFloat(m_location_bottomDistorsionFactor, dewarpingParameters.bottomDistorsionFactor);
 }
 
 void ShaderProgram::start()
@@ -142,13 +128,4 @@ void ShaderProgram::validateProgram()
 void ShaderProgram::getAllUniformLocations()
 {
     m_location_transformationMatrix = getUniformLocation("transformationMatrix");
-    m_location_xCenter = getUniformLocation("xCenter");
-    m_location_yCenter = getUniformLocation("yCenter");
-    m_location_dewarpWidth = getUniformLocation("dewarpWidth");
-    m_location_dewarpHeight = getUniformLocation("dewarpHeight");
-    m_location_inRadius = getUniformLocation("inRadius");
-    m_location_centerRadius = getUniformLocation("centerRadius");
-    m_location_outRadiusDiff = getUniformLocation("outRadiusDiff");
-    m_location_xOffset = getUniformLocation("xOffset");
-    m_location_bottomDistorsionFactor = getUniformLocation("bottomDistorsionFactor");
 }
