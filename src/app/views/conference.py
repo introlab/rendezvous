@@ -106,6 +106,8 @@ class Conference(QWidget, Ui_Conference):
             self.conferenceController.startOdasLive(odasPath=self.window().getSetting('odasPath'), micConfigPath=self.window().getSetting('micConfigPath'))
         else:
             self.conferenceController.stopOdasLive()
+            self.azimuthGraph.data = []
+            self.elevationGraph.data = []
 
 
     @pyqtSlot()
@@ -268,16 +270,11 @@ class Graph(Canvas):
 
     def updateFigure(self):
         self.axes.cla()
-        if self.maxLength:
-            xData = range(0, self.maxLength)
-            yData = self.data[self.currentIndex : self.currentIndex + self.maxLength]
-            if (self.currentIndex + self.maxLength - 1) <= (len(self.data) - 1):
-                self.currentIndex = self.currentIndex + self.maxLength - 1
-                self.data = self.data[self.currentIndex + self.maxLength : len(self.data) - 1]
-
-        else:
-            xData = range(0, len(self.data))
-            yData = self.data
+        if self.maxLength and len(self.data) >= self.maxLength:
+            self.data = self.data[ self.maxLength - 1 : len(self.data)]
+            
+        xData = range(0, len(self.data))
+        yData = self.data
         
         self.axes.plot(xData, yData)
         self.axes.set_title(self.title)
