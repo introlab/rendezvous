@@ -24,7 +24,7 @@ int DisplayManager::createDisplay(int width, int height)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+    //glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 
     m_window = glfwCreateWindow(width, height, "Dewarping", NULL, NULL);
     if (m_window == NULL)

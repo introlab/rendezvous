@@ -1,20 +1,22 @@
-import queue
 import time
-from multiprocessing import Queue
-from multiprocessing import Semaphore
+from math import radians
+from multiprocessing import Queue, Semaphore
 from threading import Thread
+import queue
 
 from PyQt5.QtCore import QObject, pyqtSignal
 
 from .streaming.video_stream import VideoStream
-from .facedetection.face_detection import FaceDetection
 from .virtualcamera.virtual_camera_manager import VirtualCameraManager
 from src.utils.file_helper import FileHelper
+from .facedetection.face_detection import FaceDetection
+from .facedetection.facedetector.face_detection_methods import FaceDetectionMethods
 
 
 class VideoProcessor(QObject):
 
     signalFrameData = pyqtSignal(object, object)
+    signalStateChanged = pyqtSignal(bool)
     signalException = pyqtSignal(Exception)
 
     def __init__(self, parent=None):
@@ -27,21 +29,31 @@ class VideoProcessor(QObject):
         self.heartbeatQueue = Queue(1)
 
 
-    def start(self, cameraConfigPath):
+    def getCameraParams(self):
+        cameraParams = {
+            'fisheyeAngle': radians(self.cameraConfig['Image']['FisheyeAngle']),
+            'baseDonutSlice': self.baseDonutSlice,
+            'dewarpingParameters': self.dewarpingParameters
+        }
+
+        return cameraParams
+
+
+    def start(self, cameraConfigPath, faceDetectionMethod):
         print("Starting video processor...")
 
         try:
             
             if not cameraConfigPath:
-                raise Exception('cameraConfigPath needs to be set in the settings')
+                raise Exception('cameraConfigPath needs to be set in the settings tab')
 
-            Thread(target=self.run, args=(cameraConfigPath,)).start()
+            if not faceDetectionMethod in [fdMethod.value for fdMethod in FaceDetectionMethods]:
+                raise Exception('Unsupported face detection method: {}. Set a correct method in the settings tab.'.format(faceDetectionMethod))
 
-            self.isRunning = True
+            Thread(target=self.run, args=(cameraConfigPath, faceDetectionMethod)).start()
 
         except Exception as e:
             
-            self.isRunning = False
             self.signalException.emit(e)
 
 
@@ -49,22 +61,28 @@ class VideoProcessor(QObject):
          self.isRunning = False
 
 
-    def run(self, cameraConfigPath):
+    def run(self, cameraConfigPath, faceDetectionMethod):
 
         videoStream = None
         faceDetection = None
 
         try:
 
-            cameraConfig = FileHelper.readJsonFile(cameraConfigPath)
-            videoStream = VideoStream(cameraConfig)
+            self.cameraConfig = FileHelper.readJsonFile(cameraConfigPath)
+            videoStream = VideoStream(self.cameraConfig)
             videoStream.initializeStream()
 
-            faceDetection = FaceDetection(self.imageQueue, self.facesQueue, self.heartbeatQueue, self.semaphore)
+            self.baseDonutSlice = videoStream.getBaseDonutSlice()
+            self.dewarpingParameters = videoStream.getDewarpingParameters()
+
+            faceDetection = FaceDetection(faceDetectionMethod, self.imageQueue, self.facesQueue, self.heartbeatQueue, self.semaphore)
             faceDetection.start()
 
             print('Video processor started')
 
+            self.isRunning = True
+            self.signalStateChanged.emit(True)
+            
             prevTime = time.perf_counter()
             while self.isRunning:
 
@@ -99,8 +117,6 @@ class VideoProcessor(QObject):
                 prevTime = currentTime
                 
         except Exception as e:
-
-            self.isRunning = False
             self.signalException.emit(e)
 
         finally:
@@ -108,7 +124,6 @@ class VideoProcessor(QObject):
             if faceDetection:
                 faceDetection.stop()
                 faceDetection.join()
-                faceDetection.terminate()
                 faceDetection = None
 
             self.__emptyQueue(self.imageQueue)
@@ -118,6 +133,8 @@ class VideoProcessor(QObject):
             if videoStream:
                 videoStream.destroy()
                 videoStream = None
+
+            self.signalStateChanged.emit(False)
 
         print('Video stream terminated')
 
@@ -129,3 +146,4 @@ class VideoProcessor(QObject):
                 queue.get_nowait()
         except:
             pass
+

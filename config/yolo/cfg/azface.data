@@ -1,0 +1,3 @@
+classes=1
+names=/home/nvidia/dev/workspace/rendezvous/config/yolo/data/azface.names
+backup=weights

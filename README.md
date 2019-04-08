@@ -36,6 +36,7 @@
 
 8- Install dependencies by running:
 
+    $ sudo apt install vlc
     $ sudo apt-get install python3-tk
     $ sudo apt-get install xorg-dev libglu1-mesa-dev
     $ sudo apt-get install swig
