@@ -24,7 +24,7 @@ int DisplayManager::createDisplay(int width, int height)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    //glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+    glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 
     m_window = glfwCreateWindow(width, height, "Dewarping", NULL, NULL);
     if (m_window == NULL)
@@ -113,6 +113,11 @@ void DisplayManager::processInput()
 void DisplayManager::registerInputCallback(InputCallback* callback)
 {
     m_inputCallback = callback;
+}
+
+void DisplayManager::resizeWindow(int width, int height)
+{
+    glfwSetWindowSize(m_window, width, height);
 }
 
 void DisplayManager::framebuffer_size_callback(GLFWwindow* window, int width, int height)
