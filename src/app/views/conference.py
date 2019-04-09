@@ -235,7 +235,7 @@ class Canvas(FigureCanvas):
 
         self.data = []
         self.maxLength = maxLength
-        self.currentIndex = 0
+        self.startIndex = 0
         
         self.computeInitialFigure()
 
@@ -270,11 +270,18 @@ class Graph(Canvas):
 
     def updateFigure(self):
         self.axes.cla()
-        if self.maxLength and len(self.data) >= self.maxLength:
-            self.data = self.data[ self.maxLength - 1 : len(self.data)]
-            
-        xData = range(0, len(self.data))
-        yData = self.data
+
+        xData = []
+        yData = []
+        if len(self.data) > self.maxLength:
+            newDataLength = len(self.data) - self.maxLength
+            yData = self.data[self.startIndex + newDataLength : len(self.data)]
+            self.startIndex = self.startIndex + newDataLength
+            self.data = self.data[self.startIndex : len(self.data)]
+        else:
+            yData = self.data
+        
+        xData = range(0, len(yData))
         
         self.axes.plot(xData, yData)
         self.axes.set_title(self.title)
