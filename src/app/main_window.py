@@ -15,6 +15,9 @@ from src.app.views.transcription import Transcription
 from src.app.views.playback import Playback
 from src.app.views.change_settings import ChangeSettings
 from src.app.views.audio_processing import AudioProcessing
+from src.app.views.recording import Recording
+
+from src.app.services.odas.odas import Odas
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -42,11 +45,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.views = QStackedWidget()
         self.mainLayout.addWidget(self.views)
     
+        odasServer = Odas(hostIP='127.0.0.1', portPositions=10020, portAudio=10030, isVerbose=False)
+        odasServer.start()
+
         # Views of the main layout.
-        self.conferenceView = Conference(parent=self)
+        self.conferenceView = Conference(odasServer, parent=self)
         self.sideBar.addItem('Conference')
         self.views.addWidget(self.conferenceView)
-        self.sideBar.setCurrentRow(0)       
+        self.sideBar.setCurrentRow(0)
+
+        self.recordingView = Recording(odasServer, parent=self)
+        self.sideBar.addItem('Recording')
+        self.views.addWidget(self.recordingView) 
 
         self.audioProcessingView = AudioProcessing(parent=self)
         self.sideBar.addItem('Audio Processing')
@@ -69,6 +79,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def closeEvent(self, event):
         if event:
             self.conferenceView.closeEvent(event)
+            self.recordingView.closeEvent(event)
             self.audioProcessingView.closeEvent(event)
             self.transcriptionView.closeEvent(event)
             self.playbackView.closeEvent(event)

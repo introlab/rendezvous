@@ -16,11 +16,13 @@ class OdasLiveProcess(QObject, Thread):
         self.odasPath = odasPath
         self.micConfigPath = micConfigPath
         self.process = None
+        self.stopCommand = False
 
 
     def stop(self):
         if self.process:
-            self.process.kill()
+            self.process.terminate()
+        self.stopCommand = True
         self.join()
 
 
@@ -36,9 +38,12 @@ class OdasLiveProcess(QObject, Thread):
 
             while True:
                 if self.process and self.process.poll():
-                    self.process.terminate()
-                    if self.process.returncode != 0:
+                    if self.process.returncode == 1 or self.process.returncode == -1:
                         raise Exception('ODAS exited with exit code {}'.format(self.process.returncode))
+                    break
+                
+                elif not self.process or self.stopCommand:
+                    break
 
                 sleep(1)
 
