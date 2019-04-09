@@ -73,7 +73,7 @@ class Recording(QWidget, Ui_Recording):
             self.recordingController.stopVideoProcessor()
 
 
-    @pyqtSlot(object, object)        
+    @pyqtSlot(object)        
     def updateVirtualCamerasDispay(self, virtualCameraImages):
         self.virtualCameraDisplayer.updateDisplay(virtualCameraImages)
 
