@@ -121,12 +121,16 @@ class Conference(QWidget, Ui_Conference):
     def odasStateChanged(self, isRunning):
         if isRunning:
             self.btnStartStopOdas.setText(BtnOdasLabels.STOP_ODAS.value)
+            self.azimuthGraph.timer.start(500)
+            self.elevationGraph.timer.start(500)
         
         else:
             self.btnStartStopOdas.setText(BtnOdasLabels.START_ODAS.value)
             self.conferenceController.signalAudioPositions.disconnect(self.positionDataReceived)
             self.conferenceController.signalOdasState.disconnect(self.odasStateChanged)
             self.__isOdasSignalsConnected = False
+            self.azimuthGraph.timer.stop()
+            self.elevationGraph.timer.stop()
 
         self.btnStartStopOdas.setDisabled(False)
 
@@ -217,9 +221,8 @@ class Graph(Canvas):
 	
     def __init__(self, *args, **kwargs):
         Canvas.__init__(self, *args, **kwargs)
-        timer = QTimer(self)
-        timer.timeout.connect(self.updateFigure)
-        timer.start(500)
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.updateFigure)
 
 
     def computeInitialFigure(self):
