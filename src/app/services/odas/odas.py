@@ -48,7 +48,9 @@ class Odas(QObject, Thread):
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as socketPositions:
                 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as socketAudio:
+                    socketPositions.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                     socketPositions.bind((self.host, self.portPositions))
+                    socketAudio.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                     socketAudio.bind((self.host, self.portAudio))
                     socketPositions.listen()
                     socketAudio.listen()
