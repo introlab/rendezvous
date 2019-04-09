@@ -53,10 +53,11 @@ class AudioProcessing(QWidget, Ui_AudioProcessing):
                                                            caption='Import Audio Data', 
                                                            directory=self.window().rootDirectory,
                                                            options=QFileDialog.DontUseNativeDialog)
-            if audioDataPath and '.raw' in audioDataPath:
-                self.audioDataPath.setText(audioDataPath)
-            else:
-                self.onException(Exception('Audio is not a .raw file'))
+            if audioDataPath:
+                if '.raw' in audioDataPath:
+                    self.audioDataPath.setText(audioDataPath)
+                else:
+                    self.onException(Exception('Audio is not a .raw file'))
         except Exception as e:
             self.onException(e)
 
