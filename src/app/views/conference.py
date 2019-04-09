@@ -276,8 +276,8 @@ class Graph(Canvas):
         if len(self.data) > self.maxLength:
             newDataLength = len(self.data) - self.maxLength
             yData = self.data[self.startIndex + newDataLength : len(self.data)]
-            self.startIndex = self.startIndex + newDataLength
-            self.data = self.data[self.startIndex : len(self.data)]
+            self.data = yData
+            self.startIndex = 0
         else:
             yData = self.data
         
