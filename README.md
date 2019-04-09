@@ -50,11 +50,11 @@
     $ ./configure
     $ make install
 
-9- Generate the python ui with:
+10- Generate the python ui with:
 
     $ python setup.py build_ui
 
-10- build the c++ code and its dependencies use :
+11- build the c++ code and its dependencies use :
 
     $ make
 
@@ -70,7 +70,7 @@
 
       $ make clean_dewarping_lib
 
-11 - If you add dependencies run the following command to add your new dependencies to requirements.txt:
+12 - If you add dependencies run the following command to add your new dependencies to requirements.txt:
     
     $ pip freeze > requirements.txt
 
