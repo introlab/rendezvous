@@ -1,5 +1,6 @@
 # from github: https://gist.github.com/kazuki/7c7b50ba9df082bfe9f03819201648eb
 
+import os
 from ctypes import byref, c_float, c_void_p, CDLL
 
 
@@ -7,12 +8,15 @@ class RNNoise(object):
 
     def __init__(self):
         self._frameSize = 480
-        self._native = CDLL('/usr/local/lib/librnnoise.so')
-        self._native.rnnoise_process_frame.restype = c_float
-        self._native.rnnoise_process_frame.argtypes = (
-            c_void_p, c_void_p, c_void_p)
-        self._native.rnnoise_create.restype = c_void_p
-        self._handle = self._native.rnnoise_create()
+        if os.path.isfile('/usr/local/lib/librnnoise.so'):
+            self._native = CDLL('/usr/local/lib/librnnoise.so')
+            self._native.rnnoise_process_frame.restype = c_float
+            self._native.rnnoise_process_frame.argtypes = (
+                c_void_p, c_void_p, c_void_p)
+            self._native.rnnoise_create.restype = c_void_p
+            self._handle = self._native.rnnoise_create()
+        else:
+            raise Exception('File \'/usr/local/lib/librnnoise.so\' does not exist. Please make sure RNNoise is installed.')
         self._buf = (c_float * self._frameSize)()
         
 

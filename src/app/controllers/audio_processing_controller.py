@@ -44,5 +44,5 @@ class AudioProcessingController(QObject):
 
     @pyqtSlot(Exception)
     def onException(self, e):
-        self.exception.emit(e)
         self.noiseReductionThread.quit()
+        self.exception.emit(e)

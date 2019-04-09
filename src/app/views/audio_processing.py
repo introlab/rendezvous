@@ -9,8 +9,6 @@ from src.app.gui.audio_processing_ui import Ui_AudioProcessing
 
 class AudioProcessing(QWidget, Ui_AudioProcessing):
 
-    rootDirectory = str(Path(__file__).resolve().parents[3])
-
     def __init__(self, parent=None):
         super(AudioProcessing, self).__init__(parent)
         self.setupUi(self)
@@ -19,7 +17,6 @@ class AudioProcessing(QWidget, Ui_AudioProcessing):
         self.audioProcessingController = AudioProcessingController()
 
         # Populate UI
-        # TODO: the items should come from the controller
         self.cbNoiseReductionLib.addItems([noiseReductionLib.value for noiseReductionLib in self.audioProcessingController.getNoiseReductionLibs()])
 
         # Qt signal slots
@@ -61,7 +58,7 @@ class AudioProcessing(QWidget, Ui_AudioProcessing):
             else:
                 self.onException(Exception('Audio is not a .raw file'))
         except Exception as e:
-            self.window().emitToExceptionsManager(e)
+            self.onException(e)
 
 
     @pyqtSlot(Exception)

@@ -21,7 +21,6 @@ class NoiseReduction(QObject):
 
 
     def __selectLib(self, noiseReductionLib):
-        # TODO: use enums
         if noiseReductionLib == NoiseReductionLib.RNNOISE.value:
             self.__noiseReduction = RNNoise()
             self.__frameSize = self.__noiseReduction.getFrameSize()
