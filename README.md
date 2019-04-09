@@ -76,6 +76,12 @@
     
     $ pip freeze > requirements.txt
 
+
+12 - To use Yolo for face detection on the Jetson, run the following commands:
+
+    $ chmod +x scripts/yolo_setup.sh
+    $ ./scripts/yolo_setup.sh
+
 ## Testing
 all unit tests are located in "tests" folder and the command to execute them is:
 
