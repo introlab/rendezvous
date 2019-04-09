@@ -42,6 +42,14 @@
     $ sudo apt-get install swig
     $ pip install -r requirements.txt
 
+9- Install audio processing libraries:
+
+    $ git clone https://github.com/xiph/rnnoise
+    $ cd rnnoise
+    $ ./autogen.sh
+    $ ./configure
+    $ make install
+
 9- Generate the python ui with:
 
     $ python setup.py build_ui
