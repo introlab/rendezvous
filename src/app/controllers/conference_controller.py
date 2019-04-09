@@ -13,7 +13,7 @@ class ConferenceController(QObject):
     signalOdasState = pyqtSignal(bool)
     signalRecordingState = pyqtSignal(bool)
     signalVideoProcessorState = pyqtSignal(bool)
-    signalVirtualCamerasReceived = pyqtSignal(object, object)
+    signalVirtualCamerasReceived = pyqtSignal(object)
     signalHumanSourcesDetected = pyqtSignal(object)
 
     def __init__(self, parent=None):
@@ -37,7 +37,7 @@ class ConferenceController(QObject):
 
         self.__videoProcessor = VideoProcessor()
         self.__videoProcessor.signalException.connect(self.videoProcessorExceptionHandling)
-        self.__videoProcessor.signalFrameData.connect(self.virtualCamerasReceived)
+        self.__videoProcessor.signalVirtualCameras.connect(self.virtualCamerasReceived)
         self.__videoProcessor.signalStateChanged.connect(self.videoProcessorStateChanged)
 
         self.__positions = {}
@@ -66,16 +66,15 @@ class ConferenceController(QObject):
 
 
     @pyqtSlot(object, object)
-    def virtualCamerasReceived(self, image, virtualCameras):
+    def virtualCamerasReceived(self, images, virtualCameras):
         if(self.__positions):
             # range threshold in degrees
             rangeThreshold = 15
-            cameraParams = self.__videoProcessor.getCameraParams()
-            sourceClassifier = SourceClassifier(cameraParams, rangeThreshold)
+            sourceClassifier = SourceClassifier(rangeThreshold)
             sourceClassifier.classifySources(virtualCameras, self.__positions)
             self.signalHumanSourcesDetected.emit(sourceClassifier.humanSources)
 
-        self.signalVirtualCamerasReceived.emit(image, virtualCameras)
+        self.signalVirtualCamerasReceived.emit(images)
 
 
     @pyqtSlot(Exception)
