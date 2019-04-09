@@ -1,0 +1,29 @@
+Metadata-Version: 2.0
+Name: pyqt-distutils
+Version: 0.7.3
+Summary: A set of distutils extension for building Qt ui files
+Home-page: https://github.com/ColinDuquesnoy/pyqt_distutils
+Author: Colin Duquesnoy
+Author-email: colin.duquesnoy@gmail.com
+License: MIT
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Framework :: Setuptools Plugin
+Classifier: Environment :: Console
+Classifier: Environment :: X11 Applications :: Qt
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Natural Language :: English
+Classifier: Operating System :: Microsoft
+Classifier: Operating System :: MacOS
+Classifier: Operating System :: POSIX
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 2
+Classifier: Topic :: Software Development :: Build Tools
+Classifier: Topic :: System :: Software Distribution
+Classifier: Topic :: Text Editors :: Integrated Development Environments (IDE)
+Requires-Dist: docopt
+
+UNKNOWN
+
+

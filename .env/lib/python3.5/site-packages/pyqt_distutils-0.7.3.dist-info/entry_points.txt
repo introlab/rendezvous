@@ -1,0 +1,6 @@
+[console_scripts]
+pyuicfg = pyqt_distutils.pyuicfg:main
+
+[pyqt_distutils_hooks]
+gettext = pyqt_distutils.hooks:gettext
+
