@@ -60,7 +60,20 @@
        <item>
         <widget class="QPushButton" name="importMediaBtn">
          <property name="text">
-          <string>Import</string>
+          <string>Video</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="subtitleCheckBox">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>Subtitle</string>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
          </property>
         </widget>
        </item>

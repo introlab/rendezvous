@@ -1,11 +1,11 @@
+import numpy as np
 from math import radians
 from src.utils.spherical_angles_converter import SphericalAnglesConverter
 
 class SourceClassifier():
 
-    def __init__(self, cameraParams, rangeThreshold):
+    def __init__(self, rangeThreshold):
         self.rangeThreshold = radians(rangeThreshold)
-        self.cameraParams = cameraParams
         self.humanSources = {}
 
 
@@ -14,10 +14,13 @@ class SourceClassifier():
             # there is no sound detected if the elevation is less than 0
             if source['elevation'] > 0:
                 for virtualCamera in virtualCameras:
-                    xFace, yFace = virtualCamera.face.getPosition()
-                    azimuthFace, elevationFace = SphericalAnglesConverter.getSphericalAnglesFromImage(xFace, yFace, self.cameraParams)
 
-                    if self.__isInRange(azimuthFace, source['azimuth']) and self.__isInRange(elevationFace, source['elevation']):
+                    azimuth, elevation = virtualCamera.face.getMiddlePosition()
+                    
+                    # Because camera angles are clockwise and odas not
+                    azimuth = (2 * np.pi) - azimuth
+
+                    if self.__isInRange(azimuth, source['azimuth']) and self.__isInRange(elevation, source['elevation']):
                             self.humanSources[index] = source
 
 

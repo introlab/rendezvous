@@ -48,7 +48,9 @@ class Odas(QObject, Thread):
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as socketPositions:
                 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as socketAudio:
+                    socketPositions.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                     socketPositions.bind((self.host, self.portPositions))
+                    socketAudio.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                     socketAudio.bind((self.host, self.portAudio))
                     socketPositions.listen()
                     socketAudio.listen()
@@ -67,7 +69,7 @@ class Odas(QObject, Thread):
                             worker.start()
                             self.__workers.append(worker)
 
-                            worker = self.__initWorker(clientAudio, 1024)
+                            worker = self.__initWorker(clientAudio, 3072)
                             worker.start()
                             self.__workers.append(worker)
 
@@ -153,8 +155,8 @@ class Odas(QObject, Thread):
         if self.odasProcess:
             if self.isConnected:
                 self.closeConnections()
-            self.odasProcess.signalException.disconnect(self.odasLiveExceptionHandling)
             self.odasProcess.stop()
+            self.odasProcess.signalException.disconnect(self.odasLiveExceptionHandling)
             self.odasProcess = None
             print('odas subprocess stopped...') if self.isVerbose else None
 

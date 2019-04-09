@@ -19,7 +19,7 @@ interface:
 	$(MAKE) -C ./interface
 
 .PHONY: lib
-lib: build_shaders $(SHADERS) build $(OBJECTS) $(OBJECTS_C) create_lib
+lib: clean_shaders build_shaders $(SHADERS) build $(OBJECTS) $(OBJECTS_C) create_lib
 
 $(OBJECTS): bin/%.o : src/%.cpp
 	$(CC) $(CFLAGS) -c $< -fPIC -o $@
@@ -54,3 +54,7 @@ clean_lib:
 .PHONY: clean_python
 clean_python:
 	$(MAKE) clean -C ./interface
+
+.PHONY: clean_shaders
+clean_shaders: 
+	rm -rf bin/shaders

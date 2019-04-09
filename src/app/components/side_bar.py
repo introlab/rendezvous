@@ -8,7 +8,7 @@ class SideBar(QListWidget):
         super(SideBar, self).__init__(parent)
 
         self.setFixedWidth(150)
-        self.setStyleSheet("""
+        self.setStyleSheet('''
             QListWidget {
                 background-color: #4a4a4a; 
                 color: #ffffff;
@@ -20,7 +20,8 @@ class SideBar(QListWidget):
                 background-color: #3a3a3a;
                 color: #016735;
             }
-        """) 
+        ''') 
+        
 
     # Override of insertItem from QListWidget to customize items.
     def addItem(self, name):
