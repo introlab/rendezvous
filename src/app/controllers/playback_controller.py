@@ -91,7 +91,6 @@ class PlaybackController(QObject):
                 self.__mediaPlayer.video_set_spu(subtitlesCount)
         else:
             self.__mediaPlayer.video_set_spu(-1)
-        print("ASDFAD")
 
 
     def getSubtitleState(self):
