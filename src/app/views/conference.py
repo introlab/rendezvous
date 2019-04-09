@@ -31,6 +31,10 @@ class Conference(QWidget, Ui_Conference):
 
         self.virtualCameraDisplayer = VirtualCameraDisplayer(self.virtualCameraFrame)
 
+
+        self.__isVideoSignalsConnected = False
+        self.__isOdasSignalsConnected = False
+
         # Qt signal slots
         self.btnStartStopOdas.clicked.connect(self.btnStartStopOdasClicked)
         self.btnStartStopVideo.clicked.connect(self.btnStartStopVideoClicked)
@@ -49,6 +53,7 @@ class Conference(QWidget, Ui_Conference):
         if self.btnStartStopOdas.text() == BtnOdasLabels.START_ODAS.value:
             self.conferenceController.signalAudioPositions.connect(self.positionDataReceived)
             self.conferenceController.signalOdasState.connect(self.odasStateChanged)
+            self.__isOdasSignalsConnected = True
             self.conferenceController.startOdasLive(odasPath=self.window().getSetting('odasPath'), micConfigPath=self.window().getSetting('micConfigPath'))
         else:
             self.conferenceController.stopOdasLive()
@@ -62,6 +67,7 @@ class Conference(QWidget, Ui_Conference):
         if self.btnStartStopVideo.text() == BtnVideoLabels.START_VIDEO.value:
             self.conferenceController.signalVideoProcessorState.connect(self.videoProcessorStateChanged)
             self.conferenceController.signalVirtualCamerasReceived.connect(self.updateVirtualCamerasDispay)
+            self.__isVideoSignalsConnected = True
             self.conferenceController.startVideoProcessor(self.window().getSetting('cameraConfigPath'), self.window().getSetting('faceDetection'))
         else:
             self.conferenceController.stopVideoProcessor()
@@ -97,6 +103,7 @@ class Conference(QWidget, Ui_Conference):
             self.btnStartStopOdas.setText(BtnOdasLabels.START_ODAS.value)
             self.conferenceController.signalAudioPositions.disconnect(self.positionDataReceived)
             self.conferenceController.signalOdasState.disconnect(self.odasStateChanged)
+            self.__isOdasSignalsConnected = False
 
         self.btnStartStopOdas.setDisabled(False)
 
@@ -112,16 +119,21 @@ class Conference(QWidget, Ui_Conference):
             self.virtualCameraDisplayer.stopDisplaying()
             self.conferenceController.signalVideoProcessorState.disconnect(self.videoProcessorStateChanged)
             self.conferenceController.signalVirtualCamerasReceived.disconnect(self.updateVirtualCamerasDispay)
+            self.__isVideoSignalsConnected = False
 
         self.btnStartStopVideo.setDisabled(False)
 
 
     @pyqtSlot(Exception)
     def exceptionReceived(self, e):
-        self.conferenceController.signalVideoProcessorState.disconnect(self.videoProcessorStateChanged)
-        self.conferenceController.signalVirtualCamerasReceived.disconnect(self.updateVirtualCamerasDispay)
-        self.conferenceController.signalAudioPositions.disconnect(self.positionDataReceived)
-        self.conferenceController.signalOdasState.disconnect(self.odasStateChanged)
+        if self.__isVideoSignalsConnected:
+            self.conferenceController.signalVideoProcessorState.disconnect(self.videoProcessorStateChanged)
+            self.conferenceController.signalVirtualCamerasReceived.disconnect(self.updateVirtualCamerasDispay)
+        
+        if self.__isOdasSignalsConnected:
+            self.conferenceController.signalAudioPositions.disconnect(self.positionDataReceived)
+            self.conferenceController.signalOdasState.disconnect(self.odasStateChanged)
+        
         self.window().emitToExceptionsManager(e)
 
 
