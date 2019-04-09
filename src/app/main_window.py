@@ -14,6 +14,7 @@ from src.app.views.conference import Conference
 from src.app.views.transcription import Transcription
 from src.app.views.playback import Playback
 from src.app.views.change_settings import ChangeSettings
+from src.app.views.audio_processing import AudioProcessing
 from src.app.views.recording import Recording
 
 from src.app.services.odas.odas import Odas
@@ -57,13 +58,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.sideBar.addItem('Recording')
         self.views.addWidget(self.recordingView) 
 
+        self.audioProcessingView = AudioProcessing(parent=self)
+        self.sideBar.addItem('Audio Processing')
+        self.views.addWidget(self.audioProcessingView)
+
         self.transcriptionView = Transcription(parent=self)   
         self.sideBar.addItem('Transcription')
         self.views.addWidget(self.transcriptionView)
 
-        self.playback = Playback(parent=self)   
+        self.playbackView = Playback(parent=self)   
         self.sideBar.addItem('Playback')
-        self.views.addWidget(self.playback)
+        self.views.addWidget(self.playbackView)
 
         self.settingsView = ChangeSettings(parent=self)   
         self.sideBar.addItem('Settings')
@@ -75,7 +80,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if event:
             self.conferenceView.closeEvent(event)
             self.recordingView.closeEvent(event)
+            self.audioProcessingView.closeEvent(event)
             self.transcriptionView.closeEvent(event)
+            self.playbackView.closeEvent(event)
+            self.settingsView.closeEvent(event)
             event.accept()
 
 
