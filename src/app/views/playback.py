@@ -16,7 +16,7 @@ class Playback(QWidget, Ui_Playback):
         self.setupUi(self)
 
         # Initilalization of the controller.
-        self.playbackController = PlaybackController(parent=self)
+        self.playbackController = PlaybackController(parent=self, winId=self.videoFrame.winId())
 
         # Timer to update the UI.
         self.uiUpdateTimer = QTimer(self)
@@ -28,6 +28,7 @@ class Playback(QWidget, Ui_Playback):
         self.volumeSlider.setToolTip('Audio Slider')
         self.volumeSlider.sliderMoved.connect(self.onVolume)
         self.mediaPositionSlider.setMaximum(self.__positionResolution)
+        self.subtitleCheckBox.setCheckState(self.playbackController.getSubtitleState())
 
         # Qt signal slots.
         self.mediaPositionSlider.sliderMoved.connect(self.onMediaPositionMoved)
@@ -36,8 +37,10 @@ class Playback(QWidget, Ui_Playback):
         self.playPauseBtn.clicked.connect(self.onPlayPauseClicked)
         self.stopBtn.clicked.connect(self.onStopClicked)
         self.importMediaBtn.clicked.connect(self.onImportMediaClicked)
+        self.subtitleCheckBox.stateChanged.connect(self.onSubtitleCheckboxChanged)
         self.uiUpdateTimer.timeout.connect(self.onUiUpdateTimerTimeout)
         self.playbackController.mediaPlayerEndReached.connect(self.onMediaPlayerEndReached)
+        self.playbackController.mediaPlayerPlayed.connect(self.onMediaPlayerPlayed)
 
 
     def closeEvent(self, event):
@@ -116,6 +119,11 @@ class Playback(QWidget, Ui_Playback):
 
 
     @pyqtSlot()
+    def onMediaPlayerPlayed(self):
+        self.subtitleCheckBox.setEnabled(True)
+
+
+    @pyqtSlot()
     def onImportMediaClicked(self):
         try:
             mediaPath, _ = QFileDialog.getOpenFileName(parent=self, 
@@ -123,11 +131,16 @@ class Playback(QWidget, Ui_Playback):
                                                        directory=self.window().rootDirectory,
                                                        options=QFileDialog.DontUseNativeDialog)
             if mediaPath:
-                self.playbackController.loadMediaFile(mediaPath, self.videoFrame.winId())
+                self.playbackController.loadMediaFile(mediaPath)
                 self.playbackController.setVolume(self.volumeSlider.value())
                 self.updatePlayingMediaName(self.playbackController.getPlayingMediaName())
                 
         except Exception as e:
             self.emitException(e)
             self.updatePlayingMediaName('No Media Playing')
+
+
+    @pyqtSlot()
+    def onSubtitleCheckboxChanged(self):
+        self.playbackController.toggleSubtitleState()
 
