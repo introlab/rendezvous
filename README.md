@@ -41,13 +41,23 @@
     $ sudo apt-get install xorg-dev libglu1-mesa-dev
     $ sudo apt-get install swig
     $ sudo apt-get install ffmpeg
+    $ sudo apt-get install autoconf
+    $ sudo apt-get install libtool
     $ pip install -r requirements.txt
 
-9- Generate the python ui with:
+9- Install audio processing libraries:
+
+    $ git clone https://github.com/xiph/rnnoise
+    $ cd rnnoise
+    $ ./autogen.sh
+    $ ./configure
+    $ sudo make install
+
+10- Generate the python ui with:
 
     $ python setup.py build_ui
 
-10- build the c++ code and its dependencies use :
+11- build the c++ code and its dependencies use :
 
     $ make
 
@@ -63,9 +73,15 @@
 
       $ make clean_dewarping_lib
 
-11 - If you add dependencies run the following command to add your new dependencies to requirements.txt:
+12 - If you add dependencies run the following command to add your new dependencies to requirements.txt:
     
     $ pip freeze > requirements.txt
+
+
+12 - To use Yolo for face detection on the Jetson, run the following commands:
+
+    $ chmod +x scripts/yolo_setup.sh
+    $ ./scripts/yolo_setup.sh
 
 ## Testing
 all unit tests are located in "tests" folder and the command to execute them is:
