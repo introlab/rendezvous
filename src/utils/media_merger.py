@@ -12,20 +12,21 @@ class MediaMerger:
         isSrtValid = False
 
         # Input Audio Validation  
-        if(os.path.exists(audioInPath) == False) or not audioInPath:
-            raise Exception('no file found at : {path}'.format(path=audioInPath)) 
+        if not audioInPath:
+            if(os.path.exists(audioInPath) == False):
+                raise Exception('no file found at : {path}'.format(path=audioInPath)) 
         
         # Input Video validation  
-        if(os.path.exists(videoInPath) == False) or not videoInPath:
-            raise Exception('no file found at : {path}'.format(path=videoInPath))  
+        if not videoInPath:
+            if (os.path.exists(videoInPath) == False):
+                raise Exception('no file found at : {path}'.format(path=videoInPath))  
     
-        # Srt file validation
-        if not srtInPath:
-            if srtInPath:
-                if(os.path.exists(srtInPath) == False):
-                    print('Invalid or no .srt file')  
-                else:
-                    isSrtValid = True
+        # Srt file validation 
+        if srtInPath:
+            if(os.path.exists(srtInPath) == False):
+                print('Invalid or no .srt file')  
+            else:
+                isSrtValid = True
 
         # Output file validation 
         if(os.path.splitext(mediaOutPath)[1] != '.avi'):
