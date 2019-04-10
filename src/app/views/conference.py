@@ -20,6 +20,7 @@ class BtnOdasLabels(Enum):
     STOP_ODAS = 'Stop ODAS'
 
 
+@unique
 class BtnVideoLabels(Enum):
     START_VIDEO = 'Start Video'
     STOP_VIDEO = 'Stop Video'
@@ -70,8 +71,8 @@ class Conference(QWidget, Ui_Conference):
             self.conferenceController.startOdasLive(odasPath=self.window().getSetting('odasPath'), micConfigPath=self.window().getSetting('micConfigPath'))
         else:
             self.conferenceController.stopOdasLive()
-            self.azimuthGraph.data = []
-            self.elevationGraph.data = []
+            self.azimuthGraph.resetData()
+            self.elevationGraph.resetData()
 
 
     @pyqtSlot()
@@ -179,39 +180,46 @@ class Conference(QWidget, Ui_Conference):
         elif index == 3:
             self.source4.setStyleSheet('background-color: %s' % color)
 
-
 class Graph(QWidget):
 
-    data = []
-    lines = []
-    linesColor = []
     timer = QTimer()
     maxLength = None
+    startIndex = 0
 
     def __init__(self, layoutDisplay, curvesNumber, maxLength=None, title='', parent=None):
         super(Graph, self).__init__(parent)
         self.maxLength = maxLength
         self.curvesNumber = curvesNumber
+        self.lines = []
+        self.linesColor = []
+        self.data = []
 
         self.plot = pg.PlotWidget(title=title)
         self.plot.setLabel('left', 'Angle', 'degree')
         self.plot.setLabel('bottom', 'Sample')
         self.plot.showGrid(x=True, y=True)
         self.plot.hideButtons()
-        self.plot.setRange(yRange=[0, 370], xRange=[0, self.maxLength])
-        self.plot.setLimits(xMin=0, xMax=self.maxLength, yMin=0, yMax=370)
+        self.plot.setRange(yRange=[-1, 370], xRange=[0, self.maxLength])
+        self.plot.setLimits(xMin=0, xMax=self.maxLength, yMin=-1, yMax=370)
         self.plot.setBackground([255, 255, 255])
         layoutDisplay.addWidget(self.plot)
 
-        self.randomColor = lambda: random.randint(0,255)  
+        self.randomColor = lambda: random.randint(100,255)  
         self.computeInitialGraph()
 
         self.timer.timeout.connect(self.updateGraph)
-    
 
-    def addData(self, data):
-        if data:
-            self.data.append(data)
+
+    def addData(self, samples):
+        if samples:
+            for i, sample in enumerate(samples):
+                self.data[i].append(sample)
+
+
+    def resetData(self):
+        self.data = []
+        for i in range(0, self.curvesNumber):
+            self.data.append([])
 
 
     def computeInitialGraph(self):
@@ -219,35 +227,35 @@ class Graph(QWidget):
             lineObj = self.plot.plot()
             self.lines.append(lineObj)
             
-            # choose a random color for each line
-            # make sure there is no lines with the same color
+            # Choose a random color for each line.
+            # Make sure there is no lines with the same color.
             color = [self.randomColor(), self.randomColor(), self.randomColor()]
             while color in self.linesColor:
                 color = [self.randomColor(), self.randomColor(), self.randomColor()]
 
             self.linesColor.append(color)
 
+            self.data.append([])
+
 
     def updateGraph(self):
         start = time.time()
         
         xData = []
-        sample = []
-        if self.maxLength and len(self.data) > self.maxLength:
-            newDataLength = len(self.data) - self.maxLength
-            samples = self.data[self.startIndex + newDataLength : len(self.data)]
-            self.data = samples
-            self.startIndex = 0
+        yData = []
 
-        else:
-            samples = self.data
+        for index, lineData in enumerate(self.data):
+            if self.maxLength and len(lineData) > self.maxLength:
+                newDataLength = len(lineData) - self.maxLength
+                yData = lineData[self.startIndex + newDataLength : len(lineData)]
+                self.data[index] = yData
+                self.startIndex = 0
 
-        xData = np.arange(0, len(samples))
-        for linesData in samples:
-            for i, sample in enumerate(linesData):
-                currentLine = self.lines[i].getYData()
-                currentLine.append(sample)
-                self.lines[i].setData(x=xData, y=currentLine, pen=pg.mkPen(self.linesColor[i]))
+            else:
+                yData = lineData
+
+            xData = np.arange(0, len(yData))
+            self.lines[index].setData(x=xData, y=yData, pen=pg.mkPen(self.linesColor[index]))
         
         print(time.time() - start)
 
