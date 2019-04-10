@@ -10,16 +10,15 @@ class MediaMerger:
     @staticmethod
     def fileMerger(audioInPath, videoInPath, mediaOutPath, srtInPath=None):
         isSrtValid = False
-
-        # Input Audio Validation  
-        if not audioInPath:
-            if(os.path.exists(audioInPath) == False):
-                raise Exception('no file found at : {path}'.format(path=audioInPath)) 
         
-        # Input Video validation  
-        if not videoInPath:
-            if (os.path.exists(videoInPath) == False):
-                raise Exception('no file found at : {path}'.format(path=videoInPath))  
+        
+        # Input Audio Validation   
+        if not audioInPath or (os.path.exists(audioInPath) == False):
+            raise Exception('No file found at : {path}'.format(path=audioInPath))  
+ 
+        # Input Video validation   
+        if not videoInPath or (os.path.exists(videoInPath) == False):
+            raise Exception('No file found at : {path}'.format(path=videoInPath))  
     
         # Srt file validation 
         if srtInPath:
