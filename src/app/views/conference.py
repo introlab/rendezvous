@@ -1,13 +1,12 @@
 from enum import Enum, unique
 from math import degrees
 import numpy as np
-
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
-import matplotlib.pyplot as plt
+import random
+import time
 
 from PyQt5.QtWidgets import QWidget, QFileDialog, QApplication, QLabel, QVBoxLayout, QSizePolicy
 from PyQt5.QtCore import pyqtSlot, QTimer
+import pyqtgraph as pg
 
 from src.app.gui.conference_ui import Ui_Conference
 from src.app.controllers.conference_controller import ConferenceController
@@ -43,18 +42,8 @@ class Conference(QWidget, Ui_Conference):
         self.virtualCameraDisplayer = VirtualCameraDisplayer(self.virtualCameraFrame)
 
         # positions graphs initialization
-        plt.rc('font', size=FontSizes.SMALL_SIZE.value)          # controls default text sizes
-        plt.rc('axes', titlesize=FontSizes.SMALL_SIZE.value)     # fontsize of the axes title
-        plt.rc('axes', labelsize=FontSizes.MEDIUM_SIZE.value)    # fontsize of the x and y labels
-        plt.rc('xtick', labelsize=FontSizes.SMALL_SIZE.value)    # fontsize of the tick labels
-        plt.rc('ytick', labelsize=FontSizes.SMALL_SIZE.value)    # fontsize of the tick labels
-        plt.rc('legend', fontsize=FontSizes.SMALL_SIZE.value)    # legend fontsize
-        plt.rc('figure', titlesize=FontSizes.BIGGER_SIZE.value)  # fontsize of the figure title
-
-        self.azimuthGraph = Graph(None, width=1, height=0.5, dpi=100, maxLength=1000, title='Azimuth Positions')
-        self.elevationGraph = Graph(None, width=1, height=0.5, dpi=100, maxLength=1000, title='Elevation Positions')
-        self.soundPositionsVerticalLayout.addWidget(self.azimuthGraph)
-        self.soundPositionsVerticalLayout.addWidget(self.elevationGraph)
+        self.azimuthGraph = Graph(self.soundPositionsVerticalLayout, curvesNumber=4, maxLength=500, title='Azimuth Positions')
+        self.elevationGraph = Graph(self.soundPositionsVerticalLayout, curvesNumber=4, maxLength=500, title='Elevation Positions')
 
         self.__isVideoSignalsConnected = False
         self.__isOdasSignalsConnected = False
@@ -191,66 +180,74 @@ class Conference(QWidget, Ui_Conference):
             self.source4.setStyleSheet('background-color: %s' % color)
 
 
-class Canvas(FigureCanvas):
+class Graph(QWidget):
 
-    def __init__(self, parent=None, width=5, height=4, dpi=100, maxLength=None, title=None):
-        fig = Figure(figsize=(width, height), dpi=dpi)
-        self.axes = fig.add_subplot(111)
-        self.title = title
-        if self.title:
-            self.axes.set_title(title)
+    data = []
+    lines = []
+    linesColor = []
+    timer = QTimer()
+    maxLength = None
 
-        self.data = []
+    def __init__(self, layoutDisplay, curvesNumber, maxLength=None, title='', parent=None):
+        super(Graph, self).__init__(parent)
         self.maxLength = maxLength
-        self.startIndex = 0
-        
-        self.computeInitialFigure()
+        self.curvesNumber = curvesNumber
 
-        FigureCanvas.__init__(self, fig)
-        self.setParent(parent)
+        self.plot = pg.PlotWidget(title=title)
+        self.plot.setLabel('left', 'Angle', 'degree')
+        self.plot.setLabel('bottom', 'Sample')
+        self.plot.showGrid(x=True, y=True)
+        self.plot.hideButtons()
+        self.plot.setRange(yRange=[0, 370], xRange=[0, self.maxLength])
+        self.plot.setLimits(xMin=0, xMax=self.maxLength, yMin=0, yMax=370)
+        self.plot.setBackground([255, 255, 255])
+        layoutDisplay.addWidget(self.plot)
 
-        FigureCanvas.setSizePolicy(self, QSizePolicy.Expanding, QSizePolicy.Expanding)
-        FigureCanvas.updateGeometry(self)
+        self.randomColor = lambda: random.randint(0,255)  
+        self.computeInitialGraph()
 
-
-    def computeInitialFigure(self):
-        pass
-
-
-class Graph(Canvas): 
-	
-    def __init__(self, *args, **kwargs):
-        Canvas.__init__(self, *args, **kwargs)
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.updateFigure)
-
-
-    def computeInitialFigure(self):
-        self.axes.plot([], self.data)
-
+        self.timer.timeout.connect(self.updateGraph)
+    
 
     def addData(self, data):
         if data:
             self.data.append(data)
 
 
-    def updateFigure(self):
-        self.axes.cla()
+    def computeInitialGraph(self):
+        for i in range(0, self.curvesNumber):
+            lineObj = self.plot.plot()
+            self.lines.append(lineObj)
+            
+            # choose a random color for each line
+            # make sure there is no lines with the same color
+            color = [self.randomColor(), self.randomColor(), self.randomColor()]
+            while color in self.linesColor:
+                color = [self.randomColor(), self.randomColor(), self.randomColor()]
 
+            self.linesColor.append(color)
+
+
+    def updateGraph(self):
+        start = time.time()
+        
         xData = []
-        yData = []
-        if len(self.data) > self.maxLength:
+        sample = []
+        if self.maxLength and len(self.data) > self.maxLength:
             newDataLength = len(self.data) - self.maxLength
-            yData = self.data[self.startIndex + newDataLength : len(self.data)]
-            self.data = yData
+            samples = self.data[self.startIndex + newDataLength : len(self.data)]
+            self.data = samples
             self.startIndex = 0
-        else:
-            yData = self.data
-        
-        xData = range(0, len(yData))
-        
-        self.axes.plot(xData, yData)
-        self.axes.set_title(self.title)
 
-        self.draw()
+        else:
+            samples = self.data
+
+        xData = np.arange(0, len(samples))
+        for linesData in samples:
+            for i, sample in enumerate(linesData):
+                currentLine = self.lines[i].getYData()
+                currentLine.append(sample)
+                self.lines[i].setData(x=xData, y=currentLine, pen=pg.mkPen(self.linesColor[i]))
+        
+        print(time.time() - start)
 
