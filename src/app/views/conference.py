@@ -43,8 +43,8 @@ class Conference(QWidget, Ui_Conference):
         self.virtualCameraDisplayer = VirtualCameraDisplayer(self.virtualCameraFrame)
 
         # positions graphs initialization
-        self.azimuthGraph = Graph(self.soundPositionsVerticalLayout, curvesNumber=4, maxLength=500, yMax=370, title='Azimuth Positions')
-        self.elevationGraph = Graph(self.soundPositionsVerticalLayout, curvesNumber=4, maxLength=500, yMax=90, title='Elevation Positions')
+        self.azimuthGraph = Graph(self.soundPositionsLayout, curvesNumber=4, maxLength=500, yMax=370, title='Azimuth Positions')
+        self.elevationGraph = Graph(self.soundPositionsLayout, curvesNumber=4, maxLength=500, yMax=90, title='Elevation Positions')
 
         self.__isVideoSignalsConnected = False
         self.__isOdasSignalsConnected = False
@@ -189,8 +189,8 @@ class Graph(QWidget):
         self.data = []
 
         self.plot = pg.PlotWidget(title=title)
-        self.plot.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        self.plot.setMaximumHeight(200)
+        self.plot.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        # self.plot.setMaximumHeight(200)
         self.plot.setLabel('left', 'Angle', 'degree')
         self.plot.setLabel('bottom', 'Sample')
         self.plot.showGrid(x=True, y=True)
@@ -251,7 +251,7 @@ class Graph(QWidget):
                 yData = lineData
 
             xData = np.arange(0, len(yData))
-            self.lines[index].setData(x=xData, y=yData, pen=pg.mkPen(self.linesColor[index]))
+            self.lines[index].setData(x=xData, y=yData, pen=pg.mkPen(self.linesColor[index], width=2))
         
         print(time.time() - start)
 
