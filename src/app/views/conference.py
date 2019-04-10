@@ -43,8 +43,8 @@ class Conference(QWidget, Ui_Conference):
         self.virtualCameraDisplayer = VirtualCameraDisplayer(self.virtualCameraFrame)
 
         # positions graphs initialization
-        self.azimuthGraph = Graph(self.soundPositionsVerticalLayout, curvesNumber=4, maxLength=500, title='Azimuth Positions')
-        self.elevationGraph = Graph(self.soundPositionsVerticalLayout, curvesNumber=4, maxLength=500, title='Elevation Positions')
+        self.azimuthGraph = Graph(self.soundPositionsVerticalLayout, curvesNumber=4, maxLength=500, yMax=370, title='Azimuth Positions')
+        self.elevationGraph = Graph(self.soundPositionsVerticalLayout, curvesNumber=4, maxLength=500, yMax=90, title='Elevation Positions')
 
         self.__isVideoSignalsConnected = False
         self.__isOdasSignalsConnected = False
@@ -171,14 +171,8 @@ class Conference(QWidget, Ui_Conference):
 
 
     def __setSourceBackgroundColor(self, index, color):
-        if index == 0:
-            self.source1.setStyleSheet('background-color: %s' % color)
-        elif index == 1:
-            self.source2.setStyleSheet('background-color: %s' % color)
-        elif index == 2:
-            self.source3.setStyleSheet('background-color: %s' % color)
-        elif index == 3:
-            self.source4.setStyleSheet('background-color: %s' % color)
+        pass
+
 
 class Graph(QWidget):
 
@@ -186,7 +180,7 @@ class Graph(QWidget):
     maxLength = None
     startIndex = 0
 
-    def __init__(self, layoutDisplay, curvesNumber, maxLength=None, title='', parent=None):
+    def __init__(self, layoutDisplay, curvesNumber, yMax, maxLength=None, title='', parent=None):
         super(Graph, self).__init__(parent)
         self.maxLength = maxLength
         self.curvesNumber = curvesNumber
@@ -195,12 +189,14 @@ class Graph(QWidget):
         self.data = []
 
         self.plot = pg.PlotWidget(title=title)
+        self.plot.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.plot.setMaximumHeight(200)
         self.plot.setLabel('left', 'Angle', 'degree')
         self.plot.setLabel('bottom', 'Sample')
         self.plot.showGrid(x=True, y=True)
         self.plot.hideButtons()
-        self.plot.setRange(yRange=[-1, 370], xRange=[0, self.maxLength])
-        self.plot.setLimits(xMin=0, xMax=self.maxLength, yMin=-1, yMax=370)
+        self.plot.setRange(yRange=[-1, yMax], xRange=[0, self.maxLength])
+        self.plot.setLimits(xMin=0, xMax=self.maxLength, yMin=-1, yMax=yMax)
         self.plot.setBackground([255, 255, 255])
         layoutDisplay.addWidget(self.plot)
 
