@@ -40,6 +40,7 @@
     $ sudo apt-get install python3-tk
     $ sudo apt-get install xorg-dev libglu1-mesa-dev
     $ sudo apt-get install swig
+    $ sudo apt-get install ffmpeg
     $ pip install -r requirements.txt
 
 9- Generate the python ui with:

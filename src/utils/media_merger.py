@@ -1,44 +1,42 @@
-
 import os
 import sys
-import argparse
 
 class MediaMerger:
 
     def __init__(self):
         pass
 
+
     @staticmethod
     def fileMerger(audioInPath, videoInPath, mediaOutPath, srtInPath=None):
         isSrtValid = False
 
-        # Input Audio Validation 
-        if(os.path.exists(audioInPath) == False):
-            raise Exception('no file found at : {path}'.format(path=audioInPath))
-            return
+        # Input Audio Validation  
+        if(os.path.exists(audioInPath) == False) or not audioInPath:
+            raise Exception('no file found at : {path}'.format(path=audioInPath)) 
+        
         # Input Video validation 
-        if(os.path.exists(videoInPath) == False):
-            raise Exception('no file found at : {}'.format(videoInPath)) 
-            return
+        if not videoInPath:
+            if(os.path.exists(videoInPath) == False):
+                raise Exception('no file found at : {}'.format(videoInPath))  
     
         # Srt file validation
-        if srtInPath:
-            if(os.path.exists(srtInPath) == False):
-                print('Invalid or no .srt file')
-                raise Exception('no file found at : {}'.format(srtInPath)) 
-                #return
-            else:
-                isSrtValid = True
+        if not srtInPath:
+            if srtInPath:
+                if(os.path.exists(srtInPath) == False):
+                    print('Invalid or no .srt file')  
+                else:
+                    isSrtValid = True
 
         # Output file validation 
         if(os.path.splitext(mediaOutPath)[1] != '.avi'):
             raise Exception('Invalid output file format : {path} must be .avi'.format(path=mediaOutPath)) 
-            return
 
+        # Creation of the ffmpeg command with the args
         if isSrtValid:
             ffmpegCommand = 'ffmpeg -y -i {} -i {} -vf subtitles={} {}'.format(audioInPath, videoInPath, srtInPath, mediaOutPath)
         else:
             ffmpegCommand = 'ffmpeg -y -i {} -i {} {}'.format(audioInPath, videoInPath, mediaOutPath)
 
         os.system(ffmpegCommand) 
-        print(ffmpegCommand)
+        #print(ffmpegCommand)
