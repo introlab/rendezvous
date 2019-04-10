@@ -1,12 +1,12 @@
 from enum import Enum, unique
 from math import degrees
 
-from PyQt5.QtWidgets import QWidget, QFileDialog, QApplication
 from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtWidgets import QApplication, QFileDialog QWidget
 
-from src.app.gui.conference_ui import Ui_Conference
+from src.app.application_container import ApplicationContainer
 from src.app.controllers.conference_controller import ConferenceController
-
+from src.app.gui.conference_ui import Ui_Conference
 from src.app.services.videoprocessing.virtualcamera.virtual_camera_displayer import VirtualCameraDisplayer
 
 
@@ -54,7 +54,7 @@ class Conference(QWidget, Ui_Conference):
             self.conferenceController.signalAudioPositions.connect(self.positionDataReceived)
             self.conferenceController.signalOdasState.connect(self.odasStateChanged)
             self.__isOdasSignalsConnected = True
-            self.conferenceController.startOdasLive(odasPath=self.window().getSetting('odasPath'), micConfigPath=self.window().getSetting('micConfigPath'))
+            self.conferenceController.startOdasLive(odasPath=ApplicationContainer.settings().getValue('odasPath'), micConfigPath=ApplicationContainer.settings().getValue('micConfigPath'))
         else:
             self.conferenceController.stopOdasLive()
 
@@ -68,7 +68,7 @@ class Conference(QWidget, Ui_Conference):
             self.conferenceController.signalVideoProcessorState.connect(self.videoProcessorStateChanged)
             self.conferenceController.signalVirtualCamerasReceived.connect(self.updateVirtualCamerasDispay)
             self.__isVideoSignalsConnected = True
-            self.conferenceController.startVideoProcessor(self.window().getSetting('cameraConfigPath'), self.window().getSetting('faceDetection'))
+            self.conferenceController.startVideoProcessor(ApplicationContainer.settings().getValue('cameraConfigPath'), ApplicationContainer.settings().getValue('faceDetection'))
         else:
             self.conferenceController.stopVideoProcessor()
 

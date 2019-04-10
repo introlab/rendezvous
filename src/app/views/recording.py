@@ -1,12 +1,12 @@
 from enum import Enum, unique
 from math import degrees
 
-from PyQt5.QtWidgets import QWidget, QFileDialog, QApplication
 from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtWidgets import QApplication, QFileDialog, QWidget
 
-from src.app.gui.recording_ui import Ui_Recording
+from src.app.application_container import ApplicationContainer
 from src.app.controllers.recording_controller import RecordingController
-
+from src.app.gui.recording_ui import Ui_Recording
 from src.app.services.videoprocessing.virtualcamera.virtual_camera_displayer import VirtualCameraDisplayer
 
 
@@ -21,7 +21,7 @@ class Recording(QWidget, Ui_Recording):
     def __init__(self, odasserver, parent=None):
         super(Recording, self).__init__(parent)
         self.setupUi(self)
-        self.outputFolder.setText(self.window().getSetting('outputFolder'))
+        self.outputFolder.setText(ApplicationContainer.settings().getValue('outputFolder'))
         self.recordingController = RecordingController(self.outputFolder.text(), odasserver)
 
         self.virtualCameraDisplayer = VirtualCameraDisplayer(self.virtualCameraFrame)
@@ -48,7 +48,7 @@ class Recording(QWidget, Ui_Recording):
             )
             if outputFolder:
                 self.outputFolder.setText(outputFolder)
-                self.window().setSetting('outputFolder', outputFolder)
+                ApplicationContainer.settings().setValue('outputFolder', outputFolder)
 
         except Exception as e:
             self.window().emitToExceptionManager(e)
@@ -64,8 +64,8 @@ class Recording(QWidget, Ui_Recording):
 
         if self.btnStartStopRecord.text() == BtnRecordLabels.START_RECORDING.value:
             self.recordingController.startRecording(self.outputFolder.text())
-            self.recordingController.startOdasLive(self.window().getSetting('odasPath'), self.window().getSetting('micConfigPath'))
-            self.recordingController.startVideoProcessor(self.window().getSetting('cameraConfigPath'), self.window().getSetting('faceDetection'))
+            self.recordingController.startOdasLive(ApplicationContainer.settings().getValue('odasPath'), ApplicationContainer.settings().getValue('micConfigPath'))
+            self.recordingController.startVideoProcessor(ApplicationContainer.settings().getValue('cameraConfigPath'), ApplicationContainer.settings().getValue('faceDetection'))
 
         else:
             self.recordingController.saveRecording()

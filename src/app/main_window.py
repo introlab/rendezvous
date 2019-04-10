@@ -6,7 +6,6 @@ from PyQt5.QtCore import pyqtSlot
 from src.app.gui.main_window_ui import Ui_MainWindow
 
 from src.app.managers.exceptions import Exceptions
-from src.app.managers.settings import Settings
 
 from src.app.components.side_bar import SideBar
 
@@ -29,9 +28,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Exception manager.
         self.__exceptionsManager = Exceptions()
-
-        # Settings manager.
-        self.__settingsManager = Settings()
 
         # Initilization of the UI from QtCreator.
         self.setupUi(self)
@@ -90,16 +86,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     # Used by tab modules to tell the exception manager that an exception occured.    
     def emitToExceptionsManager(self, exception):
         self.__exceptionsManager.signalException.emit(exception)
-
-
-    # Used by tab modules to set an application setting.
-    def setSetting(self, setting, value):
-        self.__settingsManager.setValue(setting, value)
-    
-
-    # Used by tab modules to get an application setting.
-    def getSetting(self, setting):
-        return self.__settingsManager.getValue(setting)
 
 
     @pyqtSlot(int)
