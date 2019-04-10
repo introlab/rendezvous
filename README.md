@@ -40,6 +40,7 @@
     $ sudo apt-get install python3-tk
     $ sudo apt-get install xorg-dev libglu1-mesa-dev
     $ sudo apt-get install swig
+    $ sudo apt-get install ffmpeg
     $ sudo apt-get install autoconf
     $ sudo apt-get install libtool
     $ pip install -r requirements.txt

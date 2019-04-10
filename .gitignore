@@ -15,6 +15,7 @@ config/service_account.json
 *.a
 *.so
 lib/*/build
+config/yolo/
 src/app/services/videoprocessing/dewarping/src/shaders/autogen
 src/app/services/videoprocessing/dewarping/interface/fisheye_dewarping.py
 src/app/services/videoprocessing/dewarping/interface/fisheye_dewarping_wrap.cpp
