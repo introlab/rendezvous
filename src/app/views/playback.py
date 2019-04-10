@@ -3,6 +3,7 @@ from pathlib import Path
 from PyQt5.QtWidgets import QWidget, QFileDialog
 from PyQt5.QtCore import pyqtSlot, QTimer
 
+from src.app.application_container import ApplicationContainer
 from src.app.controllers.playback_controller import PlaybackController
 from src.app.gui.playback_ui import Ui_Playback
 
@@ -49,7 +50,7 @@ class Playback(QWidget, Ui_Playback):
 
 
     def emitException(self, e):
-        self.window().emitToExceptionsManager(e)
+        ApplicationContainer.exceptions().show(e)
 
 
     def updatePlayingMediaName(self, name):

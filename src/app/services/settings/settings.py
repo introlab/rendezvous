@@ -4,7 +4,7 @@ from pathlib import Path
 from PyQt5.QtCore import QSettings
 
 
-class Settings:
+class Settings(object):
     
     rootDirectory = str(Path(__file__).resolve().parents[4])
 

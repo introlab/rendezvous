@@ -52,7 +52,7 @@ class Transcription(QWidget, Ui_Transcription):
             if audioDataPath:
                 self.audioDataPath.setText(audioDataPath)
         except Exception as e:
-            self.window().emitToExceptionsManager(e)
+            ApplicationContainer.exceptions().show(e)
 
 
     @pyqtSlot()
@@ -81,7 +81,7 @@ class Transcription(QWidget, Ui_Transcription):
 
     @pyqtSlot(Exception)
     def onException(self, e):
-        self.window().emitToExceptionsManager(e)
+        ApplicationContainer.exceptions().show(e)
         self.transcriptionResult.setText('')
         self.setDisabled(False)
 

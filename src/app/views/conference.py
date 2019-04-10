@@ -2,7 +2,7 @@ from enum import Enum, unique
 from math import degrees
 
 from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtWidgets import QApplication, QFileDialog QWidget
+from PyQt5.QtWidgets import QApplication, QFileDialog, QWidget
 
 from src.app.application_container import ApplicationContainer
 from src.app.controllers.conference_controller import ConferenceController
@@ -134,7 +134,7 @@ class Conference(QWidget, Ui_Conference):
             self.conferenceController.signalAudioPositions.disconnect(self.positionDataReceived)
             self.conferenceController.signalOdasState.disconnect(self.odasStateChanged)
         
-        self.window().emitToExceptionsManager(e)
+        ApplicationContainer.exceptions().show(e)
 
 
     # Handles the event where the user closes the window with the X button

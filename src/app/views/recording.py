@@ -57,7 +57,7 @@ class Recording(QWidget, Ui_Recording):
     @pyqtSlot()
     def btnStartStopRecordClicked(self):
         if not self.outputFolder.text():
-            self.window().emitToExceptionsManager(Exception('output folder cannot be empty'))
+            ApplicationContainer.exceptions().show(Exception('output folder cannot be empty'))
 
         self.btnStartStopRecord.setDisabled(True)
         QApplication.processEvents()
@@ -108,7 +108,7 @@ class Recording(QWidget, Ui_Recording):
 
     @pyqtSlot(Exception)
     def exceptionReceived(self, e):
-        self.window().emitToExceptionsManager(e)
+        ApplicationContainer.exceptions().show(e)
 
 
     # Handles the event where the user closes the window with the X button

@@ -5,8 +5,6 @@ from PyQt5.QtWidgets import QMainWindow, QStackedWidget
 from PyQt5.QtCore import pyqtSlot
 from src.app.gui.main_window_ui import Ui_MainWindow
 
-from src.app.managers.exceptions import Exceptions
-
 from src.app.components.side_bar import SideBar
 
 from src.app.views.conference import Conference
@@ -25,9 +23,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
-
-        # Exception manager.
-        self.__exceptionsManager = Exceptions()
 
         # Initilization of the UI from QtCreator.
         self.setupUi(self)
@@ -81,11 +76,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.playbackView.closeEvent(event)
             self.settingsView.closeEvent(event)
             event.accept()
-
-
-    # Used by tab modules to tell the exception manager that an exception occured.    
-    def emitToExceptionsManager(self, exception):
-        self.__exceptionsManager.signalException.emit(exception)
 
 
     @pyqtSlot(int)
