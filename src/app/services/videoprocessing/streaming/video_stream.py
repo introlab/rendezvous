@@ -3,41 +3,57 @@ from pathlib import Path
 import cv2
 
 from .camera_config import CameraConfig
+import time
 
 
 class VideoStream:
 
-    def __init__(self, cameraConfig):
+    def __init__(self, cameraConfig, useCamera = True):
         self.config = cameraConfig
+        self.useCamera = useCamera
         self.camera = None
+        self.image = None
+        self.imagePath = ''
+        self.cameraConnectionRetries = 2
 
 
     def initializeStream(self):
-        self.__initalizeCamera()
+        if self.useCamera:
+            connectionTries = 0
+            success = False
 
-        # Changing the codec of the camera throws an exception on camera.read every two execution for whatever reason
-        try:
-            self.camera.read()
-        except:
-            self.camera.release()
-            self.camera.open(self.config.cameraPort)
-            self.__initalizeCamera()
+            while connectionTries < self.cameraConnectionRetries and not success:
+                try:
+                    self.__initalizeCamera()
+                    success, frame = self.camera.read()
+                except:
+                    self.camera.release()
+                finally:
+                    connectionTries += 1
 
-        # Initialization of C++ dewarping library requires number of channels in the video
-        success, frame = self.camera.read()
+            if not success:
+                raise Exception('Could not read image from camera at port {port}'.format(port=self.config.cameraPort))
 
-        if not success:
-            raise Exception('Could not read image from camera at port {port}'.format(port=self.config.cameraPort))
+            self.printCameraSettings()
+        else:
+            if self.imagePath == '':
+                raise Exception('Path to fisheye image wasn\'t set, make sure to set it when not using a camera')
 
-        self.printCameraSettings()
+            self.image = cv2.imread(self.imagePath, cv2.IMREAD_COLOR)
        
 
     def destroy(self):
-        self.camera.release()
+        if self.useCamera:
+            self.camera.release()
 
 
     def readFrame(self):
-        success, frame = self.camera.read()
+        if self.useCamera:
+            success, frame = self.camera.read()
+        else:
+            success = True
+            frame = self.image.copy()
+            time.sleep(0.001)     
 
         if success:
             return success, frame
@@ -46,7 +62,7 @@ class VideoStream:
 
 
     def printCameraSettings(self):
-        if self.camera == None:
+        if self.camera is None:
             print('Stream must be initiazed to print the camera settings')
         else:
             print('Image width = {width}'.format(width=self.camera.get(cv2.CAP_PROP_FRAME_WIDTH)))
