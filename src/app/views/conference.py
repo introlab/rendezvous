@@ -235,8 +235,6 @@ class Graph(QWidget):
 
 
     def updateGraph(self):
-        start = time.time()
-        
         xData = []
         yData = []
 
@@ -252,6 +250,4 @@ class Graph(QWidget):
 
             xData = np.arange(0, len(yData))
             self.lines[index].setData(x=xData, y=yData, pen=pg.mkPen(self.linesColor[index], width=2))
-        
-        print(time.time() - start)
 
