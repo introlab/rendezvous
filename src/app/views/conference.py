@@ -24,10 +24,10 @@ class BtnVideoLabels(Enum):
 
 class Conference(QWidget, Ui_Conference):
 
-    def __init__(self, odasserver, parent=None):
+    def __init__(self, parent=None):
         super(Conference, self).__init__(parent)
         self.setupUi(self)
-        self.conferenceController = ConferenceController(odasserver)
+        self.conferenceController = ConferenceController()
 
         self.virtualCameraDisplayer = VirtualCameraDisplayer(self.virtualCameraFrame)
 

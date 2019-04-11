@@ -18,11 +18,11 @@ class BtnRecordLabels(Enum):
 
 class Recording(QWidget, Ui_Recording):
 
-    def __init__(self, odasserver, parent=None):
+    def __init__(self, parent=None):
         super(Recording, self).__init__(parent)
         self.setupUi(self)
         self.outputFolder.setText(ApplicationContainer.settings().getValue('outputFolder'))
-        self.recordingController = RecordingController(self.outputFolder.text(), odasserver)
+        self.recordingController = RecordingController(self.outputFolder.text())
 
         self.virtualCameraDisplayer = VirtualCameraDisplayer(self.virtualCameraFrame)
 
