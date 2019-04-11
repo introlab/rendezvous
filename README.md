@@ -53,11 +53,13 @@
     $ ./configure
     $ sudo make install
 
-10- Generate the python ui with:
+10- Install ODAS, follow the steps in the wiki: https://github.com/introlab/odas/wiki/Installation
+
+11- Generate the python ui with:
 
     $ python setup.py build_ui
 
-11- build the c++ code and its dependencies use :
+12- build the c++ code and its dependencies use :
 
     $ make
 
@@ -73,12 +75,12 @@
 
       $ make clean_dewarping_lib
 
-12 - If you add dependencies run the following command to add your new dependencies to requirements.txt:
+13 - If you add dependencies run the following command to add your new dependencies to requirements.txt:
     
     $ pip freeze > requirements.txt
 
 
-12 - To use Yolo for face detection on the Jetson, run the following commands:
+14 - To use Yolo for face detection on the Jetson, run the following commands:
 
     $ chmod +x scripts/yolo_setup.sh
     $ ./scripts/yolo_setup.sh
