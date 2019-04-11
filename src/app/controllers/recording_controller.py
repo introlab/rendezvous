@@ -15,6 +15,7 @@ class RecordingController(QObject):
     def __init__(self, outputFolder, parent=None):
         super(RecordingController, self).__init__(parent)
 
+        outputFolder = ApplicationContainer.settings().getValue('defaultOutputFolder')
         self.__recorder = Recorder(outputFolder)
         self.__recorder.changeAudioSettings(outputFolder=outputFolder, nChannels=4, nChannelFile=1, byteDepth=2, sampleRate=48000)
         self.__recorder.start()
@@ -83,9 +84,10 @@ class RecordingController(QObject):
             ApplicationContainer.odas().stop()
 
 
-    def startRecording(self, outputFolder):
+    def startRecording(self):
         try:
             if not self.isRecording:
+                outputFolder = ApplicationContainer.settings().getValue('defaultOutputFolder')
                 self.__recorder.changeAudioSettings(outputFolder=outputFolder, nChannels=4, nChannelFile=1, byteDepth=2, sampleRate=48000)
                 self.__recorder.setOutputFolder(folderpath=outputFolder)
                 self.__recorder.mailbox.put(RecorderActions.NEW_RECORDING)
@@ -115,7 +117,7 @@ class RecordingController(QObject):
 
     def startVideoProcessor(self, cameraConfigPath, faceDetection):
         if ApplicationContainer.videoProcessor() and not ApplicationContainer.videoProcessor().isRunning:
-            self.__videoProcessor.start(cameraConfigPath, faceDetection)
+            ApplicationContainer.videoProcessor().start(cameraConfigPath, faceDetection)
 
 
     def stopVideoProcessor(self):

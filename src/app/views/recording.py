@@ -21,13 +21,11 @@ class Recording(QWidget, Ui_Recording):
     def __init__(self, parent=None):
         super(Recording, self).__init__(parent)
         self.setupUi(self)
-        self.outputFolder.setText(ApplicationContainer.settings().getValue('outputFolder'))
-        self.recordingController = RecordingController(self.outputFolder.text())
+        self.recordingController = RecordingController(ApplicationContainer.settings().getValue('outputFolder'))
 
         self.virtualCameraDisplayer = VirtualCameraDisplayer(self.virtualCameraFrame)
 
         # Qt signal slots
-        self.btnSelectOutputFolder.clicked.connect(self.selectOutputFolder)
         self.btnStartStopRecord.clicked.connect(self.btnStartStopRecordClicked)
 
         self.recordingController.signalOdasState.connect(self.odasStateChanged)
@@ -38,32 +36,12 @@ class Recording(QWidget, Ui_Recording):
 
 
     @pyqtSlot()
-    def selectOutputFolder(self):
-        try:
-            outputFolder = QFileDialog.getExistingDirectory(
-                parent=self, 
-                caption='Select Output Directory', 
-                directory=self.window().rootDirectory,
-                options=QFileDialog.DontUseNativeDialog
-            )
-            if outputFolder:
-                self.outputFolder.setText(outputFolder)
-                ApplicationContainer.settings().setValue('outputFolder', outputFolder)
-
-        except Exception as e:
-            self.window().emitToExceptionManager(e)
-
-
-    @pyqtSlot()
     def btnStartStopRecordClicked(self):
-        if not self.outputFolder.text():
-            ApplicationContainer.exceptions().show(Exception('output folder cannot be empty'))
-
         self.btnStartStopRecord.setDisabled(True)
         QApplication.processEvents()
 
         if self.btnStartStopRecord.text() == BtnRecordLabels.START_RECORDING.value:
-            self.recordingController.startRecording(self.outputFolder.text())
+            self.recordingController.startRecording()
             self.recordingController.startOdasLive(ApplicationContainer.settings().getValue('odasPath'), ApplicationContainer.settings().getValue('micConfigPath'))
             self.recordingController.startVideoProcessor(ApplicationContainer.settings().getValue('cameraConfigPath'), ApplicationContainer.settings().getValue('faceDetection'))
 
