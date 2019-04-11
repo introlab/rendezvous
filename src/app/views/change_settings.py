@@ -22,6 +22,7 @@ class ChangeSettings(QWidget, Ui_ChangeSettings):
         self.btnBrowseOdas.clicked.connect(self.btnBrowseOdasClicked)
         self.btnBrowseDefaultOutputFolder.clicked.connect(self.btnBrowseDefaultOutputFolderClicked)
         self.cbFaceDetection.currentIndexChanged.connect(self.cbFaceDetectionIndexChanged)
+        self.autoTranscriptionCheckBox.stateChanged.connect(self.autoTranscriptionCheckBoxChanged)
 
 
     # Handles the event where the user closes the window with the X button
@@ -85,6 +86,12 @@ class ChangeSettings(QWidget, Ui_ChangeSettings):
         self.window().setSetting('faceDetection', self.cbFaceDetection.currentText())
 
 
+    @pyqtSlot(int)
+    def autoTranscriptionCheckBoxChanged(self, state):
+        value = True if state == 2 else False
+        self.window().setSetting('automaticTranscription', value)
+
+
     def __loadSettings(self, parent):
         self.cameraConfigPath.setText(parent.getSetting('cameraConfigPath'))
         self.serviceAccountPath.setText(parent.getSetting('serviceAccountPath'))
@@ -95,4 +102,5 @@ class ChangeSettings(QWidget, Ui_ChangeSettings):
         self.cbFaceDetection.addItems([faceDetectionMethod.value for faceDetectionMethod in FaceDetectionMethods])
         self.cbFaceDetection.setCurrentIndex(self.cbFaceDetection.findText(parent.getSetting('faceDetection')))
         
+        self.autoTranscriptionCheckBox.setCheckState(2 if parent.getSetting('automaticTranscription') else 0)
         
