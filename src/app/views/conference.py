@@ -1,8 +1,12 @@
 from enum import Enum, unique
 from math import degrees
+import numpy as np
+import random
+import time
 
-from PyQt5.QtWidgets import QWidget, QFileDialog, QApplication
-from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtWidgets import QWidget, QFileDialog, QApplication, QLabel, QVBoxLayout, QSizePolicy
+from PyQt5.QtCore import pyqtSlot, QTimer
+import pyqtgraph as pg
 
 from src.app.gui.conference_ui import Ui_Conference
 from src.app.controllers.conference_controller import ConferenceController
@@ -22,6 +26,13 @@ class BtnVideoLabels(Enum):
     STOP_VIDEO = 'Stop Video'
 
 
+@unique
+class FontSizes(Enum):
+    SMALL_SIZE = 9
+    MEDIUM_SIZE = 10
+    BIGGER_SIZE = 12
+
+
 class Conference(QWidget, Ui_Conference):
 
     def __init__(self, odasserver, parent=None):
@@ -31,6 +42,9 @@ class Conference(QWidget, Ui_Conference):
 
         self.virtualCameraDisplayer = VirtualCameraDisplayer(self.virtualCameraFrame)
 
+        # positions graphs initialization
+        self.azimuthGraph = Graph(self.soundPositionsLayout, curvesNumber=4, maxLength=500, yMax=370, title='Azimuth Positions')
+        self.elevationGraph = Graph(self.soundPositionsLayout, curvesNumber=4, maxLength=500, yMax=90, title='Elevation Positions')
 
         self.__isVideoSignalsConnected = False
         self.__isOdasSignalsConnected = False
@@ -57,6 +71,8 @@ class Conference(QWidget, Ui_Conference):
             self.conferenceController.startOdasLive(odasPath=self.window().getSetting('odasPath'), micConfigPath=self.window().getSetting('micConfigPath'))
         else:
             self.conferenceController.stopOdasLive()
+            self.azimuthGraph.resetData()
+            self.elevationGraph.resetData()
 
 
     @pyqtSlot()
@@ -75,16 +91,13 @@ class Conference(QWidget, Ui_Conference):
 
     @pyqtSlot(object)
     def positionDataReceived(self, values):
-
-        self.source1AzimuthValueLabel.setText('%.5f' % degrees(values[0]['azimuth']))
-        self.source2AzimuthValueLabel.setText('%.5f' % degrees(values[1]['azimuth']))
-        self.source3AzimuthValueLabel.setText('%.5f' % degrees(values[2]['azimuth']))
-        self.source4AzimuthValueLabel.setText('%.5f' % degrees(values[3]['azimuth']))
-
-        self.source1ElevationValueLabel.setText('%.5f' % degrees(values[0]['elevation']))
-        self.source2ElevationValueLabel.setText('%.5f' % degrees(values[1]['elevation']))
-        self.source3ElevationValueLabel.setText('%.5f' % degrees(values[2]['elevation']))
-        self.source4ElevationValueLabel.setText('%.5f' % degrees(values[3]['elevation']))
+        azimuthNewData = []
+        elevationNewData = []
+        for angles in values:
+            azimuthNewData.append(float(np.rad2deg(angles['azimuth'])))
+            elevationNewData.append(float(np.rad2deg(angles['elevation'])))
+        self.azimuthGraph.addData(azimuthNewData)
+        self.elevationGraph.addData(elevationNewData)
 
         self.soundSources = values
 
@@ -98,12 +111,16 @@ class Conference(QWidget, Ui_Conference):
     def odasStateChanged(self, isRunning):
         if isRunning:
             self.btnStartStopOdas.setText(BtnOdasLabels.STOP_ODAS.value)
+            self.azimuthGraph.timer.start(500)
+            self.elevationGraph.timer.start(500)
         
         else:
             self.btnStartStopOdas.setText(BtnOdasLabels.START_ODAS.value)
             self.conferenceController.signalAudioPositions.disconnect(self.positionDataReceived)
             self.conferenceController.signalOdasState.disconnect(self.odasStateChanged)
             self.__isOdasSignalsConnected = False
+            self.azimuthGraph.timer.stop()
+            self.elevationGraph.timer.stop()
 
         self.btnStartStopOdas.setDisabled(False)
 
@@ -154,12 +171,83 @@ class Conference(QWidget, Ui_Conference):
 
 
     def __setSourceBackgroundColor(self, index, color):
-        if index == 0:
-            self.source1.setStyleSheet('background-color: %s' % color)
-        elif index == 1:
-            self.source2.setStyleSheet('background-color: %s' % color)
-        elif index == 2:
-            self.source3.setStyleSheet('background-color: %s' % color)
-        elif index == 3:
-            self.source4.setStyleSheet('background-color: %s' % color)
+        pass
+
+
+class Graph(QWidget):
+
+    timer = QTimer()
+    maxLength = None
+    startIndex = 0
+
+    def __init__(self, layoutDisplay, curvesNumber, yMax, maxLength=None, title='', parent=None):
+        super(Graph, self).__init__(parent)
+        self.maxLength = maxLength
+        self.curvesNumber = curvesNumber
+        self.lines = []
+        self.linesColor = []
+        self.data = []
+
+        self.plot = pg.PlotWidget(title=title)
+        self.plot.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        # self.plot.setMaximumHeight(200)
+        self.plot.setLabel('left', 'Angle', 'degree')
+        self.plot.setLabel('bottom', 'Sample')
+        self.plot.showGrid(x=True, y=True)
+        self.plot.hideButtons()
+        self.plot.setRange(yRange=[-1, yMax], xRange=[0, self.maxLength])
+        self.plot.setLimits(xMin=0, xMax=self.maxLength, yMin=-1, yMax=yMax)
+        self.plot.setBackground([255, 255, 255])
+        layoutDisplay.addWidget(self.plot)
+
+        self.randomColor = lambda: random.randint(100,255)  
+        self.computeInitialGraph()
+
+        self.timer.timeout.connect(self.updateGraph)
+
+
+    def addData(self, samples):
+        if samples:
+            for i, sample in enumerate(samples):
+                self.data[i].append(sample)
+
+
+    def resetData(self):
+        self.data = []
+        for i in range(0, self.curvesNumber):
+            self.data.append([])
+
+
+    def computeInitialGraph(self):
+        for i in range(0, self.curvesNumber):
+            lineObj = self.plot.plot()
+            self.lines.append(lineObj)
+            
+            # Choose a random color for each line.
+            # Make sure there is no lines with the same color.
+            color = [self.randomColor(), self.randomColor(), self.randomColor()]
+            while color in self.linesColor:
+                color = [self.randomColor(), self.randomColor(), self.randomColor()]
+
+            self.linesColor.append(color)
+
+            self.data.append([])
+
+
+    def updateGraph(self):
+        xData = []
+        yData = []
+
+        for index, lineData in enumerate(self.data):
+            if self.maxLength and len(lineData) > self.maxLength:
+                newDataLength = len(lineData) - self.maxLength
+                yData = lineData[self.startIndex + newDataLength : len(lineData)]
+                self.data[index] = yData
+                self.startIndex = 0
+
+            else:
+                yData = lineData
+
+            xData = np.arange(0, len(yData))
+            self.lines[index].setData(x=xData, y=yData, pen=pg.mkPen(self.linesColor[index], width=2))
 
