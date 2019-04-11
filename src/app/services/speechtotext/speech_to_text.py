@@ -206,9 +206,10 @@ class SpeechToText(QObject):
 
                 st = datetime.datetime.fromtimestamp(time.time()).strftime('%Y%m%d%H%M%S')
                 bucketName = "rdv-steno-{}".format(st)
-                remoteFileName = "patate"
+                remoteFileName = "audio"
                 
-                gstorage.upload_blob(bucketName, fileName)
+                gstorage.create_bucket(bucketName)
+                gstorage.upload_blob(bucketName, fileName, remoteFileName)
                 gstorage.list_blobs(bucketName)
 
                 # gs://bucket-name/path_to_audio_file
@@ -236,15 +237,22 @@ class SpeechToText(QObject):
 
             result = operation.result()       
 
+            totalWordsTranscription = []
+            totalTranscription = ''
             for result in result.results:
                 alternative = result.alternatives[0]
-                self.transcriptionReady.emit(alternative.transcript)
-                # The SRT file name comes from the audio data file name.
-                self.__generateSrtFile(fileName=outputFolder + '/' + os.path.splitext(os.path.basename(audioDataPath))[0] + '.srt',
-                                       transcriptWords=alternative.words)
+                totalTranscription = totalTranscription + alternative.transcript
+                totalWordsTranscription.extend(alternative.words)
+                print(totalWordsTranscription)
+                
+            self.transcriptionReady.emit(totalTranscription)
+            # The SRT file name comes from the audio data file name.
+            self.__generateSrtFile(fileName=outputFolder + '/' + os.path.splitext(os.path.basename(audioDataPath))[0] + '.srt',
+                                       transcriptWords=totalWordsTranscription)
 
             if useGStorage:
-                gstorage.delete_blob(bucketName, "patate")
+                gstorage.delete_blob(bucketName, remoteFileName)
+                gstorage.delete_bucket(bucketName)
 
         except Exception as e:
             self.exception.emit(e)

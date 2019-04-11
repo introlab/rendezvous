@@ -12,6 +12,12 @@ class GStorage():
         bucket = storage_client.create_bucket(bucket_name)
         print('Bucket {} created'.format(bucket.name))
 
+    def delete_bucket(self, bucket_name):
+        storage_client = storage.Client.from_service_account_json(self.service_account_path)
+        bucket = storage_client.get_bucket(bucket_name)
+        bucket.delete()
+        print('Bucket {} deleted'.format(bucket.name))
+
     def list_blobs(self, bucket_name):
         """Lists all the blobs in the bucket."""
         storage_client = storage.Client.from_service_account_json(self.service_account_path)
@@ -55,15 +61,15 @@ class GStorage():
 
 
     # [START storage_upload_file]
-    def upload_blob(self, bucket_name, source_file_name):
+    def upload_blob(self, bucket_name, source_file_name, remoteFileName):
         """Uploads a file to the bucket."""
         storage_client = storage.Client.from_service_account_json(self.service_account_path)
         bucket = storage_client.get_bucket(bucket_name)
-        blob = bucket.blob("patate")
+        blob = bucket.blob(remoteFileName)
 
         blob.upload_from_filename(source_file_name)
 
-        print('File {} uploaded to {}.'.format(source_file_name, "patate"))
+        print('File {} uploaded to {}.'.format(source_file_name, remoteFileName))
     # [END storage_upload_file]
 
 
