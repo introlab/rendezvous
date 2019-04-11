@@ -20,18 +20,19 @@ class VirtualCameraDisplayer:
     def stopDisplaying(self):
         self.isDisplaying = False
         self.images = []
+        self.virtualCameraFrame.update()
 
 
     def updateDisplay(self, images):
         if self.isDisplaying:
             self.images = images
+            self.virtualCameraFrame.update()
 
 
     # Draw every virtual cameras on the frame.
     # Is called automatically by Qt when the frame is ready for an update
     def __paintEvent(self, event):
         if not self.isDisplaying or len(self.images) == 0:
-            self.virtualCameraFrame.update()
             return
         
         displayPositions, vcWidth, vcHeight = self.__buildDisplay(len(self.images))
@@ -45,9 +46,6 @@ class VirtualCameraDisplayer:
             painter = QPainter(self.virtualCameraFrame)
             painter.drawImage(xPos - math.floor(vcWidth / 2), yPos - math.floor(vcHeight / 2), qImage.scaled(vcWidth, vcHeight))
             painters.append(painter)
-
-        # This must be called to apply changes
-        self.virtualCameraFrame.update()
 
 
     def __createQImageFromOpenCVImage(self, image):
