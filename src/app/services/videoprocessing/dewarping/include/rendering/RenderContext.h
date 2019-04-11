@@ -5,8 +5,12 @@
 
 struct RenderContext
 {
+    RenderContext();
+
     GLuint pbos[2];
-    GLuint fbo;
+    GLuint fbos[2];
+    GLuint pboIndex;
+    GLuint fboIndex;
     GLuint texture;
     GLubyte* textureData;
 };

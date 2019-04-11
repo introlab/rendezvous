@@ -8,6 +8,7 @@
 
 struct RawModel;
 struct ImageBuffer;
+struct FisheyeContext;
 struct RenderContext;
 
 enum FrameLoaderType
@@ -21,43 +22,36 @@ class FrameLoader
 {
 public:
 
-    FrameLoader(GLsizei inputWidth, GLsizei inputHeight, GLuint channels, 
-        GLenum pixelFormat, FrameLoaderType frameLoaderType);
+    FrameLoader(GLenum pixelFormat);
     virtual ~FrameLoader();
 
-    GLuint getTextureId();
+    GLuint getTextureId(GLuint fisheyeContextId);
+    GLuint createFisheyeContext(GLsizei width, GLsizei height, GLsizei size);
     GLuint createRenderContext(GLsizei width, GLsizei height, GLsizei size);
     void setRenderingContext(GLuint renderContextId, GLsizei width, GLsizei height);
-    void load(GLubyte* inData, GLsizei width, GLsizei height, GLuint channels);
-    void unload(ImageBuffer& imageBuffer, GLuint renderContextId);
+    void load(GLuint fisheyeContextId, ImageBuffer& imageBuffer, FrameLoaderType frameLoaderType);
+    void updateOutput(GLuint renderContextId, ImageBuffer& imageBuffer);
+    void readOutput(GLuint renderContextId, ImageBuffer& imageBuffer);
     void cleanUp();
 
 private:
 
     void generatePBOs(GLuint* pbos, GLsizei size, GLenum target, GLenum usage);
-    void generateFBO(GLuint& fbo, GLuint texture);
+    void generateFBOs(GLuint* fbos, GLuint texture);
     void generateTexture(GLubyte*& textureData, GLuint& texture, GLsizei width, GLsizei height, GLsizei size, GLenum pixelFormat);
 
-    inline void updateTexture();
-    inline void loadDataToTexture(GLubyte* inData);
-    inline void updateTextureWithPBO();
-    inline void loadDataToTextureWithPBO(GLubyte* inData);
+    inline void updateTexture(GLubyte* textureData, GLsizei width, GLsizei height);
+    inline void loadDataToTexture(GLubyte* textureData, GLubyte* inData, GLsizei size);
+    inline void updateTextureWithPBO(GLsizei width, GLsizei height);
+    inline void loadDataToTextureWithPBO(GLubyte* inData, GLsizei size);
     inline void updateOutputPBO(GLsizei width, GLsizei height);
     inline void unloadOutputPBO(GLubyte* outData, GLsizei size);
 
 private:
 
-    GLuint m_unpackPBOs[2];
-    GLubyte* m_textureData;
-    GLuint m_texture;
-
-    GLsizei m_inputWidth;
-    GLsizei m_inputHeight;
-    GLsizeiptr m_inputSize;
-
-    GLuint m_channels;
     GLenum m_pixelFormat;
-    FrameLoaderType m_frameLoaderType;
+
+    std::vector<FisheyeContext> m_fisheyeContexts;
 
     std::vector<RenderContext> m_renderContexts;
     GLuint m_currentRenderContextId;
