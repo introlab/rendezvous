@@ -1,6 +1,6 @@
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 
-from src.app.services.videoprocessing.video_processor import VideoProcessor
+from src.app.application_container import ApplicationContainer
 from src.app.services.sourceclassifier.source_classifier import SourceClassifier
 
 
@@ -13,21 +13,19 @@ class ConferenceController(QObject):
     signalHumanSourcesDetected = pyqtSignal(object)
     signalAudioPositions = pyqtSignal(object)
 
-    def __init__(self, odasserver, parent=None):
+    def __init__(self, parent=None):
         super(ConferenceController, self).__init__(parent)
 
         self.isOdasLiveConnected = False
         self.videoProcessorState = False
 
-        self.__odasserver = odasserver
-        self.__odasserver.signalException.connect(self.odasExceptionHandling)
-        self.__odasserver.signalPositionData.connect(self.positionDataReceived)
-        self.__odasserver.signalClientsConnected.connect(self.odasClientConnected)
+        ApplicationContainer.odas().signalException.connect(self.odasExceptionHandling)
+        ApplicationContainer.odas().signalPositionData.connect(self.positionDataReceived)
+        ApplicationContainer.odas().signalClientsConnected.connect(self.odasClientConnected)
 
-        self.__videoProcessor = VideoProcessor()
-        self.__videoProcessor.signalException.connect(self.videoProcessorExceptionHandling)
-        self.__videoProcessor.signalVirtualCameras.connect(self.virtualCamerasReceived)
-        self.__videoProcessor.signalStateChanged.connect(self.videoProcessorStateChanged)
+        ApplicationContainer.videoProcessor().signalException.connect(self.videoProcessorExceptionHandling)
+        ApplicationContainer.videoProcessor().signalVirtualCameras.connect(self.virtualCamerasReceived)
+        ApplicationContainer.videoProcessor().signalStateChanged.connect(self.videoProcessorStateChanged)
 
         self.__positions = {}
 
@@ -77,24 +75,24 @@ class ConferenceController(QObject):
 
 
     def startOdasLive(self, odasPath, micConfigPath):
-        self.__odasserver.startOdasLive(odasPath, micConfigPath)
+        ApplicationContainer.odas().startOdasLive(odasPath, micConfigPath)
 
 
     def stopOdasLive(self):
-        self.__odasserver.stopOdasLive()
+        ApplicationContainer.odas().stopOdasLive()
 
 
     def stopOdasServer(self):
-        if self.__odasserver.isRunning:
-            self.__odasserver.stop()
+        if ApplicationContainer.odas().isRunning:
+            ApplicationContainer.odas().stop()
 
 
     def startVideoProcessor(self, cameraConfigPath, faceDetection):
-        if self.__videoProcessor and not self.__videoProcessor.isRunning:
-            self.__videoProcessor.start(cameraConfigPath, faceDetection)
+        if ApplicationContainer.videoProcessor() and not ApplicationContainer.videoProcessor().isRunning:
+            ApplicationContainer.videoProcessor().start(cameraConfigPath, faceDetection)
 
 
     def stopVideoProcessor(self):
-        if self.__videoProcessor and self.__videoProcessor.isRunning:
-            self.__videoProcessor.stop()
+        if ApplicationContainer.videoProcessor() and ApplicationContainer.videoProcessor().isRunning:
+            ApplicationContainer.videoProcessor().stop()
 

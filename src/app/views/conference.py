@@ -4,13 +4,14 @@ import numpy as np
 import random
 import time
 
-from PyQt5.QtWidgets import QWidget, QFileDialog, QApplication, QLabel, QVBoxLayout, QSizePolicy
-from PyQt5.QtCore import pyqtSlot, QTimer
 import pyqtgraph as pg
 
-from src.app.gui.conference_ui import Ui_Conference
-from src.app.controllers.conference_controller import ConferenceController
+from PyQt5.QtCore import pyqtSlot, QTimer
+from PyQt5.QtWidgets import QApplication, QFileDialog, QLabel, QSizePolicy, QVBoxLayout, QWidget
 
+from src.app.application_container import ApplicationContainer
+from src.app.controllers.conference_controller import ConferenceController
+from src.app.gui.conference_ui import Ui_Conference
 from src.app.services.videoprocessing.virtualcamera.virtual_camera_displayer import VirtualCameraDisplayer
 
 
@@ -35,10 +36,10 @@ class FontSizes(Enum):
 
 class Conference(QWidget, Ui_Conference):
 
-    def __init__(self, odasserver, parent=None):
+    def __init__(self, parent=None):
         super(Conference, self).__init__(parent)
         self.setupUi(self)
-        self.conferenceController = ConferenceController(odasserver)
+        self.conferenceController = ConferenceController()
 
         self.virtualCameraDisplayer = VirtualCameraDisplayer(self.virtualCameraFrame)
 
@@ -68,7 +69,7 @@ class Conference(QWidget, Ui_Conference):
             self.conferenceController.signalAudioPositions.connect(self.positionDataReceived)
             self.conferenceController.signalOdasState.connect(self.odasStateChanged)
             self.__isOdasSignalsConnected = True
-            self.conferenceController.startOdasLive(odasPath=self.window().getSetting('odasPath'), micConfigPath=self.window().getSetting('micConfigPath'))
+            self.conferenceController.startOdasLive(odasPath=ApplicationContainer.settings().getValue('odasPath'), micConfigPath=ApplicationContainer.settings().getValue('micConfigPath'))
         else:
             self.conferenceController.stopOdasLive()
             self.azimuthGraph.resetData()
@@ -84,7 +85,7 @@ class Conference(QWidget, Ui_Conference):
             self.conferenceController.signalVideoProcessorState.connect(self.videoProcessorStateChanged)
             self.conferenceController.signalVirtualCamerasReceived.connect(self.updateVirtualCamerasDispay)
             self.__isVideoSignalsConnected = True
-            self.conferenceController.startVideoProcessor(self.window().getSetting('cameraConfigPath'), self.window().getSetting('faceDetection'))
+            self.conferenceController.startVideoProcessor(ApplicationContainer.settings().getValue('cameraConfigPath'), ApplicationContainer.settings().getValue('faceDetection'))
         else:
             self.conferenceController.stopVideoProcessor()
 
@@ -151,7 +152,7 @@ class Conference(QWidget, Ui_Conference):
             self.conferenceController.signalAudioPositions.disconnect(self.positionDataReceived)
             self.conferenceController.signalOdasState.disconnect(self.odasStateChanged)
         
-        self.window().emitToExceptionsManager(e)
+        ApplicationContainer.exceptions().show(e)
 
 
     # Handles the event where the user closes the window with the X button
