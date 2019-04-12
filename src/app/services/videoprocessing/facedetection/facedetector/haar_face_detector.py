@@ -1,11 +1,10 @@
 import os
 from pathlib import Path
-import time
 
 import cv2
 
 from .iface_detector import IFaceDetector
-from src.app.services.videoprocessing.virtualcamera.face import Face
+from src.utils.rect import Rect
 
 rootDirectory = str(Path(__file__).resolve().parents[6])
 
@@ -19,8 +18,6 @@ class HaarFaceDetector(IFaceDetector):
 
 
     def detectFaces(self, image):
-        start = time.perf_counter()
-
         (imageHeight, imageWidth) = image.shape[:2]
 
         # Convert frame to grayscale image
@@ -38,9 +35,7 @@ class HaarFaceDetector(IFaceDetector):
         for face in faces:
             (x, y, h, w) = face
             if x >= 0 and x <= imageWidth and y >= 0 and y <= imageHeight:
-                validFaces.append(Face(x + w / 2, y + h / 2, w, h))
-
-        print(time.perf_counter() - start)
+                validFaces.append(Rect(x + w / 2, y + h / 2, w, h))
 
         return validFaces
 
