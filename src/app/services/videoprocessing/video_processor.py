@@ -130,9 +130,10 @@ class VideoProcessor(QObject):
             self.isRunning = True
             self.signalStateChanged.emit(True)
 
+            frameTimeTarget = 1./self.fpsTarget
             frameTimeDelta = 0
-            frameTimeGoal = 1./self.fpsTarget
-            actualFrameTime = 1./self.fpsTarget
+            frameTimeModifiedTarget = frameTimeTarget
+            actualFrameTime = frameTimeTarget
             currentTime = time.perf_counter()
 
             while self.isRunning:
@@ -165,7 +166,7 @@ class VideoProcessor(QObject):
                 success, frame = videoStream.readFrame()
                 readTime = time.perf_counter() - currentTime
 
-                if success and readTime < frameTimeGoal / 2:
+                if success and readTime < frameTimeModifiedTarget / 2:
 
                     vcBuffers = []
 
@@ -174,7 +175,7 @@ class VideoProcessor(QObject):
                     currentFisheyeBufferId = fisheyeBufferId
 
                     # Create all buffers required for face detection dewarping
-                    if not fdBufferQueue and readTime < frameTimeGoal / 4 and self.isBusySemaphore.acquire(False) :
+                    if not fdBufferQueue and readTime < frameTimeModifiedTarget / 4 and self.isBusySemaphore.acquire(False) :
                         self.isBusySemaphore.release()
                         currentFisheyeBufferId = fdFisheyeBufferId
                         for dewarpIndex in range(0, dewarpCount):
@@ -185,10 +186,10 @@ class VideoProcessor(QObject):
 
                     loadTime = time.perf_counter() - currentTime
 
-                    if loadTime < (3 * frameTimeGoal) / 4:
+                    if loadTime < (3 * frameTimeModifiedTarget) / 4:
 
                         # Queue next dewarping for face detection (only one dewarping per frame)
-                        if fdBufferQueue and readTime < frameTimeGoal / 4:
+                        if fdBufferQueue and readTime < frameTimeModifiedTarget / 4:
                             fdBuffer, dewarpIndex = fdBufferQueue[0]
                             # Face detection doesn't need te most recent image, it needs to use the same image for all indexes
                             dewarper.queueDewarping(fdFisheyeBufferId, fdBufferId, fdDewarpingParameters[dewarpIndex], fdBuffer)
@@ -223,19 +224,20 @@ class VideoProcessor(QObject):
 
                 frameTime = time.perf_counter() - currentTime
                 
-                if frameTime < frameTimeGoal:
-                    time.sleep(frameTimeGoal - frameTime)
+                if frameTime < frameTimeModifiedTarget:
+                    time.sleep(frameTimeModifiedTarget - frameTime)
 
                 prevTime = currentTime
                 currentTime = time.perf_counter()
                 actualFrameTime = currentTime - prevTime
 
-                frameTimeDelta += 1./self.fpsTarget - actualFrameTime
+                frameTimeDelta += frameTimeTarget - actualFrameTime
 
-                if np.abs(frameTimeDelta) < 1./(self.fpsTarget * 6):
-                    frameTimeGoal = 1./self.fpsTarget + frameTimeDelta
+                # If the frame time delta is too big, only add a delta of 1/6 of the frame time target on this frame
+                if np.abs(frameTimeDelta) < frameTimeTarget / 6:
+                    frameTimeModifiedTarget = frameTimeTarget + frameTimeDelta
                 else:
-                    frameTimeGoal = 1./self.fpsTarget + 1./(self.fpsTarget * 6) * np.sign(frameTimeDelta)
+                    frameTimeModifiedTarget = frameTimeTarget + (frameTimeTarget / 6) * np.sign(frameTimeDelta)
                 
         except Exception as e:
             self.signalException.emit(e)
