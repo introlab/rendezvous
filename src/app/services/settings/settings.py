@@ -14,32 +14,32 @@ class Settings(object):
 
     def __init__(self):
         defaultOutputFolder = self.getValue('defaultOutputFolder')
-        if not defaultOutputFolder:
+        if defaultOutputFolder == None:
             self.setValue('defaultOutputFolder', self.rootDirectory)
 
         speechToTextSampleRate = self.getValue('speechToTextSampleRate')
-        if not speechToTextSampleRate:
+        if speechToTextSampleRate == None:
             self.setValue('speechToTextSampleRate', 48000)
 
         speechToTextEncoding = self.getValue('speechToTextEncoding')
-        if not speechToTextEncoding:
+        if speechToTextEncoding == None:
             self.setValue('speechToTextEncoding', EncodingTypes.ENCODING_UNSPECIFIED)
 
         speechToTextLanguage = self.getValue('speechToTextLanguage')
-        if not speechToTextLanguage:
+        if speechToTextLanguage == None:
             self.setValue('speechToTextLanguage', LanguageCodes.FR_CA)
 
         speechToTextModel = self.getValue('speechToTextModel')
-        if not speechToTextModel:
+        if speechToTextModel == None:
             self.setValue('speechToTextModel', Models.DEFAULT)
 
         speechToTextEnhanced = self.getValue('speechToTextEnhanced')
-        if not speechToTextEnhanced:
-            self.setValue('speechToTextEnhanced', False)
+        if speechToTextEnhanced == None:
+            self.setValue('speechToTextEnhanced', 0)
 
         automaticTranscription = self.getValue('automaticTranscription')
-        if not automaticTranscription:
-            self.setValue('automaticTranscription', False)
+        if automaticTranscription == None:
+            self.setValue('automaticTranscription', 0)
 
 
     @staticmethod

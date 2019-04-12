@@ -36,8 +36,8 @@ class ChangeSettings(QWidget, Ui_ChangeSettings):
         self.languageComboBox.setCurrentIndex(self.languageComboBox.findText(ApplicationContainer.settings().getValue('speechToTextLanguage')))  
         self.modelComboBox.setCurrentIndex(self.modelComboBox.findText(ApplicationContainer.settings().getValue('speechToTextModel')))
         self.sampleRateSpinBox.setValue(int(ApplicationContainer.settings().getValue('speechToTextSampleRate')))
-        self.autoTranscriptionCheckBox.setCheckState(2 if ApplicationContainer.settings().getValue('automaticTranscription') else 0)
-        self.enhancedCheckBox.setCheckState(2 if ApplicationContainer.settings().getValue('speechToTextEnhanced') else 0)
+        self.autoTranscriptionCheckBox.setCheckState(2 if int(ApplicationContainer.settings().getValue('automaticTranscription')) else 0)
+        self.enhancedCheckBox.setCheckState(2 if int(ApplicationContainer.settings().getValue('speechToTextEnhanced')) else 0)
 
         # Qt signal slots.
         self.btnBrowseCameraConfig.clicked.connect(self.btnBrowseCameraConfigClicked)
@@ -138,12 +138,12 @@ class ChangeSettings(QWidget, Ui_ChangeSettings):
 
     @pyqtSlot(int)
     def autoTranscriptionCheckBoxChanged(self, state):
-        value = True if state == 2 else False
+        value = 1 if state == 2 else 0
         ApplicationContainer.settings().setValue('automaticTranscription', value)
 
 
     @pyqtSlot(int)
     def enhancedCheckBoxChanged(self, state):
-        value = True if state == 2 else False
+        value = 1 if state == 2 else 0
         ApplicationContainer.settings().setValue('speechToTextEnhanced', value)
         
