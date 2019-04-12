@@ -6,9 +6,10 @@
 
 struct DewarpingObject
 {
-    DewarpingObject(int renderContextId, ImageBuffer& imageBuffer, DewarpingParameters& dewarpingParameters);
-    DewarpingObject(int renderContextId, ImageBuffer& imageBuffer);
+    DewarpingObject(int fisheyeContextId, int renderContextId, ImageBuffer& imageBuffer, DewarpingParameters& dewarpingParameters);
+    DewarpingObject(int fisheyeContextId, int renderContextId, ImageBuffer& imageBuffer);
 
+    int fisheyeContextId;
     int renderContextId;
     ImageBuffer imageBuffer;
     DewarpingParameters dewarpingParameters;

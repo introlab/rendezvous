@@ -29,30 +29,34 @@ class FisheyeDewarping
 {
 public:
 
-    FisheyeDewarping(int inputWidth, int inputHeight, int channels);
+    FisheyeDewarping();
     virtual ~FisheyeDewarping();
 
-    void loadFisheyeImage(unsigned char * fisheyeImage, int height, int width, int channels);
+    void loadFisheyeImage(int fisheyeContextId, unsigned char * fisheyeImage, int height, int width, int channels);
+    int createFisheyeContext(int width, int height, int channels);
     int createRenderContext(int width, int height, int channels);
-    void queueDewarping(int renderContextId, DewarpingParameters& dewarpingParameters, 
+    void queueDewarping(int fisheyeContextId, int renderContextId, DewarpingParameters& dewarpingParameters, 
         unsigned char * dewarpedImageBuffer, int height, int width, int channels);
-    void queueRendering(int renderContextId, unsigned char * dewarpedImageBuffer, int height, int width, int channels);
+    void queueRendering(int fisheyeContextId, int renderContextId, 
+        unsigned char * dewarpedImageBuffer, int height, int width, int channels);
     int dewarpNextImage();
     void cleanUp();
 
 private:
 
-    void initialize(int inputWidth, int inputHeight, int channels);
+    void initialize();
     
 private:
 
     std::deque<DewarpingObject> m_dewarpingQueue;
-
+    
     std::unique_ptr<DewarpRenderer> m_dewarpRenderer;
     std::unique_ptr<FisheyeTexture> m_fisheyeTexture;
     std::unique_ptr<FrameLoader> m_frameLoader;
     std::shared_ptr<ShaderProgram> m_shader;
     std::shared_ptr<VertexObjectLoader> m_vertexObjectLoader;
+
+    bool m_isFirstDewarpingOfImage;
     
 };
 
