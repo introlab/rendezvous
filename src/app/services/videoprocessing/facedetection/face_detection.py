@@ -10,14 +10,13 @@ from .facedetector.face_detection_methods import FaceDetectionMethods
 
 class FaceDetection(multiprocessing.Process):
 
-    def __init__(self, faceDetectionMethod, imageQueue, facesQueue, heartbeatQueue, isBusySemaphore, dewarpCount):
+    def __init__(self, faceDetectionMethod, imageQueue, facesQueue, heartbeatQueue, isBusySemaphore):
         super(FaceDetection, self).__init__()
         self.faceDetectionMethod = faceDetectionMethod
         self.imageQueue = imageQueue
         self.facesQueue = facesQueue
         self.heartbeatQueue = heartbeatQueue
         self.isBusySemaphore = isBusySemaphore
-        self.dewarpCount = dewarpCount
         self.exit = multiprocessing.Event()
         self.requestImage = True
 
@@ -33,34 +32,29 @@ class FaceDetection(multiprocessing.Process):
 
         faceDetector = self.__createFaceDetector(self.faceDetectionMethod)
 
+        isWaiting = False
         dewarpIndex = -1
         faces = []
 
         lastHeartBeat = time.perf_counter()
-
-        self.isBusySemaphore.release()
 
         while not self.exit.is_set() and time.perf_counter() - lastHeartBeat < 0.5:
 
             image = None
             try:
                 image, dewarpIndex = self.imageQueue.get_nowait()
-                if dewarpIndex == 0:
+                if isWaiting:
+                    isWaiting = False
                     self.isBusySemaphore.acquire()
             except queue.Empty:
+                if not isWaiting:
+                    isWaiting = True
+                    self.isBusySemaphore.release()
                 time.sleep(0.01)
 
             if image is not None:
-
                 imageFaces = faceDetector.detectFaces(image)
-                if len(imageFaces) != 0:
-                    faces.append((imageFaces, dewarpIndex))
-
-                if dewarpIndex == self.dewarpCount - 1:
-                    self.isBusySemaphore.release()
-                    if len(faces) != 0:
-                        self.facesQueue.put(faces)
-                        faces = []
+                self.facesQueue.put((dewarpIndex, imageFaces))
             
             try:
                 self.heartbeatQueue.get_nowait()
@@ -68,7 +62,7 @@ class FaceDetection(multiprocessing.Process):
             except queue.Empty:
                 pass
 
-        if dewarpIndex != -1 and dewarpIndex != self.dewarpCount - 1:
+        if not isWaiting :
             self.isBusySemaphore.release()
         
         print('Face detection terminated')
