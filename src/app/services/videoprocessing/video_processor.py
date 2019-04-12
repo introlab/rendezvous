@@ -141,7 +141,8 @@ class VideoProcessor(QObject):
                 try:
                     self.heartbeatQueue.put_nowait(True)
                 except queue.Full:
-                    pass
+                    if not faceDetection.is_alive():
+                        self.isRunning = False
 
                 newFaces = None
                 try:                  
@@ -243,6 +244,8 @@ class VideoProcessor(QObject):
             self.signalException.emit(e)
 
         finally:
+
+            self.isRunning = False
 
             if faceDetection:
                 faceDetection.stop()
