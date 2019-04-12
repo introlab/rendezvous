@@ -261,7 +261,7 @@ class VideoProcessor(QObject):
             self.virtualCameraManager.clear()
             self.signalStateChanged.emit(False)
 
-        print('Video stream terminated')
+        print('Video processor terminated')
 
 
     def __getFaceDetectionDewarpingParametersList(self, cameraConfig, dewarpCount):
