@@ -250,10 +250,6 @@ class SpeechToText(QObject):
             self.__generateSrtFile(fileName=outputFolder + '/' + os.path.splitext(os.path.basename(audioDataPath))[0] + '.srt',
                                        transcriptWords=totalWordsTranscription)
 
-            if useGStorage:
-                gstorage.delete_blob(bucketName, remoteFileName)
-                gstorage.delete_bucket(bucketName)
-
         except Exception as e:
             self.exception.emit(e)
 
