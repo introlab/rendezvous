@@ -1,6 +1,10 @@
 import io
 import os
+import time
+import datetime
 from enum import Enum, unique
+
+from src.app.services.gstorage.g_storage import GStorage
 
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 
@@ -159,6 +163,8 @@ class SpeechToText(QObject):
     def resquestTranscription(self):
         try:
 
+            useGStorage = True
+
             # Validations before starting transcription procedure.
             serviceAccountPath = self.__config['serviceAccountPath']
             if not os.path.exists(serviceAccountPath):
@@ -194,12 +200,27 @@ class SpeechToText(QObject):
             # The name of the audio data to transcribe.
             fileName = os.path.join(audioDataPath)
 
-            # Loads the audio data(r) in binary format(b) into memory.
-            content = None
-            with io.open(fileName, 'rb') as audioFile:
-                content = audioFile.read()
-            
-            audio = speech.types.RecognitionAudio(content=content)
+            if useGStorage:
+                gstorage = GStorage(serviceAccountPath)
+
+                st = datetime.datetime.fromtimestamp(time.time()).strftime('%Y%m%d%H%M%S')
+                bucketName = "rdv-steno-{}".format(st)
+                remoteFileName = "audio"
+
+                gstorage.createBucket(bucketName)
+                gstorage.uploadBlob(bucketName, fileName, remoteFileName)
+
+                # gs://bucket-name/path_to_audio_file
+                uri = "gs://{}/{}".format(bucketName, remoteFileName)
+                audio = speech.types.RecognitionAudio(uri=uri)
+
+            else :
+                # Loads the audio data(r) in binary format(b) into memory.
+                content = None
+                with io.open(fileName, 'rb') as audioFile:
+                    content = audioFile.read()
+
+                audio = speech.types.RecognitionAudio(content=content)
 
             # Set de config of the transcription.
             recognitionConfig = speech.types.RecognitionConfig(
@@ -214,12 +235,18 @@ class SpeechToText(QObject):
 
             result = operation.result()       
 
+            totalWordsTranscription = []
+            totalTranscription = ''
             for result in result.results:
                 alternative = result.alternatives[0]
-                self.transcriptionReady.emit(alternative.transcript)
-                # The SRT file name comes from the audio data file name.
-                self.__generateSrtFile(fileName=outputFolder + '/' + os.path.splitext(os.path.basename(audioDataPath))[0] + '.srt',
-                                       transcriptWords=alternative.words)
+                totalTranscription = totalTranscription + alternative.transcript
+                totalWordsTranscription.extend(alternative.words)
+
+            self.transcriptionReady.emit(totalTranscription)
+            # The SRT file name comes from the audio data file name.
+            self.__generateSrtFile(fileName=outputFolder + '/' + os.path.splitext(os.path.basename(audioDataPath))[0] + '.srt',
+                                       transcriptWords=totalWordsTranscription)
+
         except Exception as e:
             self.exception.emit(e)
 
