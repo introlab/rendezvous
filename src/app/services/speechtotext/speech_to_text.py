@@ -51,9 +51,7 @@ class SpeechToText(QObject):
 
     # Valid range accepted by the Google API.
     __minSampleRate = 8000
-    __maxSampleRate = 48000
-    # Value we are most likely to use.
-    __defaultSampleRate = 48000       
+    __maxSampleRate = 48000      
     # Value recommended for readability.
     __maxCharInSrtLine = 35
     # Value recommended for readability in second.
@@ -150,10 +148,6 @@ class SpeechToText(QObject):
 
     def getMaxSampleRate(self):
         return self.__maxSampleRate
-
-
-    def getDefaultSampleRate(self):
-        return self.__defaultSampleRate
 
 
     def resquestTranscription(self):

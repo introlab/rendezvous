@@ -3,6 +3,7 @@ import dependency_injector.providers as providers
 
 from src.app.services.exceptions.exceptions import Exceptions
 from src.app.services.odas.odas import Odas
+from src.app.services.speechtotext.speech_to_text import SpeechToText
 from src.app.services.settings.settings import Settings
 from src.app.services.videoprocessing.video_processor import VideoProcessor
 
@@ -17,6 +18,8 @@ class ApplicationContainer(containers.DeclarativeContainer):
                                portPositions=10020, 
                                portAudio=10030, 
                                isVerbose=False)
+
+    speechToText = providers.Singleton(SpeechToText)
 
     settings = providers.Singleton(Settings)
 

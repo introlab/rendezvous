@@ -1,6 +1,7 @@
 from PyQt5.QtCore import QObject, QThread, pyqtSignal, pyqtSlot
 
-from src.app.services.speechtotext.speech_to_text import EncodingTypes, LanguageCodes, Models,SpeechToText
+from src.app.application_container import ApplicationContainer
+from src.app.services.speechtotext.speech_to_text import EncodingTypes, LanguageCodes, Models, SpeechToText
 
 
 class TranscriptionController(QObject):  
@@ -44,12 +45,19 @@ class TranscriptionController(QObject):
         return self.speechToText.getMaxSampleRate()
 
 
-    def getDefaultSampleRate(self):
-        return self.speechToText.getDefaultSampleRate()
-
-
-    def resquestTranscription(self, config):
+    def requestTranscription(self, audioDataPath):
         # We need to set the config since we can't pass arguments directly to the thread.
+        settings = ApplicationContainer.settings()
+        config = {
+            'audioDataPath' : audioDataPath,
+            'encoding' : settings.getValue('speechToTextEncoding'),
+            'enhanced' : bool(settings.getValue('speechToTextEnhanced')),
+            'languageCode' : settings.getValue('speechToTextLanguage'),
+            'model' : settings.getValue('speechToTextModel'),
+            'outputFolder' : settings.getValue('defaultOutputFolder'),
+            'sampleRate' : int(settings.getValue('speechToTextSampleRate')),
+            'serviceAccountPath' : settings.getValue('serviceAccountPath')
+        }
         self.speechToText.setConfig(config)
         self.speechToTextThread.start()
 
