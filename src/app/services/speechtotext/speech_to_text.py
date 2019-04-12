@@ -200,7 +200,6 @@ class SpeechToText(QObject):
             # The name of the audio data to transcribe.
             fileName = os.path.join(audioDataPath)
 
-            # Si l'audio est plus qu'une minute
             if useGStorage:
                 gstorage = GStorage(serviceAccountPath)
 
@@ -208,9 +207,8 @@ class SpeechToText(QObject):
                 bucketName = "rdv-steno-{}".format(st)
                 remoteFileName = "audio"
 
-                gstorage.create_bucket(bucketName)
-                gstorage.upload_blob(bucketName, fileName, remoteFileName)
-                gstorage.list_blobs(bucketName)
+                gstorage.createBucket(bucketName)
+                gstorage.uploadBlob(bucketName, fileName, remoteFileName)
 
                 # gs://bucket-name/path_to_audio_file
                 uri = "gs://{}/{}".format(bucketName, remoteFileName)
@@ -243,7 +241,6 @@ class SpeechToText(QObject):
                 alternative = result.alternatives[0]
                 totalTranscription = totalTranscription + alternative.transcript
                 totalWordsTranscription.extend(alternative.words)
-                print(totalWordsTranscription)
 
             self.transcriptionReady.emit(totalTranscription)
             # The SRT file name comes from the audio data file name.
