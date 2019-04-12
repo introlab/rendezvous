@@ -38,6 +38,7 @@ class VideoProcessor(QObject):
         self.facesQueue = Queue()
         self.isBusySemaphore = Semaphore()
         self.heartbeatQueue = Queue(1)
+        self.fpsTarget = 15
 
 
     def start(self, cameraConfigPath, faceDetectionMethod):
@@ -111,6 +112,11 @@ class VideoProcessor(QObject):
                 self.facesQueue, self.heartbeatQueue, self.isBusySemaphore)
             faceDetection.start()
 
+            # Make sure the face detection is started before starting video stream
+            time.sleep(0.1)
+            self.isBusySemaphore.acquire()
+            self.isBusySemaphore.release()
+
             fdBufferQueue = deque()
 
             fdBuffers = []
@@ -123,17 +129,19 @@ class VideoProcessor(QObject):
 
             self.isRunning = True
             self.signalStateChanged.emit(True)
-            
-            prevTime = time.perf_counter()
+
+            frameTimeTarget = 1./self.fpsTarget
+            frameTimeDelta = 0
+            frameTimeModifiedTarget = frameTimeTarget
+            actualFrameTime = frameTimeTarget
+            currentTime = time.perf_counter()
+
             while self.isRunning:
 
                 try:
                     self.heartbeatQueue.put_nowait(True)
                 except queue.Full:
                     pass
-
-                currentTime = time.perf_counter()
-                frameTime = currentTime - prevTime
 
                 newFaces = None
                 try:                  
@@ -153,11 +161,12 @@ class VideoProcessor(QObject):
                         self.virtualCameraManager.updateFaces(angleFaces)
                         angleFaces = []
 
-                self.virtualCameraManager.update(frameTime)
-                
-                success, frame = videoStream.readFrame()
+                self.virtualCameraManager.update(actualFrameTime)
 
-                if success:
+                success, frame = videoStream.readFrame()
+                readTime = time.perf_counter() - currentTime
+
+                if success and readTime < frameTimeModifiedTarget / 2:
 
                     vcBuffers = []
 
@@ -166,7 +175,7 @@ class VideoProcessor(QObject):
                     currentFisheyeBufferId = fisheyeBufferId
 
                     # Create all buffers required for face detection dewarping
-                    if not fdBufferQueue and self.isBusySemaphore.acquire(False) :
+                    if not fdBufferQueue and readTime < frameTimeModifiedTarget / 4 and self.isBusySemaphore.acquire(False) :
                         self.isBusySemaphore.release()
                         currentFisheyeBufferId = fdFisheyeBufferId
                         for dewarpIndex in range(0, dewarpCount):
@@ -175,41 +184,60 @@ class VideoProcessor(QObject):
 
                     dewarper.loadFisheyeImage(currentFisheyeBufferId, frame)
 
-                    # Queue next dewarping for face detection (only one dewarping per frame)
-                    if fdBufferQueue:
-                        fdBuffer, dewarpIndex = fdBufferQueue[0]
-                        # Face detection doesn't need te most recent image, it needs to use the same image for all indexes
-                        dewarper.queueDewarping(fdFisheyeBufferId, fdBufferId, fdDewarpingParameters[dewarpIndex], fdBuffer)
+                    loadTime = time.perf_counter() - currentTime
 
-                    # Queue dewarping for each virtual camera
-                    for vc in self.virtualCameraManager.getVirtualCameras():
-                        vcBuffer = np.empty((vcOutputHeight, vcOutputWidth, channels), dtype=np.uint8)
+                    if loadTime < (3 * frameTimeModifiedTarget) / 4:
 
-                        # Generate dewarping params for vc
-                        vcDewarpingParameters = self.__getVirtualCameraDewarpingParameters(vc, fisheyeCenter, cameraConfig)
- 
-                        # Virtual camera always need the most recent fisheye image
-                        dewarper.queueDewarping(currentFisheyeBufferId, vcBufferId, vcDewarpingParameters, vcBuffer)
-                        vcBuffers.append(vcBuffer)
+                        # Queue next dewarping for face detection (only one dewarping per frame)
+                        if fdBufferQueue and readTime < frameTimeModifiedTarget / 4:
+                            fdBuffer, dewarpIndex = fdBufferQueue[0]
+                            # Face detection doesn't need te most recent image, it needs to use the same image for all indexes
+                            dewarper.queueDewarping(fdFisheyeBufferId, fdBufferId, fdDewarpingParameters[dewarpIndex], fdBuffer)
 
-                    # Execute all queued dewarping for face detection and virtual cameras
-                    bufferId = 0
-                    while bufferId != NoQueuedDewarping:
-                        bufferId = dewarper.dewarpNextImage()
+                        # Queue dewarping for each virtual camera
+                        for vc in self.virtualCameraManager.getVirtualCameras():
+                            vcBuffer = np.empty((vcOutputHeight, vcOutputWidth, channels), dtype=np.uint8)
+
+                            # Generate dewarping params for vc
+                            vcDewarpingParameters = self.__getVirtualCameraDewarpingParameters(vc, fisheyeCenter, cameraConfig)
+    
+                            # Virtual camera always need the most recent fisheye image
+                            dewarper.queueDewarping(currentFisheyeBufferId, vcBufferId, vcDewarpingParameters, vcBuffer)
+                            vcBuffers.append(vcBuffer)
+
+                        # Execute all queued dewarping for face detection and virtual cameras
+                        bufferId = 0
+                        while bufferId != NoQueuedDewarping:
+                            bufferId = dewarper.dewarpNextImage()
+                            
+                            if bufferId == fdBufferId:
+                                buffer, dewarpIndex = fdBufferQueue.popleft()
+                                fdBuffers[dewarpIndex] = buffer
+                                self.imageQueue.put_nowait((buffer, dewarpIndex))
                         
-                        if bufferId == fdBufferId:
-                            buffer, dewarpIndex = fdBufferQueue.popleft()
-                            fdBuffers[dewarpIndex] = buffer
-                            self.imageQueue.put_nowait((buffer, dewarpIndex))
-                    
-                    # Dislay 360 dewarping as virtual cameras for debugging
-                    if show360DegAsVcs:
-                        vcBuffers.extend(fdBuffers)
+                        # Dislay 360 dewarping as virtual cameras for debugging
+                        if show360DegAsVcs:
+                            vcBuffers.extend(fdBuffers)
 
-                    # Send the virtual camera images
-                    self.signalVirtualCameras.emit(vcBuffers, self.virtualCameraManager.getVirtualCameras())
+                        # Send the virtual camera images
+                        self.signalVirtualCameras.emit(vcBuffers, self.virtualCameraManager.getVirtualCameras())
+
+                frameTime = time.perf_counter() - currentTime
+                
+                if frameTime < frameTimeModifiedTarget:
+                    time.sleep(frameTimeModifiedTarget - frameTime)
 
                 prevTime = currentTime
+                currentTime = time.perf_counter()
+                actualFrameTime = currentTime - prevTime
+
+                frameTimeDelta += frameTimeTarget - actualFrameTime
+
+                # If the frame time delta is too big, only add a delta of 1/6 of the frame time target on this frame
+                if np.abs(frameTimeDelta) < frameTimeTarget / 6:
+                    frameTimeModifiedTarget = frameTimeTarget + frameTimeDelta
+                else:
+                    frameTimeModifiedTarget = frameTimeTarget + (frameTimeTarget / 6) * np.sign(frameTimeDelta)
                 
         except Exception as e:
             self.signalException.emit(e)
