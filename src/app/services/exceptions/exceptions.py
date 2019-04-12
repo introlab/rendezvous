@@ -16,3 +16,4 @@ class Exceptions(object):
             dlg.setWindowTitle('Warning')
             dlg.setStandardButtons(QMessageBox.Ok)
             dlg.exec_()
+
