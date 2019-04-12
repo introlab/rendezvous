@@ -4,9 +4,9 @@ from pathlib import Path
 from PyQt5.QtCore import QSettings
 
 
-class Settings:
+class Settings(object):
     
-    rootDirectory = str(Path(__file__).resolve().parents[3])
+    rootDirectory = str(Path(__file__).resolve().parents[4])
 
     qSettings = QSettings('Groupe RendezVous', 'App')
 
@@ -24,3 +24,4 @@ class Settings:
     @staticmethod
     def setValue(key, value):
         Settings.qSettings.setValue(key, value)
+    

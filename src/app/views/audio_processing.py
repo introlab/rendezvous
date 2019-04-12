@@ -64,6 +64,6 @@ class AudioProcessing(QWidget, Ui_AudioProcessing):
 
     @pyqtSlot(Exception)
     def onException(self, e):
-        self.window().emitToExceptionsManager(e)
+        ApplicationContainer.exceptions().show(e)
         self.btnProcessAudio.setDisabled(False)
         self.lblState.setText('Error')

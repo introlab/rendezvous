@@ -1,10 +1,12 @@
 from pathlib import Path
 
-from PyQt5.QtWidgets import QWidget, QFileDialog
 from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtWidgets import QFileDialog, QWidget
 
+from src.app.application_container import ApplicationContainer
 from src.app.controllers.transcription_controller import TranscriptionController
 from src.app.gui.transcription_ui import Ui_Transcription
+
 
 
 class Transcription(QWidget, Ui_Transcription):
@@ -50,7 +52,7 @@ class Transcription(QWidget, Ui_Transcription):
             if audioDataPath:
                 self.audioDataPath.setText(audioDataPath)
         except Exception as e:
-            self.window().emitToExceptionsManager(e)
+            ApplicationContainer.exceptions().show(e)
 
 
     @pyqtSlot()
@@ -64,9 +66,9 @@ class Transcription(QWidget, Ui_Transcription):
             'enhanced' : self.enhanced.checkState(),
             'languageCode' : self.language.currentText(),
             'model' : self.model.currentText(),
-            'outputFolder' : self.window().getSetting('defaultOutputFolder'),
+            'outputFolder' : ApplicationContainer.settings().getValue('defaultOutputFolder'),
             'sampleRate' : self.sampleRate.value(),
-            'serviceAccountPath' : self.window().getSetting('serviceAccountPath')
+            'serviceAccountPath' : ApplicationContainer.settings().getValue('serviceAccountPath')
         }
         self.transcriptionController.resquestTranscription(config)
 
@@ -79,7 +81,7 @@ class Transcription(QWidget, Ui_Transcription):
 
     @pyqtSlot(Exception)
     def onException(self, e):
-        self.window().emitToExceptionsManager(e)
+        ApplicationContainer.exceptions().show(e)
         self.transcriptionResult.setText('')
         self.setDisabled(False)
 
