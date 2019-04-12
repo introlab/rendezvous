@@ -35,6 +35,8 @@ class Odas(QObject, Thread):
         self.odasProcess = None
         self.odasPath =  ''
         self.micConfigPath = ''
+        
+        self.start()
     
 
     def stop(self):

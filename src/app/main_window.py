@@ -5,9 +5,6 @@ from PyQt5.QtWidgets import QMainWindow, QStackedWidget
 from PyQt5.QtCore import pyqtSlot
 from src.app.gui.main_window_ui import Ui_MainWindow
 
-from src.app.managers.exceptions import Exceptions
-from src.app.managers.settings import Settings
-
 from src.app.components.side_bar import SideBar
 
 from src.app.views.conference import Conference
@@ -17,8 +14,6 @@ from src.app.views.change_settings import ChangeSettings
 from src.app.views.audio_processing import AudioProcessing
 from src.app.views.recording import Recording
 
-from src.app.services.odas.odas import Odas
-
 
 class MainWindow(QMainWindow, Ui_MainWindow):
 
@@ -26,12 +21,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
-
-        # Exception manager.
-        self.__exceptionsManager = Exceptions()
-
-        # Settings manager.
-        self.__settingsManager = Settings()
 
         # Initilization of the UI from QtCreator.
         self.setupUi(self)
@@ -45,16 +34,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.views = QStackedWidget()
         self.mainLayout.addWidget(self.views)
     
-        odasServer = Odas(hostIP='127.0.0.1', portPositions=10020, portAudio=10030, isVerbose=False)
-        odasServer.start()
-
         # Views of the main layout.
-        self.conferenceView = Conference(odasServer, parent=self)
+        self.conferenceView = Conference(parent=self)
         self.sideBar.addItem('Conference')
         self.views.addWidget(self.conferenceView)
         self.sideBar.setCurrentRow(0)
 
-        self.recordingView = Recording(odasServer, parent=self)
+        self.recordingView = Recording(parent=self)
         self.sideBar.addItem('Recording')
         self.views.addWidget(self.recordingView) 
 
@@ -85,21 +71,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.playbackView.closeEvent(event)
             self.settingsView.closeEvent(event)
             event.accept()
-
-
-    # Used by tab modules to tell the exception manager that an exception occured.    
-    def emitToExceptionsManager(self, exception):
-        self.__exceptionsManager.signalException.emit(exception)
-
-
-    # Used by tab modules to set an application setting.
-    def setSetting(self, setting, value):
-        self.__settingsManager.setValue(setting, value)
-    
-
-    # Used by tab modules to get an application setting.
-    def getSetting(self, setting):
-        return self.__settingsManager.getValue(setting)
 
 
     @pyqtSlot(int)
