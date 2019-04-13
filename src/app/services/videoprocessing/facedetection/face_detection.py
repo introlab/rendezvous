@@ -2,6 +2,7 @@ import multiprocessing
 import queue
 import time
 
+from src.utils.exception_helper import ExceptionHelper
 from .facedetector.yolo_face_detector import YoloFaceDetector
 from .facedetector.dnn_face_detector import DnnFaceDetector
 from .facedetector.haar_face_detector import HaarFaceDetector
@@ -10,15 +11,17 @@ from .facedetector.face_detection_methods import FaceDetectionMethods
 
 class FaceDetection(multiprocessing.Process):
 
-    def __init__(self, faceDetectionMethod, imageQueue, facesQueue, heartbeatQueue, isBusySemaphore):
+    def __init__(self, faceDetectionMethod, imageQueue, facesQueue, heartbeatQueue, exceptionQueue, isBusySemaphore):
         super(FaceDetection, self).__init__()
         self.faceDetectionMethod = faceDetectionMethod
         self.imageQueue = imageQueue
         self.facesQueue = facesQueue
         self.heartbeatQueue = heartbeatQueue
+        self.exceptionQueue = exceptionQueue
         self.isBusySemaphore = isBusySemaphore
         self.exit = multiprocessing.Event()
         self.requestImage = True
+        self.isBusy = False
 
 
     def stop(self):
@@ -28,44 +31,46 @@ class FaceDetection(multiprocessing.Process):
     def run(self):
         print('Starting face detection')
 
-        self.isBusySemaphore.acquire()
+        try:
 
-        faceDetector = self.__createFaceDetector(self.faceDetectionMethod)
+            self.__lockOnce()
 
-        isWaiting = False
-        dewarpIndex = -1
-        faces = []
+            faceDetector = self.__createFaceDetector(self.faceDetectionMethod)
 
-        lastHeartBeat = time.perf_counter()
+            dewarpIndex = -1
+            faces = []
 
-        while not self.exit.is_set() and time.perf_counter() - lastHeartBeat < 0.5:
+            lastHeartBeat = time.perf_counter()
 
-            image = None
-            try:
-                image, dewarpIndex = self.imageQueue.get_nowait()
-                if isWaiting:
-                    isWaiting = False
-                    self.isBusySemaphore.acquire()
-            except queue.Empty:
-                if not isWaiting:
-                    isWaiting = True
-                    self.isBusySemaphore.release()
-                time.sleep(0.01)
+            while not self.exit.is_set() and time.perf_counter() - lastHeartBeat < 0.5:
 
-            if image is not None:
-                imageFaces = faceDetector.detectFaces(image)
-                self.facesQueue.put((dewarpIndex, imageFaces))
-            
-            try:
-                self.heartbeatQueue.get_nowait()
-                lastHeartBeat = time.perf_counter()
-            except queue.Empty:
-                pass
+                image = None
+                try:
+                    image, dewarpIndex = self.imageQueue.get_nowait()
+                    self.__lockOnce()
+                except queue.Empty:
+                    self.__unlockOnce()
+                    time.sleep(0.01)
 
-        if not isWaiting :
-            self.isBusySemaphore.release()
+                if image is not None:
+                    imageFaces = faceDetector.detectFaces(image)
+                    self.facesQueue.put((dewarpIndex, imageFaces))
+                
+                try:
+                    self.heartbeatQueue.get_nowait()
+                    lastHeartBeat = time.perf_counter()
+                except queue.Empty:
+                    pass
         
-        print('Face detection terminated')
+        except Exception as e:
+            ExceptionHelper.printStackTrace(e)
+            self.exceptionQueue.put(e)
+
+        finally:
+            
+            self.__unlockOnce()
+        
+            print('Face detection terminated')
 
     
     def __createFaceDetector(self, faceDetectionMethod):
@@ -76,4 +81,16 @@ class FaceDetection(multiprocessing.Process):
         elif faceDetectionMethod == FaceDetectionMethods.YOLO_V3.value:
             return YoloFaceDetector()
         else:
-            return HaarFaceDetector()        
+            return HaarFaceDetector()
+
+
+    def __lockOnce(self):
+        if not self.isBusy:
+            self.isBusySemaphore.acquire()
+            self.isBusy = True
+
+    
+    def __unlockOnce(self):
+        if self.isBusy:
+            self.isBusySemaphore.release()
+            self.isBusy = False

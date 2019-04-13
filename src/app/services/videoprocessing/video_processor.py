@@ -38,6 +38,7 @@ class VideoProcessor(QObject):
         self.facesQueue = Queue()
         self.isBusySemaphore = Semaphore()
         self.heartbeatQueue = Queue(1)
+        self.exceptionQueue = Queue()
         self.fpsTarget = 15
 
 
@@ -109,7 +110,7 @@ class VideoProcessor(QObject):
             vcBufferId = dewarper.createRenderContext(vcOutputWidth, vcOutputHeight, channels)
 
             faceDetection = FaceDetection(faceDetectionMethod, self.imageQueue, \
-                self.facesQueue, self.heartbeatQueue, self.isBusySemaphore)
+                self.facesQueue, self.heartbeatQueue, self.exceptionQueue, self.isBusySemaphore)
             faceDetection.start()
 
             # Make sure the face detection is started before starting video stream
@@ -137,11 +138,17 @@ class VideoProcessor(QObject):
             currentTime = time.perf_counter()
 
             while self.isRunning:
+                
+                try:
+                    raise Exception('FaceDetection process exception : ' + str(self.exceptionQueue.get_nowait()))
+                except queue.Empty:
+                    pass
 
                 try:
                     self.heartbeatQueue.put_nowait(True)
                 except queue.Full:
-                    pass
+                    if not faceDetection.is_alive():
+                        self.isRunning = False
 
                 newFaces = None
                 try:                  
@@ -243,6 +250,8 @@ class VideoProcessor(QObject):
             self.signalException.emit(e)
 
         finally:
+
+            self.isRunning = False
 
             if faceDetection:
                 faceDetection.stop()
