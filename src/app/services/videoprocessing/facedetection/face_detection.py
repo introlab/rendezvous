@@ -2,6 +2,7 @@ import multiprocessing
 import queue
 import time
 
+from src.utils.exception_helper import ExceptionHelper
 from .facedetector.yolo_face_detector import YoloFaceDetector
 from .facedetector.dnn_face_detector import DnnFaceDetector
 from .facedetector.haar_face_detector import HaarFaceDetector
@@ -10,12 +11,13 @@ from .facedetector.face_detection_methods import FaceDetectionMethods
 
 class FaceDetection(multiprocessing.Process):
 
-    def __init__(self, faceDetectionMethod, imageQueue, facesQueue, heartbeatQueue, isBusySemaphore):
+    def __init__(self, faceDetectionMethod, imageQueue, facesQueue, heartbeatQueue, exceptionQueue, isBusySemaphore):
         super(FaceDetection, self).__init__()
         self.faceDetectionMethod = faceDetectionMethod
         self.imageQueue = imageQueue
         self.facesQueue = facesQueue
         self.heartbeatQueue = heartbeatQueue
+        self.exceptionQueue = exceptionQueue
         self.isBusySemaphore = isBusySemaphore
         self.exit = multiprocessing.Event()
         self.requestImage = True
@@ -59,6 +61,10 @@ class FaceDetection(multiprocessing.Process):
                     lastHeartBeat = time.perf_counter()
                 except queue.Empty:
                     pass
+        
+        except Exception as e:
+            ExceptionHelper.printStackTrace(e)
+            self.exceptionQueue.put(e)
 
         finally:
             
