@@ -9,16 +9,18 @@ from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 from src.utils.json_utils import JsonUtils  
 from src.utils.spherical_angles_converter import SphericalAnglesConverter
 from src.app.services.odas.odasliveprocess.odas_live_process import OdasLiveProcess
+from src.app.services.service.service_state import ServiceState
+
 
 class Odas(QObject, Thread):
 
     signalException = pyqtSignal(Exception)
     signalAudioData = pyqtSignal(bytes)
     signalPositionData = pyqtSignal(object)
-    signalClientsConnected = pyqtSignal(bool)
+    signalStateChanged = pyqtSignal(object)
 
     def __init__(self, hostIP, portPositions, portAudio, isVerbose=False, parent=None):
-        super(Odas, self).__init__(parent)
+        QObject.__init__(self, parent)
         Thread.__init__(self)
 
         self.daemon = True
@@ -30,7 +32,7 @@ class Odas(QObject, Thread):
         self.__workers = []
 
         self.isRunning = False
-        self.isConnected = False
+        self.state = ServiceState.STOPPED
 
         self.odasProcess = None
         self.odasPath =  ''
@@ -66,7 +68,7 @@ class Odas(QObject, Thread):
                         print('client connected!') if self.isVerbose else None
                         
                         if clientPositions and clientAudio:
-                            self.isConnected = True
+                            
                             worker = self.__initWorker(clientPositions)
                             worker.start()
                             self.__workers.append(worker)
@@ -75,9 +77,10 @@ class Odas(QObject, Thread):
                             worker.start()
                             self.__workers.append(worker)
 
-                            self.signalClientsConnected.emit(True)
+                            self.state = ServiceState.RUNNING
+                            self.signalStateChanged.emit(ServiceState.RUNNING)
 
-                        sleep(0.00001)
+                        sleep(0.1)
 
         except Exception as e:
             self.closeConnections()
@@ -108,11 +111,15 @@ class Odas(QObject, Thread):
 
     @pyqtSlot(Exception)
     def odasLiveExceptionHandling(self, e):
+        self.signalException.emit(e)
+        
         if self.odasProcess:
             self.odasProcess.signalException.disconnect(self.odasLiveExceptionHandling)
             self.odasProcess = None
             self.closeConnections()
-        self.signalException.emit(e)
+
+        self.state = ServiceState.STOPPED
+        self.signalStateChanged.emit(ServiceState.STOPPED)
 
 
     def __initWorker(self, connection, bufferSize=None):
@@ -133,29 +140,41 @@ class Odas(QObject, Thread):
             
             self.__workers = []
                 
-
-        self.signalClientsConnected.emit(False)
+        self.state = ServiceState.STOPPED
+        self.signalStateChanged.emit(ServiceState.STOPPED)
 
 
     # Spawn a sub process that execute odaslive.
     def startOdasLive(self, odasPath, micConfigPath):
-        if not self.odasProcess:
-            if not odasPath:
-                raise Exception('odasPath needs to be set in the settings')
 
-            if not micConfigPath:
-                raise Exception('micConfigPath needs to be set in the settings')
+        try:
+        
+            if not self.odasProcess:
+                self.state = ServiceState.STARTING
+                self.signalStateChanged.emit(ServiceState.STARTING)
 
-            self.odasProcess = OdasLiveProcess(odasPath, micConfigPath)
-            self.odasProcess.signalException.connect(self.odasLiveExceptionHandling)
-            self.odasProcess.start()
-            print('odas subprocess started...') if self.isVerbose else None
+                if not odasPath:
+                    raise Exception('odasPath needs to be set in the settings')
+
+                if not micConfigPath:
+                    raise Exception('micConfigPath needs to be set in the settings')
+
+                self.odasProcess = OdasLiveProcess(odasPath, micConfigPath)
+                self.odasProcess.signalException.connect(self.odasLiveExceptionHandling)
+                self.odasProcess.start()
+                print('odas subprocess started...') if self.isVerbose else None
+
+        except Exception as e:
+
+            self.state = ServiceState.STOPPED
+            self.signalStateChanged.emit(ServiceState.STOPPED)
+            self.signalException.emit(e)
 
 
     # Stop the sub process.
     def stopOdasLive(self):
         if self.odasProcess:
-            if self.isConnected:
+            if self.state == ServiceState.RUNNING:
                 self.closeConnections()
             self.odasProcess.stop()
             self.odasProcess.signalException.disconnect(self.odasLiveExceptionHandling)

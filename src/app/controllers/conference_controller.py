@@ -2,6 +2,7 @@ from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 
 from src.app.application_container import ApplicationContainer
 from src.app.services.sourceclassifier.source_classifier import SourceClassifier
+from src.app.services.service.service_state import ServiceState
 
 
 class ConferenceController(QObject):
@@ -9,6 +10,7 @@ class ConferenceController(QObject):
     signalException = pyqtSignal(Exception)
     signalOdasState = pyqtSignal(bool)
     signalVideoProcessorState = pyqtSignal(bool)
+    
     signalVirtualCamerasReceived = pyqtSignal(object)
     signalHumanSourcesDetected = pyqtSignal(object)
     signalAudioPositions = pyqtSignal(object)
@@ -16,40 +18,110 @@ class ConferenceController(QObject):
     def __init__(self, parent=None):
         super(ConferenceController, self).__init__(parent)
 
-        self.isOdasLiveConnected = False
-        self.videoProcessorState = False
+        self.__odasServer = ApplicationContainer.odas()
 
-        ApplicationContainer.odas().signalException.connect(self.odasExceptionHandling)
-        ApplicationContainer.odas().signalPositionData.connect(self.positionDataReceived)
-        ApplicationContainer.odas().signalClientsConnected.connect(self.odasClientConnected)
+        self.__videoProcessor = ApplicationContainer.videoProcessor()
 
-        ApplicationContainer.videoProcessor().signalException.connect(self.videoProcessorExceptionHandling)
-        ApplicationContainer.videoProcessor().signalVirtualCameras.connect(self.virtualCamerasReceived)
-        ApplicationContainer.videoProcessor().signalStateChanged.connect(self.videoProcessorStateChanged)
+        self.__caughtOdasExceptions = []
+        self.__caughtVideoExceptions = []
 
         self.__positions = {}
 
 
-    @pyqtSlot(bool)
-    def odasClientConnected(self, isConnected):
-        self.isOdasLiveConnected = isConnected
-        self.signalOdasState.emit(isConnected)
+    def startOdasLive(self, odasPath, micConfigPath):
+        if self.__odasServer.state != ServiceState.STOPPED:
+            self.signalOdasState.emit(False)
+            self.signalException.emit(Exception('Odas already started'))
+            return
+
+        self.__odasServer.signalStateChanged.connect(self.__odasStateChanged)
+        self.__odasServer.startOdasLive(odasPath, micConfigPath)  
+
+
+    def stopOdasLive(self):
+        self.__odasServer.stopOdasLive()
+            
+
+    def startVideoProcessor(self, cameraConfigPath, faceDetectionMethod):
+        if self.__videoProcessor.state != ServiceState.STOPPED:
+            self.signalVideoProcessorState.emit(False)
+            self.signalException.emit(Exception('Video already started'))
+            return
+
+        if self.__videoProcessor.state == ServiceState.STOPPED:
+            self.__videoProcessor.signalStateChanged.connect(self.__videoProcessorStateChanged)
+            self.__videoProcessor.start(cameraConfigPath, faceDetectionMethod)
+
+
+    def stopVideoProcessor(self):
+        self.__videoProcessor.stop()
+
+
+    def close(self):
+        if self.__odasServer.state == ServiceState.RUNNING:
+            self.stopOdasLive()
+
+        if self.__odasServer.state == ServiceState.RUNNING:
+            self.stopVideoProcessor()
+
+        if self.__odasServer.isRunning:
+            self.__odasServer.stop()
 
 
     @pyqtSlot(object)
-    def positionDataReceived(self, positions):
+    def __odasStateChanged(self, serviceState):
+        self.__odasServer.state = serviceState
+
+        if self.__odasServer.state == ServiceState.STARTING:
+            self.__odasServer.signalException.connect(self.__odasExceptionHandling)
+
+        elif self.__odasServer.state == ServiceState.RUNNING:
+            self.__odasServer.signalPositionData.connect(self.__positionDataReceived)
+            self.signalOdasState.emit(True)
+
+        elif self.__odasServer.state == ServiceState.STOPPING:
+            self.__odasServer.signalPositionData.disconnect(self.__positionDataReceived)
+
+        elif self.__odasServer.state == ServiceState.STOPPED:
+            self.__odasServer.signalException.disconnect(self.__odasExceptionHandling)
+            self.__odasServer.signalStateChanged.disconnect(self.__odasStateChanged)
+            for e in self.__caughtOdasExceptions:
+                self.signalException.emit(e)
+                self.__caughtOdasExceptions.clear()
+            self.signalOdasState.emit(False)
+
+
+    @pyqtSlot(object)
+    def __videoProcessorStateChanged(self, serviceState):
+        self.__videoProcessor.state = serviceState
+
+        if self.__videoProcessor.state == ServiceState.STARTING:
+            self.__videoProcessor.signalException.connect(self.__videoProcessorExceptionHandling)
+            self.__videoProcessor.signalVirtualCameras.connect(self.__virtualCamerasReceived)
+
+        if self.__videoProcessor.state == ServiceState.RUNNING:
+            self.signalVideoProcessorState.emit(True)
+
+        elif self.__videoProcessor.state == ServiceState.STOPPING:
+            self.__videoProcessor.signalVirtualCameras.disconnect(self.__virtualCamerasReceived)
+
+        elif self.__videoProcessor.state == ServiceState.STOPPED:
+            self.__videoProcessor.signalException.disconnect(self.__videoProcessorExceptionHandling)
+            self.__videoProcessor.signalStateChanged.disconnect(self.__videoProcessorStateChanged)
+            for e in self.__caughtVideoExceptions:
+                self.signalException.emit(e)
+                self.__caughtVideoExceptions.clear()
+            self.signalVideoProcessorState.emit(False)
+
+
+    @pyqtSlot(object)
+    def __positionDataReceived(self, positions):
         self.__positions = positions
         self.signalAudioPositions.emit(positions)
 
 
-    @pyqtSlot(bool)
-    def videoProcessorStateChanged(self, state):
-        self.videoProcessorState = state
-        self.signalVideoProcessorState.emit(state)
-
-
     @pyqtSlot(object, object)
-    def virtualCamerasReceived(self, images, virtualCameras):
+    def __virtualCamerasReceived(self, images, virtualCameras):
         if(self.__positions):
             # range threshold in degrees
             rangeThreshold = 15
@@ -61,38 +133,13 @@ class ConferenceController(QObject):
 
 
     @pyqtSlot(Exception)
-    def odasExceptionHandling(self, e):
+    def __odasExceptionHandling(self, e):
+        self.__caughtOdasExceptions.append(e)
         self.stopOdasLive()
-        self.signalOdasState.emit(False)
-        self.signalException.emit(e)
 
         
     @pyqtSlot(Exception)
-    def videoProcessorExceptionHandling(self, e):
+    def __videoProcessorExceptionHandling(self, e):
+        self.__caughtVideoExceptions.append(e)
         self.stopVideoProcessor()
-        self.signalVideoProcessorState.emit(False)
-        self.signalException.emit(e)
-
-
-    def startOdasLive(self, odasPath, micConfigPath):
-        ApplicationContainer.odas().startOdasLive(odasPath, micConfigPath)
-
-
-    def stopOdasLive(self):
-        ApplicationContainer.odas().stopOdasLive()
-
-
-    def stopOdasServer(self):
-        if ApplicationContainer.odas().isRunning:
-            ApplicationContainer.odas().stop()
-
-
-    def startVideoProcessor(self, cameraConfigPath, faceDetection):
-        if ApplicationContainer.videoProcessor() and not ApplicationContainer.videoProcessor().isRunning:
-            ApplicationContainer.videoProcessor().start(cameraConfigPath, faceDetection)
-
-
-    def stopVideoProcessor(self):
-        if ApplicationContainer.videoProcessor() and ApplicationContainer.videoProcessor().isRunning:
-            ApplicationContainer.videoProcessor().stop()
 

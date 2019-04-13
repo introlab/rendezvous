@@ -20,20 +20,21 @@ from src.app.services.videoprocessing.dewarping.interface.fisheye_dewarping impo
 from src.app.services.videoprocessing.dewarping.interface.fisheye_dewarping import FisheyeDewarping
 from src.app.services.videoprocessing.dewarping.interface.fisheye_dewarping import NoQueuedDewarping
 from src.app.services.videoprocessing.dewarping.interface.fisheye_dewarping import NoDewarpingRead
-from .facedetection.face_detection import FaceDetection
-from .facedetection.facedetector.face_detection_methods import FaceDetectionMethods
+from src.app.services.videoprocessing.facedetection.face_detection import FaceDetection
+from src.app.services.videoprocessing.facedetection.facedetector.face_detection_methods import FaceDetectionMethods
+from src.app.services.service.service_state import ServiceState
 
 
 class VideoProcessor(QObject):
 
     signalVirtualCameras = pyqtSignal(object, object)
-    signalStateChanged = pyqtSignal(bool)
+    signalStateChanged = pyqtSignal(object)
     signalException = pyqtSignal(Exception)
 
     def __init__(self, parent=None):
         super(VideoProcessor, self).__init__(parent)
         self.virtualCameraManager = VirtualCameraManager(0, np.pi * 2)
-        self.isRunning = False
+        self.state = ServiceState.STOPPED
         self.imageQueue = Queue()
         self.facesQueue = Queue()
         self.isBusySemaphore = Semaphore()
@@ -44,6 +45,9 @@ class VideoProcessor(QObject):
 
     def start(self, cameraConfigPath, faceDetectionMethod):
         print("Starting video processor...")
+
+        self.state = ServiceState.STARTING
+        self.signalStateChanged.emit(ServiceState.STARTING)
 
         try:
             
@@ -57,11 +61,14 @@ class VideoProcessor(QObject):
 
         except Exception as e:
             
+            self.state = ServiceState.STOPPED
+            self.signalStateChanged.emit(ServiceState.STOPPED)
             self.signalException.emit(e)
 
 
     def stop(self):
-         self.isRunning = False
+        self.signalStateChanged.emit(ServiceState.STOPPING)
+        self.state = ServiceState.STOPPING
 
 
     def run(self, cameraConfigPath, faceDetectionMethod):
@@ -125,11 +132,13 @@ class VideoProcessor(QObject):
                 fdBuffers.append(np.zeros((fdOutputHeight, fdOutputWidth, channels), dtype=np.uint8))
 
             angleFaces = []
-            
-            print('Video processor started')
 
-            self.isRunning = True
-            self.signalStateChanged.emit(True)
+            # Need this check in case the videoprocessor was asked to be stopped during its initialization
+            if self.state == ServiceState.STARTING:
+                self.state = ServiceState.RUNNING
+                self.signalStateChanged.emit(ServiceState.RUNNING)
+
+            print('Video processor started')
 
             frameTimeTarget = 1./self.fpsTarget
             frameTimeDelta = 0
@@ -137,7 +146,7 @@ class VideoProcessor(QObject):
             actualFrameTime = frameTimeTarget
             currentTime = time.perf_counter()
 
-            while self.isRunning:
+            while self.state == ServiceState.RUNNING:
                 
                 try:
                     raise Exception('FaceDetection process exception : ' + str(self.exceptionQueue.get_nowait()))
@@ -148,7 +157,7 @@ class VideoProcessor(QObject):
                     self.heartbeatQueue.put_nowait(True)
                 except queue.Full:
                     if not faceDetection.is_alive():
-                        self.isRunning = False
+                        self.stop()
 
                 newFaces = None
                 try:                  
@@ -247,11 +256,10 @@ class VideoProcessor(QObject):
                     frameTimeModifiedTarget = frameTimeTarget + (frameTimeTarget / 6) * np.sign(frameTimeDelta)
                 
         except Exception as e:
+            
             self.signalException.emit(e)
 
         finally:
-
-            self.isRunning = False
 
             if faceDetection:
                 faceDetection.stop()
@@ -270,7 +278,9 @@ class VideoProcessor(QObject):
                 dewarper.cleanUp()
                 
             self.virtualCameraManager.clear()
-            self.signalStateChanged.emit(False)
+        
+        self.signalStateChanged.emit(ServiceState.STOPPED)
+        self.state = ServiceState.STOPPED
 
         print('Video processor terminated')
 

@@ -21,73 +21,56 @@ class Recording(QWidget, Ui_Recording):
     def __init__(self, parent=None):
         super(Recording, self).__init__(parent)
         self.setupUi(self)
-        self.recordingController = RecordingController(ApplicationContainer.settings().getValue('outputFolder'))
 
-        self.virtualCameraDisplayer = VirtualCameraDisplayer(self.virtualCameraFrame)
+        self.__recordingController = RecordingController()
+        self.__recordingController.signalRecordingState.connect(self.__recordingStateChanged)
+        self.__recordingController.signalVirtualCamerasReceived.connect(self.__updateVirtualCamerasDispay)
+        self.__recordingController.signalException.connect(self.__exceptionReceived)
+        self.__recordingController.transcriptionReady.connect(self.onTranscriptionReady)
+        
+        self.__virtualCameraDisplayer = VirtualCameraDisplayer(self.virtualCameraFrame)
 
         # Qt signal slots
-        self.btnStartStopRecord.clicked.connect(self.btnStartStopRecordClicked)
+        self.btnStartStopRecord.clicked.connect(self.__btnStartStopRecordClicked)
 
-        self.recordingController.signalOdasState.connect(self.odasStateChanged)
-        self.recordingController.signalRecordingState.connect(self.recordingStateChanged)
-        self.recordingController.signalVideoProcessorState.connect(self.videoProcessorStateChanged)
-        self.recordingController.signalVirtualCamerasReceived.connect(self.updateVirtualCamerasDispay)
-        self.recordingController.signalException.connect(self.exceptionReceived)
-        self.recordingController.transcriptionReady.connect(self.onTranscriptionReady)
+
+    # Handles the event where the user closes the window with the X button
+    def closeEvent(self, event):
+        if event:
+            self.__recordingController.close()
+            event.accept()
 
 
     @pyqtSlot()
-    def btnStartStopRecordClicked(self):
+    def __btnStartStopRecordClicked(self):
         self.btnStartStopRecord.setDisabled(True)
         QApplication.processEvents()
 
         if self.btnStartStopRecord.text() == BtnRecordLabels.START_RECORDING.value:
-            self.recordingController.startRecording()
-            self.recordingController.startOdasLive(ApplicationContainer.settings().getValue('odasPath'), ApplicationContainer.settings().getValue('micConfigPath'))
-            self.recordingController.startVideoProcessor(ApplicationContainer.settings().getValue('cameraConfigPath'), ApplicationContainer.settings().getValue('faceDetection'))
-
+            self.__recordingController.startRecording(ApplicationContainer.settings().getValue('outputFolder'),
+                                                      ApplicationContainer.settings().getValue('odasPath'),
+                                                      ApplicationContainer.settings().getValue('micConfigPath'),
+                                                      ApplicationContainer.settings().getValue('cameraConfigPath'),
+                                                      ApplicationContainer.settings().getValue('faceDetection'))
         else:
-            self.recordingController.saveRecording()
-            self.recordingController.stopOdasLive()
-            self.recordingController.stopVideoProcessor()
+            self.__recordingController.stopRecording()
 
 
     @pyqtSlot(object)        
-    def updateVirtualCamerasDispay(self, virtualCameraImages):
-        self.virtualCameraDisplayer.updateDisplay(virtualCameraImages)
+    def __updateVirtualCamerasDispay(self, virtualCameraImages):
+        self.__virtualCameraDisplayer.updateDisplay(virtualCameraImages)
 
 
     @pyqtSlot(bool)
-    def recordingStateChanged(self, isRunning):
+    def __recordingStateChanged(self, isRunning):        
         if isRunning:
             self.btnStartStopRecord.setText(BtnRecordLabels.STOP_RECORDING.value)
-
+            self.__virtualCameraDisplayer.startDisplaying()
         else:
             self.btnStartStopRecord.setText(BtnRecordLabels.START_RECORDING.value)
+            self.__virtualCameraDisplayer.stopDisplaying()
 
         self.btnStartStopRecord.setDisabled(False)
-
-
-    @pyqtSlot(bool)
-    def odasStateChanged(self, isRunning):
-        if self.recordingController and not self.recordingController.videoProcessorState:
-            self.btnStartStopRecord.setDisabled(False)
-
-    
-    @pyqtSlot(bool)
-    def videoProcessorStateChanged(self, isRunning):
-        if isRunning:
-            self.virtualCameraDisplayer.startDisplaying()
-        else:
-            self.virtualCameraDisplayer.stopDisplaying()
-
-        if self.recordingController and not self.recordingController.isOdasLiveConnected:
-            self.btnStartStopRecord.setDisabled(False)
-
-
-    @pyqtSlot(Exception)
-    def exceptionReceived(self, e):
-        ApplicationContainer.exceptions().show(e)
 
 
     @pyqtSlot()
@@ -95,12 +78,6 @@ class Recording(QWidget, Ui_Recording):
         ApplicationContainer.informations().show('Transcription is done')
 
 
-    # Handles the event where the user closes the window with the X button
-    def closeEvent(self, event):
-        if event:
-            self.recordingController.stopOdasServer()
-            self.recordingController.stopVideoProcessor()
-            self.recordingController.stopRecording()
-            self.recordingController.cancelTranscription()
-            event.accept()
-
+    @pyqtSlot(Exception)
+    def __exceptionReceived(self, e):
+        ApplicationContainer.exceptions().show(e)

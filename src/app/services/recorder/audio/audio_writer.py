@@ -3,27 +3,20 @@ import os
 
 from PyQt5.QtCore import QObject
 
-class AudioWriter(QObject):
+class AudioWriter():
 
-    def __init__(self, parent=None):
-        super(AudioWriter, self).__init__(parent)
-
+    def __init__(self, outputFolder, nChannels, nChannelFile, byteDepth, sampleRate):
         self.isRecording = False
         self.wavFiles = []
-        self.outputFolder = ''
-        self.nChannels = 4
-        self.nChannelsFile = 1
-        self.byteDepth = 2
-        self.sampleRate = 48000
-        self.sourcesBuffer = {'0' :bytearray(), '1': bytearray(), '2': bytearray(), '3': bytearray()}
-
-
-    def changeWavSettings(self, outputFolder, nChannels, nChannelFile, byteDepth, sampleRate):
         self.outputFolder = outputFolder
         self.nChannels = nChannels
         self.nChannelsFile = nChannelFile
         self.byteDepth = byteDepth
         self.sampleRate = sampleRate
+        self.sourcesBuffer = {'0' :bytearray(), '1': bytearray(), '2': bytearray(), '3': bytearray()}
+        
+        self.createNewFiles()
+        
 
     
     def createNewFiles(self):
