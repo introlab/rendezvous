@@ -15,21 +15,25 @@ class TranscriptionController(QObject):
 
 
     def requestTranscription(self, audioDataPath):
-        # We need to set the config since we can't pass arguments directly to the thread.
-        settings = ApplicationContainer.settings()
-        config = {
-            'audioDataPath' : audioDataPath,
-            'encoding' : settings.getValue('speechToTextEncoding'),
-            'enhanced' : bool(settings.getValue('speechToTextEnhanced')),
-            'languageCode' : settings.getValue('speechToTextLanguage'),
-            'model' : settings.getValue('speechToTextModel'),
-            'outputFolder' : settings.getValue('defaultOutputFolder'),
-            'sampleRate' : int(settings.getValue('speechToTextSampleRate')),
-            'serviceAccountPath' : settings.getValue('serviceAccountPath')
-        }
-        self.speechToText.setConfig(config)
-        self.connectSignals()
-        self.speechToText.asynchroneSpeechToText.start()
+        if not self.speechToText.isRunning:
+            # We need to set the config since we can't pass arguments directly to the thread.
+            settings = ApplicationContainer.settings()
+            config = {
+                'audioDataPath' : audioDataPath,
+                'encoding' : settings.getValue('speechToTextEncoding'),
+                'enhanced' : bool(settings.getValue('speechToTextEnhanced')),
+                'languageCode' : settings.getValue('speechToTextLanguage'),
+                'model' : settings.getValue('speechToTextModel'),
+                'outputFolder' : settings.getValue('defaultOutputFolder'),
+                'sampleRate' : int(settings.getValue('speechToTextSampleRate')),
+                'serviceAccountPath' : settings.getValue('serviceAccountPath')
+            }
+            self.speechToText.setConfig(config)
+            self.connectSignals()
+            self.speechToText.asynchroneSpeechToText.start()
+        
+        else:
+            self.exception.emit(Exception('Transcription is already running'))
 
 
     def connectSignals(self):

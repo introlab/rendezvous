@@ -169,6 +169,7 @@ class SpeechToText(QObject):
 
     def resquestTranscription(self):
         try:
+            self.isRunning = True
 
             useGStorage = True
 
@@ -257,4 +258,7 @@ class SpeechToText(QObject):
         except Exception as e:
             self.asynchroneSpeechToText.quit()
             self.exception.emit(e)
+
+        finally:
+            self.isRunning = False
 
