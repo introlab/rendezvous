@@ -33,13 +33,23 @@ class VideoProcessor(QObject):
         self.virtualCameraManager = VirtualCameraManager(0, np.pi * 2)
         self.isRunning = False
         self.fpsTarget = 15
+        self.cameraConfig = None
+        self.videoStream = None
+        self.isVideoStreamInitialized = False
 
 
     def start(self, cameraConfigPath, faceDetectionMethod):
         print("Starting video processor...")
 
         try:
+
+            self.cameraConfig = CameraConfig(FileHelper.readJsonFile(cameraConfigPath))
             
+            if not self.isVideoStreamInitialized:
+                self.videoStream = VideoStream(self.cameraConfig)
+                self.videoStream.initializeStream()
+                self.isVideoStreamInitialized = True
+
             if not cameraConfigPath:
                 raise Exception('cameraConfigPath needs to be set in the settings tab')
 
@@ -59,7 +69,6 @@ class VideoProcessor(QObject):
 
     def run(self, cameraConfigPath, faceDetectionMethod):
 
-        videoStream = None
         dewarper = None
         faceDetection = None
         show360DegAsVcs = False
@@ -68,10 +77,7 @@ class VideoProcessor(QObject):
 
             cameraConfig = CameraConfig(FileHelper.readJsonFile(cameraConfigPath))
 
-            videoStream = VideoStream(cameraConfig)
-            videoStream.initializeStream()
-
-            success, frame = videoStream.readFrame()
+            success, frame = self.videoStream.readFrame()
 
             if not success:
                 raise Exception('Failed to read image and retrieve the number of channels')
@@ -154,7 +160,7 @@ class VideoProcessor(QObject):
 
                 self.virtualCameraManager.update(actualFrameTime)
 
-                success, frame = videoStream.readFrame()
+                success, frame = self.videoStream.readFrame()
                 readTime = time.perf_counter() - currentTime
 
                 if success and readTime < frameTimeModifiedTarget / 2:
@@ -242,10 +248,6 @@ class VideoProcessor(QObject):
                 faceDetection.join()
                 faceDetection = None
 
-            if videoStream:
-                videoStream.destroy()
-                videoStream = None
-
             if dewarper:
                 dewarper.cleanUp()
                 
@@ -253,6 +255,12 @@ class VideoProcessor(QObject):
             self.signalStateChanged.emit(False)
 
         print('Video processor terminated')
+
+
+    def destroy(self):
+        if self.videoStream:
+            self.videoStream.destroy()
+            self.videoStream = None
 
 
     def __getFaceDetectionDewarpingParametersList(self, cameraConfig, dewarpCount):
