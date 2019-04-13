@@ -26,7 +26,8 @@ class Recording(QWidget, Ui_Recording):
         self.__recordingController.signalRecordingState.connect(self.__recordingStateChanged)
         self.__recordingController.signalVirtualCamerasReceived.connect(self.__updateVirtualCamerasDispay)
         self.__recordingController.signalException.connect(self.__exceptionReceived)
-
+        self.recordingController.transcriptionReady.connect(self.onTranscriptionReady)
+        
         self.__virtualCameraDisplayer = VirtualCameraDisplayer(self.virtualCameraFrame)
 
         # Qt signal slots
@@ -75,5 +76,3 @@ class Recording(QWidget, Ui_Recording):
     @pyqtSlot(Exception)
     def __exceptionReceived(self, e):
         ApplicationContainer.exceptions().show(e)
-
-

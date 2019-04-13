@@ -1,6 +1,6 @@
 from PyQt5.QtCore import QObject, QThread, pyqtSignal, pyqtSlot
 
-from src.app.services.speechtotext.speech_to_text import EncodingTypes, LanguageCodes, Models,SpeechToText
+from src.app.application_container import ApplicationContainer
 
 
 class TranscriptionController(QObject):  
@@ -11,57 +11,57 @@ class TranscriptionController(QObject):
     def __init__(self, parent=None):
         super(TranscriptionController, self).__init__(parent)
 
-        # Initilalization of the SpeechToText service and his worker thread.
-        self.speechToText = SpeechToText()
-        self.speechToTextThread = QThread()
-        # Make the SpeechToText executable like a thread.
-        self.speechToText.moveToThread(self.speechToTextThread)
-        # What will run when the thread starts.
-        self.speechToTextThread.started.connect(self.speechToText.resquestTranscription)
+        self.speechToText = ApplicationContainer.speechToText()
 
-        # Qt signal slots.
+
+    def requestTranscription(self, audioDataPath):
+        if not self.speechToText.isRunning:
+            # We need to set the config since we can't pass arguments directly to the thread.
+            settings = ApplicationContainer.settings()
+            config = {
+                'audioDataPath' : audioDataPath,
+                'encoding' : settings.getValue('speechToTextEncoding'),
+                'enhanced' : bool(settings.getValue('speechToTextEnhanced')),
+                'languageCode' : settings.getValue('speechToTextLanguage'),
+                'model' : settings.getValue('speechToTextModel'),
+                'outputFolder' : settings.getValue('defaultOutputFolder'),
+                'sampleRate' : int(settings.getValue('speechToTextSampleRate')),
+                'serviceAccountPath' : settings.getValue('serviceAccountPath')
+            }
+            self.speechToText.setConfig(config)
+            self.connectSignals()
+            self.speechToText.asynchroneSpeechToText.start()
+        
+        else:
+            self.exception.emit(Exception('Transcription is already running'))
+
+
+    def cancelTranscription(self):
+        if self.speechToText.isRunning:
+            self.speechToText.asynchroneSpeechToText.quit()
+            self.disconnectSignals()
+
+
+    def connectSignals(self):
         self.speechToText.transcriptionReady.connect(self.onTranscriptionReady)
         self.speechToText.exception.connect(self.onException)
 
 
-    def getEncodingTypes(self):
-        return EncodingTypes
-
-
-    def getLanguageCodes(self):
-        return LanguageCodes
-
-
-    def getModels(self):
-        return Models
-
-
-    def getMinSampleRate(self):
-        return self.speechToText.getMinSampleRate()
-
-
-    def getMaxSampleRate(self):
-        return self.speechToText.getMaxSampleRate()
-
-
-    def getDefaultSampleRate(self):
-        return self.speechToText.getDefaultSampleRate()
-
-
-    def resquestTranscription(self, config):
-        # We need to set the config since we can't pass arguments directly to the thread.
-        self.speechToText.setConfig(config)
-        self.speechToTextThread.start()
+    def disconnectSignals(self):
+        self.speechToText.transcriptionReady.disconnect(self.onTranscriptionReady)
+        self.speechToText.exception.disconnect(self.onException)
 
 
     @pyqtSlot(str)
     def onTranscriptionReady(self, transcription):
         self.transcriptionReady.emit(transcription)
-        self.speechToTextThread.quit()
+        self.speechToText.asynchroneSpeechToText.quit()
+        self.disconnectSignals()
 
 
     @pyqtSlot(Exception)
     def onException(self, e):
         self.exception.emit(e)
-        self.speechToTextThread.quit()
+        self.speechToText.asynchroneSpeechToText.quit()
+        self.disconnectSignals()
 
