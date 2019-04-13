@@ -39,131 +39,113 @@ class Conference(QWidget, Ui_Conference):
     def __init__(self, parent=None):
         super(Conference, self).__init__(parent)
         self.setupUi(self)
-        self.conferenceController = ConferenceController()
 
-        self.virtualCameraDisplayer = VirtualCameraDisplayer(self.virtualCameraFrame)
+        self.__conferenceController = ConferenceController()
+        self.__conferenceController.signalAudioPositions.connect(self.__positionDataReceived)
+        self.__conferenceController.signalOdasState.connect(self.__odasStateChanged)
+        self.__conferenceController.signalVideoProcessorState.connect(self.__videoProcessorStateChanged)
+        self.__conferenceController.signalVirtualCamerasReceived.connect(self.__updateVirtualCamerasDispay)
+        self.__conferenceController.signalException.connect(self.__exceptionReceived)
+        self.__conferenceController.signalHumanSourcesDetected.connect(self.__showHumanSources)
+
+        self.__virtualCameraDisplayer = VirtualCameraDisplayer(self.virtualCameraFrame)
 
         # positions graphs initialization
-        self.azimuthGraph = Graph(self.soundPositionsLayout, curvesNumber=4, maxLength=500, yMax=370, title='Azimuth Positions')
-        self.elevationGraph = Graph(self.soundPositionsLayout, curvesNumber=4, maxLength=500, yMax=90, title='Elevation Positions')
-
-        self.__isVideoSignalsConnected = False
-        self.__isOdasSignalsConnected = False
+        self.__azimuthGraph = Graph(self.soundPositionsLayout, curvesNumber=4, maxLength=500, yMax=370, title='Azimuth Positions')
+        self.__elevationGraph = Graph(self.soundPositionsLayout, curvesNumber=4, maxLength=500, yMax=90, title='Elevation Positions')
 
         # Qt signal slots
-        self.btnStartStopOdas.clicked.connect(self.btnStartStopOdasClicked)
-        self.btnStartStopVideo.clicked.connect(self.btnStartStopVideoClicked)
-
-        self.conferenceController.signalException.connect(self.exceptionReceived)
-        self.conferenceController.signalHumanSourcesDetected.connect(self.showHumanSources)
+        self.btnStartStopOdas.clicked.connect(self.__btnStartStopOdasClicked)
+        self.btnStartStopVideo.clicked.connect(self.__btnStartStopVideoClicked)
 
         self.soundSources = []
-
-
-    @pyqtSlot()
-    def btnStartStopOdasClicked(self):
-        self.btnStartStopOdas.setDisabled(True)
-        QApplication.processEvents()
-
-        if self.btnStartStopOdas.text() == BtnOdasLabels.START_ODAS.value:
-            self.conferenceController.signalAudioPositions.connect(self.positionDataReceived)
-            self.conferenceController.signalOdasState.connect(self.odasStateChanged)
-            self.__isOdasSignalsConnected = True
-            self.conferenceController.startOdasLive(odasPath=ApplicationContainer.settings().getValue('odasPath'), micConfigPath=ApplicationContainer.settings().getValue('micConfigPath'))
-        else:
-            self.conferenceController.stopOdasLive()
-            self.azimuthGraph.resetData()
-            self.elevationGraph.resetData()
-
-
-    @pyqtSlot()
-    def btnStartStopVideoClicked(self):
-        self.btnStartStopVideo.setDisabled(True)
-        QApplication.processEvents()
-
-        if self.btnStartStopVideo.text() == BtnVideoLabels.START_VIDEO.value:
-            self.conferenceController.signalVideoProcessorState.connect(self.videoProcessorStateChanged)
-            self.conferenceController.signalVirtualCamerasReceived.connect(self.updateVirtualCamerasDispay)
-            self.__isVideoSignalsConnected = True
-            self.conferenceController.startVideoProcessor(ApplicationContainer.settings().getValue('cameraConfigPath'), ApplicationContainer.settings().getValue('faceDetection'))
-        else:
-            self.conferenceController.stopVideoProcessor()
-
-
-    @pyqtSlot(object)
-    def positionDataReceived(self, values):
-        azimuthNewData = []
-        elevationNewData = []
-        for angles in values:
-            azimuthNewData.append(float(np.rad2deg(angles['azimuth'])))
-            elevationNewData.append(float(np.rad2deg(angles['elevation'])))
-        self.azimuthGraph.addData(azimuthNewData)
-        self.elevationGraph.addData(elevationNewData)
-
-        self.soundSources = values
-
-
-    @pyqtSlot(object)        
-    def updateVirtualCamerasDispay(self, virtualCameraImages):
-        self.virtualCameraDisplayer.updateDisplay(virtualCameraImages)
-
-
-    @pyqtSlot(bool)
-    def odasStateChanged(self, isRunning):
-        if isRunning:
-            self.btnStartStopOdas.setText(BtnOdasLabels.STOP_ODAS.value)
-            self.azimuthGraph.timer.start(500)
-            self.elevationGraph.timer.start(500)
-        
-        else:
-            self.btnStartStopOdas.setText(BtnOdasLabels.START_ODAS.value)
-            self.conferenceController.signalAudioPositions.disconnect(self.positionDataReceived)
-            self.conferenceController.signalOdasState.disconnect(self.odasStateChanged)
-            self.__isOdasSignalsConnected = False
-            self.azimuthGraph.timer.stop()
-            self.elevationGraph.timer.stop()
-
-        self.btnStartStopOdas.setDisabled(False)
-
-    
-    @pyqtSlot(bool)
-    def videoProcessorStateChanged(self, isRunning):
-        if isRunning:
-            self.btnStartStopVideo.setText(BtnVideoLabels.STOP_VIDEO.value)
-            self.virtualCameraDisplayer.startDisplaying()
-            
-        else:
-            self.btnStartStopVideo.setText(BtnVideoLabels.START_VIDEO.value)
-            self.virtualCameraDisplayer.stopDisplaying()
-            self.conferenceController.signalVideoProcessorState.disconnect(self.videoProcessorStateChanged)
-            self.conferenceController.signalVirtualCamerasReceived.disconnect(self.updateVirtualCamerasDispay)
-            self.__isVideoSignalsConnected = False
-
-        self.btnStartStopVideo.setDisabled(False)
-
-
-    @pyqtSlot(Exception)
-    def exceptionReceived(self, e):
-        if self.__isVideoSignalsConnected:
-            self.conferenceController.signalVideoProcessorState.disconnect(self.videoProcessorStateChanged)
-            self.conferenceController.signalVirtualCamerasReceived.disconnect(self.updateVirtualCamerasDispay)
-        
-        if self.__isOdasSignalsConnected:
-            self.conferenceController.signalAudioPositions.disconnect(self.positionDataReceived)
-            self.conferenceController.signalOdasState.disconnect(self.odasStateChanged)
-        
-        ApplicationContainer.exceptions().show(e)
 
 
     # Handles the event where the user closes the window with the X button
     def closeEvent(self, event):
         if event:
-            self.conferenceController.stopOdasServer()
-            self.conferenceController.stopVideoProcessor()
+            self.__conferenceController.close()
             event.accept()
+
+
+    @pyqtSlot()
+    def __btnStartStopOdasClicked(self):
+        self.btnStartStopOdas.setDisabled(True)
+        QApplication.processEvents()
+
+        if self.btnStartStopOdas.text() == BtnOdasLabels.START_ODAS.value:
+            self.__conferenceController.startOdasLive(ApplicationContainer.settings().getValue('odasPath'),
+                                                    ApplicationContainer.settings().getValue('micConfigPath'))
+        else:
+            self.__conferenceController.stopOdasLive()
+            self.__azimuthGraph.resetData()
+            self.__elevationGraph.resetData()
+
+
+    @pyqtSlot()
+    def __btnStartStopVideoClicked(self):
+        self.btnStartStopVideo.setDisabled(True)
+        QApplication.processEvents()
+
+        if self.btnStartStopVideo.text() == BtnVideoLabels.START_VIDEO.value:
+            self.__conferenceController.startVideoProcessor(ApplicationContainer.settings().getValue('cameraConfigPath'),
+                                                          ApplicationContainer.settings().getValue('faceDetection'))
+        else:
+            self.__conferenceController.stopVideoProcessor()
+
+
+    @pyqtSlot(object)
+    def __positionDataReceived(self, values):
+        azimuthNewData = []
+        elevationNewData = []
+        for angles in values:
+            azimuthNewData.append(float(np.rad2deg(angles['azimuth'])))
+            elevationNewData.append(float(np.rad2deg(angles['elevation'])))
+        self.__azimuthGraph.addData(azimuthNewData)
+        self.__elevationGraph.addData(elevationNewData)
+
+        self.soundSources = values
+
+
+    @pyqtSlot(object)        
+    def __updateVirtualCamerasDispay(self, virtualCameraImages):
+        self.__virtualCameraDisplayer.updateDisplay(virtualCameraImages)
+
+
+    @pyqtSlot(bool)
+    def __odasStateChanged(self, isRunning):
+        if isRunning:
+            self.btnStartStopOdas.setText(BtnOdasLabels.STOP_ODAS.value)
+            self.__azimuthGraph.timer.start(500)
+            self.__elevationGraph.timer.start(500)
+        
+        else:
+            self.btnStartStopOdas.setText(BtnOdasLabels.START_ODAS.value)
+            self.__azimuthGraph.timer.stop()
+            self.__elevationGraph.timer.stop()
+
+        self.btnStartStopOdas.setDisabled(False)
+
+    
+    @pyqtSlot(bool)
+    def __videoProcessorStateChanged(self, isRunning):
+        if isRunning:
+            self.btnStartStopVideo.setText(BtnVideoLabels.STOP_VIDEO.value)
+            self.__virtualCameraDisplayer.startDisplaying()
+            
+        else:
+            self.btnStartStopVideo.setText(BtnVideoLabels.START_VIDEO.value)
+            self.__virtualCameraDisplayer.stopDisplaying()
+
+        self.btnStartStopVideo.setDisabled(False)
+
+
+    @pyqtSlot(Exception)
+    def __exceptionReceived(self, e):
+        ApplicationContainer.exceptions().show(e)
     
 
-    def showHumanSources(self, humanSources):
+    def __showHumanSources(self, humanSources):
         for index, source in enumerate(self.soundSources):
             if index in humanSources:
                 self.__setSourceBackgroundColor(index, 'yellow')
