@@ -56,6 +56,7 @@ class Transcription(QWidget, Ui_Transcription):
 
     @pyqtSlot(str)
     def onTranscriptionReady(self, transcription):
+        ApplicationContainer.informations().show('Transcription is done')
         self.transcriptionResult.setText(transcription)
         self.setDisabled(False)
 

@@ -2,6 +2,7 @@ import dependency_injector.containers as containers
 import dependency_injector.providers as providers
 
 from src.app.services.exceptions.exceptions import Exceptions
+from src.app.services.informations.informations import Informations
 from src.app.services.odas.odas import Odas
 from src.app.services.speechtotext.speech_to_text import SpeechToText
 from src.app.services.settings.settings import Settings
@@ -12,6 +13,8 @@ class ApplicationContainer(containers.DeclarativeContainer):
     ''' Inversion of control(IoC) container of all the application object providers.'''
 
     exceptions = providers.Singleton(Exceptions)
+
+    informations = providers.Singleton(Informations)
 
     odas = providers.Singleton(Odas,
                                hostIP='127.0.0.1',

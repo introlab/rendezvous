@@ -11,6 +11,7 @@ class RecordingController(QObject):
     signalRecordingState = pyqtSignal(bool)
     signalVideoProcessorState = pyqtSignal(bool)
     signalVirtualCamerasReceived = pyqtSignal(object)
+    transcriptionReady = pyqtSignal()
 
     def __init__(self, outputFolder, parent=None):
         super(RecordingController, self).__init__(parent)
@@ -167,8 +168,9 @@ class RecordingController(QObject):
         self.speechToText.exception.disconnect(self.onTranscriptionException)
 
 
-    @pyqtSlot(str)
-    def onTranscriptionReady(self, transcription):
+    @pyqtSlot()
+    def onTranscriptionReady(self):
+        self.transcriptionReady.emit()
         self.speechToText.asynchroneSpeechToText.quit()
         self.disconnectSignals()
 
