@@ -2,6 +2,7 @@ import multiprocessing
 import queue
 import time
 
+from src.app.services.service.process.generic_process import GenericProcess
 from src.utils.exception_helper import ExceptionHelper
 from .facedetector.yolo_face_detector import YoloFaceDetector
 from .facedetector.dnn_face_detector import DnnFaceDetector
@@ -9,27 +10,22 @@ from .facedetector.haar_face_detector import HaarFaceDetector
 from .facedetector.face_detection_methods import FaceDetectionMethods
 
 
-class FaceDetection(multiprocessing.Process):
+class FaceDetection(GenericProcess):
 
     def __init__(self, faceDetectionMethod):
         super(FaceDetection, self).__init__()
         self.faceDetectionMethod = faceDetectionMethod
         self.imageQueue = multiprocessing.Queue()
         self.facesQueue = multiprocessing.Queue()
-        self.keepAliveQueue = multiprocessing.Queue()
-        self.exceptionQueue = multiprocessing.Queue()
         self.isBusySemaphore = multiprocessing.Semaphore()
-        self.exit = multiprocessing.Event()
         self.requestImage = True
         self.isBusy = False
 
 
     def stop(self):
-        self.exit.set()
-        self.__emptyQueue(self.keepAliveQueue)
-        self.__emptyQueue(self.exceptionQueue)
-        self.__emptyQueue(self.facesQueue)
-        self.__emptyQueue(self.imageQueue)
+        super(FaceDetection, self).stop()
+        self.emptyQueue(self.facesQueue)
+        self.emptyQueue(self.imageQueue)
 
 
     def run(self):
@@ -75,21 +71,6 @@ class FaceDetection(multiprocessing.Process):
             print('Face detection terminated')
 
 
-    def tryRaiseProcessExceptions(self):
-        try:
-            raise Exception('FaceDetection process exception : ' + str(self.exceptionQueue.get_nowait()))
-        except queue.Empty:
-            pass
-
-    
-    def tryKeepAliveProcess(self):
-        try:
-            self.keepAliveQueue.put_nowait(True)
-            return True
-        except queue.Full:
-            return False
-
-
     def tryGetFaces(self):
         try:                  
             return self.facesQueue.get_nowait()
@@ -123,11 +104,3 @@ class FaceDetection(multiprocessing.Process):
             return YoloFaceDetector()
         else:
             return HaarFaceDetector()
-
-
-    def __emptyQueue(self, queue):
-        try:
-            while True:
-                queue.get_nowait()
-        except:
-            pass
