@@ -1,7 +1,5 @@
 import time
 from math import radians
-from multiprocessing import Queue, Semaphore
-import queue
 from threading import Thread
 from collections import deque
 
@@ -34,11 +32,6 @@ class VideoProcessor(QObject):
         super(VideoProcessor, self).__init__(parent)
         self.virtualCameraManager = VirtualCameraManager(0, np.pi * 2)
         self.isRunning = False
-        self.imageQueue = Queue()
-        self.facesQueue = Queue()
-        self.isBusySemaphore = Semaphore()
-        self.heartbeatQueue = Queue(1)
-        self.exceptionQueue = Queue()
         self.fpsTarget = 15
 
 
@@ -109,14 +102,13 @@ class VideoProcessor(QObject):
             fdBufferId = dewarper.createRenderContext(fdOutputWidth, fdOutputHeight, channels)
             vcBufferId = dewarper.createRenderContext(vcOutputWidth, vcOutputHeight, channels)
 
-            faceDetection = FaceDetection(faceDetectionMethod, self.imageQueue, \
-                self.facesQueue, self.heartbeatQueue, self.exceptionQueue, self.isBusySemaphore)
+            faceDetection = FaceDetection(faceDetectionMethod)
             faceDetection.start()
 
             # Make sure the face detection is started before starting video stream
             time.sleep(0.1)
-            self.isBusySemaphore.acquire()
-            self.isBusySemaphore.release()
+            faceDetection.aquireLockOnce()
+            faceDetection.releaseLockOnce()
 
             fdBufferQueue = deque()
 
@@ -139,22 +131,14 @@ class VideoProcessor(QObject):
 
             while self.isRunning:
                 
-                try:
-                    raise Exception('FaceDetection process exception : ' + str(self.exceptionQueue.get_nowait()))
-                except queue.Empty:
-                    pass
+                faceDetection.tryRaiseProcessExceptions()
 
-                try:
-                    self.heartbeatQueue.put_nowait(True)
-                except queue.Full:
+                # tryKeepAliveProcess returns false if last keep alive wasn't processed yet
+                if not faceDetection.tryKeepAliveProcess():
                     if not faceDetection.is_alive():
                         self.isRunning = False
 
-                newFaces = None
-                try:                  
-                    newFaces = self.facesQueue.get_nowait()
-                except queue.Empty:
-                    pass
+                newFaces = faceDetection.tryGetFaces()
 
                 if newFaces is not None:
                     (dewarpIndex, faces) = newFaces
@@ -182,8 +166,8 @@ class VideoProcessor(QObject):
                     currentFisheyeBufferId = fisheyeBufferId
 
                     # Create all buffers required for face detection dewarping
-                    if not fdBufferQueue and readTime < frameTimeModifiedTarget / 4 and self.isBusySemaphore.acquire(False) :
-                        self.isBusySemaphore.release()
+                    if not fdBufferQueue and readTime < frameTimeModifiedTarget / 4 and faceDetection.aquireLockOnce(False) :
+                        faceDetection.releaseLockOnce()
                         currentFisheyeBufferId = fdFisheyeBufferId
                         for dewarpIndex in range(0, dewarpCount):
                             fdBuffer = np.empty((fdOutputHeight, fdOutputWidth, channels), dtype=np.uint8)
@@ -220,7 +204,7 @@ class VideoProcessor(QObject):
                             if bufferId == fdBufferId:
                                 buffer, dewarpIndex = fdBufferQueue.popleft()
                                 fdBuffers[dewarpIndex] = buffer
-                                self.imageQueue.put_nowait((buffer, dewarpIndex))
+                                faceDetection.sendDewarpedImages(dewarpIndex, buffer)
                         
                         # Dislay 360 dewarping as virtual cameras for debugging
                         if show360DegAsVcs:
@@ -257,10 +241,6 @@ class VideoProcessor(QObject):
                 faceDetection.stop()
                 faceDetection.join()
                 faceDetection = None
-
-            self.__emptyQueue(self.imageQueue)
-            self.__emptyQueue(self.facesQueue)
-            self.__emptyQueue(self.heartbeatQueue)
 
             if videoStream:
                 videoStream.destroy()
@@ -347,12 +327,4 @@ class VideoProcessor(QObject):
             fisheyeAngle, fisheyeCenter, dewarpingParameters)
 
         return SphericalAnglesRect(azimuthLeft, azimuthRight, elevationBottom, elevationTop)
-                
-    def __emptyQueue(self, queue):
-
-        try:
-            while True:
-                queue.get_nowait()
-        except:
-            pass
 
