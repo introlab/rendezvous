@@ -51,8 +51,10 @@ class RecordingController(QObject):
 
     
     def close(self):
+        self.cancelTranscription()
+        
         self.stopRecording()
-
+        
         if self.__odasServer.isRunning:
             self.__odasServer.stop()
 

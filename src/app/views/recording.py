@@ -26,7 +26,7 @@ class Recording(QWidget, Ui_Recording):
         self.__recordingController.signalRecordingState.connect(self.__recordingStateChanged)
         self.__recordingController.signalVirtualCamerasReceived.connect(self.__updateVirtualCamerasDispay)
         self.__recordingController.signalException.connect(self.__exceptionReceived)
-        self.recordingController.transcriptionReady.connect(self.onTranscriptionReady)
+        self.__recordingController.transcriptionReady.connect(self.onTranscriptionReady)
         
         self.__virtualCameraDisplayer = VirtualCameraDisplayer(self.virtualCameraFrame)
 
@@ -71,6 +71,11 @@ class Recording(QWidget, Ui_Recording):
             self.__virtualCameraDisplayer.stopDisplaying()
 
         self.btnStartStopRecord.setDisabled(False)
+
+
+    @pyqtSlot()
+    def onTranscriptionReady(self):
+        ApplicationContainer.informations().show('Transcription is done')
 
 
     @pyqtSlot(Exception)
