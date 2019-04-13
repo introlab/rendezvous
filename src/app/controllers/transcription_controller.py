@@ -36,6 +36,12 @@ class TranscriptionController(QObject):
             self.exception.emit(Exception('Transcription is already running'))
 
 
+    def cancelTranscription(self):
+        if self.speechToText.isRunning:
+            self.speechToText.asynchroneSpeechToText.quit()
+            self.disconnectSignals()
+
+
     def connectSignals(self):
         self.speechToText.transcriptionReady.connect(self.onTranscriptionReady)
         self.speechToText.exception.connect(self.onException)

@@ -95,5 +95,6 @@ class Recording(QWidget, Ui_Recording):
             self.recordingController.stopOdasServer()
             self.recordingController.stopVideoProcessor()
             self.recordingController.stopRecording()
+            self.recordingController.cancelTranscription()
             event.accept()
 

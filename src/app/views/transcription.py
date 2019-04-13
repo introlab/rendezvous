@@ -18,7 +18,7 @@ class Transcription(QWidget, Ui_Transcription):
         self.setupUi(self)
 
         # Initilalization of the controller.
-        self.transcriptionController = TranscriptionController()  
+        self.transcriptionController = TranscriptionController()
 
         # Qt signal slots.
         self.btnImportAudio.clicked.connect(self.onImportAudioClicked)
@@ -30,6 +30,7 @@ class Transcription(QWidget, Ui_Transcription):
     # Handles the event where the user closes the window with the X button.
     def closeEvent(self, event):
         if event:
+            self.transcriptionController.cancelTranscription()
             event.accept()
 
 
