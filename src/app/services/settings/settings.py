@@ -23,15 +23,15 @@ class Settings(object):
 
         speechToTextEncoding = self.getValue('speechToTextEncoding')
         if speechToTextEncoding == None:
-            self.setValue('speechToTextEncoding', EncodingTypes.ENCODING_UNSPECIFIED)
+            self.setValue('speechToTextEncoding', EncodingTypes.ENCODING_UNSPECIFIED.value)
 
         speechToTextLanguage = self.getValue('speechToTextLanguage')
         if speechToTextLanguage == None:
-            self.setValue('speechToTextLanguage', LanguageCodes.FR_CA)
+            self.setValue('speechToTextLanguage', LanguageCodes.FR_CA.value)
 
         speechToTextModel = self.getValue('speechToTextModel')
         if speechToTextModel == None:
-            self.setValue('speechToTextModel', Models.DEFAULT)
+            self.setValue('speechToTextModel', Models.DEFAULT.value)
 
         speechToTextEnhanced = self.getValue('speechToTextEnhanced')
         if speechToTextEnhanced == None:
