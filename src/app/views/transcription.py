@@ -20,15 +20,6 @@ class Transcription(QWidget, Ui_Transcription):
         # Initilalization of the controller.
         self.transcriptionController = TranscriptionController()
 
-
-        # Populate UI.
-        self.encoding.addItems([encodingType.value for encodingType in self.transcriptionController.getEncodingTypes()])
-        self.sampleRate.setRange(self.transcriptionController.getMinSampleRate(), self.transcriptionController.getMaxSampleRate())
-        self.sampleRate.setValue(self.transcriptionController.getDefaultSampleRate())
-        self.language.addItems([languageCode.value for languageCode in self.transcriptionController.getLanguageCodes()])
-        self.model.addItems([model.value for model in self.transcriptionController.getModels()])    
-
-
         # Qt signal slots.
         self.btnImportAudio.clicked.connect(self.onImportAudioClicked)
         self.btnTranscribe.clicked.connect(self.onTranscribeClicked)
@@ -39,6 +30,7 @@ class Transcription(QWidget, Ui_Transcription):
     # Handles the event where the user closes the window with the X button.
     def closeEvent(self, event):
         if event:
+            self.transcriptionController.cancelTranscription()
             event.accept()
 
 
@@ -59,22 +51,12 @@ class Transcription(QWidget, Ui_Transcription):
     def onTranscribeClicked(self):
         self.transcriptionResult.setText('Transcribing...')
         self.setDisabled(True)
-
-        config = {
-            'audioDataPath' : self.audioDataPath.text(),
-            'encoding' : self.encoding.currentText(),
-            'enhanced' : self.enhanced.checkState(),
-            'languageCode' : self.language.currentText(),
-            'model' : self.model.currentText(),
-            'outputFolder' : ApplicationContainer.settings().getValue('defaultOutputFolder'),
-            'sampleRate' : self.sampleRate.value(),
-            'serviceAccountPath' : ApplicationContainer.settings().getValue('serviceAccountPath')
-        }
-        self.transcriptionController.resquestTranscription(config)
+        self.transcriptionController.requestTranscription(self.audioDataPath.text())
 
 
     @pyqtSlot(str)
     def onTranscriptionReady(self, transcription):
+        ApplicationContainer.informations().show('Transcription is done')
         self.transcriptionResult.setText(transcription)
         self.setDisabled(False)
 

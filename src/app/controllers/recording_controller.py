@@ -11,6 +11,7 @@ class RecordingController(QObject):
     signalRecordingState = pyqtSignal(bool)
     signalVideoProcessorState = pyqtSignal(bool)
     signalVirtualCamerasReceived = pyqtSignal(object)
+    transcriptionReady = pyqtSignal()
 
     def __init__(self, outputFolder, parent=None):
         super(RecordingController, self).__init__(parent)
@@ -33,6 +34,8 @@ class RecordingController(QObject):
         ApplicationContainer.videoProcessor().signalException.connect(self.exceptionHandling)
         ApplicationContainer.videoProcessor().signalVirtualCameras.connect(self.virtualCamerasReceived)
         ApplicationContainer.videoProcessor().signalStateChanged.connect(self.videoProcessorStateChanged)
+
+        self.speechToText = ApplicationContainer.speechToText()
 
 
     @pyqtSlot(bool)
@@ -107,6 +110,8 @@ class RecordingController(QObject):
             self.__recorder.mailbox.put(RecorderActions.SAVE_FILES)
             self.signalRecordingState.emit(self.isRecording)
 
+            # TODO - call requestTranscription() with the audio file in input.
+
 
     def stopRecording(self):
         if self.__recorder:
@@ -123,4 +128,56 @@ class RecordingController(QObject):
     def stopVideoProcessor(self):
         if ApplicationContainer.videoProcessor() and ApplicationContainer.videoProcessor().isRunning:
             ApplicationContainer.videoProcessor().stop()
+
+
+    def requestTranscription(self, audioDataPath):
+        if not self.speechToText.isRunning:
+            # We need to set the config since we can't pass arguments directly to the thread.
+            settings = ApplicationContainer.settings()
+            config = {
+                'audioDataPath' : audioDataPath,
+                'encoding' : settings.getValue('speechToTextEncoding'),
+                'enhanced' : bool(settings.getValue('speechToTextEnhanced')),
+                'languageCode' : settings.getValue('speechToTextLanguage'),
+                'model' : settings.getValue('speechToTextModel'),
+                'outputFolder' : settings.getValue('defaultOutputFolder'),
+                'sampleRate' : int(settings.getValue('speechToTextSampleRate')),
+                'serviceAccountPath' : settings.getValue('serviceAccountPath')
+            }
+            self.speechToText.setConfig(config)
+            self.connectSignals()
+            self.speechToText.asynchroneSpeechToText.start()
+        
+        else:
+            self.signalException.emit(Exception('Transcription is already running'))
+
+
+    def cancelTranscription(self):
+        if self.speechToText.isRunning:
+            self.speechToText.asynchroneSpeechToText.quit()
+            self.disconnectSignals()
+
+
+    def connectSignals(self):
+        self.speechToText.transcriptionReady.connect(self.onTranscriptionReady)
+        self.speechToText.exception.connect(self.onTranscriptionException)
+
+
+    def disconnectSignals(self):
+        self.speechToText.transcriptionReady.disconnect(self.onTranscriptionReady)
+        self.speechToText.exception.disconnect(self.onTranscriptionException)
+
+
+    @pyqtSlot()
+    def onTranscriptionReady(self):
+        self.transcriptionReady.emit()
+        self.speechToText.asynchroneSpeechToText.quit()
+        self.disconnectSignals()
+
+
+    @pyqtSlot(Exception)
+    def onTranscriptionException(self, e):
+        self.signalException.emit(e)
+        self.speechToText.asynchroneSpeechToText.quit()
+        self.disconnectSignals()
 

@@ -33,6 +33,7 @@ class Recording(QWidget, Ui_Recording):
         self.recordingController.signalVideoProcessorState.connect(self.videoProcessorStateChanged)
         self.recordingController.signalVirtualCamerasReceived.connect(self.updateVirtualCamerasDispay)
         self.recordingController.signalException.connect(self.exceptionReceived)
+        self.recordingController.transcriptionReady.connect(self.onTranscriptionReady)
 
 
     @pyqtSlot()
@@ -89,11 +90,17 @@ class Recording(QWidget, Ui_Recording):
         ApplicationContainer.exceptions().show(e)
 
 
+    @pyqtSlot()
+    def onTranscriptionReady(self):
+        ApplicationContainer.informations().show('Transcription is done')
+
+
     # Handles the event where the user closes the window with the X button
     def closeEvent(self, event):
         if event:
             self.recordingController.stopOdasServer()
             self.recordingController.stopVideoProcessor()
             self.recordingController.stopRecording()
+            self.recordingController.cancelTranscription()
             event.accept()
 
