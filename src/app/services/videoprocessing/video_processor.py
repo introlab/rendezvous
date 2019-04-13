@@ -6,7 +6,7 @@ from collections import deque
 from PyQt5.QtCore import QObject, pyqtSignal
 import numpy as np
 
-from .streaming.video_stream import VideoStream
+from .streaming.video_streaming import VideoStreaming
 from .virtualcamera.virtual_camera_manager import VirtualCameraManager
 from .virtualcamera.face import Face
 from src.utils.file_helper import FileHelper
@@ -32,7 +32,7 @@ class VideoProcessor(QObject):
         super(VideoProcessor, self).__init__(parent)
         self.virtualCameraManager = VirtualCameraManager(0, np.pi * 2)
         self.isRunning = False
-        self.fpsTarget = 15
+        self.fpsTarget = 10
 
 
     def start(self, cameraConfigPath, faceDetectionMethod):
@@ -68,10 +68,11 @@ class VideoProcessor(QObject):
 
             cameraConfig = CameraConfig(FileHelper.readJsonFile(cameraConfigPath))
 
-            videoStream = VideoStream(cameraConfig)
-            videoStream.initializeStream()
+            videoStreaming = VideoStreaming(cameraConfig)
+            videoStreaming.start()
+            videoStreaming.tryKeepAliveProcess()
 
-            success, frame = videoStream.readFrame()
+            success, frame = videoStreaming.getFrame(0.5)
 
             if not success:
                 raise Exception('Failed to read image and retrieve the number of channels')
@@ -107,7 +108,10 @@ class VideoProcessor(QObject):
 
             # Make sure the face detection is started before starting video stream
             time.sleep(0.1)
-            faceDetection.aquireLockOnce()
+            while not faceDetection.aquireLockOnce(False):
+                videoStreaming.tryKeepAliveProcess()
+                time.sleep(0.1)
+                
             faceDetection.releaseLockOnce()
 
             fdBufferQueue = deque()
@@ -132,10 +136,15 @@ class VideoProcessor(QObject):
             while self.isRunning:
                 
                 faceDetection.tryRaiseProcessExceptions()
+                videoStreaming.tryRaiseProcessExceptions()
 
                 # tryKeepAliveProcess returns false if last keep alive wasn't processed yet
                 if not faceDetection.tryKeepAliveProcess():
                     if not faceDetection.is_alive():
+                        self.isRunning = False
+
+                if not videoStreaming.tryKeepAliveProcess():
+                    if not videoStreaming.is_alive():
                         self.isRunning = False
 
                 newFaces = faceDetection.tryGetFaces()
@@ -154,8 +163,12 @@ class VideoProcessor(QObject):
 
                 self.virtualCameraManager.update(actualFrameTime)
 
-                success, frame = videoStream.readFrame()
+                prereadTime = time.perf_counter() - currentTime
+                print('prereadTime = ', prereadTime)
+
+                success, frame = videoStreaming.getFrame(frameTimeModifiedTarget / 2)
                 readTime = time.perf_counter() - currentTime
+                print('readTime = ', readTime)
 
                 if success and readTime < frameTimeModifiedTarget / 2:
 
@@ -242,9 +255,10 @@ class VideoProcessor(QObject):
                 faceDetection.join()
                 faceDetection = None
 
-            if videoStream:
-                videoStream.destroy()
-                videoStream = None
+            if videoStreaming:
+                videoStreaming.stop()
+                videoStreaming.join()
+                videoStreaming = None
 
             if dewarper:
                 dewarper.cleanUp()
