@@ -50,12 +50,15 @@ class SpeechToText(QObject):
         'model' : None,
         'outputFolder' : '',
         'sampleRate' : 0,
+        'audioChannelCount' : 0,
         'serviceAccountPath' : ''
     }
 
     # Valid range accepted by the Google API.
     __minSampleRate = 8000
-    __maxSampleRate = 48000      
+    __maxSampleRate = 48000
+    __minChannelCount = 1
+    __maxChannelCount = 254
     # Value recommended for readability.
     __maxCharInSrtLine = 35
     # Value recommended for readability in second.
@@ -167,6 +170,14 @@ class SpeechToText(QObject):
         return self.__maxSampleRate
 
 
+    def getMinChannelCount(self):
+        return self.__minChannelCount
+
+
+    def getMaxChannelCount(self):
+        return self.__maxChannelCount
+
+
     def resquestTranscription(self):
         try:
             self.isRunning = True
@@ -193,6 +204,10 @@ class SpeechToText(QObject):
             sampleRate = self.__config['sampleRate']
             if not sampleRate in range(self.__minSampleRate, self.__maxSampleRate + 1):
                 raise Exception('Sample rate value {} is not in valid range'.format(sampleRate))
+
+            audioChannelCount = self.__config['audioChannelCount']
+            if not audioChannelCount in range(self.__minChannelCount, self.__maxChannelCount + 1):
+                raise Exception('Channel count value {} is not in valid range'.format(audioChannelCount))
 
             languageCode = self.__config['languageCode']
             if not languageCode in [languageCode.value for languageCode in LanguageCodes]:
@@ -234,6 +249,7 @@ class SpeechToText(QObject):
             recognitionConfig = speech.types.RecognitionConfig(
                                     encoding=encoding,
                                     sample_rate_hertz=sampleRate,
+                                    audio_channel_count=audioChannelCount,
                                     language_code=languageCode,
                                     model=model,
                                     use_enhanced=self.__config['enhanced'],

@@ -21,6 +21,10 @@ class Settings(object):
         if speechToTextSampleRate == None:
             self.setValue('speechToTextSampleRate', 48000)
 
+        speechToTextSampleRate = self.getValue('speechToTextChannelCount')
+        if speechToTextSampleRate == None:
+            self.setValue('speechToTextChannelCount', 1)
+
         speechToTextEncoding = self.getValue('speechToTextEncoding')
         if speechToTextEncoding == None:
             self.setValue('speechToTextEncoding', EncodingTypes.ENCODING_UNSPECIFIED.value)

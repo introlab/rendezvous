@@ -21,6 +21,7 @@ class ChangeSettings(QWidget, Ui_ChangeSettings):
         self.encodingComboBox.addItems([encodingType.value for encodingType in EncodingTypes])
         self.languageComboBox.addItems([languageCode.value for languageCode in LanguageCodes])
         self.modelComboBox.addItems([model.value for model in Models])
+        self.channelCountSpinBox.setRange(ApplicationContainer.speechToText().getMinChannelCount(), ApplicationContainer.speechToText().getMaxChannelCount())
         self.sampleRateSpinBox.setRange(ApplicationContainer.speechToText().getMinSampleRate(), ApplicationContainer.speechToText().getMaxSampleRate())
  
         # Load settings.
@@ -35,6 +36,7 @@ class ChangeSettings(QWidget, Ui_ChangeSettings):
         self.encodingComboBox.setCurrentIndex(self.encodingComboBox.findText(ApplicationContainer.settings().getValue('speechToTextEncoding')))
         self.languageComboBox.setCurrentIndex(self.languageComboBox.findText(ApplicationContainer.settings().getValue('speechToTextLanguage')))  
         self.modelComboBox.setCurrentIndex(self.modelComboBox.findText(ApplicationContainer.settings().getValue('speechToTextModel')))
+        self.channelCountSpinBox.setValue(int(ApplicationContainer.settings().getValue('speechToTextChannelCount')))
         self.sampleRateSpinBox.setValue(int(ApplicationContainer.settings().getValue('speechToTextSampleRate')))
         self.autoTranscriptionCheckBox.setCheckState(2 if int(ApplicationContainer.settings().getValue('automaticTranscription')) else 0)
         self.enhancedCheckBox.setCheckState(2 if int(ApplicationContainer.settings().getValue('speechToTextEnhanced')) else 0)
@@ -50,6 +52,7 @@ class ChangeSettings(QWidget, Ui_ChangeSettings):
         self.encodingComboBox.currentIndexChanged.connect(self.encodingComboBoxChanged)
         self.languageComboBox.currentIndexChanged.connect(self.languageComboBoxChanged)
         self.modelComboBox.currentIndexChanged.connect(self.modelComboBoxChanged)
+        self.channelCountSpinBox.valueChanged.connect(self.channelCountSpinBoxChanged)
         self.sampleRateSpinBox.valueChanged.connect(self.sampleRateSpinBoxChanged)
         self.autoTranscriptionCheckBox.stateChanged.connect(self.autoTranscriptionCheckBoxChanged)
         self.enhancedCheckBox.stateChanged.connect(self.enhancedCheckBoxChanged)
@@ -130,6 +133,11 @@ class ChangeSettings(QWidget, Ui_ChangeSettings):
     def modelComboBoxChanged(self):
         ApplicationContainer.settings().setValue('speechToTextModel', self.modelComboBox.currentText())
 
+
+    @pyqtSlot(int)
+    def channelCountSpinBoxChanged(self, value):
+        ApplicationContainer.settings().setValue('speechToTextChannelCount', self.channelCountSpinBox.value())
+        
 
     @pyqtSlot(int)
     def sampleRateSpinBoxChanged(self, value):
