@@ -183,6 +183,7 @@ class RecordingController(QObject):
                 'model' : settings.getValue('speechToTextModel'),
                 'outputFolder' : settings.getValue('defaultOutputFolder'),
                 'sampleRate' : int(settings.getValue('speechToTextSampleRate')),
+                'audioChannelCount' : int(settings.getValue('speechToTextChannelCount')),
                 'serviceAccountPath' : settings.getValue('serviceAccountPath')
             }
             self.speechToText.setConfig(config)
