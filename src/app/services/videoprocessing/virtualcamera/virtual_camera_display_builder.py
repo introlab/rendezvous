@@ -11,8 +11,8 @@ class VirtualCameraDisplayBuilder:
 
     @staticmethod
     def buildImage(images, frameSize, backgroundColor, spacing):
-        frameWidth = frameSize.width()
-        frameHeight = frameSize.height()
+        frameWidth = frameSize.width() - 2
+        frameHeight = frameSize.height() - 2
 
         displayPositions, vcWidth, vcHeight = VirtualCameraDisplayBuilder.buildDisplay(len(images), frameWidth, frameHeight, spacing)
         
