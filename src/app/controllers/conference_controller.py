@@ -1,3 +1,5 @@
+import time
+
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 
 from src.app.application_container import ApplicationContainer
@@ -61,11 +63,16 @@ class ConferenceController(QObject):
         if self.__odasServer.state == ServiceState.RUNNING:
             self.stopOdasLive()
 
-        if self.__odasServer.state == ServiceState.RUNNING:
+        if self.__videoProcessor.state == ServiceState.RUNNING:
             self.stopVideoProcessor()
 
         if self.__odasServer.isRunning:
             self.__odasServer.stop()
+
+        while self.__videoProcessor.state != ServiceState.STOPPED:
+            time.sleep(0.01)
+
+        self.__videoProcessor.destroy()
 
 
     @pyqtSlot(object)
@@ -122,7 +129,7 @@ class ConferenceController(QObject):
 
     @pyqtSlot(object, object)
     def __virtualCamerasReceived(self, images, virtualCameras):
-        if(self.__positions):
+        if self.__positions:
             # range threshold in degrees
             rangeThreshold = 15
             sourceClassifier = SourceClassifier(rangeThreshold)

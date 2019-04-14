@@ -261,10 +261,10 @@ class VideoProcessor(QObject):
                 
             self.virtualCameraManager.clear()
         
-        self.signalStateChanged.emit(ServiceState.STOPPED)
-        self.state = ServiceState.STOPPED
+            self.signalStateChanged.emit(ServiceState.STOPPED)
+            self.state = ServiceState.STOPPED
 
-        print('Video processor terminated')
+            print('Video processor terminated')
 
 
     def destroy(self):
