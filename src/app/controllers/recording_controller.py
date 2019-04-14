@@ -1,8 +1,10 @@
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
+from PyQt5 import QtGui
 
 from src.app.application_container import ApplicationContainer
 from src.app.services.service.service_state import ServiceState
 from src.app.services.recorder.recorder import Recorder
+from src.app.services.videoprocessing.virtualcamera.virtual_camera_display_builder import VirtualCameraDisplayBuilder
 
 
 class RecordingController(QObject):
@@ -12,7 +14,7 @@ class RecordingController(QObject):
     signalVirtualCamerasReceived = pyqtSignal(object)
     transcriptionReady = pyqtSignal()
 
-    def __init__(self, parent=None):
+    def __init__(self, virtualCameraFrame, parent=None):
         super(RecordingController, self).__init__(parent)
 
         self.__recorderState = ServiceState.TERMINATED
@@ -24,6 +26,8 @@ class RecordingController(QObject):
         self.__sampleRate = 48000
 
         self.__caughtExceptions = []
+
+        self.__virtualCameraFrame = virtualCameraFrame
 
         self.__odasServer = ApplicationContainer.odas()
 
@@ -134,10 +138,12 @@ class RecordingController(QObject):
     @pyqtSlot(object, object)
     def __virtualCamerasReceived(self, images, virtualCameras):
         if self.__recorder and self.__recorderState == ServiceState.RUNNING:
-            self.signalVirtualCamerasReceived.emit(images)
-
-            if images:
-                self.__recorder.mailbox.put(('video', images[0]))
+            combinedImage = VirtualCameraDisplayBuilder.buildImage(images,
+                                                        self.__virtualCameraFrame.size(),
+                                                        self.__virtualCameraFrame.palette().color(QtGui.QPalette.Background),
+                                                        10) 
+            self.signalVirtualCamerasReceived.emit(combinedImage)
+            self.__recorder.mailbox.put(('video', combinedImage))
 
 
     @pyqtSlot(Exception)
