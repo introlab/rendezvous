@@ -2,6 +2,7 @@ import multiprocessing
 import queue
 import time
 
+from src.app.services.service.process.generic_process import GenericProcess
 from src.utils.exception_helper import ExceptionHelper
 from .facedetector.yolo_face_detector import YoloFaceDetector
 from .facedetector.dnn_face_detector import DnnFaceDetector
@@ -9,23 +10,22 @@ from .facedetector.haar_face_detector import HaarFaceDetector
 from .facedetector.face_detection_methods import FaceDetectionMethods
 
 
-class FaceDetection(multiprocessing.Process):
+class FaceDetection(GenericProcess):
 
-    def __init__(self, faceDetectionMethod, imageQueue, facesQueue, heartbeatQueue, exceptionQueue, isBusySemaphore):
+    def __init__(self, faceDetectionMethod):
         super(FaceDetection, self).__init__()
         self.faceDetectionMethod = faceDetectionMethod
-        self.imageQueue = imageQueue
-        self.facesQueue = facesQueue
-        self.heartbeatQueue = heartbeatQueue
-        self.exceptionQueue = exceptionQueue
-        self.isBusySemaphore = isBusySemaphore
-        self.exit = multiprocessing.Event()
+        self.imageQueue = multiprocessing.Queue()
+        self.facesQueue = multiprocessing.Queue()
+        self.isBusySemaphore = multiprocessing.Semaphore()
         self.requestImage = True
         self.isBusy = False
 
 
     def stop(self):
-        self.exit.set()
+        super(FaceDetection, self).stop()
+        self.emptyQueue(self.facesQueue)
+        self.emptyQueue(self.imageQueue)
 
 
     def run(self):
@@ -33,23 +33,23 @@ class FaceDetection(multiprocessing.Process):
 
         try:
 
-            self.__lockOnce()
+            self.aquireLockOnce()
 
             faceDetector = self.__createFaceDetector(self.faceDetectionMethod)
 
             dewarpIndex = -1
             faces = []
 
-            lastHeartBeat = time.perf_counter()
+            lastKeepAliveTimestamp = time.perf_counter()
 
-            while not self.exit.is_set() and time.perf_counter() - lastHeartBeat < 0.5:
+            while not self.exit.is_set() and time.perf_counter() - lastKeepAliveTimestamp < 0.5:
 
                 image = None
                 try:
-                    image, dewarpIndex = self.imageQueue.get_nowait()
-                    self.__lockOnce()
+                    dewarpIndex, image = self.imageQueue.get_nowait()
+                    self.aquireLockOnce()
                 except queue.Empty:
-                    self.__unlockOnce()
+                    self.releaseLockOnce()
                     time.sleep(0.01)
 
                 if image is not None:
@@ -57,8 +57,8 @@ class FaceDetection(multiprocessing.Process):
                     self.facesQueue.put((dewarpIndex, imageFaces))
                 
                 try:
-                    self.heartbeatQueue.get_nowait()
-                    lastHeartBeat = time.perf_counter()
+                    self.keepAliveQueue.get_nowait()
+                    lastKeepAliveTimestamp = time.perf_counter()
                 except queue.Empty:
                     pass
         
@@ -67,12 +67,34 @@ class FaceDetection(multiprocessing.Process):
             self.exceptionQueue.put(e)
 
         finally:
-            
-            self.__unlockOnce()
-        
+            self.releaseLockOnce()
             print('Face detection terminated')
 
+
+    def tryGetFaces(self):
+        try:                  
+            return self.facesQueue.get_nowait()
+        except queue.Empty:
+            return None
+
+
+    def sendDewarpedImages(self, dewarpIndex, buffer):
+        self.imageQueue.put_nowait((dewarpIndex, buffer))
+
+
+    def aquireLockOnce(self, block = True):
+        if not self.isBusy:
+            self.isBusy = self.isBusySemaphore.acquire(block)
+
+        return self.isBusy
+
     
+    def releaseLockOnce(self):
+        if self.isBusy:
+            self.isBusySemaphore.release()
+            self.isBusy = False
+
+
     def __createFaceDetector(self, faceDetectionMethod):
         if faceDetectionMethod == FaceDetectionMethods.OPENCV_DNN.value:
             return DnnFaceDetector()
@@ -82,15 +104,3 @@ class FaceDetection(multiprocessing.Process):
             return YoloFaceDetector()
         else:
             return HaarFaceDetector()
-
-
-    def __lockOnce(self):
-        if not self.isBusy:
-            self.isBusySemaphore.acquire()
-            self.isBusy = True
-
-    
-    def __unlockOnce(self):
-        if self.isBusy:
-            self.isBusySemaphore.release()
-            self.isBusy = False
