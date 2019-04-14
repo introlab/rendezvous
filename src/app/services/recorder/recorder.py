@@ -1,4 +1,5 @@
 import os
+import time
 from threading import Thread
 import queue
 from enum import Enum, unique
@@ -6,104 +7,109 @@ from enum import Enum, unique
 from PyQt5.QtCore import QObject, pyqtSignal
 from src.app.services.recorder.audio.audio_writer import AudioWriter
 from src.app.services.recorder.video.video_writer import VideoWriter
-
-
-@unique
-class RecorderActions(Enum):
-    STOP = 'stop'
-    SAVE_FILES = 'savefiles'
-    NEW_RECORDING = 'newrecording'
+from src.app.services.service.service_state import ServiceState
 
     
 class Recorder(QObject, Thread):
     
     signalException = pyqtSignal(Exception)
+    signalStateChanged = pyqtSignal(object)
     
-    def __init__(self, outputFolder, parent=None):
-        super(Recorder, self).__init__(parent)
+    def __init__(self, outputFolder, nChannels, nChannelFile, byteDepth, sampleRate, parent=None):
+        QObject.__init__(self, parent)
+        Thread.__init__(self)
 
-        self.__audioWriter = AudioWriter()
-        self.changeAudioSettings(outputFolder, 4, 1, 2, 48000)
-        self.__videoSources = {}
-        self.__initNewVideoWriters(outputFolder)
         self.mailbox = queue.Queue()
-        self.isRunning = False
-        self.isRecording = False
-        self.__outputFolder = outputFolder
+
+        self.__audioWriter = AudioWriter(outputFolder, nChannels, nChannelFile, byteDepth, sampleRate)
+        self.__videoSource = VideoWriter(os.path.join(outputFolder, 'video-0.avi'), fourCC='MJPG', fps=10)
+
+        self.__state = ServiceState.STOPPED
+
+
+    def initialize(self):
+        self.__state = ServiceState.STARTING
+        self.signalStateChanged.emit(ServiceState.STARTING)
+        
+        super().start()
+
+    
+    def startRecording(self):
+        self.__state = ServiceState.RUNNING
+        self.signalStateChanged.emit(ServiceState.RUNNING)
 
     
     def stop(self):
-        if self.isRunning:
-            self.mailbox.put(RecorderActions.STOP)
-            # Wait until the thread terminate.
-            self.join()
+        self.__state = ServiceState.STOPPING
+        self.signalStateChanged.emit(ServiceState.STOPPING)
 
-            self.__audioWriter.close()
-            for key, videoWriter in self.__videoSources.items():
-                videoWriter.close()
-        
-            self.isRunning = False
+    
+    def terminate(self):
+        if self.__state != ServiceState.STOPPED and self.__state != ServiceState.TERMINATED:
+            self.stop()
+        else:
+            self.__state = ServiceState.TERMINATED
 
 
     def run(self):
+
         try:
-            self.isRunning = True
-            while True:
-                    data = self.mailbox.get()
 
-                    if isinstance(data, tuple):
-                        dataType = data[0]
-                        if dataType == 'audio':
-                            self.__audioWriter.write(data[1])
+            self.__state = ServiceState.READY
+            self.signalStateChanged.emit(ServiceState.READY)
 
-                        elif dataType == 'video':
-                            sourceIndex = data[1]
+            print('Recorder started')
 
-                            if sourceIndex in self.__videoSources.keys():
-                                self.__videoSources[sourceIndex].write(data[2])
+            while self.__state == ServiceState.RUNNING or self.__state == ServiceState.READY:
+                
+                if self.__state == ServiceState.READY:
+                    time.sleep(0.5)
+                    self.signalStateChanged.emit(ServiceState.READY)
+                    continue
 
-                            else:
-                                fileFullPath = os.path.join(self.outputFolder, 'video-{}.avi'.format(str(sourceIndex)))
-                                self.__videoSources[sourceIndex] = VideoWriter(fileFullPath, fourCC='MJPG', fps=10)
-                                self.__videoSources[sourceIndex].write(data[2])
+                data = None
+                try:
+                    data = self.mailbox.get_nowait()
+                except queue.Empty:
+                    time.sleep(0.0001)
 
-                        else:
-                            raise Exception('data type not supported for recording')
+                if data is not None:
 
-                    elif data == RecorderActions.SAVE_FILES:
-                        self.__audioWriter.close()
-                        for _, writer in self.__videoSources.items():
-                            writer.close()
+                    dataType = data[0]
+                    if dataType == 'audio':
+                        self.__audioWriter.write(data[1])
 
-                    elif data == RecorderActions.NEW_RECORDING:
-                        self.__audioWriter.createNewFiles()
-                        self.__initNewVideoWriters(self.__outputFolder)
+                    elif dataType == 'video':
+                        self.__videoSource.write(data[1])
 
-                    elif data == RecorderActions.STOP:
-                        break
-        
+                    else:
+                        raise Exception('data type {type} not supported for recording'.format(dataType))
+
         except Exception as e:
+            
+            self.__state = ServiceState.STOPPING   
+            self.signalStateChanged.emit(ServiceState.STOPPING)          
             self.signalException.emit(e)
 
         finally:
-            self.isRunning = False
 
+            # Empty the queue
+            try:
+                while True:
+                    queue.get_nowait()
+            except:
+                pass
 
-    def setOutputFolder(self, folderpath):
-        if not folderpath or not os.path.exists(folderpath):
-            self.signalException.emit(Exception("folder's path does not exists."))
+            self.__audioWriter.close()
+            self.__videoSource.close()
 
-        self.__outputFolder = folderpath
+            self.signalStateChanged.emit(ServiceState.STOPPED)
+            self.__state = ServiceState.STOPPED
 
+            while self.__state == ServiceState.STOPPED:
+                time.sleep(0.5)
+                self.signalStateChanged.emit(ServiceState.STOPPED)
 
-    def changeAudioSettings(self, outputFolder, nChannels, nChannelFile, byteDepth, sampleRate):
-        self.__audioWriter.changeWavSettings(outputFolder, nChannels, nChannelFile, byteDepth, sampleRate)
+            self.signalStateChanged.emit(ServiceState.TERMINATED)
 
-
-    def __initNewVideoWriters(self, outputFolder):
-        self.__videoSources = {
-            '0': VideoWriter(os.path.join(outputFolder, 'video-0.avi'), fourCC='MJPG', fps=10),
-            '1': VideoWriter(os.path.join(outputFolder, 'video-1.avi'), fourCC='MJPG', fps=10),
-            '2': VideoWriter(os.path.join(outputFolder, 'video-2.avi'), fourCC='MJPG', fps=10),
-            '3': VideoWriter(os.path.join(outputFolder, 'video-3.avi'), fourCC='MJPG', fps=10)
-        }
+            print('Recorder terminated')

@@ -5,7 +5,7 @@ class GenericProcess(multiprocessing.Process):
 
     def __init__(self):
         super(GenericProcess, self).__init__()
-        self.keepAliveQueue = multiprocessing.Queue()
+        self.keepAliveQueue = multiprocessing.Queue(1)
         self.exceptionQueue = multiprocessing.Queue()
         self.exit = multiprocessing.Event()
 

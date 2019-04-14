@@ -6,7 +6,7 @@ from enum import Enum, unique
 
 from src.app.services.gstorage.g_storage import GStorage
 
-from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import QObject, QThread,  pyqtSignal, pyqtSlot
 
 from google.cloud import speech
 
@@ -55,13 +55,24 @@ class SpeechToText(QObject):
 
     # Valid range accepted by the Google API.
     __minSampleRate = 8000
-    __maxSampleRate = 48000
-    # Value we are most likely to use.
-    __defaultSampleRate = 48000       
+    __maxSampleRate = 48000      
     # Value recommended for readability.
     __maxCharInSrtLine = 35
     # Value recommended for readability in second.
     __maxTimeForSrtBlock = 6
+
+
+    def __init__(self, parent=None):
+        super(SpeechToText, self).__init__(parent)
+
+        # Worker thread so the transcription is not blocking.
+        self.asynchroneSpeechToText = QThread()
+        self.moveToThread(self.asynchroneSpeechToText)
+        # What will run when the thread starts.
+        self.asynchroneSpeechToText.started.connect(self.resquestTranscription)
+
+        self.isRunning = False
+
 
     ''' SRT block format
 
@@ -156,12 +167,9 @@ class SpeechToText(QObject):
         return self.__maxSampleRate
 
 
-    def getDefaultSampleRate(self):
-        return self.__defaultSampleRate
-
-
     def resquestTranscription(self):
         try:
+            self.isRunning = True
 
             useGStorage = True
 
@@ -204,14 +212,14 @@ class SpeechToText(QObject):
                 gstorage = GStorage(serviceAccountPath)
 
                 st = datetime.datetime.fromtimestamp(time.time()).strftime('%Y%m%d%H%M%S')
-                bucketName = "rdv-steno-{}".format(st)
-                remoteFileName = "audio"
+                bucketName = 'rdv-steno-{}'.format(st)
+                remoteFileName = 'audio'
 
                 gstorage.createBucket(bucketName)
                 gstorage.uploadBlob(bucketName, fileName, remoteFileName)
 
                 # gs://bucket-name/path_to_audio_file
-                uri = "gs://{}/{}".format(bucketName, remoteFileName)
+                uri = 'gs://{}/{}'.format(bucketName, remoteFileName)
                 audio = speech.types.RecognitionAudio(uri=uri)
 
             else :
@@ -248,5 +256,9 @@ class SpeechToText(QObject):
                                        transcriptWords=totalWordsTranscription)
 
         except Exception as e:
+            self.asynchroneSpeechToText.quit()
             self.exception.emit(e)
+
+        finally:
+            self.isRunning = False
 
