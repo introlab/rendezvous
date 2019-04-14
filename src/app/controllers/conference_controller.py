@@ -1,10 +1,12 @@
 import time
 
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
+from PyQt5 import QtGui
 
 from src.app.application_container import ApplicationContainer
 from src.app.services.sourceclassifier.source_classifier import SourceClassifier
 from src.app.services.service.service_state import ServiceState
+from src.app.services.videoprocessing.virtualcamera.virtual_camera_display_builder import VirtualCameraDisplayBuilder
 
 
 class ConferenceController(QObject):
@@ -17,12 +19,14 @@ class ConferenceController(QObject):
     signalHumanSourcesDetected = pyqtSignal(object)
     signalAudioPositions = pyqtSignal(object)
 
-    def __init__(self, parent=None):
+    def __init__(self, virtualCameraFrame, parent=None):
         super(ConferenceController, self).__init__(parent)
 
         self.__odasServer = ApplicationContainer.odas()
 
         self.__videoProcessor = ApplicationContainer.videoProcessor()
+
+        self.__virtualCameraFrame = virtualCameraFrame
 
         self.__caughtOdasExceptions = []
         self.__caughtVideoExceptions = []
@@ -129,6 +133,11 @@ class ConferenceController(QObject):
 
     @pyqtSlot(object, object)
     def __virtualCamerasReceived(self, images, virtualCameras):
+        combinedImage = VirtualCameraDisplayBuilder.buildImage(images,
+                                                               self.__virtualCameraFrame.size(),
+                                                               self.__virtualCameraFrame.palette().color(QtGui.QPalette.Background),
+                                                               10) 
+
         if self.__positions:
             # range threshold in degrees
             rangeThreshold = 15
@@ -136,7 +145,7 @@ class ConferenceController(QObject):
             sourceClassifier.classifySources(virtualCameras, self.__positions)
             self.signalHumanSourcesDetected.emit(sourceClassifier.humanSources)
 
-        self.signalVirtualCamerasReceived.emit(images)
+        self.signalVirtualCamerasReceived.emit(combinedImage)
 
 
     @pyqtSlot(Exception)
