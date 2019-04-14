@@ -42,5 +42,5 @@ class VirtualCameraDisplayer:
     def __createQImageFromOpenCVImage(self, image):
         imageHeight, imageWidth, colors = image.shape
         bytesPerLine = 3 * imageWidth
-        qImage = QImage(image.data, imageWidth, imageHeight, bytesPerLine, QImage.RGB888)
+        qImage = QImage(image.data, imageWidth, imageHeight, bytesPerLine, QImage.Format.RGB888).rgbSwapped()
         return qImage
