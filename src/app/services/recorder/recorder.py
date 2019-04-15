@@ -36,7 +36,9 @@ class Recorder(QObject, Thread):
 
         self.humanSourcesIndex = []
 
-        self.__humanSourcesBuff = []
+        self.__bufferSize = 102400
+        self.__humanSourcesBuff = np.empty(self.__bufferSize, np.uint8)
+        self.__currentBufferIndex = 0
 
 
     def initialize(self):
@@ -71,7 +73,8 @@ class Recorder(QObject, Thread):
 
         filteredHumanSources = np.bitwise_and(byteArray, byteMask)
         
-        self.__humanSourcesBuff.extend(filteredHumanSources)
+        self.__humanSourcesBuff[self.__currentBufferIndex : self.__currentBufferIndex + len(filteredHumanSources)] = filteredHumanSources
+        self.__currentBufferIndex += len(filteredHumanSources)
 
 
     def createMaskFromHumanSources(self, length):   
@@ -103,8 +106,11 @@ class Recorder(QObject, Thread):
     def recordData(self, data):
         dataType = data[0]
         if dataType == 'audio':
-            # TODO: Use the source classifier to get human sources (instead of {0,1,2,3})
             self.separateSourcesData(data[1])
+
+            if self.__currentBufferIndex == self.__bufferSize:
+                self.__audioWriter.writeWavFrame(self.__humanSourcesBuff)
+                self.__currentBufferIndex = 0
 
         elif dataType == 'video':
             self.__videoSource.write(data[1])
@@ -116,6 +122,8 @@ class Recorder(QObject, Thread):
     def run(self):
 
         try:
+            
+            self.__audioWriter.openWav(self.__audioStereoPath)
 
             self.state = ServiceState.READY
             self.signalStateChanged.emit(ServiceState.READY)
@@ -140,9 +148,9 @@ class Recorder(QObject, Thread):
 
         except Exception as e:
 
+            self.signalException.emit(e)
             self.state = ServiceState.STOPPING   
             self.signalStateChanged.emit(ServiceState.STOPPING)          
-            self.signalException.emit(e)
 
         finally:
             
@@ -158,9 +166,10 @@ class Recorder(QObject, Thread):
             except:
                 pass
 
+            self.__audioWriter.writeWavFrame(self.__humanSourcesBuff[:self.__currentBufferIndex])
+
             self.__videoSource.close()
-            self.__audioWriter.writeWav(np.array(self.__humanSourcesBuff, np.uint8), self.__audioStereoPath)
-            self.__humanSourcesBuff = []
+            self.__audioWriter.closeWav()
 
             print('Merging audio and video...')
 
