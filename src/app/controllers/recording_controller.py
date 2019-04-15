@@ -1,3 +1,5 @@
+import os
+
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 from PyQt5 import QtGui
 
@@ -125,7 +127,11 @@ class RecordingController(QObject):
                 self.signalException.emit(e)
                 self.__caughtExceptions.clear()
             self.signalRecordingState.emit(False)
-            self.requestTranscription("/home/nvidia/dev/workspace/output/media.wav")
+
+            settings = ApplicationContainer.settings()
+            outputFolder = settings.getValue('defaultOutputFolder')
+            wavPath = os.path.join(outputFolder, 'media.wav')
+            self.requestTranscription(wavPath)
 
 
     @pyqtSlot(bytes)
