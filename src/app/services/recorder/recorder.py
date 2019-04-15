@@ -1,13 +1,16 @@
 import os
 import time
-from threading import Thread
 import queue
+from threading import Thread
 from enum import Enum, unique
+
+import numpy as np
 
 from PyQt5.QtCore import QObject, pyqtSignal
 from src.app.services.recorder.audio.audio_writer import AudioWriter
 from src.app.services.recorder.video.video_writer import VideoWriter
 from src.app.services.service.service_state import ServiceState
+from src.utils.media_merger import MediaMerger
 
     
 class Recorder(QObject, Thread):
@@ -15,54 +18,119 @@ class Recorder(QObject, Thread):
     signalException = pyqtSignal(Exception)
     signalStateChanged = pyqtSignal(object)
     
-    def __init__(self, outputFolder, nChannels, nChannelFile, byteDepth, sampleRate, parent=None):
+    def __init__(self, outputFolder, nChannels, byteDepth, sampleRate, parent=None):
         QObject.__init__(self, parent)
         Thread.__init__(self)
 
         self.mailbox = queue.Queue()
 
-        self.__audioWriter = AudioWriter(outputFolder, nChannels, nChannelFile, byteDepth, sampleRate)
-        self.__videoSource = VideoWriter(os.path.join(outputFolder, 'video-0.avi'), fourCC='MJPG', fps=10)
+        self.__audioStereoPath = os.path.join(outputFolder, 'audioStereo.wav')
+        self.__audioMonoPath = os.path.join(outputFolder, 'audioMono.wav')
+        self.__videoPath = os.path.join(outputFolder, 'video.avi')
+        self.__mediaPath = os.path.join(outputFolder, 'media.avi')
+        
+        self.__audioWriter = AudioWriter(nChannels, byteDepth, sampleRate)
+        self.__videoSource = VideoWriter(self.__videoPath, fourCC='MJPG', fps=15)
 
-        self.__state = ServiceState.STOPPED
+        self.state = ServiceState.TERMINATED
+
+        self.humanSourcesIndex = []
+
+        self.__humanSourcesBuff = np.array([], np.uint8)
 
 
     def initialize(self):
-        self.__state = ServiceState.STARTING
+        self.state = ServiceState.STARTING
         self.signalStateChanged.emit(ServiceState.STARTING)
         
         super().start()
 
-    
+
     def startRecording(self):
-        self.__state = ServiceState.RUNNING
+        self.state = ServiceState.RUNNING
         self.signalStateChanged.emit(ServiceState.RUNNING)
 
-    
+
     def stop(self):
-        self.__state = ServiceState.STOPPING
+        self.state = ServiceState.STOPPING
         self.signalStateChanged.emit(ServiceState.STOPPING)
 
-    
+
     def terminate(self):
-        if self.__state != ServiceState.STOPPED and self.__state != ServiceState.TERMINATED:
+        if self.state != ServiceState.STOPPED and self.state != ServiceState.TERMINATED:
             self.stop()
         else:
-            self.__state = ServiceState.TERMINATED
+            self.state = ServiceState.TERMINATED
 
+
+    # Keeps only human sources
+    def separateSourcesData(self, data):
+        # We receive chunks of 1024 bytes
+        binaryMask = self.createMaskFromHumanSources(1024*8)
+        byteArray = bytearray(data)
+        binaryData = np.unpackbits(byteArray)
+
+        filteredHumanSources = np.bitwise_and(binaryData, binaryMask)
+
+        humanSourcesData = np.packbits(filteredHumanSources)
+        
+        if self.__humanSourcesBuff.size != 0:
+            self.__humanSourcesBuff = np.append(self.__humanSourcesBuff, humanSourcesData)
+        else:
+            self.__humanSourcesBuff = humanSourcesData
+
+
+    def createMaskFromHumanSources(self, length):   
+            byteLength = int(length/8)
+            mask = bytearray(byteLength)
+
+            self.humanSourcesIndex = [0, 1, 2, 3]
+            
+            if 0 in self.humanSourcesIndex:
+                for i in range(0, byteLength-1, 8):
+                    mask[i] = 255
+                    mask[i+1] = 255
+            if 1 in self.humanSourcesIndex:
+                for i in range(2, byteLength-1, 8):
+                    mask[i] = 255
+                    mask[i+1] = 255
+            if 2 in self.humanSourcesIndex:
+                for i in range(4, byteLength-1, 8):
+                    mask[i] = 255
+                    mask[i+1] = 255
+            if 3 in self.humanSourcesIndex:
+                for i in range(6, byteLength-1, 8):
+                    mask[i] = 255
+                    mask[i+1] = 255
+
+            return np.unpackbits(mask)
+
+
+    def recordData(self, data):
+        dataType = data[0]
+        if dataType == 'audio':
+            # TODO: Use the source classifier to get human sources (instead of {0,1,2,3})
+            self.separateSourcesData(data[1])
+
+        elif dataType == 'video':
+            self.__videoSource.write(data[1])
+
+        else:
+            raise Exception('data type {type} not supported for recording'.format(dataType))
+   
 
     def run(self):
 
         try:
 
-            self.__state = ServiceState.READY
+            self.state = ServiceState.READY
             self.signalStateChanged.emit(ServiceState.READY)
 
             print('Recorder started')
 
-            while self.__state == ServiceState.RUNNING or self.__state == ServiceState.READY:
+            while self.state == ServiceState.RUNNING or self.state == ServiceState.READY:
                 
-                if self.__state == ServiceState.READY:
+                if self.state == ServiceState.READY:
                     time.sleep(0.5)
                     self.signalStateChanged.emit(ServiceState.READY)
                     continue
@@ -74,42 +142,47 @@ class Recorder(QObject, Thread):
                     time.sleep(0.0001)
 
                 if data is not None:
-
-                    dataType = data[0]
-                    if dataType == 'audio':
-                        self.__audioWriter.write(data[1])
-
-                    elif dataType == 'video':
-                        self.__videoSource.write(data[1])
-
-                    else:
-                        raise Exception('data type {type} not supported for recording'.format(dataType))
+                    self.recordData(data)
 
         except Exception as e:
             
-            self.__state = ServiceState.STOPPING   
+            self.state = ServiceState.STOPPING   
             self.signalStateChanged.emit(ServiceState.STOPPING)          
             self.signalException.emit(e)
 
         finally:
-
+            
             # Empty the queue
             try:
                 while True:
-                    queue.get_nowait()
+                    data = None
+                    data = self.mailbox.get_nowait()
+
+                    if data is not None:
+                        self.recordData(data)
+
             except:
                 pass
 
-            self.__audioWriter.close()
             self.__videoSource.close()
+            self.__audioWriter.writeWav(self.__humanSourcesBuff, self.__audioStereoPath)
+            self.__humanSourcesBuff = np.array([], np.uint8)
+
+            # Convert stereo into mono
+            MediaMerger.stereoToMono(self.__audioStereoPath, self.__audioMonoPath)
+
+            # Merge audio-video-text
+            MediaMerger.mergeFiles(self.__audioMonoPath, self.__videoPath, self.__mediaPath)
+            print('Merge done!')
 
             self.signalStateChanged.emit(ServiceState.STOPPED)
-            self.__state = ServiceState.STOPPED
+            self.state = ServiceState.STOPPED
 
-            while self.__state == ServiceState.STOPPED:
+            while self.state == ServiceState.STOPPED:
                 time.sleep(0.5)
                 self.signalStateChanged.emit(ServiceState.STOPPED)
 
             self.signalStateChanged.emit(ServiceState.TERMINATED)
 
             print('Recorder terminated')
+

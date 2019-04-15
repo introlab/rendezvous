@@ -1,55 +1,49 @@
 import wave
 import os
+import numpy as np
 
-from PyQt5.QtCore import QObject
 
 class AudioWriter():
 
-    def __init__(self, outputFolder, nChannels, nChannelFile, byteDepth, sampleRate):
-        self.isRecording = False
-        self.wavFiles = []
-        self.outputFolder = outputFolder
+    def __init__(self, nChannels, byteDepth, sampleRate):
         self.nChannels = nChannels
-        self.nChannelsFile = nChannelFile
         self.byteDepth = byteDepth
         self.sampleRate = sampleRate
-        self.sourcesBuffer = {'0' :bytearray(), '1': bytearray(), '2': bytearray(), '3': bytearray()}
-        
-        self.createNewFiles()
-        
 
     
-    def createNewFiles(self):
-        for i in range(0, self.nChannels):
-            outputFile = os.path.join(self.outputFolder, 'outputsrc-{}.wav'.format(i))
-            if outputFile and os.path.exists(self.outputFolder):
-                self.wavFiles.append(wave.open(outputFile, 'wb'))
-                self.wavFiles[i].setnchannels(self.nChannelsFile)
-                self.wavFiles[i].setsampwidth(self.byteDepth)
-                self.wavFiles[i].setframerate(self.sampleRate)
-                self.sourcesBuffer[str(i)] = bytearray()
+    # Writes raw audio data into a file
+    def writeRaw(self, data, path):
+
+        if data.dtype == np.dtype('uint8'):
+            audioFile = open(path, 'wb')
+            data.tofile(audioFile)
+            audioFile.close()
+        else:
+            raise Exception('The data used to generate a raw file is not a numpy uint8 array.')        
+
+    
+    # Takes a raw audio in mono and creates a wav file.
+    def writeWav(self, data, path):
+
+        if data.dtype == np.dtype('uint8'):
+            wavFile = wave.open(path, 'wb')
+            wavFile.setnchannels(self.nChannels)
+            wavFile.setsampwidth(self.byteDepth)
+            wavFile.setframerate(self.sampleRate)
+            wavFile.writeframesraw(data)
+            wavFile.close()
+        else:
+            raise Exception('The data used to generate a wav file is not a numpy uint8 array.')
 
 
-    def write(self, data):
-        offset = 0
-        while offset < len(data):
-            for key, _ in self.sourcesBuffer.items():
-                currentByte = int(offset + int(key))
-                self.sourcesBuffer[key] += data[currentByte:currentByte + self.byteDepth]
-        
-            offset += self.nChannels * self.byteDepth
+    # Takes a raw audio in stereo and returns a raw audio in mono
+    def rawStereoToMono(self, dataRaw):
+        j = 0
+        dataMono = np.empty([int(len(dataRaw/2))], np.int16)
 
+        for i in range(0, len(dataRaw), 2):
+            dataMono[j] = dataRaw[i]
+            j += 1
 
-    def close(self):
-        for index, wavFile in enumerate(self.wavFiles):
-            audioRaw = self.sourcesBuffer[str(index)]
-            if audioRaw and wavFile:
-                wavFile.writeframesraw(audioRaw)
-             
-            if wavFile:
-                wavFile.close()
-            
-            self.sourcesBuffer[str(index)] = bytearray()
-        
-        self.wavFiles = []
+        return dataMono
 

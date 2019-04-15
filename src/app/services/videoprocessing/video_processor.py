@@ -144,6 +144,8 @@ class VideoProcessor(QObject):
             actualFrameTime = frameTimeTarget
             currentTime = time.perf_counter()
 
+            vcBuffers = []
+
             while self.state == ServiceState.RUNNING:
                 
                 faceDetection.tryRaiseProcessExceptions()
@@ -174,8 +176,6 @@ class VideoProcessor(QObject):
 
                 if success and readTime < frameTimeModifiedTarget / 2:
 
-                    vcBuffers = []
-
                     # By default the fisheye image is loaded in the fisheyeBufferId, 
                     # for face detection it's loaded to fdFisheyeBufferId.
                     currentFisheyeBufferId = fisheyeBufferId
@@ -193,6 +193,7 @@ class VideoProcessor(QObject):
                     loadTime = time.perf_counter() - currentTime
 
                     if loadTime < (3 * frameTimeModifiedTarget) / 4:
+                        vcBuffers = []
 
                         # Queue next dewarping for face detection (only one dewarping per frame)
                         if fdBufferQueue and readTime < frameTimeModifiedTarget / 4:
@@ -225,8 +226,8 @@ class VideoProcessor(QObject):
                         if show360DegAsVcs:
                             vcBuffers.extend(fdBuffers)
 
-                        # Send the virtual camera images
-                        self.signalVirtualCameras.emit(vcBuffers, self.virtualCameraManager.getVirtualCameras())
+                # Send the virtual camera images
+                self.signalVirtualCameras.emit(vcBuffers, self.virtualCameraManager.getVirtualCameras())
 
                 frameTime = time.perf_counter() - currentTime
                 

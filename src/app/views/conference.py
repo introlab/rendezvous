@@ -48,7 +48,6 @@ class Conference(QWidget, Ui_Conference):
         self.__conferenceController.signalVideoProcessorState.connect(self.__videoProcessorStateChanged)
         self.__conferenceController.signalVirtualCamerasReceived.connect(self.__updateVirtualCamerasDisplay)
         self.__conferenceController.signalException.connect(self.__exceptionReceived)
-        self.__conferenceController.signalHumanSourcesDetected.connect(self.__showHumanSources)
 
         # positions graphs initialization
         self.__azimuthGraph = Graph(self.soundPositionsLayout, curvesNumber=4, maxLength=500, yMax=370, title='Azimuth Positions')
@@ -143,18 +142,6 @@ class Conference(QWidget, Ui_Conference):
     @pyqtSlot(Exception)
     def __exceptionReceived(self, e):
         ApplicationContainer.exceptions().show(e)
-    
-
-    def __showHumanSources(self, humanSources):
-        for index, source in enumerate(self.soundSources):
-            if index in humanSources:
-                self.__setSourceBackgroundColor(index, 'yellow')
-            else:
-                self.__setSourceBackgroundColor(index, 'transparent')
-
-
-    def __setSourceBackgroundColor(self, index, color):
-        pass
 
 
 class Graph(QWidget):
