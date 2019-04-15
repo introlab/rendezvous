@@ -25,7 +25,7 @@ class Recorder(QObject, Thread):
         self.mailbox = queue.Queue()
 
         self.__audioStereoPath = os.path.join(outputFolder, 'audioStereo.wav')
-        self.__audioMonoPath = os.path.join(outputFolder, 'audioMono.wav')
+        self.__audioMonoPath = os.path.join(outputFolder, 'media.wav')
         self.__videoPath = os.path.join(outputFolder, 'video.avi')
         self.__mediaPath = os.path.join(outputFolder, 'media.avi')
         
@@ -36,7 +36,7 @@ class Recorder(QObject, Thread):
 
         self.humanSourcesIndex = []
 
-        self.__humanSourcesBuff = np.array([], np.uint8)
+        self.__humanSourcesBuff = []
 
 
     def initialize(self):
@@ -66,23 +66,17 @@ class Recorder(QObject, Thread):
     # Keeps only human sources
     def separateSourcesData(self, data):
         # We receive chunks of 1024 bytes
-        binaryMask = self.createMaskFromHumanSources(1024*8)
-        byteArray = bytearray(data)
-        binaryData = np.unpackbits(byteArray)
+        byteMask = self.createMaskFromHumanSources(1024*8)
+        byteArray = np.frombuffer(data, np.uint8)
 
-        filteredHumanSources = np.bitwise_and(binaryData, binaryMask)
-
-        humanSourcesData = np.packbits(filteredHumanSources)
+        filteredHumanSources = np.bitwise_and(byteArray, byteMask)
         
-        if self.__humanSourcesBuff.size != 0:
-            self.__humanSourcesBuff = np.append(self.__humanSourcesBuff, humanSourcesData)
-        else:
-            self.__humanSourcesBuff = humanSourcesData
+        self.__humanSourcesBuff.extend(filteredHumanSources)
 
 
     def createMaskFromHumanSources(self, length):   
             byteLength = int(length/8)
-            mask = bytearray(byteLength)
+            mask = np.zeros(byteLength, np.uint8)
 
             self.humanSourcesIndex = [0, 1, 2, 3]
             
@@ -103,7 +97,7 @@ class Recorder(QObject, Thread):
                     mask[i] = 255
                     mask[i+1] = 255
 
-            return np.unpackbits(mask)
+            return mask
 
 
     def recordData(self, data):
@@ -145,7 +139,7 @@ class Recorder(QObject, Thread):
                     self.recordData(data)
 
         except Exception as e:
-            
+
             self.state = ServiceState.STOPPING   
             self.signalStateChanged.emit(ServiceState.STOPPING)          
             self.signalException.emit(e)
@@ -165,14 +159,17 @@ class Recorder(QObject, Thread):
                 pass
 
             self.__videoSource.close()
-            self.__audioWriter.writeWav(self.__humanSourcesBuff, self.__audioStereoPath)
-            self.__humanSourcesBuff = np.array([], np.uint8)
+            self.__audioWriter.writeWav(np.array(self.__humanSourcesBuff, np.uint8), self.__audioStereoPath)
+            self.__humanSourcesBuff = []
+
+            print('Merging audio and video...')
 
             # Convert stereo into mono
             MediaMerger.stereoToMono(self.__audioStereoPath, self.__audioMonoPath)
 
             # Merge audio-video-text
             MediaMerger.mergeFiles(self.__audioMonoPath, self.__videoPath, self.__mediaPath)
+
             print('Merge done!')
 
             self.signalStateChanged.emit(ServiceState.STOPPED)

@@ -16,17 +16,16 @@ class VirtualCameraDisplayBuilder:
 
         displayPositions, vcWidth, vcHeight = VirtualCameraDisplayBuilder.buildDisplay(len(images), frameWidth, frameHeight, spacing)
         
-        combinedImage = np.zeros((frameHeight, frameWidth, 3), np.uint8)
-        combinedImage[:,:] = (backgroundColor.red(), backgroundColor.green(), backgroundColor.blue())
+        combinedImage = np.full((frameHeight, frameWidth, 3), backgroundColor.red(), np.uint8)
 
         for i in range(0, len(images)):
             resized = cv2.resize(images[i], (vcWidth, vcHeight))
             (xPos, yPos) = displayPositions[i]
             xPos = xPos - math.floor(vcWidth / 2)
             yPos = yPos - math.floor(vcHeight / 2)
-            combinedImage[yPos:yPos+vcHeight, xPos:xPos+vcWidth] = resized.copy()
+            combinedImage[yPos:yPos+vcHeight, xPos:xPos+vcWidth] = resized
 
-        return combinedImage.copy()
+        return combinedImage
 
 
     # Finds the position of every virtual camera along with their width and height.

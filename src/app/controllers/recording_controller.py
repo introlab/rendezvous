@@ -29,11 +29,7 @@ class RecordingController(QObject):
         self.__virtualCameraFrame = virtualCameraFrame
 
         self.__odasServer = ApplicationContainer.odas()
-
         self.__videoProcessor = ApplicationContainer.videoProcessor()
-
-        self.__sourceClassifier = ApplicationContainer.sourceClassifier()
-    
         self.speechToText = ApplicationContainer.speechToText()
         
 
@@ -53,8 +49,6 @@ class RecordingController(QObject):
         if self.__recorder and self.__recorder.state == ServiceState.RUNNING:
             self.__recorder.stop()
             
-        # TODO - call requestTranscription() with the audio file in input.
-
     
     def close(self):
         self.cancelTranscription()
@@ -131,6 +125,7 @@ class RecordingController(QObject):
                 self.signalException.emit(e)
                 self.__caughtExceptions.clear()
             self.signalRecordingState.emit(False)
+            self.requestTranscription("/home/nvidia/dev/workspace/output/media.wav")
 
 
     @pyqtSlot(bytes)
@@ -150,8 +145,6 @@ class RecordingController(QObject):
             combinedImage = VirtualCameraDisplayBuilder.buildImage(images, self.__virtualCameraFrame.size(),
                                                         self.__virtualCameraFrame.palette().color(QtGui.QPalette.Background), 10) 
                                                         
-            humanSources = self.__sourceClassifier.classifySources(virtualCameras, self.__sourcePositions)
-            self.__recorder.humanSourcesIndex = list(humanSources.keys())
             self.__recorder.mailbox.put(('video', combinedImage))
 
             self.signalVirtualCamerasReceived.emit(combinedImage)

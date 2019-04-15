@@ -24,8 +24,6 @@ class ConferenceController(QObject):
 
         self.__videoProcessor = ApplicationContainer.videoProcessor()
 
-        self.__sourceClassifier = ApplicationContainer.sourceClassifier()
-
         self.__virtualCameraFrame = virtualCameraFrame
 
         self.__caughtOdasExceptions = []

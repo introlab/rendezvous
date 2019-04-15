@@ -25,15 +25,12 @@ class AudioWriter():
     # Takes a raw audio in mono and creates a wav file.
     def writeWav(self, data, path):
 
-        if data.dtype == np.dtype('uint8'):
-            wavFile = wave.open(path, 'wb')
-            wavFile.setnchannels(self.nChannels)
-            wavFile.setsampwidth(self.byteDepth)
-            wavFile.setframerate(self.sampleRate)
-            wavFile.writeframesraw(data)
-            wavFile.close()
-        else:
-            raise Exception('The data used to generate a wav file is not a numpy uint8 array.')
+        wavFile = wave.open(path, 'wb')
+        wavFile.setnchannels(self.nChannels)
+        wavFile.setsampwidth(self.byteDepth)
+        wavFile.setframerate(self.sampleRate)
+        wavFile.writeframesraw(data)
+        wavFile.close()
 
 
     # Takes a raw audio in stereo and returns a raw audio in mono

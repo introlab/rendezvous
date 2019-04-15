@@ -32,7 +32,7 @@ class VirtualCameraManager:
         self.portraitScaleFactor = 4
 
         # Range in angles where we consider faces to be duplicate
-        self.duplicateFaceAngleRange = 0.05
+        self.duplicateFaceAngleRange = 0.1
 
         # Garbage collector unused virtual cameras. Ticks every second
         self.timer = QTimer()
