@@ -31,7 +31,7 @@ class VideoProcessor(QObject):
 
     def __init__(self, parent=None):
         super(VideoProcessor, self).__init__(parent)
-        self.virtualCameraManager = VirtualCameraManager(0, np.pi * 2)
+        self.virtualCameraManager = VirtualCameraManager(0, np.pi / 2)
         self.state = ServiceState.STOPPED
         self.fpsTarget = 15
         self.cameraConfig = None
