@@ -50,7 +50,10 @@ class SphericalAnglesRect:
 
     
     def setMiddlePosition(self, newMiddlePosition):
-        self.azimuthLeft = (newMiddlePosition[0] - self.getAzimuthSpan() / 2) % (np.pi * 2)
-        self.azimuthRight = (newMiddlePosition[0] + self.getAzimuthSpan() / 2) % (np.pi * 2)
-        self.elevationBottom = newMiddlePosition[1] - self.getElevationSpan() / 2
-        self.elevationTop = newMiddlePosition[1] + self.getElevationSpan() / 2
+        azimuthSpan = self.getAzimuthSpan()
+        elevationSpan = self.getElevationSpan()
+
+        self.azimuthLeft = (newMiddlePosition[0] - azimuthSpan / 2) % (np.pi * 2)
+        self.azimuthRight = (newMiddlePosition[0] + azimuthSpan / 2) % (np.pi * 2)
+        self.elevationBottom = newMiddlePosition[1] - elevationSpan / 2
+        self.elevationTop = newMiddlePosition[1] + elevationSpan / 2
