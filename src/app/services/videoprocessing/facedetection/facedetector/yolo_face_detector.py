@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from pydarknet import Detector, Image
+#from pydarknet import Detector, Image
 
 from .iface_detector import IFaceDetector
 from src.utils.rect import Rect

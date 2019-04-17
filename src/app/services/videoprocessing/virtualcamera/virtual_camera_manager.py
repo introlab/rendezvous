@@ -23,16 +23,16 @@ class VirtualCameraManager:
         self.aspectRatio = 3 / 4
 
         # Change in position that cause a move of the virtual camera
-        self.positionChangedThreshold = 0.005
+        self.positionChangedThreshold = 0.01
 
         # Change in dimension that cause a resize of the virtual camera
-        self.dimensionChangeThreshold = 0.1
+        self.dimensionChangeThreshold = 0.05
 
         # Face scale factor to get the person's portrait (with shoulders)
         self.portraitScaleFactor = 1
 
         # Range in angles where we consider faces to be duplicate
-        self.duplicateFaceAngleRange = 0.5
+        self.duplicateFaceAngleRange = 0.4
 
         # Garbage collector unused virtual cameras. Ticks every second
         self.timer = QTimer()
