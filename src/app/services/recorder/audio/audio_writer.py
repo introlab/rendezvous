@@ -4,6 +4,9 @@ import numpy as np
 
 
 class AudioWriter():
+    '''
+        Writer of .wav and .raw files. For .wav files, the number of channels, the number of byte per sample and the sample rate are needed.
+    '''
 
     def __init__(self, nChannels, byteDepth, sampleRate):
         self.nChannels = nChannels

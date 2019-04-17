@@ -63,19 +63,7 @@
 
     $ make
 
-- To only build the dewarping library alone use :
-
-      $ make dewarping_lib
-
-- To clean the c++ code and its dependencies use :
-
-      $ make clean
-
-- To only clean the dewarping library alone use :
-
-      $ make clean_dewarping_lib
-
-13 - If you add dependencies run the following command to add your new dependencies to requirements.txt:
+13 - If you add dependencies from pip, you need to run the following command to add your new dependencies to requirements.txt:
     
     $ pip freeze > requirements.txt
 
@@ -104,10 +92,10 @@ All tests files you add must follow this rule "test*.py", the framework use for 
 
 ## Authors
 
-- Patrick Beaulieu
-- Etienne Beauregard
-- Mathieu Favreau
-- Karl Gosselin
-- Walid Madaoui
-- Alexis Morel
-- Félix Roy
+- Patrick Beaulieu | patrick.beaulieu3@usherbrooke.ca
+- Etienne Beauregard | etienne.beauregard2@usherbrooke.ca
+- Mathieu Favreau | mathieu.favreau@usherbrooke.ca
+- Karl Gosselin | karl.gosselin@usherbrooke.ca
+- Walid Madaoui | walid.madaoui@ushebrooke.ca
+- Alexis Morel | alexis.morel@usherbrooke.ca
+- Félix Roy | felix.roy@usherbrooke.ca

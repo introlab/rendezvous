@@ -14,6 +14,11 @@ from src.utils.media_merger import MediaMerger
 
     
 class Recorder(QObject, Thread):
+    '''
+        Recording thread based on a queue for recording both sounds and videos.
+        Based on SourceClassifier class, it decides if the audio/video source is human or not.
+        If it is, the source is kept and the data associated to this source is recorded.
+    '''
     
     signalException = pyqtSignal(Exception)
     signalStateChanged = pyqtSignal(object)

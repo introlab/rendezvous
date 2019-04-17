@@ -5,6 +5,10 @@ import cv2
 from PyQt5.QtCore import QObject, pyqtSignal
 
 class VideoWriter(QObject):
+    '''
+        Writer of video files, it uses opencv video writer.
+        The filepath, the video fourCC and the number of fps are needed.
+    '''
 
     def __init__(self, filepath, fourCC, fps, parent=None):
         super(VideoWriter, self).__init__(parent)
