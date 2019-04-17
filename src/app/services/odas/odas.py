@@ -148,11 +148,6 @@ class Odas(QObject, Thread):
     def startOdasLive(self, odasPath, micConfigPath):
 
         try:
-            if self.state == ServiceState.STOPPING:
-                self.state = ServiceState.STOPPED
-                self.signalStateChanged.emit(self.state)
-                return
-        
             if not self.odasProcess:
                 self.state = ServiceState.STARTING
                 self.signalStateChanged.emit(ServiceState.STARTING)

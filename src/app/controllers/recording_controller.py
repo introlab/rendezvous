@@ -117,27 +117,26 @@ class RecordingController(QObject):
 
         elif self.__recorder.state == ServiceState.STOPPED:
             # waiting that all services are stopped.
-            while self.__odasServer.state != ServiceState.STOPPED or self.__videoProcessor.state != ServiceState.STOPPED:
-                time.sleep(0.0001)
-
-            self.__recorder.terminate()
+            if self.__odasServer.state is ServiceState.STOPPED and self.__videoProcessor.state is ServiceState.STOPPED:
+                self.__recorder.terminate()
 
         elif self.__recorder.state == ServiceState.TERMINATED:
             self.__recorder.signalException.disconnect(self.__exceptionHandling)
             self.__recorder.signalStateChanged.disconnect(self.__recorderStateChanged)
             self.__recorder = None
 
-            if not self.__caughtExceptions:
+            if self.__caughtExceptions:
+                
+                for e in self.__caughtExceptions:
+                    self.signalException.emit(e)
+
+                self.__caughtExceptions.clear()            
+            
+            else:
                 settings = ApplicationContainer.settings()
                 outputFolder = settings.getValue('defaultOutputFolder')
                 wavPath = os.path.join(outputFolder, 'media.wav')
                 self.requestTranscription(wavPath)
-
-            if self.__caughtExceptions:
-                for e in self.__caughtExceptions:
-                    self.signalException.emit(e)
-
-                self.__caughtExceptions.clear()
             
             self.signalRecordingState.emit(False)
 
@@ -185,7 +184,7 @@ class RecordingController(QObject):
         self.__odasServer.signalStateChanged.connect(self.__odasStateChanged)
         self.__odasServer.signalException.connect(self.__exceptionHandling)
 
-        if not self.__caughtExceptions:
+        if not self.__caughtExceptions and self.__odasServer.state is ServiceState.STOPPED:
             self.__odasServer.startOdasLive(odasPath, micConfigPath)
         else:
             self.__odasServer.stopOdasLive()
