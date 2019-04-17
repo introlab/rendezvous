@@ -23,16 +23,16 @@ class VirtualCameraManager:
         self.aspectRatio = 3 / 4
 
         # Change in position that cause a move of the virtual camera
-        self.positionChangedThreshold = 0.005
+        self.positionChangedThreshold = 0.01
 
         # Change in dimension that cause a resize of the virtual camera
-        self.dimensionChangeThreshold = 0
+        self.dimensionChangeThreshold = 0.05
 
         # Face scale factor to get the person's portrait (with shoulders)
-        self.portraitScaleFactor = 4
+        self.portraitScaleFactor = 1
 
         # Range in angles where we consider faces to be duplicate
-        self.duplicateFaceAngleRange = 0.1
+        self.duplicateFaceAngleRange = 0.4
 
         # Garbage collector unused virtual cameras. Ticks every second
         self.timer = QTimer()
@@ -80,6 +80,9 @@ class VirtualCameraManager:
                     break
                     
             if not faceAlreadyExist:
+                newElevation = currentFacePosition[1] + face.getElevationSpan() / 4
+                newPosition = (currentFacePosition[0], newElevation)
+                self.__tryMoveVirtualCamera(face, newPosition)
                 facePositions.append(currentFacePosition)
                 uniqueFaces.append(face)
 
@@ -99,10 +102,13 @@ class VirtualCameraManager:
             # Found a face to associate the vc with, so we update the vc with its matched face
             if face:
                 vc.resetTimeToLive()
-                vc.face = face
+
                 vc.positionGoal = face.getMiddlePosition()
+                    
                 heightGoal = max(self.virtualCameraMinHeight, face.getElevationSpan() * self.portraitScaleFactor)
                 vc.sizeGoal = (heightGoal * self.aspectRatio, heightGoal)
+
+                vc.face = face
 
 
     # Returns a copy of the virtual cameras so the caller can't modify the original ones

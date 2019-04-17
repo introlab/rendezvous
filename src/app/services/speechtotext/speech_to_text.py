@@ -223,53 +223,67 @@ class SpeechToText(QObject):
             # The name of the audio data to transcribe.
             fileName = os.path.join(audioDataPath)
 
-            if useGStorage:
-                gstorage = GStorage(serviceAccountPath)
+            # check if there is sounds in the audio, if there is no sound stop transcribe
+            content = None
+            with io.open(fileName, 'rb') as audioFile:
+                content = audioFile.read()
 
-                st = datetime.datetime.fromtimestamp(time.time()).strftime('%Y%m%d%H%M%S')
-                bucketName = 'rdv-steno-{}'.format(st)
-                remoteFileName = 'audio'
+            bytesCounter = 0
+            for sample in content:
+                if int(sample) != 0:
+                    bytesCounter += 1
+            
+            audioFileHeaderLength = 57
+            isWithSounds = bytesCounter > audioFileHeaderLength
 
-                gstorage.createBucket(bucketName)
-                gstorage.uploadBlob(bucketName, fileName, remoteFileName)
+            if isWithSounds:
+                if useGStorage:
+                    gstorage = GStorage(serviceAccountPath)
 
-                # gs://bucket-name/path_to_audio_file
-                uri = 'gs://{}/{}'.format(bucketName, remoteFileName)
-                audio = speech.types.RecognitionAudio(uri=uri)
+                    st = datetime.datetime.fromtimestamp(time.time()).strftime('%Y%m%d%H%M%S')
+                    bucketName = 'rdv-steno-{}'.format(st)
+                    remoteFileName = 'audio'
 
-            else :
-                # Loads the audio data(r) in binary format(b) into memory.
-                content = None
-                with io.open(fileName, 'rb') as audioFile:
-                    content = audioFile.read()
+                    gstorage.createBucket(bucketName)
+                    gstorage.uploadBlob(bucketName, fileName, remoteFileName)
 
-                audio = speech.types.RecognitionAudio(content=content)
+                    # gs://bucket-name/path_to_audio_file
+                    uri = 'gs://{}/{}'.format(bucketName, remoteFileName)
+                    audio = speech.types.RecognitionAudio(uri=uri)
 
-            # Set de config of the transcription.
-            recognitionConfig = speech.types.RecognitionConfig(
-                                    encoding=encoding,
-                                    sample_rate_hertz=sampleRate,
-                                    audio_channel_count=audioChannelCount,
-                                    language_code=languageCode,
-                                    model=model,
-                                    use_enhanced=self.__config['enhanced'],
-                                    enable_word_time_offsets=True)
+                else :
+                    audio = speech.types.RecognitionAudio(content=content)
 
-            operation = client.long_running_recognize(recognitionConfig, audio)
+                # Set de config of the transcription.
+                recognitionConfig = speech.types.RecognitionConfig(
+                                        encoding=encoding,
+                                        sample_rate_hertz=sampleRate,
+                                        audio_channel_count=audioChannelCount,
+                                        language_code=languageCode,
+                                        model=model,
+                                        use_enhanced=self.__config['enhanced'],
+                                        enable_word_time_offsets=True)
 
-            result = operation.result()       
+                operation = client.long_running_recognize(recognitionConfig, audio)
 
-            totalWordsTranscription = []
-            totalTranscription = ''
-            for result in result.results:
-                alternative = result.alternatives[0]
-                totalTranscription = totalTranscription + alternative.transcript
-                totalWordsTranscription.extend(alternative.words)
+                result = operation.result()       
 
-            self.transcriptionReady.emit(totalTranscription)
-            # The SRT file name comes from the audio data file name.
-            self.__generateSrtFile(fileName=outputFolder + '/' + os.path.splitext(os.path.basename(audioDataPath))[0] + '.srt',
-                                       transcriptWords=totalWordsTranscription)
+                totalWordsTranscription = []
+                totalTranscription = ''
+                for result in result.results:
+                    alternative = result.alternatives[0]
+                    totalTranscription = totalTranscription + alternative.transcript
+                    totalWordsTranscription.extend(alternative.words)
+
+                self.transcriptionReady.emit(totalTranscription)
+                # The SRT file name comes from the audio data file name.
+                self.__generateSrtFile(fileName=outputFolder + '/' + os.path.splitext(os.path.basename(audioDataPath))[0] + '.srt',
+                                        transcriptWords=totalWordsTranscription)
+            
+            else:
+                srtFilePath = os.path.join(outputFolder,  '{}.srt'.format(os.path.splitext(os.path.basename(audioDataPath))[0]))
+                if os.path.exists(srtFilePath):
+                    os.remove(srtFilePath)
 
         except Exception as e:
             self.asynchroneSpeechToText.quit()
