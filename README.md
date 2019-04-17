@@ -101,3 +101,13 @@ All tests files you add must follow this rule "test*.py", the framework use for 
 - src : application source code and tools related to the source code
 - tests : unit testing
 - config : for different config files
+
+## Authors
+
+- Patrick Beaulieu
+- Etienne Beauregard
+- Mathieu Favreau
+- Karl Gosselin
+- Walid Madaoui
+- Alexis Morel
+- Félix Roy
