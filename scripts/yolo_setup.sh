@@ -17,4 +17,14 @@ echo "names=/home/nvidia/dev/workspace/rendezvous/config/yolo/data/azface.names"
 cp azFace/net_cfg/azface.names config/yolo/data/
 cp azFace/weights/tiny-yolo-azface-fddb_82000.weights config/yolo/weights/
 
+wget https://pjreddie.com/media/files/yolov3-tiny.weights --directory-prefix=config/yolo/weights
+wget https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3-tiny.cfg --directory-prefix=config/yolo/cfg
+
+touch config/yolo/cfg/coco.data
+echo "classes=1" >> config/yolo/cfg/coco.data
+echo "names=/home/nvidia/dev/workspace/rendezvous/config/yolo/data/coco.names" >> config/yolo/cfg/coco.data
+
+touch config/yolo/data/coco.names
+echo "person" >> config/yolo/data/coco.names
+
 rm -rf azFace
