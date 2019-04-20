@@ -3,9 +3,12 @@ import numpy as np
 
 from PyQt5.QtCore import QTimer
 
-from .virtual_camera import VirtualCamera
+from src.app.services.videoprocessing.virtualcamera.virtual_camera import VirtualCamera
 
 
+"""
+Manages virtual cameras framing, animations and time to live
+"""
 class VirtualCameraManager:
 
     def __init__(self, imgMinElevation, imgMaxElevation):
@@ -36,11 +39,14 @@ class VirtualCameraManager:
 
         # Garbage collector unused virtual cameras. Ticks every second
         self.timer = QTimer()
-        self.timer.timeout.connect(self.__garbageCollect)
+        self.timer.timeout.connect(self.__removeUnusedVcs)
         self.timer.start(1000)
 
 
-    # Updates virtual camera move and resize animations every frame based on time since last frame
+    """
+    Updates virtual camera move and resize animations
+    every frame based on the time since last frame
+    """
     def update(self, frameTime):      
         for vc in self.__virtualCameras:
             distance = self.__distanceBetweenTwoSphericalAngles(vc.getMiddlePosition(), vc.positionGoal)
@@ -60,7 +66,9 @@ class VirtualCameraManager:
                 self.__tryResizeVirtualCamera(vc, resizeFactor)
 
 
-    # Updates the associated face (if any) for each virtual camera
+    """
+    Updates the associated face (if any) for each virtual camera
+    """
     def updateFaces(self, faces):
 
         uniqueFaces = []
@@ -111,7 +119,9 @@ class VirtualCameraManager:
                 vc.face = face
 
 
-    # Returns a copy of the virtual cameras so the caller can't modify the original ones
+    """
+    Returns a copy of the virtual cameras so the caller can't modify the original ones
+    """
     def getVirtualCameras(self):
         vcs = []
         for vc in self.__virtualCameras:
@@ -123,8 +133,10 @@ class VirtualCameraManager:
         self.__virtualCameras = []
 
      
-    # Try to move the vc to the desired position. If a move in a certain dimension
-    # makes the vc overflow the image, we disallow that move
+    """
+    Try to move the vc to the desired position. If a move in a certain dimension
+    makes the vc overflow the image, we disallow that move
+    """
     def __tryMoveVirtualCamera(self, virtualCamera, newPosition):
         (newAzimuth, newElevation) = newPosition
         elevationOverflow = self.__findElevationOverflow(newPosition)
@@ -136,8 +148,10 @@ class VirtualCameraManager:
         virtualCamera.setMiddlePosition((newAzimuth, newElevation))
 
 
-    # Try to resize the vc with the desired scale factor. 
-    # If the new dimensions overflow the image, we move the image to remove the overflow
+    """
+    Try to resize the vc with the desired scale factor. 
+    If the new dimensions overflow the image, we move the image to remove the overflow
+    """
     def __tryResizeVirtualCamera(self, virtualCamera, scaleFactor):
         # Find the desired dimensions respecting the aspect ratio
         virtualCamera.setElevationSpan(min(virtualCamera.getElevationSpan() * scaleFactor,
@@ -148,8 +162,10 @@ class VirtualCameraManager:
         self.__tryMoveVirtualCamera(virtualCamera, virtualCamera.getMiddlePosition())
 
 
-    # Recursive method to find matches between virtual cameras and detected faces.
-    # Returns vc-face matches plus all of the unmatched faces.
+    """
+    Recursive method to find matches between virtual cameras and detected faces.
+    Returns vc-face matches plus all of the unmatched faces.
+    """
     def __tryFindMatches(self, matches, unmatchedFaces):
 
         # Returns if there is no unmatched vc's left or no unmatched faces left 
@@ -180,7 +196,9 @@ class VirtualCameraManager:
         return self.__tryFindMatches(matches, unmatchedFaces)
 
 
-    # Find the closest face to the specified virtual camera
+    """
+    Find the closest face to the specified virtual camera
+    """
     def __findClosestFace(self, virtualCamera, faces):
         closestIndex = None
         closestDistance = None
@@ -196,7 +214,9 @@ class VirtualCameraManager:
             return None, None
 
 
-    # Finds by how much the rectangle overflows the image
+    """
+    Finds by how much the rectangle overflows the image
+    """
     def __findElevationOverflow(self, position):
         azimuth, elevation = position
         elevationOverflow = 0
@@ -208,7 +228,7 @@ class VirtualCameraManager:
 
         return elevationOverflow
 
-
+    
     def __distanceBetweenTwoSphericalAngles(self, srcAngle, dstAngle):
         srcAngleAzimuth, srcAngleElevation = srcAngle
         dstAngleAzimuth, dstAngleElevation = dstAngle
@@ -231,8 +251,10 @@ class VirtualCameraManager:
             return -absDistance
 
 
-    # Removes the virtual cameras that were not associated with a face for some time
-    def __garbageCollect(self):
+    """
+    Removes the virtual cameras that were not associated with a face for some time
+    """
+    def __removeUnusedVcs(self):
         for vc in self.__virtualCameras:
             vc.decreaseTimeToLive()
             if not vc.isAlive():
