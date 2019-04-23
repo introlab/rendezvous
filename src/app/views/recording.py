@@ -22,14 +22,14 @@ class Recording(QWidget, Ui_Recording):
         super(Recording, self).__init__(parent)
         self.setupUi(self)
 
-        self.__recordingController = RecordingController()
+        self.__virtualCameraDisplayer = VirtualCameraDisplayer(self.virtualCameraFrame)
+
+        self.__recordingController = RecordingController(self.virtualCameraFrame)
         self.__recordingController.signalRecordingState.connect(self.__recordingStateChanged)
         self.__recordingController.signalVirtualCamerasReceived.connect(self.__updateVirtualCamerasDispay)
         self.__recordingController.signalException.connect(self.__exceptionReceived)
         self.__recordingController.transcriptionReady.connect(self.onTranscriptionReady)
         
-        self.__virtualCameraDisplayer = VirtualCameraDisplayer(self.virtualCameraFrame)
-
         # Qt signal slots
         self.btnStartStopRecord.clicked.connect(self.__btnStartStopRecordClicked)
 

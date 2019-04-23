@@ -1,55 +1,55 @@
 import wave
 import os
+import numpy as np
 
-from PyQt5.QtCore import QObject
 
 class AudioWriter():
+    '''
+        Writer of .wav and .raw files. For .wav files, the number of channels, the number of byte per sample and the sample rate are needed.
+    '''
 
-    def __init__(self, outputFolder, nChannels, nChannelFile, byteDepth, sampleRate):
-        self.isRecording = False
-        self.wavFiles = []
-        self.outputFolder = outputFolder
+    def __init__(self, nChannels, byteDepth, sampleRate):
         self.nChannels = nChannels
-        self.nChannelsFile = nChannelFile
         self.byteDepth = byteDepth
         self.sampleRate = sampleRate
-        self.sourcesBuffer = {'0' :bytearray(), '1': bytearray(), '2': bytearray(), '3': bytearray()}
-        
-        self.createNewFiles()
-        
+        self.__wavFile = None
 
     
-    def createNewFiles(self):
-        for i in range(0, self.nChannels):
-            outputFile = os.path.join(self.outputFolder, 'outputsrc-{}.wav'.format(i))
-            if outputFile and os.path.exists(self.outputFolder):
-                self.wavFiles.append(wave.open(outputFile, 'wb'))
-                self.wavFiles[i].setnchannels(self.nChannelsFile)
-                self.wavFiles[i].setsampwidth(self.byteDepth)
-                self.wavFiles[i].setframerate(self.sampleRate)
-                self.sourcesBuffer[str(i)] = bytearray()
+    def openWav(self, path):
+        self.__wavFile = wave.open(path, 'wb')
+        self.__wavFile.setnchannels(self.nChannels)
+        self.__wavFile.setsampwidth(self.byteDepth)
+        self.__wavFile.setframerate(self.sampleRate)
 
 
-    def write(self, data):
-        offset = 0
-        while offset < len(data):
-            for key, _ in self.sourcesBuffer.items():
-                currentByte = int(offset + int(key))
-                self.sourcesBuffer[key] += data[currentByte:currentByte + self.byteDepth]
-        
-            offset += self.nChannels * self.byteDepth
+    def closeWav(self):
+        self.__wavFile.close()
 
 
-    def close(self):
-        for index, wavFile in enumerate(self.wavFiles):
-            audioRaw = self.sourcesBuffer[str(index)]
-            if audioRaw and wavFile:
-                wavFile.writeframesraw(audioRaw)
-             
-            if wavFile:
-                wavFile.close()
-            
-            self.sourcesBuffer[str(index)] = bytearray()
-        
-        self.wavFiles = []
+    # Writes raw audio data into a file
+    def writeRaw(self, data, path):
+
+        if data.dtype == np.dtype('uint8'):
+            audioFile = open(path, 'wb')
+            data.tofile(audioFile)
+            audioFile.close()
+        else:
+            raise Exception('The data used to generate a raw file is not a numpy uint8 array.')  
+
+    
+    # Takes a raw audio in mono and creates a wav file.
+    def writeWavFrame(self, data):
+        self.__wavFile.writeframesraw(data)
+
+
+    # Takes a raw audio in stereo and returns a raw audio in mono
+    def rawStereoToMono(self, dataRaw):
+        j = 0
+        dataMono = np.empty([int(len(dataRaw/2))], np.int16)
+
+        for i in range(0, len(dataRaw), 2):
+            dataMono[j] = dataRaw[i]
+            j += 1
+
+        return dataMono
 

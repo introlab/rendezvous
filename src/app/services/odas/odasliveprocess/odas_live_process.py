@@ -6,6 +6,10 @@ from time import sleep
 from PyQt5.QtCore import QObject, pyqtSignal
 
 class OdasLiveProcess(QObject, Thread):
+    '''
+        Thread that spawn a subprocess of ODAS (https://github.com/introlab/odas) and verify that this subprocess is still alive.
+        It also handles the return codes of ODAS and raise an exception if it's not zero.
+    '''
 
     signalException = pyqtSignal(Exception)
 

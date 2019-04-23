@@ -13,6 +13,10 @@ from src.app.services.service.service_state import ServiceState
 
 
 class Odas(QObject, Thread):
+    '''
+        Socket server that allow ODAS (https://github.com/introlab/odas) to send data back to our application.
+        It accepts connections from ODAS and spawns workers for each connections that ODAS is trying to do.
+    '''
 
     signalException = pyqtSignal(Exception)
     signalAudioData = pyqtSignal(bytes)
@@ -73,7 +77,7 @@ class Odas(QObject, Thread):
                             worker.start()
                             self.__workers.append(worker)
 
-                            worker = self.__initWorker(clientAudio, 3072)
+                            worker = self.__initWorker(clientAudio, 1024)
                             worker.start()
                             self.__workers.append(worker)
 
@@ -144,8 +148,10 @@ class Odas(QObject, Thread):
         self.signalStateChanged.emit(ServiceState.STOPPED)
 
 
-    # Spawn a sub process that execute odaslive.
     def startOdasLive(self, odasPath, micConfigPath):
+        '''
+            Spawn a sub process that execute odaslive.
+        '''
 
         try:
         
@@ -171,8 +177,10 @@ class Odas(QObject, Thread):
             self.signalException.emit(e)
 
 
-    # Stop the sub process.
     def stopOdasLive(self):
+        '''
+            Stop the sub process spawned for ODAS.
+        '''
         if self.odasProcess:
             if self.state == ServiceState.RUNNING:
                 self.closeConnections()
@@ -183,6 +191,10 @@ class Odas(QObject, Thread):
 
 
 class ClientHandler(QObject, Thread):
+    '''
+        Workers that receives data from ODAS' (https://github.com/introlab/odas) sockets parse the data and return it back to this worker's server.
+        Each worker handles a socket connection.
+    '''
 
     signalConnectionClosed = pyqtSignal(object)
     signalAudio = pyqtSignal(bytes)
@@ -204,7 +216,7 @@ class ClientHandler(QObject, Thread):
             self.sock.close()
             self.isConnected = False
             self.sock = None
-
+            self.join()
             print('connection closed') if self.isVerbose else None
             self.signalConnectionClosed.emit(self)
 
@@ -213,7 +225,7 @@ class ClientHandler(QObject, Thread):
             while True:
                 if not self.isConnected or not self.sock:
                     self.isConnected = False
-                    return
+                    break
                 if self.bufferSize:
                     data = self.sock.recv(self.bufferSize, socket.MSG_WAITALL)
                 else:
@@ -221,11 +233,11 @@ class ClientHandler(QObject, Thread):
                 # If there is no data incomming close the stream.
                 if not data:
                     self.isConnected = False
-                    return
-                            
+                    break
+
                 if JsonUtils.isJson(data):
                     self.__parseOdasObject(data)
-                else:
+                elif len(data) == self.bufferSize:
                     self.signalAudio.emit(data)
                             
                 sleep(0.00001)
@@ -247,4 +259,3 @@ class ClientHandler(QObject, Thread):
 
         if sources:
             self.signalPositions.emit(sources)
-

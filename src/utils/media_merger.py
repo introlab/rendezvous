@@ -8,10 +8,9 @@ class MediaMerger:
 
 
     @staticmethod
-    def fileMerger(audioInPath, videoInPath, mediaOutPath, srtInPath=None):
+    def mergeFiles(audioInPath, videoInPath, mediaOutPath, srtInPath=None):
         isSrtValid = False
-        
-        
+        print('Starting merge') 
         # Input Audio Validation   
         if not audioInPath or (os.path.exists(audioInPath) == False):
             raise Exception('No file found at : {path}'.format(path=audioInPath))  
@@ -33,9 +32,20 @@ class MediaMerger:
 
         # Creation of the ffmpeg command with the args
         if isSrtValid:
-            ffmpegCommand = 'ffmpeg -y -i {} -i {} -vf subtitles={} {}'.format(audioInPath, videoInPath, srtInPath, mediaOutPath)
+            ffmpegCommand = 'ffmpeg -loglevel panic -y -i {} -i {} -vf subtitles={} -acodec copy -vcodec copy {}'.format(videoInPath, audioInPath, srtInPath, mediaOutPath)
         else:
-            ffmpegCommand = 'ffmpeg -y -i {} -i {} {}'.format(audioInPath, videoInPath, mediaOutPath)
+            ffmpegCommand = 'ffmpeg -loglevel panic -y -i {} -i {} -acodec copy -vcodec copy {}'.format(videoInPath, audioInPath, mediaOutPath)
 
         os.system(ffmpegCommand) 
-        #print(ffmpegCommand)
+
+
+    @staticmethod
+    def stereoToMono(audioInPath, audioOutPath):
+        # Input Audio Validation   
+        if not audioInPath or (os.path.exists(audioInPath) == False):
+            raise Exception('No file found at : {path}'.format(path=audioInPath))
+
+        ffmpegCommand = 'ffmpeg -loglevel panic -y -i {} -filter:a "volume=4" -ac 1 {}'.format(audioInPath, audioOutPath)
+
+        os.system(ffmpegCommand)
+        print('conversion done')

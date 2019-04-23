@@ -1,8 +1,12 @@
+import os
+
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
+from PyQt5 import QtGui
 
 from src.app.application_container import ApplicationContainer
 from src.app.services.service.service_state import ServiceState
 from src.app.services.recorder.recorder import Recorder
+from src.app.services.videoprocessing.virtualcamera.virtual_camera_display_builder import VirtualCameraDisplayBuilder
 
 
 class RecordingController(QObject):
@@ -12,43 +16,41 @@ class RecordingController(QObject):
     signalVirtualCamerasReceived = pyqtSignal(object)
     transcriptionReady = pyqtSignal()
 
-    def __init__(self, parent=None):
+    def __init__(self, virtualCameraFrame, parent=None):
         super(RecordingController, self).__init__(parent)
-
-        self.__recorderState = ServiceState.TERMINATED
 
         self.__recorder = None
         self.__nChannels = 4
-        self.__nChannelFile = 1
         self.__byteDepth = 2
         self.__sampleRate = 48000
 
+        self.__sourcePositions = {}
+
         self.__caughtExceptions = []
 
-        self.__odasServer = ApplicationContainer.odas()
+        self.__virtualCameraFrame = virtualCameraFrame
 
+        self.__odasServer = ApplicationContainer.odas()
         self.__videoProcessor = ApplicationContainer.videoProcessor()
-    
         self.speechToText = ApplicationContainer.speechToText()
         
+
     def startRecording(self, outputFolder, odasPath, micConfigPath, cameraConfigPath, faceDetection):
         if self.__odasServer.state != ServiceState.STOPPED or self.__videoProcessor.state != ServiceState.STOPPED:
             self.signalRecordingState.emit(False)
             self.signalException.emit(Exception('Conference already started'))
             return
 
-        if self.__recorderState == ServiceState.TERMINATED:
+        if not self.__recorder:
             self.__initializeRecorder(outputFolder)
             self.__startVideoProcessor(cameraConfigPath, faceDetection)
             self.__startOdasLive(odasPath, micConfigPath)
 
 
     def stopRecording(self):
-        if self.__recorder and self.__recorderState == ServiceState.RUNNING:
+        if self.__recorder and self.__recorder.state == ServiceState.RUNNING:
             self.__recorder.stop()
             
-        # TODO - call requestTranscription() with the audio file in input.
-
     
     def close(self):
         self.cancelTranscription()
@@ -67,9 +69,11 @@ class RecordingController(QObject):
             self.__odasServer.signalException.connect(self.__exceptionHandling)
 
         elif self.__odasServer.state == ServiceState.RUNNING:
+            self.__odasServer.signalPositionData.connect(self.__positionDataReceived)
             self.__odasServer.signalAudioData.connect(self.__audioDataReceived)
 
         elif self.__odasServer.state == ServiceState.STOPPING:
+            self.__odasServer.signalPositionData.disconnect(self.__positionDataReceived)
             self.__odasServer.signalAudioData.disconnect(self.__audioDataReceived)
 
         elif self.__odasServer.state == ServiceState.STOPPED:
@@ -95,27 +99,27 @@ class RecordingController(QObject):
 
     @pyqtSlot(object)
     def __recorderStateChanged(self, serviceState):
-        self.__recorderState = serviceState
+        self.__recorder.state = serviceState
 
-        if self.__recorderState == ServiceState.STARTING:
+        if self.__recorder.state == ServiceState.STARTING:
             self.__recorder.signalException.connect(self.__exceptionHandling)
 
-        elif self.__recorderState == ServiceState.READY:
+        elif self.__recorder.state == ServiceState.READY:
             if self.__odasServer.state == ServiceState.RUNNING and self.__videoProcessor.state == ServiceState.RUNNING:
                 self.__recorder.startRecording()
 
-        elif self.__recorderState == ServiceState.RUNNING:
+        elif self.__recorder.state == ServiceState.RUNNING:
             self.signalRecordingState.emit(True)
 
-        elif self.__recorderState == ServiceState.STOPPING:
-            self.__stopVideoProcessor()
+        elif self.__recorder.state == ServiceState.STOPPING:
             self.__stopOdasLive()
+            self.__stopVideoProcessor()
 
-        elif self.__recorderState == ServiceState.STOPPED:
+        elif self.__recorder.state == ServiceState.STOPPED:
             if self.__odasServer.state == ServiceState.STOPPED and self.__videoProcessor.state == ServiceState.STOPPED:
                 self.__recorder.terminate()
 
-        elif self.__recorderState == ServiceState.TERMINATED:
+        elif self.__recorder.state == ServiceState.TERMINATED:
             self.__recorder.signalException.disconnect(self.__exceptionHandling)
             self.__recorder.signalStateChanged.disconnect(self.__recorderStateChanged)
             self.__recorder = None
@@ -124,20 +128,32 @@ class RecordingController(QObject):
                 self.__caughtExceptions.clear()
             self.signalRecordingState.emit(False)
 
+            settings = ApplicationContainer.settings()
+            outputFolder = settings.getValue('defaultOutputFolder')
+            wavPath = os.path.join(outputFolder, 'media.wav')
+            self.requestTranscription(wavPath)
+
 
     @pyqtSlot(bytes)
     def __audioDataReceived(self, streamData):
-        if self.__recorder and self.__recorderState == ServiceState.RUNNING:
+        if self.__recorder and self.__recorder.state == ServiceState.RUNNING:
             self.__recorder.mailbox.put(('audio', streamData))
+
+    
+    @pyqtSlot(object)
+    def __positionDataReceived(self, positions):
+        self.__sourcePositions = positions
 
 
     @pyqtSlot(object, object)
     def __virtualCamerasReceived(self, images, virtualCameras):
-        if self.__recorder and self.__recorderState == ServiceState.RUNNING:
-            self.signalVirtualCamerasReceived.emit(images)
+        if self.__recorder and self.__recorder.state == ServiceState.RUNNING:
+            combinedImage = VirtualCameraDisplayBuilder.buildImage(images, self.__virtualCameraFrame.size(),
+                                                        self.__virtualCameraFrame.palette().color(QtGui.QPalette.Background), 10) 
+                                                        
+            self.__recorder.mailbox.put(('video', combinedImage))
 
-            if images:
-                self.__recorder.mailbox.put(('video', images[0]))
+            self.signalVirtualCamerasReceived.emit(combinedImage)
 
 
     @pyqtSlot(Exception)
@@ -162,7 +178,7 @@ class RecordingController(QObject):
 
 
     def __initializeRecorder(self, outputFolder):
-        self.__recorder = Recorder(outputFolder, self.__nChannels, self.__nChannelFile, self.__byteDepth, self.__sampleRate)
+        self.__recorder = Recorder(outputFolder, self.__nChannels, self.__byteDepth, self.__sampleRate)
         self.__recorder.signalStateChanged.connect(self.__recorderStateChanged)
         self.__recorder.initialize()
 
