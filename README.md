@@ -1,6 +1,6 @@
-# RendezVoUS [![Build Status](https://travis-ci.org/introlab/rendezvous.svg?branch=master)](https://travis-ci.org/introlab/rendezvous)
-
 ![LOGO](https://github.com/introlab/rendezvous/blob/master/screenshots/logo.svg)
+
+[![Build Status](https://travis-ci.org/introlab/rendezvous.svg?branch=master)](https://travis-ci.org/introlab/rendezvous)
 
 ## Presentation
 
