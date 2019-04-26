@@ -129,14 +129,12 @@ class Recorder(QObject, Thread):
         try:
             
             self.__audioWriter.openWav(self.__audioStereoPath)
-
+            
             self.state = ServiceState.READY
             self.signalStateChanged.emit(ServiceState.READY)
 
-            print('Recorder started')
-
             while self.state == ServiceState.RUNNING or self.state == ServiceState.READY:
-                
+
                 if self.state == ServiceState.READY:
                     time.sleep(0.5)
                     self.signalStateChanged.emit(ServiceState.READY)
@@ -176,15 +174,16 @@ class Recorder(QObject, Thread):
             self.__videoSource.close()
             self.__audioWriter.closeWav()
 
-            print('Merging audio and video...')
+            if os.path.exists(self.__audioStereoPath) and os.path.exists(self.__videoPath):
+                print('Merging audio and video...')
 
-            # Convert stereo into mono
-            MediaMerger.stereoToMono(self.__audioStereoPath, self.__audioMonoPath)
+                # Convert stereo into mono
+                MediaMerger.stereoToMono(self.__audioStereoPath, self.__audioMonoPath)
 
-            # Merge audio-video-text
-            MediaMerger.mergeFiles(self.__audioMonoPath, self.__videoPath, self.__mediaPath)
+                # Merge audio-video-text
+                MediaMerger.mergeFiles(self.__audioMonoPath, self.__videoPath, self.__mediaPath)
 
-            print('Merge done!')
+                print('Merge done!')
 
             self.signalStateChanged.emit(ServiceState.STOPPED)
             self.state = ServiceState.STOPPED

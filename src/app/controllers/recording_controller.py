@@ -1,4 +1,5 @@
 import os
+import time
 
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 from PyQt5 import QtGui
@@ -65,10 +66,7 @@ class RecordingController(QObject):
     def __odasStateChanged(self, serviceState):
         self.__odasServer.state = serviceState
 
-        if self.__odasServer.state == ServiceState.STARTING:
-            self.__odasServer.signalException.connect(self.__exceptionHandling)
-
-        elif self.__odasServer.state == ServiceState.RUNNING:
+        if self.__odasServer.state == ServiceState.RUNNING:
             self.__odasServer.signalPositionData.connect(self.__positionDataReceived)
             self.__odasServer.signalAudioData.connect(self.__audioDataReceived)
 
@@ -84,9 +82,7 @@ class RecordingController(QObject):
     @pyqtSlot(object)
     def __videoProcessorStateChanged(self, serviceState):
         self.__videoProcessor.state = serviceState
-
         if self.__videoProcessor.state == ServiceState.STARTING:
-            self.__videoProcessor.signalException.connect(self.__exceptionHandling)
             self.__videoProcessor.signalVirtualCameras.connect(self.__virtualCamerasReceived)
 
         elif self.__videoProcessor.state == ServiceState.STOPPING:
@@ -114,24 +110,35 @@ class RecordingController(QObject):
         elif self.__recorder.state == ServiceState.STOPPING:
             self.__stopOdasLive()
             self.__stopVideoProcessor()
+            
+            # waiting that the recorder is stopped.
+            while self.__recorder.state != serviceState.STOPPED:
+                time.sleep(0.0001)
 
         elif self.__recorder.state == ServiceState.STOPPED:
-            if self.__odasServer.state == ServiceState.STOPPED and self.__videoProcessor.state == ServiceState.STOPPED:
+            # waiting that all services are stopped.
+            if self.__odasServer.state is ServiceState.STOPPED and self.__videoProcessor.state is ServiceState.STOPPED:
                 self.__recorder.terminate()
 
         elif self.__recorder.state == ServiceState.TERMINATED:
             self.__recorder.signalException.disconnect(self.__exceptionHandling)
             self.__recorder.signalStateChanged.disconnect(self.__recorderStateChanged)
             self.__recorder = None
-            for e in self.__caughtExceptions:
-                self.signalException.emit(e)
-                self.__caughtExceptions.clear()
-            self.signalRecordingState.emit(False)
 
-            settings = ApplicationContainer.settings()
-            outputFolder = settings.getValue('defaultOutputFolder')
-            wavPath = os.path.join(outputFolder, 'media.wav')
-            self.requestTranscription(wavPath)
+            if self.__caughtExceptions:
+                
+                for e in self.__caughtExceptions:
+                    self.signalException.emit(e)
+
+                self.__caughtExceptions.clear()            
+            
+            else:
+                settings = ApplicationContainer.settings()
+                outputFolder = settings.getValue('defaultOutputFolder')
+                wavPath = os.path.join(outputFolder, 'media.wav')
+                self.requestTranscription(wavPath)
+            
+            self.signalRecordingState.emit(False)
 
 
     @pyqtSlot(bytes)
@@ -165,6 +172,7 @@ class RecordingController(QObject):
     def __startVideoProcessor(self, cameraConfigPath, faceDetection):
         if self.__videoProcessor.state == ServiceState.STOPPED:
             self.__videoProcessor.signalStateChanged.connect(self.__videoProcessorStateChanged)
+            self.__videoProcessor.signalException.connect(self.__exceptionHandling)
             self.__videoProcessor.start(cameraConfigPath, faceDetection)
         
 
@@ -174,7 +182,12 @@ class RecordingController(QObject):
 
     def __startOdasLive(self, odasPath, micConfigPath):
         self.__odasServer.signalStateChanged.connect(self.__odasStateChanged)
-        self.__odasServer.startOdasLive(odasPath, micConfigPath)  
+        self.__odasServer.signalException.connect(self.__exceptionHandling)
+
+        if not self.__caughtExceptions and self.__odasServer.state is ServiceState.STOPPED:
+            self.__odasServer.startOdasLive(odasPath, micConfigPath)
+        else:
+            self.__odasServer.stopOdasLive()
 
 
     def __initializeRecorder(self, outputFolder):
