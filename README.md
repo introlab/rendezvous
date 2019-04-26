@@ -4,9 +4,9 @@
 
 ## Presentation
 
-![Top_View](https://github.com/introlab/rendezvous/blob/master/screenshots/logo.svg)
+![Top_View](https://github.com/introlab/rendezvous/blob/master/screenshots/topview.jpg)
 
-![Side_View](https://github.com/introlab/rendezvous/blob/master/screenshots/sideview.svg)
+![Side_View](https://github.com/introlab/rendezvous/blob/master/screenshots/sideview.jpg)
 
 ## Installation
 
