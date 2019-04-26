@@ -4,6 +4,10 @@
 
 ## Presentation
 
+![Top_View](https://github.com/introlab/rendezvous/blob/master/screenshots/topview.svg)
+
+![Side_View](https://github.com/introlab/rendezvous/blob/master/screenshots/sideview.svg)
+
 ## Installation
 
 1- Get the repository.
