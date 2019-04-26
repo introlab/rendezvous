@@ -4,7 +4,7 @@
 
 ## Presentation
 
-![Top_View](https://github.com/introlab/rendezvous/blob/master/screenshots/topview.svg)
+![Top_View](https://github.com/introlab/rendezvous/blob/master/screenshots/logo.svg)
 
 ![Side_View](https://github.com/introlab/rendezvous/blob/master/screenshots/sideview.svg)
 
