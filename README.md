@@ -4,7 +4,7 @@
 
 ## Presentation
 
-![LOGO](https://github.com/introlab/rendezvous/blob/master/screenshots/montage.jpg)
+![](https://github.com/introlab/rendezvous/blob/master/screenshots/montage.jpg)
 
 ## Installation
 
