@@ -80,6 +80,7 @@
       $ make clean_dewarping_lib
 
 13 - If you add dependencies run the following command to add your new dependencies to requirements.txt:
+     Note: If adding dependencies to the jetson, add them manually to requirements-jetson.txt (no pip freeze).
     
     $ pip freeze > requirements.txt
 
