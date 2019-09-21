@@ -10,6 +10,7 @@ from src.app.components.side_bar import SideBar
 from src.app.views.conference import Conference
 from src.app.views.transcription import Transcription
 from src.app.views.playback import Playback
+from src.app.views.web_view import WebView
 from src.app.views.change_settings import ChangeSettings
 from src.app.views.audio_processing import AudioProcessing
 from src.app.views.recording import Recording
@@ -56,6 +57,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.sideBar.addItem('Playback')
         self.views.addWidget(self.playbackView)
 
+        self.webView = WebView(parent=self)   
+        self.sideBar.addItem('Web View')
+        self.views.addWidget(self.webView)
+
         self.settingsView = ChangeSettings(parent=self)   
         self.sideBar.addItem('Settings')
         self.views.addWidget(self.settingsView)
@@ -69,6 +74,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.audioProcessingView.closeEvent(event)
             self.transcriptionView.closeEvent(event)
             self.playbackView.closeEvent(event)
+            self.webView.closeEvent(event)
             self.settingsView.closeEvent(event)
             event.accept()
 
