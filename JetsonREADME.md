@@ -4,9 +4,55 @@
 Install Jetpack 3.3 using the following guide:
     https://developer.nvidia.com/embedded/dlc/jetpack-install-guide-3_3
 
-## Project and dependencies
-*Note: Keep the same console for the whole process and do everything in order.
+## Hardware: Install the CSI camera driver
+This is only meant for users who already flashed the standard L4T_R28.2.1/L4T_R28.2 (Jetpack v3.3) package for TX2.
+In this procedure, the existing kernel Image and the device tree blob (dtb) in the Jetson
+board will be replaced by the pre-built binaries given with the Release package; Existing
+Root Filesystem in the Jetson board will be preserved by this procedure. 
 
+To complete this procedure, you will need the e-CAM131_CUTX2_JETSON_TX2_L4T_28.2.1_18-SEP-2018_R01.tar.gz 
+found on the SC Card supplied with the camera kit or you can download it at 
+this address: https://www.e-consystems.com/13mp-nvidia-jetson-tx2-camera-board.asp
+
+Setup the environment in a terminal window in Jetson, copy the release package to the
+board and extract it using the following commands from the Jetson board.
+
+	$ mkdir top_dir/ -p 
+	$ export TOP_DIR=<absolute path to>/top_dir  
+	$ export RELEASE_PACK_DIR=<absolute path to>/top_dir/e-CAM131_CUTX2_JETSON_TX2_L4T_28.2.1_18-SEP-2018_R01 
+	$ cp e-CAM131_CUTX2_JETSON_TX2_L4T_28.2.1_18-SEP-2018_R01.tar.gz $TOP_DIR/ 
+	$ cd $TOP_DIR 
+	$ tar -xaf e-CAM131_CUTX2_JETSON_TX2_L4T_28.2.1_18-SEP-2018_R01.tar.gz
+
+Now replace the existing kernel Image with e-con’s pre-built Image and related driver
+modules given with the Release package using the commands below:
+
+	$ sudo cp $RELEASE_PACK_DIR/Kernel/Binaries/Image /boot/Image -f
+
+Copy the e-CAM131_CUTX2 Camera driver and other driver modules given with the release
+package using the commands below:
+	 
+	$ sudo tar xjpmf $RELEASE_PACK_DIR/Kernel/Binaries/kernel_supplements.tar.bz2 -C / 
+	$ sudo cp $RELEASE_PACK_DIR/Rootfs/modules /etc/modules -f
+	 
+Flash the Signed DTB to necessary eMMC partition (mmcblk0p26).
+
+	$ sudo dd if=$RELEASE_PACK_DIR/Kernel/Binaries/tegra186-quill-p3310-1000-c03-00-base_sigheader.dtb.encrypt of=/dev/mmcblk0p26 bs=1M
+
+Now reboot the Jetson development kit. The Jetson TX2 board will now be running the latest
+binaries. The module drivers for e-CAM131_CUTX2 will be loaded automatically in the Jetson during
+booting. Check the presence of video node using the following command: 
+
+	$ ls /dev/video0
+
+You can test the camera with this command:
+
+	$ gst-launch-1.0 v4l2src device=/dev/video0 ! "video/x-raw, format=(string)UYVY, width=(int)3840,height=(int)2160" ! nvvidconv ! "video/x-raw(memory:NVMM), format=(string)I420, width=(int)1920,height=(int)1080" ! nvoverlaysink overlay-w=1920 overlay-h=1080 sync=false
+	
+	
+## Project and dependencies
+*Note: Keep the same console for the whole process and do everything in order. 
+ 
 ### General dependencies
 Run the following commands:
 
