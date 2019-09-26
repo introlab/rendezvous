@@ -64,7 +64,7 @@ class VideoStream:
     def printCameraSettings(self):
         if self.camera is None:
             print('Stream must be initiazed to print the camera settings')
-        else:
+        else: 
             print('Image width = {width}'.format(width=self.camera.get(cv2.CAP_PROP_FRAME_WIDTH)))
             print('Image height = {height}'.format(height=self.camera.get(cv2.CAP_PROP_FRAME_HEIGHT)))
             print('Codec = {codec}'.format(codec=self.__decode_fourcc(self.camera.get(cv2.CAP_PROP_FOURCC))))
@@ -74,14 +74,14 @@ class VideoStream:
 
     def __initalizeCamera(self):
         self.camera = cv2.VideoCapture(self.config.cameraPort)
-        self.camera.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(self.config.fourcc[0],
-                                                                    self.config.fourcc[1],
-                                                                    self.config.fourcc[2],
-                                                                    self.config.fourcc[3]))
-        self.camera.set(cv2.CAP_PROP_FRAME_WIDTH, self.config.imageWidth)
-        self.camera.set(cv2.CAP_PROP_FRAME_HEIGHT, self.config.imageHeight)
-        self.camera.set(cv2.CAP_PROP_FPS, self.config.fps)
-        self.camera.set(cv2.CAP_PROP_BUFFERSIZE, self.config.bufferSize)
+        #self.camera.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(self.config.fourcc[0],
+        #                                                            self.config.fourcc[1],
+        #                                                            self.config.fourcc[2],
+        #                                                            self.config.fourcc[3]))
+        #self.camera.set(cv2.CAP_PROP_FRAME_WIDTH, self.config.imageWidth)
+        #self.camera.set(cv2.CAP_PROP_FRAME_HEIGHT, self.config.imageHeight)
+        #self.camera.set(cv2.CAP_PROP_FPS, self.config.fps)
+        #self.camera.set(cv2.CAP_PROP_BUFFERSIZE, self.config.bufferSize)
 
 
     # Return 4 chars reprenting codec
