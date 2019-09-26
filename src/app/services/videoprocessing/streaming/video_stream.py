@@ -74,14 +74,14 @@ class VideoStream:
 
     def __initalizeCamera(self):
         self.camera = cv2.VideoCapture(self.config.cameraPort)
-        #self.camera.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(self.config.fourcc[0],
-        #                                                            self.config.fourcc[1],
-        #                                                            self.config.fourcc[2],
-        #                                                            self.config.fourcc[3]))
-        #self.camera.set(cv2.CAP_PROP_FRAME_WIDTH, self.config.imageWidth)
-        #self.camera.set(cv2.CAP_PROP_FRAME_HEIGHT, self.config.imageHeight)
-        #self.camera.set(cv2.CAP_PROP_FPS, self.config.fps)
-        #self.camera.set(cv2.CAP_PROP_BUFFERSIZE, self.config.bufferSize)
+        self.camera.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(self.config.fourcc[0],
+                                                                    self.config.fourcc[1],
+                                                                    self.config.fourcc[2],
+                                                                    self.config.fourcc[3]))
+        self.camera.set(cv2.CAP_PROP_FRAME_WIDTH, self.config.imageWidth)
+        self.camera.set(cv2.CAP_PROP_FRAME_HEIGHT, self.config.imageHeight)
+        self.camera.set(cv2.CAP_PROP_FPS, self.config.fps)
+        self.camera.set(cv2.CAP_PROP_BUFFERSIZE, self.config.bufferSize)
 
 
     # Return 4 chars reprenting codec

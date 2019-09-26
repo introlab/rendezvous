@@ -17,7 +17,7 @@
 
     "Camera":
     {
-        "Port": 0,
+        "Port": "v4l2src device=/dev/video0 ! video/x-raw,format=UYVY,width=640,height=480 ! videoconvert ! video/x-raw, format=BGR ! appsink",
         "FPS": 20,
         "Fourcc": "UYVY",
         "BufferSize": 2
