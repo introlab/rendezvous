@@ -96,9 +96,6 @@ Install the requirements:
     $ pip3 install -r requirements-jetson.txt
 
 ### OpenCV 3.4
-    $ mkdir dev/lib
-    $ chmod +x scripts/install_opencv34.sh
-    $ ./scripts/install_opencv34.sh
 
 In the file /usr/local/cuda/include cuda_gl_interop.h, modify the following lines (add the comments).
 
@@ -115,9 +112,15 @@ Create the following link:
     $ cd /usr/lib/aarch64-linux-gnu/
     $ sudo ln -sf tegra/libGL.so libGL.so
 
+Run the script
+
+    $ mkdir dev/lib
+    $ chmod +x scripts/install_opencv34.sh
+    $ ./scripts/install_opencv34.sh
+
 Add a link to the opencv library in the project env :
 
-	$ mv /usr/local/lib/python3.5 dist-packages cv2.cpython-35m-aarch64-linux-gnu.so /usr/local/lib/python3.5/dist-packages/cv2.so
+	$ mv /usr/local/lib/python3.5/dist-packages/cv2.cpython-35m-aarch64-linux-gnu.so /usr/local/lib/python3.5/dist-packages/cv2.so
 	$ ln -s /usr/local/lib/python3.5/dist-packages/cv2.so /home/nvidia/dev/workspace/rendezvous/env/lib/python3.5/site-packages/cv2.so
 
 ### ODAS
@@ -202,7 +205,7 @@ Install Yolov3 for python in the project env:
 
     $ cd ~/dev/workspace/rendezvous
     $ git clone https://github.com/madhawav/YOLO3-4-Py.git
-    $ cd Yolo3-4-Py.git
+    $ cd YOLO3-4-Py
     $ export CUDA=1
     $ export OPENCV=1 
     $ pip3 install .
