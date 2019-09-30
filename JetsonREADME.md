@@ -133,7 +133,7 @@ Install the following dependencies:
 
 Build Odas:
 
-    $ cd ~/dev/workspace
+    $ cd ~/dev/lib
     $ git clone https://github.com/introlab/odas.git
     $ cd odas
     $ mkdir build
