@@ -32,6 +32,8 @@ class RecordingController(QObject):
         self.__virtualCameraFrame = virtualCameraFrame
 
         self.__odasServer = ApplicationContainer.odas()
+        self.__odasServer.signalAudioData.connect(self.__audioDataReceived)
+        
         self.__videoProcessor = ApplicationContainer.videoProcessor()
         self.speechToText = ApplicationContainer.speechToText()
         
@@ -68,11 +70,9 @@ class RecordingController(QObject):
 
         if self.__odasServer.state == ServiceState.RUNNING:
             self.__odasServer.signalPositionData.connect(self.__positionDataReceived)
-            self.__odasServer.signalAudioData.connect(self.__audioDataReceived)
 
         elif self.__odasServer.state == ServiceState.STOPPING:
             self.__odasServer.signalPositionData.disconnect(self.__positionDataReceived)
-            self.__odasServer.signalAudioData.disconnect(self.__audioDataReceived)
 
         elif self.__odasServer.state == ServiceState.STOPPED:
             self.__odasServer.signalException.disconnect(self.__exceptionHandling)

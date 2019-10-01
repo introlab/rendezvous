@@ -141,6 +141,7 @@ class Odas(QObject, Thread):
                 worker.signalPositions.disconnect(self.positionsReceived)
                 worker.signalConnectionClosed.disconnect(self.workerTerminated)
                 worker.stop()
+                worker.join()
             
             self.__workers = []
                 
