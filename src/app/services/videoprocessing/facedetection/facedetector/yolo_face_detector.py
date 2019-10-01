@@ -3,10 +3,8 @@ from subprocess import check_output
 from sys import executable
 from pathlib import Path
 
-# If pydarknet is installed, import Detector and Image.
-reqs = check_output([executable, '-m', 'pip', 'freeze'])
-installed_packages = [r.decode().split('==')[0] for r in reqs.split()]
-if 'pydarknet' in installed_packages:
+from importlib import find_loader
+if find_loader('pydarknet'):
     from pydarknet import Detector, Image
 
 from .iface_detector import IFaceDetector
