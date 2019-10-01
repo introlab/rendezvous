@@ -1,7 +1,11 @@
 import os
+from subprocess import check_output
+from sys import executable
 from pathlib import Path
 
-from pydarknet import Detector, Image
+from importlib import find_loader
+if find_loader('pydarknet'):
+    from pydarknet import Detector, Image
 
 from .iface_detector import IFaceDetector
 from src.utils.rect import Rect
