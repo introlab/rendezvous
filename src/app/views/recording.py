@@ -47,7 +47,7 @@ class Recording(QWidget, Ui_Recording):
         QApplication.processEvents()
 
         if self.btnStartStopRecord.text() == BtnRecordLabels.START_RECORDING.value:
-            self.__recordingController.startRecording(ApplicationContainer.settings().getValue('outputFolder'),
+            self.__recordingController.startRecording(ApplicationContainer.settings().getValue('defaultOutputFolder'),
                                                       ApplicationContainer.settings().getValue('odasPath'),
                                                       ApplicationContainer.settings().getValue('micConfigPath'),
                                                       ApplicationContainer.settings().getValue('cameraConfigPath'),
