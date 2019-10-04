@@ -171,14 +171,14 @@ class VideoProcessor(QObject):
                 success, frame = self.videoStream.readFrame()
                 readTime = time.perf_counter() - currentTime
 
-                if success and readTime < frameTimeModifiedTarget / 2:
+                if success and readTime < frameTimeModifiedTarget:
 
                     # By default the fisheye image is loaded in the fisheyeBufferId, 
                     # for face detection it's loaded to fdFisheyeBufferId.
                     currentFisheyeBufferId = fisheyeBufferId
 
                     # Create all buffers required for face detection dewarping
-                    if not fdBufferQueue and readTime < frameTimeModifiedTarget / 4 and faceDetection.aquireLockOnce(False) :
+                    if not fdBufferQueue and readTime < frameTimeModifiedTarget and faceDetection.aquireLockOnce(False) :
                         faceDetection.releaseLockOnce()
                         currentFisheyeBufferId = fdFisheyeBufferId
                         for dewarpIndex in range(0, dewarpCount):
@@ -189,11 +189,11 @@ class VideoProcessor(QObject):
 
                     loadTime = time.perf_counter() - currentTime
 
-                    if loadTime < (3 * frameTimeModifiedTarget) / 4:
+                    if loadTime < (frameTimeModifiedTarget):
                         vcBuffers = []
 
                         # Queue next dewarping for face detection (only one dewarping per frame)
-                        if fdBufferQueue and readTime < frameTimeModifiedTarget / 4:
+                        if fdBufferQueue and readTime < frameTimeModifiedTarget:
                             fdBuffer, dewarpIndex = fdBufferQueue[0]
                             # Face detection doesn't need te most recent image, it needs to use the same image for all indexes
                             dewarper.queueDewarping(fdFisheyeBufferId, fdBufferId, fdDewarpingParameters[dewarpIndex], fdBuffer)
