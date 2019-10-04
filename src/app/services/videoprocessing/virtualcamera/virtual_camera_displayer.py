@@ -25,7 +25,6 @@ class VirtualCameraDisplayer:
 
     def updateDisplay(self, image):
         if self.isDisplaying:
-            print("update display")
             self.image = image
             self.virtualCameraFrame.update()
 
