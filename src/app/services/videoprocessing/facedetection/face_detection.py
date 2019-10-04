@@ -46,11 +46,13 @@ class FaceDetection(GenericProcess):
 
                 image = None
                 try:
+                    print("try get image")
                     dewarpIndex, image = self.imageQueue.get_nowait()
                     print("get image queue")
                     self.aquireLockOnce()
                     print("i have money")
                 except queue.Empty:
+                    print("except get image")
                     self.releaseLockOnce()
                     time.sleep(0.01)
 
@@ -71,6 +73,8 @@ class FaceDetection(GenericProcess):
             self.exceptionQueue.put(e)
 
         finally:
+            self.emptyQueue(self.facesQueue)
+            self.emptyQueue(self.imageQueue)
             self.releaseLockOnce()
             print('Face detection terminated')
 
