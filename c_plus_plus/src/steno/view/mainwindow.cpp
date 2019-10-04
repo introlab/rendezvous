@@ -7,22 +7,22 @@
 
 #include "view/components/sidebar.h"
 #include "view/views/abstract_view.h"
-#include "view/views/conference.h"
-#include "view/views/recording.h"
-#include "view/views/playback.h"
-#include "view/views/transcription.h"
-#include "view/views/settings.h"
+#include "view/views/conference_view.h"
+#include "view/views/recording_view.h"
+#include "view/views/playback_view.h"
+#include "view/views/transcription_view.h"
+#include "view/views/settings_view.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , sideBar(new View::SideBar)
     , views(new QStackedWidget)
-    , conferenceView(new View::Conference)
-    , recordingView(new View::Recording)
-    , playbackView(new View::Playback)
-    , transcriptionView(new View::Transcription)
-    , settingsView(new View::Settings)
+    , conferenceView(new View::ConferenceView)
+    , recordingView(new View::RecordingView)
+    , playbackView(new View::PlaybackView)
+    , transcriptionView(new View::TranscriptionView)
+    , settingsView(new View::SettingsView)
 {
     ui->setupUi(this);
 

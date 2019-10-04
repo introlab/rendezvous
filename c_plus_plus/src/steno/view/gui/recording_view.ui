@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Recording</class>
- <widget class="QWidget" name="Recording">
+ <class>RecordingView</class>
+ <widget class="QWidget" name="RecordingView">
   <property name="geometry">
    <rect>
     <x>0</x>

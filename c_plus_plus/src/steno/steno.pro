@@ -1,6 +1,6 @@
 QT       += core gui
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets multimedia
 
 CONFIG += c++11
 
@@ -19,29 +19,29 @@ SOURCES += \
     main.cpp \
     view/mainwindow.cpp \
     view/components/sidebar.cpp \
-    view/views/conference.cpp \
-    view/views/playback.cpp \
-    view/views/recording.cpp \
-    view/views/settings.cpp \
-    view/views/transcription.cpp
+    view/views/conference_view.cpp \
+    view/views/playback_view.cpp \
+    view/views/recording_view.cpp \
+    view/views/settings_view.cpp \
+    view/views/transcription_view.cpp
 
 HEADERS += \
     view/mainwindow.h \
     view/components/sidebar.h \
     view/views/abstract_view.h \
-    view/views/conference.h \
-    view/views/playback.h \
-    view/views/recording.h \
-    view/views/settings.h \
-    view/views/transcription.h
+    view/views/conference_view.h \
+    view/views/playback_view.h \
+    view/views/recording_view.h \
+    view/views/settings_view.h \
+    view/views/transcription_view.h
 
 FORMS += \
-    view/gui/conference.ui \
+    view/gui/conference_view.ui \
     view/gui/mainwindow.ui \
-    view/gui/playback.ui \
-    view/gui/recording.ui \
-    view/gui/settings.ui \
-    view/gui/transcription.ui
+    view/gui/playback_view.ui \
+    view/gui/recording_view.ui \
+    view/gui/settings_view.ui \
+    view/gui/transcription_view.ui
 
 DISTFILES += \
     view/stylesheets/globalStylesheet.qss
