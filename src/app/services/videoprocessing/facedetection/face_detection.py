@@ -60,10 +60,11 @@ class FaceDetection(GenericProcess):
 
                 if image is not None:
                     print("try yolo")
+                    print(dewarpIndex)
+                    print(len(image))
                     imageFaces = faceDetector.detectFaces(image)
                     try:
                         print("put yolo image in queue")
-                        print(dewarpIndex)
                         self.facesQueue.put_nowait((dewarpIndex, imageFaces))
                     except Exception as e:
                         time.sleep(0.01)
