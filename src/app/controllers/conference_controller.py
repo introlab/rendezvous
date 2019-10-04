@@ -30,6 +30,8 @@ class ConferenceController(QObject):
         self.__caughtVideoExceptions = []
         self.__positions = {}
 
+        self.__videoProcessor.signalVirtualCameras.connect(self.__virtualCamerasReceived)
+
 
     def startOdasLive(self, odasPath, micConfigPath):
         if self.__odasServer.state != ServiceState.STOPPED:
@@ -105,13 +107,10 @@ class ConferenceController(QObject):
 
         if self.__videoProcessor.state == ServiceState.STARTING:
             self.__videoProcessor.signalException.connect(self.__videoProcessorExceptionHandling)
-            self.__videoProcessor.signalVirtualCameras.connect(self.__virtualCamerasReceived)
+            
 
         if self.__videoProcessor.state == ServiceState.RUNNING:
             self.signalVideoProcessorState.emit(True)
-
-        elif self.__videoProcessor.state == ServiceState.STOPPING:
-            self.__videoProcessor.signalVirtualCameras.disconnect(self.__virtualCamerasReceived)
 
         elif self.__videoProcessor.state == ServiceState.STOPPED:
             self.__videoProcessor.signalException.disconnect(self.__videoProcessorExceptionHandling)
@@ -130,6 +129,9 @@ class ConferenceController(QObject):
 
     @pyqtSlot(object, object)
     def __virtualCamerasReceived(self, images, virtualCameras):
+        if self.__videoProcessor.state != ServiceState.RUNNING:
+            return
+
         combinedImage = VirtualCameraDisplayBuilder.buildImage(images, (800, 600),
                                                                 self.__virtualCameraFrame.palette().color(QtGui.QPalette.Background), 10)
 
