@@ -52,6 +52,8 @@ class FaceDetection(GenericProcess):
                     self.releaseLockOnce()
                     time.sleep(0.01)
 
+                print("allo")
+
                 if image is not None:
                     imageFaces = faceDetector.detectFaces(image)
                     self.facesQueue.put((dewarpIndex, imageFaces))
