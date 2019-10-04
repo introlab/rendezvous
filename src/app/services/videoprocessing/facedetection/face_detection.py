@@ -75,6 +75,7 @@ class FaceDetection(GenericProcess):
         finally:
             self.emptyQueue(self.facesQueue)
             self.emptyQueue(self.imageQueue)
+            self.emptyQueue(self.keepAliveQueue)
             self.releaseLockOnce()
             print('Face detection terminated')
 
