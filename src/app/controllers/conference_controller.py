@@ -31,6 +31,8 @@ class ConferenceController(QObject):
         self.__positions = {}
 
         self.__videoProcessor.signalVirtualCameras.connect(self.__virtualCamerasReceived)
+        self.__videoProcessor.signalStateChanged.connect(self.__videoProcessorStateChanged)
+        self.__videoProcessor.signalException.connect(self.__videoProcessorExceptionHandling)
 
 
     def startOdasLive(self, odasPath, micConfigPath):
@@ -54,7 +56,6 @@ class ConferenceController(QObject):
             return
 
         if self.__videoProcessor.state == ServiceState.STOPPED:
-            self.__videoProcessor.signalStateChanged.connect(self.__videoProcessorStateChanged)
             self.__videoProcessor.start(cameraConfigPath, faceDetectionMethod)
 
 
@@ -105,16 +106,10 @@ class ConferenceController(QObject):
     def __videoProcessorStateChanged(self, serviceState):
         self.__videoProcessor.state = serviceState
 
-        if self.__videoProcessor.state == ServiceState.STARTING:
-            self.__videoProcessor.signalException.connect(self.__videoProcessorExceptionHandling)
-            
-
         if self.__videoProcessor.state == ServiceState.RUNNING:
             self.signalVideoProcessorState.emit(True)
 
         elif self.__videoProcessor.state == ServiceState.STOPPED:
-            self.__videoProcessor.signalException.disconnect(self.__videoProcessorExceptionHandling)
-            self.__videoProcessor.signalStateChanged.disconnect(self.__videoProcessorStateChanged)
             for e in self.__caughtVideoExceptions:
                 self.signalException.emit(e)
                 self.__caughtVideoExceptions.clear()
@@ -147,5 +142,6 @@ class ConferenceController(QObject):
     @pyqtSlot(Exception)
     def __videoProcessorExceptionHandling(self, e):
         self.__caughtVideoExceptions.append(e)
-        self.stopVideoProcessor()
+        if __videoProcessor.state == ServiceState.RUNNING:
+            self.stopVideoProcessor()
 
