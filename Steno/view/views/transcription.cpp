@@ -5,7 +5,7 @@ namespace View
 {
 
 Transcription::Transcription(QWidget *parent)
-    : QWidget(parent)
+    : AbstractView("Transcription", parent)
     , ui(new Ui::Transcription)
 {
     ui->setupUi(this);

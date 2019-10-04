@@ -5,7 +5,7 @@ namespace View
 {
 
 Recording::Recording(QWidget *parent)
-    : QWidget(parent)
+    : AbstractView("Recording", parent)
     , ui(new Ui::Recording)
 {
     ui->setupUi(this);

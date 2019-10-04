@@ -5,7 +5,7 @@ namespace View
 {
 
 Conference::Conference(QWidget *parent)
-    : QWidget(parent)
+    : AbstractView("Conference", parent)
     , ui(new Ui::Conference)
 {
     ui->setupUi(this);

@@ -1,17 +1,15 @@
 #ifndef PLAYBACK_H
 #define PLAYBACK_H
 
-#include <QWidget>
+#include "view/views/abstract_view.h"
 
 namespace Ui { class Playback; }
 
 namespace View
 {
 
-class Playback : public QWidget
+class Playback : public AbstractView
 {
-    Q_OBJECT
-
     public:
         explicit Playback(QWidget *parent = nullptr);
         virtual ~Playback();

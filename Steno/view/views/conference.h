@@ -1,17 +1,15 @@
 #ifndef CONFERENCE_H
 #define CONFERENCE_H
 
-#include <QWidget>
+#include "view/views/abstract_view.h"
 
 namespace Ui { class Conference; }
 
 namespace View
 {
 
-class Conference : public QWidget
+class Conference : public AbstractView
 {
-    Q_OBJECT
-
     public:
         explicit Conference(QWidget *parent = nullptr);
         virtual ~Conference();

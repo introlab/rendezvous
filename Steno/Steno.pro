@@ -19,7 +19,6 @@ SOURCES += \
     main.cpp \
     view/mainwindow.cpp \
     view/components/sidebar.cpp \
-    view/views/audio_processing.cpp \
     view/views/conference.cpp \
     view/views/playback.cpp \
     view/views/recording.cpp \
@@ -29,7 +28,7 @@ SOURCES += \
 HEADERS += \
     view/mainwindow.h \
     view/components/sidebar.h \
-    view/views/audio_processing.h \
+    view/views/abstract_view.h \
     view/views/conference.h \
     view/views/playback.h \
     view/views/recording.h \
@@ -37,7 +36,6 @@ HEADERS += \
     view/views/transcription.h
 
 FORMS += \
-    view/gui/audio_processing.ui \
     view/gui/conference.ui \
     view/gui/mainwindow.ui \
     view/gui/playback.ui \

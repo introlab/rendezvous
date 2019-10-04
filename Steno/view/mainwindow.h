@@ -7,13 +7,8 @@ class QStackedWidget;
 
 namespace Ui { class MainWindow; }
 
-namespace View {
-                 class SideBar;
-                 class Conference;
-                 class Recording;
-                 class AudioProcessing;
-                 class Transcription;
-                 class Settings;}
+namespace View { class SideBar;
+                 class AbstractView; }
 
 class MainWindow : public QMainWindow
 {
@@ -24,17 +19,16 @@ class MainWindow : public QMainWindow
         virtual ~MainWindow();
 
     private:
-        void addView(const QString &name, QWidget *view);
+        void addView(View::AbstractView *view);
 
         Ui::MainWindow *ui;
-        QStackedWidget *views;
         View::SideBar *sideBar;
-
-        View::Conference *conferenceView;
-        View::Recording *recordingView;
-        View::AudioProcessing *audioProcessingView;
-        View::Transcription *transcriptionView;
-        View::Settings *settingsView;
+        QStackedWidget *views;
+        View::AbstractView *conferenceView;
+        View::AbstractView *recordingView;
+        View::AbstractView *playbackView;
+        View::AbstractView *transcriptionView;
+        View::AbstractView *settingsView;
 };
 
 #endif // MAINWINDOW_H

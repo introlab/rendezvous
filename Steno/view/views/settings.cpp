@@ -5,7 +5,7 @@ namespace View
 {
 
 Settings::Settings(QWidget *parent)
-    : QWidget(parent)
+    : AbstractView("Settings", parent)
     , ui(new Ui::Settings)
 {
     ui->setupUi(this);

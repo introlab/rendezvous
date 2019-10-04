@@ -5,7 +5,7 @@ namespace View
 {
 
 Playback::Playback(QWidget *parent)
-    : QWidget(parent)
+    : AbstractView("Playback", parent)
     , ui(new Ui::Playback)
 {
     ui->setupUi(this);

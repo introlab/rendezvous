@@ -1,17 +1,15 @@
 #ifndef TRANSCRIPTION_H
 #define TRANSCRIPTION_H
 
-#include <QWidget>
+#include "view/views/abstract_view.h"
 
 namespace Ui { class Transcription; }
 
 namespace View
 {
 
-class Transcription : public QWidget
+class Transcription : public AbstractView
 {
-    Q_OBJECT
-
     public:
         explicit Transcription(QWidget *parent = nullptr);
         virtual ~Transcription();

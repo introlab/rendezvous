@@ -1,17 +1,15 @@
 #ifndef RECORDING_H
 #define RECORDING_H
 
-#include <QWidget>
+#include "view/views/abstract_view.h"
 
 namespace Ui { class Recording; }
 
 namespace View
 {
 
-class Recording : public QWidget
+class Recording : public AbstractView
 {
-    Q_OBJECT
-
     public:
         explicit Recording(QWidget *parent = nullptr);
         virtual ~Recording();
