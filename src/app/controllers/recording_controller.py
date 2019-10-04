@@ -159,6 +159,9 @@ class RecordingController(QObject):
 
     @pyqtSlot(Exception)
     def __exceptionHandling(self, e):
+        if self.__recorder == None:
+            return
+        
         self.__recorder.stop()
         self.__caughtExceptions.append(e)
 
