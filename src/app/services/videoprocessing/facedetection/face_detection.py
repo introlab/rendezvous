@@ -47,7 +47,9 @@ class FaceDetection(GenericProcess):
                 image = None
                 try:
                     dewarpIndex, image = self.imageQueue.get_nowait()
+                    print("get image queue")
                     self.aquireLockOnce()
+                    print("i have money")
                 except queue.Empty:
                     self.releaseLockOnce()
                     time.sleep(0.01)
