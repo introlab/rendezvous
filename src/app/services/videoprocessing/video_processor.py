@@ -258,19 +258,16 @@ class VideoProcessor(QObject):
                 dewarper.cleanUp()
                 
             self.virtualCameraManager.clear()
-        
-            self.signalStateChanged.emit(ServiceState.STOPPED)
-            self.state = ServiceState.STOPPED
-
             self.destroy()
 
+            self.signalStateChanged.emit(ServiceState.STOPPED)
+            self.state = ServiceState.STOPPED
             print('Video processor terminated')
 
 
     def destroy(self):
         if self.videoStream:
             self.videoStream.destroy()
-            self.videoStream = None
             self.isVideoStreamInitialized = False
 
 
