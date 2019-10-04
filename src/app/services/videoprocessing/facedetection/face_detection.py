@@ -60,7 +60,10 @@ class FaceDetection(GenericProcess):
 
                 if image is not None:
                     imageFaces = faceDetector.detectFaces(image)
-                    self.facesQueue.put((dewarpIndex, imageFaces), block=False)
+                    try:
+                        self.facesQueue.put_nowait((dewarpIndex, imageFaces))
+                    except Exception as e:
+                        time.sleep(0.01)
                 
                 try:
                     self.keepAliveQueue.get_nowait()
