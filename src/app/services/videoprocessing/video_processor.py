@@ -34,7 +34,6 @@ class VideoProcessor(QObject):
         self.virtualCameraManager = VirtualCameraManager(0, np.pi / 2)
         self.state = ServiceState.STOPPED
         self.fpsTarget = 15
-        self.cameraConfig = None
         self.videoStream = None
         self.isVideoStreamInitialized = False
 
@@ -46,13 +45,6 @@ class VideoProcessor(QObject):
         self.signalStateChanged.emit(ServiceState.STARTING)
 
         try:
-
-            self.cameraConfig = CameraConfig(FileHelper.readJsonFile(cameraConfigPath))
-            
-            if not self.isVideoStreamInitialized:
-                self.videoStream = VideoStream(self.cameraConfig)
-                self.videoStream.initializeStream()
-                self.isVideoStreamInitialized = True
 
             if not cameraConfigPath:
                 raise Exception('cameraConfigPath needs to be set in the settings tab')
@@ -83,6 +75,11 @@ class VideoProcessor(QObject):
         try:
 
             cameraConfig = CameraConfig(FileHelper.readJsonFile(cameraConfigPath))
+
+            if not self.isVideoStreamInitialized:
+                self.videoStream = VideoStream(cameraConfig)
+                self.videoStream.initializeStream()
+                self.isVideoStreamInitialized = True
 
             success, frame = self.videoStream.readFrame()
 
