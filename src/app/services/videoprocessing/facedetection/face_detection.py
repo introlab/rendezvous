@@ -75,6 +75,7 @@ class FaceDetection(GenericProcess):
                     pass
         
         except Exception as e:
+            print("well well")
             ExceptionHelper.printStackTrace(e)
             self.exceptionQueue.put(e)
 
