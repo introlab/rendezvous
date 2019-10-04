@@ -142,6 +142,6 @@ class ConferenceController(QObject):
     @pyqtSlot(Exception)
     def __videoProcessorExceptionHandling(self, e):
         self.__caughtVideoExceptions.append(e)
-        if __videoProcessor.state == ServiceState.RUNNING:
+        if self.__videoProcessor.state == ServiceState.RUNNING:
             self.stopVideoProcessor()
 
