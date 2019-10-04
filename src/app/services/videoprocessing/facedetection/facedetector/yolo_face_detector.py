@@ -26,7 +26,9 @@ class YoloFaceDetector(IFaceDetector):
 
     def detectFaces(self, image):
         darkFrame = Image(image)
+        print("before")
         results = self.net.detect(darkFrame)
+        print("after")
         del darkFrame
 
         faces = []
