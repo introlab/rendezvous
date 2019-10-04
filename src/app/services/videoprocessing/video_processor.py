@@ -262,6 +262,8 @@ class VideoProcessor(QObject):
             self.signalStateChanged.emit(ServiceState.STOPPED)
             self.state = ServiceState.STOPPED
 
+            self.destroy()
+
             print('Video processor terminated')
 
 
