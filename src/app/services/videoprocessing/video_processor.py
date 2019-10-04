@@ -212,7 +212,6 @@ class VideoProcessor(QObject):
                         # Execute all queued dewarping for face detection and virtual cameras
                         bufferId = 0
                         while bufferId != NoQueuedDewarping:
-                            print("hehehe")
                             bufferId = dewarper.dewarpNextImage()
                             
                             if bufferId == fdBufferId:

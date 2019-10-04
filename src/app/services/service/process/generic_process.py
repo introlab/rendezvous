@@ -33,7 +33,7 @@ class GenericProcess(multiprocessing.Process):
 
     def emptyQueue(self, queue):
         try:
-            while not queue.empty():
-                queue.get()                
+            while True:
+                queue.get_nowait()                
         except:
             pass
