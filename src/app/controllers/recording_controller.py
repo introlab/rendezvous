@@ -148,7 +148,7 @@ class RecordingController(QObject):
 
     @pyqtSlot(object, object)
     def __virtualCamerasReceived(self, images, virtualCameras):
-        if self.__recorder and self.__recorder.state == ServiceState.RUNNING:
+        if self.__recorder and self.__recorder.state == ServiceState.RUNNING and self.__videoProcessor.state == ServiceState.RUNNING:
             combinedImage = VirtualCameraDisplayBuilder.buildImage(images, (800, 600),
                                                         self.__virtualCameraFrame.palette().color(QtGui.QPalette.Background), 10) 
                                                         
