@@ -130,7 +130,7 @@ class ConferenceController(QObject):
 
     @pyqtSlot(object, object)
     def __virtualCamerasReceived(self, images, virtualCameras):
-        combinedImage = VirtualCameraDisplayBuilder.buildImage(images, (800, 600),
+        combinedImage = VirtualCameraDisplayBuilder.buildImage(images, self.__virtualCameraFrame.size(),
                                                                 self.__virtualCameraFrame.palette().color(QtGui.QPalette.Background), 10)
 
         self.signalVirtualCamerasReceived.emit(combinedImage)
