@@ -1,6 +1,7 @@
 import math
 
 from PyQt5.QtGui import QImage, QPainter
+from PyQt5 import QtCore
 
 
 class VirtualCameraDisplayer:
@@ -36,7 +37,10 @@ class VirtualCameraDisplayer:
 
         # Draw the image on screen
         painter = QPainter(self.virtualCameraFrame)
-        painter.drawImage(0, 0, self.__createQImageFromOpenCVImage(self.image))
+        width = self.virtualCameraFrame.size().width()
+        height = self.virtualCameraFrame.size().height()
+        resized = self.__createQImageFromOpenCVImage(self.image).scaled(width, height, QtCore.Qt.KeepAspectRatio)
+        painter.drawImage(self.virtualCameraFrame.size().width() / 2 - resized.width() / 2, 0, resized)
 
 
     def __createQImageFromOpenCVImage(self, image):
