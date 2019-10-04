@@ -2,13 +2,13 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QStackedWidget>
 
-#include "view/components/sidebar.h"
+class QStackedWidget;
 
-QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
-QT_END_NAMESPACE
+
+namespace View { class SideBar;
+                 class AbstractView; }
 
 class MainWindow : public QMainWindow
 {
@@ -16,15 +16,19 @@ class MainWindow : public QMainWindow
 
     public:
         MainWindow(QWidget *parent = nullptr);
-        ~MainWindow();
+        virtual ~MainWindow();
 
     private:
+        void addView(View::AbstractView *view);
+
         Ui::MainWindow *ui;
-        SideBar sideBar;
-        QStackedWidget views;
-
-    public slots:
-        void onSideBarCurrentRowChanged(int index) {views.setCurrentIndex(index);}
-
+        View::SideBar *sideBar;
+        QStackedWidget *views;
+        View::AbstractView *conferenceView;
+        View::AbstractView *recordingView;
+        View::AbstractView *playbackView;
+        View::AbstractView *transcriptionView;
+        View::AbstractView *settingsView;
 };
+
 #endif // MAINWINDOW_H
