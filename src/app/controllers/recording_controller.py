@@ -36,6 +36,9 @@ class RecordingController(QObject):
         
         self.__videoProcessor = ApplicationContainer.videoProcessor()
         self.speechToText = ApplicationContainer.speechToText()
+        self.__videoProcessor.signalVirtualCameras.connect(self.__virtualCamerasReceived)
+        self.__videoProcessor.signalException.connect(self.__exceptionHandling)
+        self.__videoProcessor.signalStateChanged.connect(self.__videoProcessorStateChanged)
         
 
     def startRecording(self, outputFolder, odasPath, micConfigPath, cameraConfigPath, faceDetection):
@@ -82,15 +85,6 @@ class RecordingController(QObject):
     @pyqtSlot(object)
     def __videoProcessorStateChanged(self, serviceState):
         self.__videoProcessor.state = serviceState
-        if self.__videoProcessor.state == ServiceState.STARTING:
-            self.__videoProcessor.signalVirtualCameras.connect(self.__virtualCamerasReceived)
-
-        elif self.__videoProcessor.state == ServiceState.STOPPING:
-            self.__videoProcessor.signalVirtualCameras.disconnect(self.__virtualCamerasReceived)
-
-        elif self.__videoProcessor.state == ServiceState.STOPPED:
-            self.__videoProcessor.signalException.disconnect(self.__exceptionHandling)
-            self.__videoProcessor.signalStateChanged.disconnect(self.__videoProcessorStateChanged)
 
 
     @pyqtSlot(object)
@@ -171,8 +165,6 @@ class RecordingController(QObject):
 
     def __startVideoProcessor(self, cameraConfigPath, faceDetection):
         if self.__videoProcessor.state == ServiceState.STOPPED:
-            self.__videoProcessor.signalStateChanged.connect(self.__videoProcessorStateChanged)
-            self.__videoProcessor.signalException.connect(self.__exceptionHandling)
             self.__videoProcessor.start(cameraConfigPath, faceDetection)
         
 
