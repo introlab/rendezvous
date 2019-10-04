@@ -155,7 +155,6 @@ class Odas(QObject, Thread):
         '''
 
         try:
-        
             if not self.odasProcess:
                 self.state = ServiceState.STARTING
                 self.signalStateChanged.emit(ServiceState.STARTING)
@@ -189,6 +188,9 @@ class Odas(QObject, Thread):
             self.odasProcess.signalException.disconnect(self.odasLiveExceptionHandling)
             self.odasProcess = None
             print('odas subprocess stopped...') if self.isVerbose else None
+        else:
+            self.state = ServiceState.STOPPED
+            self.signalStateChanged.emit(ServiceState.STOPPED)
 
 
 class ClientHandler(QObject, Thread):
