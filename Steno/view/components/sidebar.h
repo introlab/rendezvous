@@ -3,6 +3,9 @@
 
 #include <QListWidget>
 
+namespace View
+{
+
 class SideBar : public QListWidget
 {
     Q_OBJECT
@@ -15,5 +18,7 @@ class SideBar : public QListWidget
     private:
         const QSize itemSize;
 };
+
+} // View
 
 #endif // SIDEBAR_H

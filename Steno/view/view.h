@@ -3,16 +3,21 @@
 
 #include <QWidget>
 
-class View : public QWidget
+class Views : public QWidget
 {
     Q_OBJECT
 
     public:
-        explicit View(QWidget *parent = nullptr);
 
-    signals:
+        explicit View(const QString &name, QWidget *parent)
+            : QWidget(parent)
+            , name(name)
+        {}
 
-    public slots:
+        virtual ~View() = 0;
+
+    private:
+        QString name;
 };
 
 #endif // VIEW_H

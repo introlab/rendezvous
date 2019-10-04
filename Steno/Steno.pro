@@ -19,26 +19,36 @@ SOURCES += \
     main.cpp \
     view/mainwindow.cpp \
     view/components/sidebar.cpp \
-    view/view.cpp
+    view/views/audio_processing.cpp \
+    view/views/conference.cpp \
+    view/views/playback.cpp \
+    view/views/recording.cpp \
+    view/views/settings.cpp \
+    view/views/transcription.cpp
 
 HEADERS += \
     view/mainwindow.h \
     view/components/sidebar.h \
-    view/view.h
+    view/views/audio_processing.h \
+    view/views/conference.h \
+    view/views/playback.h \
+    view/views/recording.h \
+    view/views/settings.h \
+    view/views/transcription.h
 
 FORMS += \
     view/gui/audio_processing.ui \
-    view/gui/change_settings.ui \
     view/gui/conference.ui \
     view/gui/mainwindow.ui \
     view/gui/playback.ui \
     view/gui/recording.ui \
+    view/gui/settings.ui \
     view/gui/transcription.ui
+
+DISTFILES += \
+    view/stylesheets/globalStylesheet.qss
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
-
-DISTFILES += \
-    stylesheet.qss

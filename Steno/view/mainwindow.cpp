@@ -3,42 +3,54 @@
 
 #include <QFile>
 #include <QObject>
+#include <QStackedWidget>
+
+#include "view/components/sidebar.h"
+#include "view/views/conference.h"
+#include "view/views/recording.h"
+#include "view/views/audio_processing.h"
+#include "view/views/transcription.h"
+#include "view/views/settings.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    , sideBar(parent)
+    , views(new QStackedWidget)
+    , sideBar(new View::SideBar)
+    , conferenceView(new View::Conference)
+    , recordingView(new View::Recording)
+    , audioProcessingView(new View::AudioProcessing)
+    , transcriptionView(new View::Transcription)
+    , settingsView(new View::Settings)
 {
     ui->setupUi(this);
 
-    QFile File("stylesheet.qss");
+    QFile File("view/stylesheets/globalStylesheet.qss");
     File.open(QFile::ReadOnly);
     qApp->setStyleSheet(QLatin1String(File.readAll()));
 
-    sideBar.add("Conference");
-    sideBar.add("Recording");
-    sideBar.add("Audio Processing");
-    sideBar.add("Transcription");
-    sideBar.add("Web View");
-    sideBar.add("Settings");
-    sideBar.setCurrentRow(0);
-    ui->mainLayout->addWidget(&sideBar);
+    addView("Conference", conferenceView);
+    addView("Recording", recordingView);
+    addView("Audio Processing", audioProcessingView);
+    addView("Transcription", transcriptionView);
+    addView("Settings", settingsView);
 
-    ui->mainLayout->addWidget(&views);
+    sideBar->setCurrentRow(0);
+    ui->mainLayout->addWidget(sideBar);
+    ui->mainLayout->addWidget(views);
 
-    /*
-    connect(
-        this, &SideBar::currentRowChanged,
-        [=]( const int& index) { this->views.setCurrentIndex(index); }
-    );*/
-
-    //connect(&sideBar, &SideBar::currentRowChanged,
-    //        &views, &MainWindow::onSideBarCurrentRowChanged);
+    connect(sideBar, &View::SideBar::currentRowChanged,
+            [=]( const int& index) { views->setCurrentIndex(index); });
 }
+
+void MainWindow::addView(const QString &name, QWidget *view)
+{
+    sideBar->add(name);
+    views->addWidget(view);
+}
+
 
 MainWindow::~MainWindow()
 {
     delete ui;
 }
-
-

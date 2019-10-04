@@ -1,5 +1,8 @@
 #include "sidebar.h"
 
+namespace View
+{
+
 SideBar::SideBar(QWidget *parent)
     : QListWidget(parent)
     , itemSize(QSize(0, 40))
@@ -17,3 +20,4 @@ void SideBar::add(QString name)
     }
 }
 
+} // View
