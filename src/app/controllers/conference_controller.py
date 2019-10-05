@@ -4,7 +4,6 @@ from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 from PyQt5 import QtGui
 
 from src.app.application_container import ApplicationContainer
-from src.app.services.videoprocessing.video_processor import VideoProcessor
 from src.app.services.service.service_state import ServiceState
 from src.app.services.videoprocessing.virtualcamera.virtual_camera_display_builder import VirtualCameraDisplayBuilder
 
@@ -23,7 +22,7 @@ class ConferenceController(QObject):
 
         self.__odasServer = ApplicationContainer.odas()
 
-        self.__videoProcessor = VideoProcessor()
+        self.__videoProcessor = ApplicationContainer.videoProcessor()
 
         self.__virtualCameraFrame = virtualCameraFrame
 
@@ -51,11 +50,6 @@ class ConferenceController(QObject):
             
 
     def startVideoProcessor(self, cameraConfigPath, faceDetectionMethod):
-        if self.__videoProcessor == None:
-            self.__videoProcessor = VideoProcessor()
-            self.__videoProcessor.start(cameraConfigPath, faceDetectionMethod)
-            return
-
         if self.__videoProcessor.state != ServiceState.STOPPED:
             self.signalVideoProcessorState.emit(False)
             self.signalException.emit(Exception('Video already started'))
@@ -67,7 +61,6 @@ class ConferenceController(QObject):
 
     def stopVideoProcessor(self):
         self.__videoProcessor.stop()
-        self.__videoProcessor = None
 
 
     def close(self):
