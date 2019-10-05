@@ -26,6 +26,9 @@ class FaceDetection(GenericProcess):
         super(FaceDetection, self).stop()
         self.emptyQueue(self.facesQueue)
         self.emptyQueue(self.imageQueue)
+        self.imageQueue = None
+        self.facesQueue = None
+        self.isBusySemaphore = None
 
 
     def run(self):
