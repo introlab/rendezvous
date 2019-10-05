@@ -260,6 +260,7 @@ class VideoProcessor(QObject):
 
             if dewarper:
                 dewarper.cleanUp()
+                del dewarper
                 
             self.virtualCameraManager.clear()
             self.destroy()
