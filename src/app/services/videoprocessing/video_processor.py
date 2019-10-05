@@ -156,7 +156,6 @@ class VideoProcessor(QObject):
                     if not faceDetection.is_alive():
                         self.stop()
 
-                print("video proc get face")
                 newFaces = faceDetection.tryGetFaces()
 
                 if newFaces is not None:
