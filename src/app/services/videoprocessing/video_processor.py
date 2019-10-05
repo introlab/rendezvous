@@ -35,6 +35,7 @@ class VideoProcessor(QObject):
         self.state = ServiceState.STOPPED
         self.fpsTarget = 15
         self.videoStream = None
+        self.thread = None
         self.isVideoStreamInitialized = False
 
 
@@ -52,7 +53,7 @@ class VideoProcessor(QObject):
             if not faceDetectionMethod in [fdMethod.value for fdMethod in FaceDetectionMethods]:
                 raise Exception('Unsupported face detection method: {}. Set a correct method in the settings tab.'.format(faceDetectionMethod))
 
-            Thread(target=self.run, args=(cameraConfigPath, faceDetectionMethod)).start()
+            self.thread = Thread(target=self.run, args=(cameraConfigPath, faceDetectionMethod)).start()
 
         except Exception as e:
             
@@ -64,6 +65,7 @@ class VideoProcessor(QObject):
     def stop(self):
         self.signalStateChanged.emit(ServiceState.STOPPING)
         self.state = ServiceState.STOPPING
+        self.thread.join()
 
 
     def run(self, cameraConfigPath, faceDetectionMethod):
