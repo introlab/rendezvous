@@ -1,6 +1,6 @@
 QT       += core gui
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets multimedia
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets multimedia multimediawidgets
 
 CONFIG += c++11
 
@@ -17,6 +17,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     main.cpp \
+    model/video_player.cpp \
     view/mainwindow.cpp \
     view/components/sidebar.cpp \
     view/views/conference_view.cpp \
@@ -26,6 +27,8 @@ SOURCES += \
     view/views/transcription_view.cpp
 
 HEADERS += \
+    model/i_video_player.h \
+    model/video_player.h \
     view/mainwindow.h \
     view/components/sidebar.h \
     view/views/abstract_view.h \

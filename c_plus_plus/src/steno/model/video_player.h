@@ -1,21 +1,21 @@
-#ifndef PLAYBACK_VIEW_H
-#define PLAYBACK_VIEW_H
+#ifndef VIDEO_PLAYER_H
+#define VIDEO_PLAYER_H
 
 #include <QMediaPlayer>
+#include <QWidget>
 
-#include "view/views/abstract_view.h"
+class QUrl;
 
-namespace Ui { class PlaybackView; }
-namespace Model { class IVideoPlayer; }
-
-namespace View
+namespace Model
 {
 
-class PlaybackView : public AbstractView
+class VideoPlayer : public QWidget
 {
+    Q_OBJECT
+
     public:
-        explicit PlaybackView(QWidget *parent = nullptr);
-        virtual ~PlaybackView();
+        explicit VideoPlayer(QWidget *parent = nullptr);
+        virtual ~VideoPlayer();
 
         void setUrl(const QUrl &url);
         void openFile();
@@ -28,11 +28,11 @@ class PlaybackView : public AbstractView
         void setPosition(int position);
         void handleError();
 
-        Ui::PlaybackView *m_ui;
-
         QMediaPlayer* m_mediaPlayer;
+
+        //void errorOccured(QString error);
 };
 
-} // View
+} // Model
 
-#endif // PLAYBACK_VIEW_H
+#endif // VIDEO_PLAYER_H
