@@ -1,6 +1,8 @@
 #ifndef VIDEO_PLAYER_H
 #define VIDEO_PLAYER_H
 
+#include "model/i_video_player.h"
+
 #include <QMediaPlayer>
 #include <QWidget>
 
@@ -9,28 +11,22 @@ class QUrl;
 namespace Model
 {
 
-class VideoPlayer : public QWidget
+class VideoPlayer : public IVideoPlayer
 {
-    Q_OBJECT
-
     public:
         explicit VideoPlayer(QWidget *parent = nullptr);
         virtual ~VideoPlayer();
-
-        void setUrl(const QUrl &url);
-        void openFile();
-        void play();
+        virtual void openFile();
+        virtual void play();
+        virtual void setPosition(int position);
+        virtual void setVideoOutput(QVideoWidget *videoOutput);
 
     private:
-        void mediaStateChanged(QMediaPlayer::State state);
-        void positionChanged(qint64 position);
-        void durationChanged(qint64 duration);
-        void setPosition(int position);
-        void handleError();
+        void onErrorOccured();
+        void setUrl(const QUrl &url);
 
         QMediaPlayer* m_mediaPlayer;
 
-        //void errorOccured(QString error);
 };
 
 } // Model

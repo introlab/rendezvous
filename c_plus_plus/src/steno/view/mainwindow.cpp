@@ -27,8 +27,8 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    //Model::VideoPlayer *videoPlayer = new Model::VideoPlayer();
-    playbackView = new View::PlaybackView();
+    Model::VideoPlayer *videoPlayer = new Model::VideoPlayer();
+    playbackView = new View::PlaybackView(*videoPlayer);
 
     QFile File("view/stylesheets/globalStylesheet.qss");
     File.open(QFile::ReadOnly);

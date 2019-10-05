@@ -14,23 +14,19 @@ namespace View
 class PlaybackView : public AbstractView
 {
     public:
-        explicit PlaybackView(QWidget *parent = nullptr);
+        explicit PlaybackView(Model::IVideoPlayer& videoPlayer, QWidget *parent = nullptr);
         virtual ~PlaybackView();
 
-        void setUrl(const QUrl &url);
-        void openFile();
-        void play();
+    public slots:
+        void onMediaStateChanged(QMediaPlayer::State state);
+        void onPositionChanged(qint64 position);
+        void onDurationChanged(qint64 duration);
+        void onErrorOccured(QString error);
+        void onOpenFileAccepted();
 
     private:
-        void mediaStateChanged(QMediaPlayer::State state);
-        void positionChanged(qint64 position);
-        void durationChanged(qint64 duration);
-        void setPosition(int position);
-        void handleError();
-
         Ui::PlaybackView *m_ui;
-
-        QMediaPlayer* m_mediaPlayer;
+        Model::IVideoPlayer &m_videoPlayer;
 };
 
 } // View
