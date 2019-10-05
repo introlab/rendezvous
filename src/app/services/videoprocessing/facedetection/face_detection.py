@@ -37,7 +37,7 @@ class FaceDetection(GenericProcess):
         try:
 
             self.aquireLockOnce()
-
+            
             faceDetector = self.__createFaceDetector(self.faceDetectionMethod)
 
             dewarpIndex = -1

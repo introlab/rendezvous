@@ -45,7 +45,8 @@ class VideoStream:
     def destroy(self):
         if self.useCamera:
             self.camera.release()
-            self.camera = None
+            del self.camera
+            del self.image
 
 
     def readFrame(self):

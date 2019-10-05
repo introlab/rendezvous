@@ -274,6 +274,7 @@ class VideoProcessor(QObject):
         if self.videoStream:
             self.videoStream.destroy()
             self.isVideoStreamInitialized = False
+            del self.videoStream
 
 
     def __getFaceDetectionDewarpingParametersList(self, cameraConfig, dewarpCount):
