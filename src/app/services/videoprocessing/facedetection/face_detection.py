@@ -46,25 +46,17 @@ class FaceDetection(GenericProcess):
 
                 image = None
                 try:
-                    print("try get image")
                     dewarpIndex, image = self.imageQueue.get_nowait()
-                    print("get image queue")
                     self.aquireLockOnce()
-                    print("i have money")
                 except queue.Empty:
-                    print("except get image")
                     self.releaseLockOnce()
                     time.sleep(0.01)
 
-                print("allo")
-
                 if image is not None:
-                    print("try yolo")
                     print(dewarpIndex)
                     print(len(image))
                     imageFaces = faceDetector.detectFaces(image)
                     try:
-                        print("put yolo image in queue")
                         self.facesQueue.put_nowait((dewarpIndex, imageFaces))
                     except Exception as e:
                         time.sleep(0.01)
@@ -76,7 +68,6 @@ class FaceDetection(GenericProcess):
                     pass
         
         except Exception as e:
-            print("well well")
             ExceptionHelper.printStackTrace(e)
             self.exceptionQueue.put(e)
 
