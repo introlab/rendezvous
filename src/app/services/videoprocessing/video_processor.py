@@ -53,7 +53,8 @@ class VideoProcessor(QObject):
             if not faceDetectionMethod in [fdMethod.value for fdMethod in FaceDetectionMethods]:
                 raise Exception('Unsupported face detection method: {}. Set a correct method in the settings tab.'.format(faceDetectionMethod))
 
-            self.thread = Thread(target=self.run, args=(cameraConfigPath, faceDetectionMethod)).start()
+            self.thread = Thread(target=self.run, args=(cameraConfigPath, faceDetectionMethod))
+            self.thread.start()
 
         except Exception as e:
             
