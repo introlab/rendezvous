@@ -26,7 +26,6 @@ class VideoPlayer : public IVideoPlayer
         void setUrl(const QUrl &url);
 
         QMediaPlayer* m_mediaPlayer;
-
 };
 
 } // Model

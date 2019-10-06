@@ -36,13 +36,14 @@ PlaybackView::~PlaybackView()
 
 void PlaybackView::onMediaStateChanged(QMediaPlayer::State state)
 {
-    switch(state) {
-    case QMediaPlayer::PlayingState:
-        m_ui->playButton->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
-        break;
-    default:
-        m_ui->playButton->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
-        break;
+    switch(state)
+    {
+        case QMediaPlayer::PlayingState:
+            m_ui->playButton->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
+            break;
+        default:
+            m_ui->playButton->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+            break;
     }
 }
 
