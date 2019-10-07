@@ -7,13 +7,17 @@ python:
 cache: 
   - pip
   - ccache
-compiler: g++
+compiler: 
+  - g++
 before_install:
+  - sudo add-apt-repository ppa:beineri/opt-qt-5.12.1-bionic -y
   - sudo apt-get -y update
 install:
   - pip install -r ./requirements.txt
   - sudo apt-get install -y xorg-dev libglu1-mesa-dev
   - sudo apt-get install -y swig
+  - sudo apt-get install qt512base qt512svg qt512charts-no-lgpl qt512xmlpatterns
+  - source /opt/qt512/bin/qt512-env/sh
 addons:
   apt:
     sources:
@@ -28,3 +32,6 @@ script:
   - export CXX=/usr/bin/g++-6
   - make
   - pytest -v --cov=./ tests/
+  - cd ./c_plus_plus/src/steno
+  - qmake steno.pro -spec linux-g++ CONFIG+=qtquickcompiler
+  - make -j8 in .
