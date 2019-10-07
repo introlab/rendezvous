@@ -43,7 +43,7 @@ class VideoStream:
        
 
     def destroy(self):
-        if self.useCamera and self.camera:
+        if self.useCamera and self.camera != None:
             self.camera.release()
             del self.camera
             del self.image
