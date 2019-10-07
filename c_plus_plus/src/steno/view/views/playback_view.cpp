@@ -24,7 +24,7 @@ PlaybackView::PlaybackView(Model::IVideoPlayer &videoPlayer, QWidget *parent)
     connect(m_ui->playButton, &QAbstractButton::clicked, [=]{ m_videoPlayer.play(); });
     connect(m_ui->positionSlider, &QAbstractSlider::sliderMoved, [=](int position){ m_videoPlayer.setPosition(position); });
     connect(m_ui->volumeSlider, &QSlider::valueChanged, [=]{ m_videoPlayer.setVolume(volume()); });
-
+    
     connect(&m_videoPlayer, &Model::IVideoPlayer::stateChanged, [=](QMediaPlayer::State state){ onMediaStateChanged(state); });
     connect(&m_videoPlayer, &Model::IVideoPlayer::positionChanged, [=](qint64 position){ onPositionChanged(position); });
     connect(&m_videoPlayer, &Model::IVideoPlayer::durationChanged, [=](qint64 duration){ onDurationChanged(duration); });
@@ -75,9 +75,9 @@ void PlaybackView::onOpenFileAccepted()
 
 int PlaybackView::volume() const
 {
-    qreal linearVolume =  QAudio::convertVolume(m_ui->volumeSlider->value() / qreal(100),
-                                                QAudio::LogarithmicVolumeScale,
-                                                QAudio::LinearVolumeScale);
+    qreal linearVolume = QAudio::convertVolume(m_ui->volumeSlider->value() / qreal(100),
+                                               QAudio::LogarithmicVolumeScale,
+                                               QAudio::LinearVolumeScale);
 
     return qRound(linearVolume * 100);
 }
