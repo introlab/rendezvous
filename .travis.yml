@@ -1,5 +1,5 @@
 sudo: required
-dist: bionic
+dist: xenial
 language: 
   - python
   - cpp
@@ -11,7 +11,6 @@ cache:
 compiler: 
   - g++
 before_install:
-  - sudo add-apt-repository ppa:beineri/opt-qt-5.12.1-bionic
   - sudo apt-get update
 install:
   - pip install -r ./requirements.txt
@@ -23,6 +22,7 @@ addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
+      - sourceline: 'ppa:beineri/opt-qt-5.12.3-xenial'
     packages:
       - gcc-6
       - g++-6
