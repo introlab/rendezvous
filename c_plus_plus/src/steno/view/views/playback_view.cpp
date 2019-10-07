@@ -3,7 +3,9 @@
 
 #include "model/i_video_player.h"
 
-#include <QtWidgets>
+#include <QFileDialog>
+#include <QStandardPaths>
+#include <QStyle>
 
 namespace View
 {
@@ -20,7 +22,7 @@ PlaybackView::PlaybackView(Model::IVideoPlayer &videoPlayer, QWidget *parent)
 
     m_videoPlayer.setVideoOutput(m_ui->videoWidget);
 
-    connect(m_ui->openButton, &QAbstractButton::clicked, [=]{ m_videoPlayer.openFile(); });
+    connect(m_ui->openButton, &QAbstractButton::clicked, [=]{ openFile(); });
     connect(m_ui->playButton, &QAbstractButton::clicked, [=]{ m_videoPlayer.play(); });
     connect(m_ui->positionSlider, &QAbstractSlider::sliderMoved, [=](int position){ m_videoPlayer.setPosition(position); });
     connect(m_ui->volumeSlider, &QSlider::valueChanged, [=]{ m_videoPlayer.setVolume(volume()); });
@@ -30,7 +32,6 @@ PlaybackView::PlaybackView(Model::IVideoPlayer &videoPlayer, QWidget *parent)
     connect(&m_videoPlayer, &Model::IVideoPlayer::durationChanged, [=](qint64 duration){ onDurationChanged(duration); });
     connect(&m_videoPlayer, &Model::IVideoPlayer::volumeChanged, [=](int volume){ setVolume(volume); });
     connect(&m_videoPlayer, &Model::IVideoPlayer::errorOccured, [=](QString error){ onErrorOccured(error); });
-    connect(&m_videoPlayer, &Model::IVideoPlayer::setUrlCompleted, [=]{ onOpenFileAccepted(); });
 }
 
 PlaybackView::~PlaybackView()
@@ -67,10 +68,19 @@ void PlaybackView::onErrorOccured(QString error)
     m_ui->errorLabel->setText(error);
 }
 
-void PlaybackView::onOpenFileAccepted()
+void PlaybackView::openFile()
 {
-    m_ui->errorLabel->setText(QString());
-    m_ui->playButton->setEnabled(true);
+    QFileDialog fileDialog(this);
+    fileDialog.setAcceptMode(QFileDialog::AcceptOpen);
+    fileDialog.setWindowTitle(tr("Open Media File"));
+
+    fileDialog.setDirectory(QStandardPaths::standardLocations(QStandardPaths::MoviesLocation).value(0, QDir::homePath()));
+    if (fileDialog.exec() == QDialog::Accepted)
+    {
+        m_videoPlayer.setMedia(fileDialog.selectedUrls().constFirst());
+        m_ui->errorLabel->setText(QString());
+        m_ui->playButton->setEnabled(true);
+    }
 }
 
 int PlaybackView::volume() const

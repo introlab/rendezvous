@@ -1,6 +1,5 @@
 #include "video_player.h"
 
-#include <QtWidgets>
 #include <QVideoWidget>
 
 namespace Model
@@ -38,32 +37,9 @@ int VideoPlayer::volume() const
     return m_mediaPlayer->volume();
 }
 
-void VideoPlayer::openFile()
+void VideoPlayer::setMedia(const QUrl &url)
 {
-    QFileDialog fileDialog(this);
-    fileDialog.setAcceptMode(QFileDialog::AcceptOpen);
-    fileDialog.setWindowTitle(tr("Open Media File"));
-
-    QStringList supportedMimeTypes = m_mediaPlayer->supportedMimeTypes();
-    if (!supportedMimeTypes.isEmpty())
-    {
-        fileDialog.setMimeTypeFilters(supportedMimeTypes);
-    }
-
-    fileDialog.setDirectory(QStandardPaths::standardLocations(QStandardPaths::MoviesLocation).value(0, QDir::homePath()));
-    if (fileDialog.exec() == QDialog::Accepted)
-    {
-        setUrl(fileDialog.selectedUrls().constFirst());
-    }
-}
-
-void VideoPlayer::setUrl(const QUrl &url)
-{
-    setWindowFilePath(url.isLocalFile() ? url.toLocalFile() : QString());
     m_mediaPlayer->setMedia(url);
-
-    emit setUrlCompleted();
-
 }
 
 void VideoPlayer::play()

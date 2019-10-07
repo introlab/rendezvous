@@ -22,9 +22,9 @@ class PlaybackView : public AbstractView
         void onPositionChanged(qint64 position);
         void onDurationChanged(qint64 duration);
         void onErrorOccured(QString error);
-        void onOpenFileAccepted();
 
     private:
+        void openFile();
         int volume() const;
         void setVolume(int);
 

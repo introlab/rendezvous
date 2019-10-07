@@ -16,7 +16,7 @@ class VideoPlayer : public IVideoPlayer
     public:
         explicit VideoPlayer(QWidget *parent = nullptr);
         virtual ~VideoPlayer() override;
-        virtual void openFile() override;
+        virtual void setMedia(const QUrl &url) override;
         virtual void play() override;
         virtual void setPosition(int position) override;
         virtual void setVideoOutput(QVideoWidget *videoOutput) override;
@@ -25,7 +25,6 @@ class VideoPlayer : public IVideoPlayer
 
     private:
         void onErrorOccured();
-        void setUrl(const QUrl &url);
 
         QMediaPlayer* m_mediaPlayer;
 };

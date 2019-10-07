@@ -16,7 +16,7 @@ class IVideoPlayer : public QWidget
     public:
         IVideoPlayer(QWidget *parent = nullptr) : QWidget(parent) {}
         virtual ~IVideoPlayer() {}
-        virtual void openFile() = 0;
+        virtual void setMedia(const QUrl &url) = 0;
         virtual void play() = 0;
         virtual void setPosition(int position) = 0;
         virtual void setVideoOutput(QVideoWidget *videoOutput) = 0;
@@ -29,7 +29,6 @@ class IVideoPlayer : public QWidget
         void durationChanged(qint64 duration);
         void volumeChanged(int volume);
         void errorOccured(QString error);
-        void setUrlCompleted();
 };
 
 } // Model
