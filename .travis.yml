@@ -14,7 +14,7 @@ before_install:
   - sudo apt-get update
 install:
   - pip install -r ./requirements.txt
-  - sudo apt-get install -y xorg-dev libglu1-mesa-dev
+  - sudo apt-get install -y xorg-dev libglu1-mesa-dev libpulse-dev
   - sudo apt-get install -y swig
   - sudo apt-get install qt512base qt512svg qt512charts-no-lgpl qt512xmlpatterns qt512multimedia qt512webengine
   - source /opt/qt512/bin/qt512-env.sh
@@ -35,4 +35,5 @@ script:
   - pytest -v --cov=./ tests/
   - cd ./c_plus_plus/src/steno
   - qmake steno.pro -spec linux-g++ CONFIG+=qtquickcompiler
-  - make -j8 in .
+  - make clean
+  - make
