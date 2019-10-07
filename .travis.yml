@@ -11,7 +11,7 @@ compiler:
   - g++
 before_install:
   - sudo add-apt-repository ppa:beineri/opt-qt-5.12.1-bionic -y
-  - sudo apt-get -y update
+  - sudo apt-get update
 install:
   - pip install -r ./requirements.txt
   - sudo apt-get install -y xorg-dev libglu1-mesa-dev
