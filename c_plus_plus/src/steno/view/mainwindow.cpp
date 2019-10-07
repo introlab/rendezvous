@@ -13,6 +13,8 @@
 #include "view/views/transcription_view.h"
 #include "view/views/settings_view.h"
 
+#include "model/video_player.h"
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -20,11 +22,13 @@ MainWindow::MainWindow(QWidget *parent)
     , views(new QStackedWidget)
     , conferenceView(new View::ConferenceView)
     , recordingView(new View::RecordingView)
-    , playbackView(new View::PlaybackView)
     , transcriptionView(new View::TranscriptionView)
     , settingsView(new View::SettingsView)
 {
     ui->setupUi(this);
+
+    Model::VideoPlayer *videoPlayer = new Model::VideoPlayer();
+    playbackView = new View::PlaybackView(*videoPlayer);
 
     QFile File("view/stylesheets/globalStylesheet.qss");
     File.open(QFile::ReadOnly);
@@ -42,7 +46,7 @@ MainWindow::MainWindow(QWidget *parent)
     sideBar->setCurrentRow(0);
 
     connect(sideBar, &View::SideBar::currentRowChanged,
-            [=](const int& index) { views->setCurrentIndex(index); });
+            [=](const int& index){ views->setCurrentIndex(index); });
 }
 
 void MainWindow::addView(View::AbstractView *view)
