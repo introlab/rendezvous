@@ -14,6 +14,7 @@ VideoPlayer::VideoPlayer(QWidget *parent)
     connect(m_mediaPlayer, &QMediaPlayer::stateChanged, [=](QMediaPlayer::State state){ emit stateChanged(state); });
     connect(m_mediaPlayer, &QMediaPlayer::positionChanged, [=](qint64 position){ emit positionChanged(position); });
     connect(m_mediaPlayer, &QMediaPlayer::durationChanged, [=](qint64 duration){ emit durationChanged(duration); });
+    connect(m_mediaPlayer, &QMediaPlayer::volumeChanged, [=](int volume){ emit volumeChanged(volume); });
     connect(m_mediaPlayer, QOverload<QMediaPlayer::Error>::of(&QMediaPlayer::error), [=]{ onErrorOccured(); });
 }
 
@@ -25,6 +26,16 @@ VideoPlayer::~VideoPlayer()
 void VideoPlayer::setVideoOutput(QVideoWidget *videoOutput)
 {
     m_mediaPlayer->setVideoOutput(videoOutput);
+}
+
+void VideoPlayer::setVolume(int volume)
+{
+    m_mediaPlayer->setVolume(volume);
+}
+
+int VideoPlayer::volume() const
+{
+    return m_mediaPlayer->volume();
 }
 
 void VideoPlayer::openFile()

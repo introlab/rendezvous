@@ -25,6 +25,9 @@ class PlaybackView : public AbstractView
         void onOpenFileAccepted();
 
     private:
+        int volume() const;
+        void setVolume(int);
+
         Ui::PlaybackView *m_ui;
         Model::IVideoPlayer &m_videoPlayer;
 };

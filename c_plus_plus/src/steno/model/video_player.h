@@ -15,11 +15,13 @@ class VideoPlayer : public IVideoPlayer
 {
     public:
         explicit VideoPlayer(QWidget *parent = nullptr);
-        virtual ~VideoPlayer();
-        virtual void openFile();
-        virtual void play();
-        virtual void setPosition(int position);
-        virtual void setVideoOutput(QVideoWidget *videoOutput);
+        virtual ~VideoPlayer() override;
+        virtual void openFile() override;
+        virtual void play() override;
+        virtual void setPosition(int position) override;
+        virtual void setVideoOutput(QVideoWidget *videoOutput) override;
+        virtual void setVolume(int volume) override;
+        virtual int volume() const override;
 
     private:
         void onErrorOccured();

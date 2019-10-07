@@ -16,15 +16,19 @@ PlaybackView::PlaybackView(Model::IVideoPlayer &videoPlayer, QWidget *parent)
     m_ui->setupUi(this);
     m_ui->playButton->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
 
+    setVolume(m_videoPlayer.volume());
+
+    m_videoPlayer.setVideoOutput(m_ui->videoWidget);
+
     connect(m_ui->openButton, &QAbstractButton::clicked, [=]{ m_videoPlayer.openFile(); });
     connect(m_ui->playButton, &QAbstractButton::clicked, [=]{ m_videoPlayer.play(); });
     connect(m_ui->positionSlider, &QAbstractSlider::sliderMoved, [=](int position){ m_videoPlayer.setPosition(position); });
-
-    m_videoPlayer.setVideoOutput(m_ui->videoWidget);
+    connect(m_ui->volumeSlider, &QSlider::valueChanged, [=]{ m_videoPlayer.setVolume(volume()); });
 
     connect(&m_videoPlayer, &Model::IVideoPlayer::stateChanged, [=](QMediaPlayer::State state){ onMediaStateChanged(state); });
     connect(&m_videoPlayer, &Model::IVideoPlayer::positionChanged, [=](qint64 position){ onPositionChanged(position); });
     connect(&m_videoPlayer, &Model::IVideoPlayer::durationChanged, [=](qint64 duration){ onDurationChanged(duration); });
+    connect(&m_videoPlayer, &Model::IVideoPlayer::volumeChanged, [=](int volume){ setVolume(volume); });
     connect(&m_videoPlayer, &Model::IVideoPlayer::errorOccured, [=](QString error){ onErrorOccured(error); });
     connect(&m_videoPlayer, &Model::IVideoPlayer::setUrlCompleted, [=]{ onOpenFileAccepted(); });
 }
@@ -67,6 +71,24 @@ void PlaybackView::onOpenFileAccepted()
 {
     m_ui->errorLabel->setText(QString());
     m_ui->playButton->setEnabled(true);
+}
+
+int PlaybackView::volume() const
+{
+    qreal linearVolume =  QAudio::convertVolume(m_ui->volumeSlider->value() / qreal(100),
+                                                QAudio::LogarithmicVolumeScale,
+                                                QAudio::LinearVolumeScale);
+
+    return qRound(linearVolume * 100);
+}
+
+void PlaybackView::setVolume(int volume)
+{
+    qreal logarithmicVolume = QAudio::convertVolume(volume / qreal(100),
+                                                    QAudio::LinearVolumeScale,
+                                                    QAudio::LogarithmicVolumeScale);
+
+    m_ui->volumeSlider->setValue(qRound(logarithmicVolume * 100));
 }
 
 } // View
