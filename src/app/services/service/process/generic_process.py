@@ -14,6 +14,8 @@ class GenericProcess(multiprocessing.Process):
         self.exit.set()
         self.emptyQueue(self.keepAliveQueue)
         self.emptyQueue(self.exceptionQueue)
+        self.keepAliveQueue = None
+        self.exceptionQueue = None
 
 
     def tryKeepAliveProcess(self):
@@ -34,6 +36,6 @@ class GenericProcess(multiprocessing.Process):
     def emptyQueue(self, queue):
         try:
             while True:
-                queue.get_nowait()
+                queue.get_nowait()                
         except:
             pass
