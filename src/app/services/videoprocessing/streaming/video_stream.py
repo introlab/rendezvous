@@ -75,7 +75,7 @@ class VideoStream:
 
 
     def __initalizeCamera(self):
-        self.camera = cv2.VideoCapture(self.config.cameraPort, cv2.CAP_ANY)
+        self.camera = cv2.VideoCapture(self.config.cameraPort)
         self.camera.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(self.config.fourcc[0],
                                                                     self.config.fourcc[1],
                                                                     self.config.fourcc[2],
