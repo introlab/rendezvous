@@ -1,4 +1,5 @@
 sudo: required
+dist: xenial
 language: 
   - python
   - cpp
@@ -7,17 +8,21 @@ python:
 cache: 
   - pip
   - ccache
-compiler: g++
+compiler: 
+  - g++
 before_install:
-  - sudo apt-get -y update
+  - sudo apt-get update
 install:
   - pip install -r ./requirements.txt
-  - sudo apt-get install -y xorg-dev libglu1-mesa-dev
+  - sudo apt-get install -y xorg-dev libglu1-mesa-dev libpulse-dev
   - sudo apt-get install -y swig
+  - sudo apt-get install qt512base qt512svg qt512charts-no-lgpl qt512xmlpatterns qt512multimedia qt512webengine
+  - source /opt/qt512/bin/qt512-env.sh
 addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
+      - sourceline: 'ppa:beineri/opt-qt-5.12.3-xenial'
     packages:
       - gcc-6
       - g++-6
@@ -28,3 +33,7 @@ script:
   - export CXX=/usr/bin/g++-6
   - make
   - pytest -v --cov=./ tests/
+  - cd ./c_plus_plus/src/steno
+  - qmake steno.pro -spec linux-g++ CONFIG+=qtquickcompiler
+  - make clean
+  - make
