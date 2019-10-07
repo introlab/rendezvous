@@ -16,7 +16,7 @@ install:
   - pip install -r ./requirements.txt
   - sudo apt-get install -y xorg-dev libglu1-mesa-dev
   - sudo apt-get install -y swig
-  - sudo apt-get install qt512base qt512svg qt512charts-no-lgpl qt512xmlpatterns
+  - sudo apt-get install qt512base qt512svg qt512charts-no-lgpl qt512xmlpatterns qt512multimedia 
   - source /opt/qt512/bin/qt512-env.sh
 addons:
   apt:
