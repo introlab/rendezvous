@@ -263,7 +263,7 @@ class VideoProcessor(QObject):
                 del dewarper
                 
             self.virtualCameraManager.clear()
-            self.destroy()
+            #self.destroy()
 
             self.signalStateChanged.emit(ServiceState.STOPPED)
             self.state = ServiceState.STOPPED
