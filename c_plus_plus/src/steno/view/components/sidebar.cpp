@@ -5,18 +5,18 @@ namespace View
 
 SideBar::SideBar(QWidget *parent)
     : QListWidget(parent)
-    , itemSize(QSize(0, 40))
+    , m_itemSize(0, m_itemHeight)
 {
-    setFixedWidth(150);
+    setFixedWidth(m_itemWidth);
 }
 
-void SideBar::add(QString name)
+void SideBar::add(const QString& name)
 {
     addItem(name);
 
     for (int i = 0; i < count(); i++)
     {
-        item(i)->setSizeHint(itemSize);
+        item(i)->setSizeHint(m_itemSize);
     }
 }
 

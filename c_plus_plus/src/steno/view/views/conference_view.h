@@ -10,12 +10,11 @@ namespace View
 
 class ConferenceView : public AbstractView
 {
-    public:
-        explicit ConferenceView(QWidget *parent = nullptr);
-        virtual ~ConferenceView();
+public:
+    explicit ConferenceView(QWidget *parent = nullptr);
 
-    private:
-        Ui::ConferenceView *ui;
+private:
+    Ui::ConferenceView *ui;
 };
 
 } // View

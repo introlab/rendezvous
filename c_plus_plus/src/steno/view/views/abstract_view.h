@@ -1,6 +1,8 @@
 #ifndef ABSTRACT_VIEW_H
 #define ABSTRACT_VIEW_H
 
+#include <utility>
+
 #include <QWidget>
 
 namespace View
@@ -8,19 +10,18 @@ namespace View
 
 class AbstractView : public QWidget
 {
-    Q_OBJECT
+Q_OBJECT
 
-    public:
+public:
+    explicit AbstractView(QString name, QWidget *parent)
+        : QWidget(parent)
+        , name(std::move(name))
+    {}
 
-        explicit AbstractView(const QString &name, QWidget *parent)
-            : QWidget(parent)
-            , name(name)
-        {}
+    const QString& getName() {return name;}
 
-        const QString& getName() {return name;}
-
-    private:
-        QString name;
+private:
+    QString name;
 };
 
 } // View

@@ -8,15 +8,17 @@ namespace View
 
 class SideBar : public QListWidget
 {
-    Q_OBJECT
+Q_OBJECT
 
-    public:
-        SideBar(QWidget *parent = nullptr);
+public:
+    SideBar(QWidget *parent = nullptr);
 
-        void add(QString name);
+    void add(const QString& name);
 
-    private:
-        const QSize itemSize;
+private:
+    const uint8_t m_itemHeight = 40;
+    const uint8_t m_itemWidth = 150;
+    const QSize m_itemSize;
 };
 
 } // View

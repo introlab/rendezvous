@@ -27,12 +27,12 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    Model::MediaPlayer *mediaPlayer = new Model::MediaPlayer();
+    auto mediaPlayer = new Model::MediaPlayer();
     mediaPlayerView = new View::MediaPlayerView(*mediaPlayer);
 
     QFile File("view/stylesheets/globalStylesheet.qss");
     File.open(QFile::ReadOnly);
-    qApp->setStyleSheet(QLatin1String(File.readAll()));
+    this->setStyleSheet(QLatin1String(File.readAll()));
 
     addView(conferenceView);
     addView(recordingView);
@@ -53,9 +53,4 @@ void MainWindow::addView(View::AbstractView *view)
 {
     sideBar->add(view->getName());
     views->addWidget(view);
-}
-
-MainWindow::~MainWindow()
-{
-    delete ui;
 }

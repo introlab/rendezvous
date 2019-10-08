@@ -31,12 +31,7 @@ MediaPlayerView::MediaPlayerView(Model::IMediaPlayer &videoPlayer, QWidget *pare
     connect(&m_videoPlayer, &Model::IMediaPlayer::positionChanged, [=](qint64 position){ onPositionChanged(position); });
     connect(&m_videoPlayer, &Model::IMediaPlayer::durationChanged, [=](qint64 duration){ onDurationChanged(duration); });
     connect(&m_videoPlayer, &Model::IMediaPlayer::volumeChanged, [=](int volume){ setVolume(volume); });
-    connect(&m_videoPlayer, &Model::IMediaPlayer::errorOccured, [=](QString error){ onErrorOccured(error); });
-}
-
-MediaPlayerView::~MediaPlayerView()
-{
-    delete m_ui;
+    connect(&m_videoPlayer, &Model::IMediaPlayer::errorOccured, [=](const QString& error){ onErrorOccured(error); });
 }
 
 void MediaPlayerView::onMediaStateChanged(QMediaPlayer::State state)
@@ -62,7 +57,7 @@ void MediaPlayerView::onDurationChanged(qint64 duration)
     m_ui->positionSlider->setRange(0, static_cast<int>(duration));
 }
 
-void MediaPlayerView::onErrorOccured(QString error)
+void MediaPlayerView::onErrorOccured(const QString& error)
 {
     m_ui->playButton->setEnabled(false);
     m_ui->errorLabel->setText(error);
@@ -85,20 +80,20 @@ void MediaPlayerView::openFile()
 
 int MediaPlayerView::volume() const
 {
-    qreal linearVolume = QAudio::convertVolume(m_ui->volumeSlider->value() / qreal(100),
+    qreal linearVolume = QAudio::convertVolume(m_ui->volumeSlider->value() / qreal(m_maxVolume),
                                                QAudio::LogarithmicVolumeScale,
                                                QAudio::LinearVolumeScale);
 
-    return qRound(linearVolume * 100);
+    return qRound(linearVolume * m_maxVolume);
 }
 
 void MediaPlayerView::setVolume(int volume)
 {
-    qreal logarithmicVolume = QAudio::convertVolume(volume / qreal(100),
+    qreal logarithmicVolume = QAudio::convertVolume(volume / qreal(m_maxVolume),
                                                     QAudio::LinearVolumeScale,
                                                     QAudio::LogarithmicVolumeScale);
 
-    m_ui->volumeSlider->setValue(qRound(logarithmicVolume * 100));
+    m_ui->volumeSlider->setValue(qRound(logarithmicVolume * m_maxVolume));
 }
 
 } // View

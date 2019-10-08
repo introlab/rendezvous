@@ -11,9 +11,4 @@ SettingsView::SettingsView(QWidget *parent)
     ui->setupUi(this);
 }
 
-SettingsView::~SettingsView()
-{
-    delete ui;
-}
-
 } // View

@@ -11,9 +11,4 @@ ConferenceView::ConferenceView(QWidget *parent)
     ui->setupUi(this);
 }
 
-ConferenceView::~ConferenceView()
-{
-    delete ui;
-}
-
 } // View

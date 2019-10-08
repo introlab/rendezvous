@@ -17,11 +17,6 @@ MediaPlayer::MediaPlayer(QWidget *parent)
     connect(m_mediaPlayer, QOverload<QMediaPlayer::Error>::of(&QMediaPlayer::error), [=]{ onErrorOccured(); });
 }
 
-MediaPlayer::~MediaPlayer()
-{
-    delete m_mediaPlayer;
-}
-
 void MediaPlayer::setVideoOutput(QVideoWidget *videoOutput)
 {
     m_mediaPlayer->setVideoOutput(videoOutput);

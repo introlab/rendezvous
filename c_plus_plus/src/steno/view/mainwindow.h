@@ -12,23 +12,22 @@ namespace View { class SideBar;
 
 class MainWindow : public QMainWindow
 {
-    Q_OBJECT
+Q_OBJECT
 
-    public:
-        MainWindow(QWidget *parent = nullptr);
-        virtual ~MainWindow();
+public:
+    MainWindow(QWidget *parent = nullptr);
 
-    private:
-        void addView(View::AbstractView *view);
+private:
+    void addView(View::AbstractView *view);
 
-        Ui::MainWindow *ui;
-        View::SideBar *sideBar;
-        QStackedWidget *views;
-        View::AbstractView *conferenceView;
-        View::AbstractView *recordingView;
-        View::AbstractView *mediaPlayerView;
-        View::AbstractView *transcriptionView;
-        View::AbstractView *settingsView;
+    Ui::MainWindow *ui;
+    View::SideBar *sideBar;
+    QStackedWidget *views;
+    View::AbstractView *conferenceView;
+    View::AbstractView *recordingView;
+    View::AbstractView *mediaPlayerView;
+    View::AbstractView *transcriptionView;
+    View::AbstractView *settingsView;
 };
 
 #endif // MAINWINDOW_H

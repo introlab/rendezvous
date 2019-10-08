@@ -10,12 +10,11 @@ namespace View
 
 class SettingsView : public AbstractView
 {
-    public:
-        explicit SettingsView(QWidget *parent = nullptr);
-        virtual ~SettingsView();
+public:
+    explicit SettingsView(QWidget *parent = nullptr);
 
-    private:
-        Ui::SettingsView *ui;
+private:
+    Ui::SettingsView *ui;
 };
 
 } // View
