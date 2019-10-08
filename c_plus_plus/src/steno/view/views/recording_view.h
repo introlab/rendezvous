@@ -10,12 +10,11 @@ namespace View
 
 class RecordingView : public AbstractView
 {
-    public:
-        explicit RecordingView(QWidget *parent = nullptr);
-        virtual ~RecordingView();
+public:
+    explicit RecordingView(QWidget *parent = nullptr);
 
-    private:
-        Ui::RecordingView *ui;
+private:
+    Ui::RecordingView *ui;
 };
 
 } // View

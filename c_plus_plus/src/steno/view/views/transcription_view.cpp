@@ -11,9 +11,4 @@ TranscriptionView::TranscriptionView(QWidget *parent)
     ui->setupUi(this);
 }
 
-TranscriptionView::~TranscriptionView()
-{
-    delete ui;
-}
-
 } // View

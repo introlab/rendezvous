@@ -36,6 +36,9 @@ class RecordingController(QObject):
         
         self.__videoProcessor = ApplicationContainer.videoProcessor()
         self.speechToText = ApplicationContainer.speechToText()
+        self.__videoProcessor.signalVirtualCameras.connect(self.__virtualCamerasReceived)
+        self.__videoProcessor.signalException.connect(self.__exceptionHandling)
+        self.__videoProcessor.signalStateChanged.connect(self.__videoProcessorStateChanged)
         
 
     def startRecording(self, outputFolder, odasPath, micConfigPath, cameraConfigPath, faceDetection):
@@ -82,15 +85,6 @@ class RecordingController(QObject):
     @pyqtSlot(object)
     def __videoProcessorStateChanged(self, serviceState):
         self.__videoProcessor.state = serviceState
-        if self.__videoProcessor.state == ServiceState.STARTING:
-            self.__videoProcessor.signalVirtualCameras.connect(self.__virtualCamerasReceived)
-
-        elif self.__videoProcessor.state == ServiceState.STOPPING:
-            self.__videoProcessor.signalVirtualCameras.disconnect(self.__virtualCamerasReceived)
-
-        elif self.__videoProcessor.state == ServiceState.STOPPED:
-            self.__videoProcessor.signalException.disconnect(self.__exceptionHandling)
-            self.__videoProcessor.signalStateChanged.disconnect(self.__videoProcessorStateChanged)
 
 
     @pyqtSlot(object)
@@ -154,7 +148,7 @@ class RecordingController(QObject):
 
     @pyqtSlot(object, object)
     def __virtualCamerasReceived(self, images, virtualCameras):
-        if self.__recorder and self.__recorder.state == ServiceState.RUNNING:
+        if self.__recorder and self.__recorder.state == ServiceState.RUNNING and self.__videoProcessor.state == ServiceState.RUNNING:
             combinedImage = VirtualCameraDisplayBuilder.buildImage(images, (800, 600),
                                                         self.__virtualCameraFrame.palette().color(QtGui.QPalette.Background), 10) 
                                                         
@@ -165,14 +159,15 @@ class RecordingController(QObject):
 
     @pyqtSlot(Exception)
     def __exceptionHandling(self, e):
+        if self.__recorder == None:
+            return
+        
         self.__recorder.stop()
         self.__caughtExceptions.append(e)
 
 
     def __startVideoProcessor(self, cameraConfigPath, faceDetection):
         if self.__videoProcessor.state == ServiceState.STOPPED:
-            self.__videoProcessor.signalStateChanged.connect(self.__videoProcessorStateChanged)
-            self.__videoProcessor.signalException.connect(self.__exceptionHandling)
             self.__videoProcessor.start(cameraConfigPath, faceDetection)
         
 

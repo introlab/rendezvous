@@ -1,13 +1,12 @@
-#include "video_player.h"
+#include "media_player.h"
 
-#include <QtWidgets>
 #include <QVideoWidget>
 
 namespace Model
 {
 
-VideoPlayer::VideoPlayer(QWidget *parent)
-    : IVideoPlayer(parent)
+MediaPlayer::MediaPlayer(QWidget *parent)
+    : IMediaPlayer(parent)
     , m_mediaPlayer(new QMediaPlayer(this, QMediaPlayer::VideoSurface))
 
 {
@@ -18,55 +17,27 @@ VideoPlayer::VideoPlayer(QWidget *parent)
     connect(m_mediaPlayer, QOverload<QMediaPlayer::Error>::of(&QMediaPlayer::error), [=]{ onErrorOccured(); });
 }
 
-VideoPlayer::~VideoPlayer()
-{
-    delete m_mediaPlayer;
-}
-
-void VideoPlayer::setVideoOutput(QVideoWidget *videoOutput)
+void MediaPlayer::setVideoOutput(QVideoWidget *videoOutput)
 {
     m_mediaPlayer->setVideoOutput(videoOutput);
 }
 
-void VideoPlayer::setVolume(int volume)
+void MediaPlayer::setVolume(int volume)
 {
     m_mediaPlayer->setVolume(volume);
 }
 
-int VideoPlayer::volume() const
+int MediaPlayer::volume() const
 {
     return m_mediaPlayer->volume();
 }
 
-void VideoPlayer::openFile()
+void MediaPlayer::setMedia(const QUrl &url)
 {
-    QFileDialog fileDialog(this);
-    fileDialog.setAcceptMode(QFileDialog::AcceptOpen);
-    fileDialog.setWindowTitle(tr("Open Media File"));
-
-    QStringList supportedMimeTypes = m_mediaPlayer->supportedMimeTypes();
-    if (!supportedMimeTypes.isEmpty())
-    {
-        fileDialog.setMimeTypeFilters(supportedMimeTypes);
-    }
-
-    fileDialog.setDirectory(QStandardPaths::standardLocations(QStandardPaths::MoviesLocation).value(0, QDir::homePath()));
-    if (fileDialog.exec() == QDialog::Accepted)
-    {
-        setUrl(fileDialog.selectedUrls().constFirst());
-    }
-}
-
-void VideoPlayer::setUrl(const QUrl &url)
-{
-    setWindowFilePath(url.isLocalFile() ? url.toLocalFile() : QString());
     m_mediaPlayer->setMedia(url);
-
-    emit setUrlCompleted();
-
 }
 
-void VideoPlayer::play()
+void MediaPlayer::play()
 {
     switch (m_mediaPlayer->state())
     {
@@ -79,12 +50,12 @@ void VideoPlayer::play()
     }
 }
 
-void VideoPlayer::setPosition(int position)
+void MediaPlayer::setPosition(int position)
 {
     m_mediaPlayer->setPosition(position);
 }
 
-void VideoPlayer::onErrorOccured()
+void MediaPlayer::onErrorOccured()
 {
     const QString errorString = m_mediaPlayer->errorString();
     QString message = "Error: ";

@@ -26,6 +26,9 @@ class FaceDetection(GenericProcess):
         super(FaceDetection, self).stop()
         self.emptyQueue(self.facesQueue)
         self.emptyQueue(self.imageQueue)
+        self.imageQueue = None
+        self.facesQueue = None
+        self.isBusySemaphore = None
 
 
     def run(self):
@@ -34,7 +37,7 @@ class FaceDetection(GenericProcess):
         try:
 
             self.aquireLockOnce()
-
+            
             faceDetector = self.__createFaceDetector(self.faceDetectionMethod)
 
             dewarpIndex = -1
@@ -54,7 +57,10 @@ class FaceDetection(GenericProcess):
 
                 if image is not None:
                     imageFaces = faceDetector.detectFaces(image)
-                    self.facesQueue.put((dewarpIndex, imageFaces))
+                    try:
+                        self.facesQueue.put_nowait((dewarpIndex, imageFaces))
+                    except Exception as e:
+                        time.sleep(0.01)
                 
                 try:
                     self.keepAliveQueue.get_nowait()
@@ -67,6 +73,9 @@ class FaceDetection(GenericProcess):
             self.exceptionQueue.put(e)
 
         finally:
+            self.emptyQueue(self.facesQueue)
+            self.emptyQueue(self.imageQueue)
+            self.emptyQueue(self.keepAliveQueue)
             self.releaseLockOnce()
             print('Face detection terminated')
 

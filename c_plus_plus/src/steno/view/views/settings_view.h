@@ -11,6 +11,7 @@ namespace Ui { class SettingsView; }
 namespace View
 {
 
+<<<<<<< HEAD
     class SettingsView : public AbstractView
     {
         public:
@@ -31,6 +32,16 @@ namespace View
             View::ApplicationSettingsStruct *m_structAppSettings;
 
     };
+=======
+class SettingsView : public AbstractView
+{
+public:
+    explicit SettingsView(QWidget *parent = nullptr);
+
+private:
+    Ui::SettingsView *ui;
+};
+>>>>>>> master
 
 } // View
 

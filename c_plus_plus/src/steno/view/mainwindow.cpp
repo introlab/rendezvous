@@ -9,11 +9,11 @@
 #include "view/views/abstract_view.h"
 #include "view/views/conference_view.h"
 #include "view/views/recording_view.h"
-#include "view/views/playback_view.h"
+#include "view/views/media_player_view.h"
 #include "view/views/transcription_view.h"
 #include "view/views/settings_view.h"
 
-#include "model/video_player.h"
+#include "model/media_player.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -27,19 +27,19 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    Model::VideoPlayer *videoPlayer = new Model::VideoPlayer();
-    playbackView = new View::PlaybackView(*videoPlayer);
+    auto mediaPlayer = new Model::MediaPlayer();
+    mediaPlayerView = new View::MediaPlayerView(*mediaPlayer);
 
     //Model::ISettingsView *settingsView
 
 
     QFile File("view/stylesheets/globalStylesheet.qss");
     File.open(QFile::ReadOnly);
-    qApp->setStyleSheet(QLatin1String(File.readAll()));
+    this->setStyleSheet(QLatin1String(File.readAll()));
 
     addView(conferenceView);
     addView(recordingView);
-    addView(playbackView);
+    addView(mediaPlayerView);
     addView(transcriptionView);
     addView(settingsView);
 
@@ -56,9 +56,4 @@ void MainWindow::addView(View::AbstractView *view)
 {
     sideBar->add(view->getName());
     views->addWidget(view);
-}
-
-MainWindow::~MainWindow()
-{
-    delete ui;
 }

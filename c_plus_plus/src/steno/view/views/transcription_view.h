@@ -10,12 +10,11 @@ namespace View
 
 class TranscriptionView : public AbstractView
 {
-    public:
-        explicit TranscriptionView(QWidget *parent = nullptr);
-        virtual ~TranscriptionView();
+public:
+    explicit TranscriptionView(QWidget *parent = nullptr);
 
-    private:
-        Ui::TranscriptionView *ui;
+private:
+    Ui::TranscriptionView *ui;
 };
 
 } // View

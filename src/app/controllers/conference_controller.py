@@ -30,6 +30,10 @@ class ConferenceController(QObject):
         self.__caughtVideoExceptions = []
         self.__positions = {}
 
+        self.__videoProcessor.signalVirtualCameras.connect(self.__virtualCamerasReceived)
+        self.__videoProcessor.signalStateChanged.connect(self.__videoProcessorStateChanged)
+        self.__videoProcessor.signalException.connect(self.__videoProcessorExceptionHandling)
+
 
     def startOdasLive(self, odasPath, micConfigPath):
         if self.__odasServer.state != ServiceState.STOPPED:
@@ -52,7 +56,6 @@ class ConferenceController(QObject):
             return
 
         if self.__videoProcessor.state == ServiceState.STOPPED:
-            self.__videoProcessor.signalStateChanged.connect(self.__videoProcessorStateChanged)
             self.__videoProcessor.start(cameraConfigPath, faceDetectionMethod)
 
 
@@ -72,8 +75,6 @@ class ConferenceController(QObject):
 
         while self.__videoProcessor.state != ServiceState.STOPPED:
             time.sleep(0.01)
-
-        self.__videoProcessor.destroy()
 
 
     @pyqtSlot(object)
@@ -103,19 +104,10 @@ class ConferenceController(QObject):
     def __videoProcessorStateChanged(self, serviceState):
         self.__videoProcessor.state = serviceState
 
-        if self.__videoProcessor.state == ServiceState.STARTING:
-            self.__videoProcessor.signalException.connect(self.__videoProcessorExceptionHandling)
-            self.__videoProcessor.signalVirtualCameras.connect(self.__virtualCamerasReceived)
-
         if self.__videoProcessor.state == ServiceState.RUNNING:
             self.signalVideoProcessorState.emit(True)
 
-        elif self.__videoProcessor.state == ServiceState.STOPPING:
-            self.__videoProcessor.signalVirtualCameras.disconnect(self.__virtualCamerasReceived)
-
         elif self.__videoProcessor.state == ServiceState.STOPPED:
-            self.__videoProcessor.signalException.disconnect(self.__videoProcessorExceptionHandling)
-            self.__videoProcessor.signalStateChanged.disconnect(self.__videoProcessorStateChanged)
             for e in self.__caughtVideoExceptions:
                 self.signalException.emit(e)
                 self.__caughtVideoExceptions.clear()
@@ -130,6 +122,9 @@ class ConferenceController(QObject):
 
     @pyqtSlot(object, object)
     def __virtualCamerasReceived(self, images, virtualCameras):
+        if self.__videoProcessor.state != ServiceState.RUNNING:
+            return
+
         combinedImage = VirtualCameraDisplayBuilder.buildImage(images, (800, 600),
                                                                 self.__virtualCameraFrame.palette().color(QtGui.QPalette.Background), 10)
 
@@ -145,5 +140,6 @@ class ConferenceController(QObject):
     @pyqtSlot(Exception)
     def __videoProcessorExceptionHandling(self, e):
         self.__caughtVideoExceptions.append(e)
-        self.stopVideoProcessor()
+        if self.__videoProcessor.state == ServiceState.RUNNING:
+            self.stopVideoProcessor()
 

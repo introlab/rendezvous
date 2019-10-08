@@ -28,6 +28,7 @@ namespace View
         // General Group Box Init
         m_ui->txtBoxDefaultOutputFolder->setText(QString::fromStdString(m_structAppSettings->general.defaultConfigurationFilePath));
 
+<<<<<<< HEAD
         // Conference Group Box Init
         m_ui->txtBoxCameraConfigPath->setText(QString::fromStdString(m_structAppSettings->conference.cameraConfigurationFilePath));
         m_ui->txtBoxMicConfigPath->setText(QString::fromStdString(m_structAppSettings->conference.microConfigurationFilePath));
@@ -41,4 +42,6 @@ namespace View
         delete m_ui;
     }
 
+=======
+>>>>>>> master
 } // View

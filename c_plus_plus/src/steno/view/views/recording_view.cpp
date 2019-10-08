@@ -11,9 +11,4 @@ RecordingView::RecordingView(QWidget *parent)
     ui->setupUi(this);
 }
 
-RecordingView::~RecordingView()
-{
-    delete ui;
-}
-
 } // View

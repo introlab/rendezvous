@@ -17,23 +17,23 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     main.cpp \
-    model/video_player.cpp \
+    model/media_player.cpp \
     view/mainwindow.cpp \
     view/components/sidebar.cpp \
     view/views/conference_view.cpp \
-    view/views/playback_view.cpp \
+    view/views/media_player_view.cpp \
     view/views/recording_view.cpp \
     view/views/settings_view.cpp \
     view/views/transcription_view.cpp
 
 HEADERS += \
-    model/i_video_player.h \
-    model/video_player.h \
+    model/i_media_player.h \
+    model/media_player.h \
     view/mainwindow.h \
     view/components/sidebar.h \
     view/views/abstract_view.h \
     view/views/conference_view.h \
-    view/views/playback_view.h \
+    view/views/media_player_view.h \
     view/views/recording_view.h \
     view/views/settings_view.h \
     view/views/struct_appclication_settings.h \
@@ -42,7 +42,7 @@ HEADERS += \
 FORMS += \
     view/gui/conference_view.ui \
     view/gui/mainwindow.ui \
-    view/gui/playback_view.ui \
+    view/gui/media_player_view.ui \
     view/gui/recording_view.ui \
     view/gui/settings_view.ui \
     view/gui/transcription_view.ui
