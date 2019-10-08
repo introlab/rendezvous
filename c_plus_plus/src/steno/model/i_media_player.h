@@ -1,5 +1,5 @@
-#ifndef I_VIDEO_PLAYER_H
-#define I_VIDEO_PLAYER_H
+#ifndef I_MEDIA_PLAYER_H
+#define I_MEDIA_PLAYER_H
 
 #include <QMediaPlayer>
 #include <QWidget>
@@ -9,13 +9,13 @@ class QVideoWidget;
 namespace Model
 {
 
-class IVideoPlayer : public QWidget
+class IMediaPlayer : public QWidget
 {
     Q_OBJECT
 
     public:
-        IVideoPlayer(QWidget *parent = nullptr) : QWidget(parent) {}
-        virtual ~IVideoPlayer() {}
+        IMediaPlayer(QWidget *parent = nullptr) : QWidget(parent) {}
+        virtual ~IMediaPlayer() {}
         virtual void setMedia(const QUrl &url) = 0;
         virtual void play() = 0;
         virtual void setPosition(int position) = 0;
@@ -33,4 +33,4 @@ class IVideoPlayer : public QWidget
 
 } // Model
 
-#endif // I_VIDEO_PLAYER_H
+#endif // I_MEDIA_PLAYER_H

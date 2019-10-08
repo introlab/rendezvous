@@ -1,7 +1,7 @@
-#include "playback_view.h"
-#include "ui_playback_view.h"
+#include "media_player_view.h"
+#include "ui_media_player_view.h"
 
-#include "model/i_video_player.h"
+#include "model/i_media_player.h"
 
 #include <QFileDialog>
 #include <QStandardPaths>
@@ -10,9 +10,9 @@
 namespace View
 {
 
-PlaybackView::PlaybackView(Model::IVideoPlayer &videoPlayer, QWidget *parent)
-    : AbstractView("Playback", parent)
-    , m_ui(new Ui::PlaybackView)
+MediaPlayerView::MediaPlayerView(Model::IMediaPlayer &videoPlayer, QWidget *parent)
+    : AbstractView("Media Player", parent)
+    , m_ui(new Ui::MediaPlayerView)
     , m_videoPlayer(videoPlayer)
 {
     m_ui->setupUi(this);
@@ -27,19 +27,19 @@ PlaybackView::PlaybackView(Model::IVideoPlayer &videoPlayer, QWidget *parent)
     connect(m_ui->positionSlider, &QAbstractSlider::sliderMoved, [=](int position){ m_videoPlayer.setPosition(position); });
     connect(m_ui->volumeSlider, &QSlider::valueChanged, [=]{ m_videoPlayer.setVolume(volume()); });
     
-    connect(&m_videoPlayer, &Model::IVideoPlayer::stateChanged, [=](QMediaPlayer::State state){ onMediaStateChanged(state); });
-    connect(&m_videoPlayer, &Model::IVideoPlayer::positionChanged, [=](qint64 position){ onPositionChanged(position); });
-    connect(&m_videoPlayer, &Model::IVideoPlayer::durationChanged, [=](qint64 duration){ onDurationChanged(duration); });
-    connect(&m_videoPlayer, &Model::IVideoPlayer::volumeChanged, [=](int volume){ setVolume(volume); });
-    connect(&m_videoPlayer, &Model::IVideoPlayer::errorOccured, [=](QString error){ onErrorOccured(error); });
+    connect(&m_videoPlayer, &Model::IMediaPlayer::stateChanged, [=](QMediaPlayer::State state){ onMediaStateChanged(state); });
+    connect(&m_videoPlayer, &Model::IMediaPlayer::positionChanged, [=](qint64 position){ onPositionChanged(position); });
+    connect(&m_videoPlayer, &Model::IMediaPlayer::durationChanged, [=](qint64 duration){ onDurationChanged(duration); });
+    connect(&m_videoPlayer, &Model::IMediaPlayer::volumeChanged, [=](int volume){ setVolume(volume); });
+    connect(&m_videoPlayer, &Model::IMediaPlayer::errorOccured, [=](QString error){ onErrorOccured(error); });
 }
 
-PlaybackView::~PlaybackView()
+MediaPlayerView::~MediaPlayerView()
 {
     delete m_ui;
 }
 
-void PlaybackView::onMediaStateChanged(QMediaPlayer::State state)
+void MediaPlayerView::onMediaStateChanged(QMediaPlayer::State state)
 {
     switch(state)
     {
@@ -52,23 +52,23 @@ void PlaybackView::onMediaStateChanged(QMediaPlayer::State state)
     }
 }
 
-void PlaybackView::onPositionChanged(qint64 position)
+void MediaPlayerView::onPositionChanged(qint64 position)
 {
     m_ui->positionSlider->setValue(static_cast<int>(position));
 }
 
-void PlaybackView::onDurationChanged(qint64 duration)
+void MediaPlayerView::onDurationChanged(qint64 duration)
 {
     m_ui->positionSlider->setRange(0, static_cast<int>(duration));
 }
 
-void PlaybackView::onErrorOccured(QString error)
+void MediaPlayerView::onErrorOccured(QString error)
 {
     m_ui->playButton->setEnabled(false);
     m_ui->errorLabel->setText(error);
 }
 
-void PlaybackView::openFile()
+void MediaPlayerView::openFile()
 {
     QFileDialog fileDialog(this);
     fileDialog.setAcceptMode(QFileDialog::AcceptOpen);
@@ -83,7 +83,7 @@ void PlaybackView::openFile()
     }
 }
 
-int PlaybackView::volume() const
+int MediaPlayerView::volume() const
 {
     qreal linearVolume = QAudio::convertVolume(m_ui->volumeSlider->value() / qreal(100),
                                                QAudio::LogarithmicVolumeScale,
@@ -92,7 +92,7 @@ int PlaybackView::volume() const
     return qRound(linearVolume * 100);
 }
 
-void PlaybackView::setVolume(int volume)
+void MediaPlayerView::setVolume(int volume)
 {
     qreal logarithmicVolume = QAudio::convertVolume(volume / qreal(100),
                                                     QAudio::LinearVolumeScale,

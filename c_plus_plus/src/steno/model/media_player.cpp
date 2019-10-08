@@ -1,12 +1,12 @@
-#include "video_player.h"
+#include "media_player.h"
 
 #include <QVideoWidget>
 
 namespace Model
 {
 
-VideoPlayer::VideoPlayer(QWidget *parent)
-    : IVideoPlayer(parent)
+MediaPlayer::MediaPlayer(QWidget *parent)
+    : IMediaPlayer(parent)
     , m_mediaPlayer(new QMediaPlayer(this, QMediaPlayer::VideoSurface))
 
 {
@@ -17,32 +17,32 @@ VideoPlayer::VideoPlayer(QWidget *parent)
     connect(m_mediaPlayer, QOverload<QMediaPlayer::Error>::of(&QMediaPlayer::error), [=]{ onErrorOccured(); });
 }
 
-VideoPlayer::~VideoPlayer()
+MediaPlayer::~MediaPlayer()
 {
     delete m_mediaPlayer;
 }
 
-void VideoPlayer::setVideoOutput(QVideoWidget *videoOutput)
+void MediaPlayer::setVideoOutput(QVideoWidget *videoOutput)
 {
     m_mediaPlayer->setVideoOutput(videoOutput);
 }
 
-void VideoPlayer::setVolume(int volume)
+void MediaPlayer::setVolume(int volume)
 {
     m_mediaPlayer->setVolume(volume);
 }
 
-int VideoPlayer::volume() const
+int MediaPlayer::volume() const
 {
     return m_mediaPlayer->volume();
 }
 
-void VideoPlayer::setMedia(const QUrl &url)
+void MediaPlayer::setMedia(const QUrl &url)
 {
     m_mediaPlayer->setMedia(url);
 }
 
-void VideoPlayer::play()
+void MediaPlayer::play()
 {
     switch (m_mediaPlayer->state())
     {
@@ -55,12 +55,12 @@ void VideoPlayer::play()
     }
 }
 
-void VideoPlayer::setPosition(int position)
+void MediaPlayer::setPosition(int position)
 {
     m_mediaPlayer->setPosition(position);
 }
 
-void VideoPlayer::onErrorOccured()
+void MediaPlayer::onErrorOccured()
 {
     const QString errorString = m_mediaPlayer->errorString();
     QString message = "Error: ";

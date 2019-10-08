@@ -1,21 +1,21 @@
-#ifndef PLAYBACK_VIEW_H
-#define PLAYBACK_VIEW_H
+#ifndef MEDIA_PLAYER_VIEW_H
+#define MEDIA_PLAYER_VIEW_H
 
 #include <QMediaPlayer>
 
 #include "view/views/abstract_view.h"
 
-namespace Ui { class PlaybackView; }
-namespace Model { class IVideoPlayer; }
+namespace Ui { class MediaPlayerView; }
+namespace Model { class IMediaPlayer; }
 
 namespace View
 {
 
-class PlaybackView : public AbstractView
+class MediaPlayerView : public AbstractView
 {
     public:
-        explicit PlaybackView(Model::IVideoPlayer& videoPlayer, QWidget *parent = nullptr);
-        virtual ~PlaybackView();
+        explicit MediaPlayerView(Model::IMediaPlayer& videoPlayer, QWidget *parent = nullptr);
+        virtual ~MediaPlayerView();
 
     public slots:
         void onMediaStateChanged(QMediaPlayer::State state);
@@ -28,10 +28,10 @@ class PlaybackView : public AbstractView
         int volume() const;
         void setVolume(int);
 
-        Ui::PlaybackView *m_ui;
-        Model::IVideoPlayer &m_videoPlayer;
+        Ui::MediaPlayerView *m_ui;
+        Model::IMediaPlayer &m_videoPlayer;
 };
 
 } // View
 
-#endif // PLAYBACK_VIEW_H
+#endif // MEDIA_PLAYER_VIEW_H

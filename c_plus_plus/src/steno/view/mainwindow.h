@@ -26,7 +26,7 @@ class MainWindow : public QMainWindow
         QStackedWidget *views;
         View::AbstractView *conferenceView;
         View::AbstractView *recordingView;
-        View::AbstractView *playbackView;
+        View::AbstractView *mediaPlayerView;
         View::AbstractView *transcriptionView;
         View::AbstractView *settingsView;
 };

@@ -1,7 +1,7 @@
-#ifndef VIDEO_PLAYER_H
-#define VIDEO_PLAYER_H
+#ifndef MEDIA_PLAYER_H
+#define MEDIA_PLAYER_H
 
-#include "model/i_video_player.h"
+#include "model/i_media_player.h"
 
 #include <QMediaPlayer>
 #include <QWidget>
@@ -11,11 +11,11 @@ class QUrl;
 namespace Model
 {
 
-class VideoPlayer : public IVideoPlayer
+class MediaPlayer : public IMediaPlayer
 {
     public:
-        explicit VideoPlayer(QWidget *parent = nullptr);
-        virtual ~VideoPlayer() override;
+        explicit MediaPlayer(QWidget *parent = nullptr);
+        virtual ~MediaPlayer() override;
         virtual void setMedia(const QUrl &url) override;
         virtual void play() override;
         virtual void setPosition(int position) override;
@@ -31,4 +31,4 @@ class VideoPlayer : public IVideoPlayer
 
 } // Model
 
-#endif // VIDEO_PLAYER_H
+#endif // MEDIA_PLAYER_H
