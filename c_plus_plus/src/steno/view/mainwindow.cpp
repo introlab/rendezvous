@@ -23,12 +23,15 @@ MainWindow::MainWindow(QWidget *parent)
     , conferenceView(new View::ConferenceView)
     , recordingView(new View::RecordingView)
     , transcriptionView(new View::TranscriptionView)
-    , settingsView(new View::SettingsView)
+    , settingsView(new View::SettingsView())
 {
     ui->setupUi(this);
 
     Model::VideoPlayer *videoPlayer = new Model::VideoPlayer();
     playbackView = new View::PlaybackView(*videoPlayer);
+
+    //Model::ISettingsView *settingsView
+
 
     QFile File("view/stylesheets/globalStylesheet.qss");
     File.open(QFile::ReadOnly);

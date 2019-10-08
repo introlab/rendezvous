@@ -15,7 +15,7 @@
   </property>
   <layout class="QGridLayout" name="gridLayout" rowstretch="0,0,0,0">
    <item row="2" column="0">
-    <widget class="QGroupBox" name="groupBox_5">
+    <widget class="QGroupBox" name="groupBoxTranscription">
      <property name="title">
       <string>Transcription</string>
      </property>
@@ -24,7 +24,7 @@
        <number>6</number>
       </property>
       <item row="0" column="0" colspan="2">
-       <widget class="QLabel" name="label_4">
+       <widget class="QLabel" name="lblGoogleServiceAccount">
         <property name="minimumSize">
          <size>
           <width>203</width>
@@ -37,7 +37,7 @@
        </widget>
       </item>
       <item row="0" column="2">
-       <widget class="QLineEdit" name="serviceAccountPath">
+       <widget class="QLineEdit" name="txtBoxServiceAccountPath">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -63,28 +63,28 @@
        </widget>
       </item>
       <item row="7" column="0">
-       <widget class="QLabel" name="label_7">
+       <widget class="QLabel" name="lblAutoTranscription">
         <property name="text">
          <string>Automatic transcription</string>
         </property>
        </widget>
       </item>
       <item row="8" column="0">
-       <widget class="QLabel" name="label_12">
+       <widget class="QLabel" name="lblUseEnhanced">
         <property name="text">
          <string>Use enhanced</string>
         </property>
        </widget>
       </item>
       <item row="4" column="0">
-       <widget class="QLabel" name="label_10">
+       <widget class="QLabel" name="lblModel">
         <property name="text">
          <string>Model</string>
         </property>
        </widget>
       </item>
       <item row="3" column="2">
-       <widget class="QComboBox" name="languageComboBox"/>
+       <widget class="QComboBox" name="comboBoxLanguage"/>
       </item>
       <item row="7" column="2">
        <widget class="QCheckBox" name="autoTranscriptionCheckBox">
@@ -117,41 +117,41 @@
        </widget>
       </item>
       <item row="2" column="0">
-       <widget class="QLabel" name="label_8">
+       <widget class="QLabel" name="lblEncoding">
         <property name="text">
          <string>Encoding</string>
         </property>
        </widget>
       </item>
       <item row="2" column="2">
-       <widget class="QComboBox" name="encodingComboBox"/>
+       <widget class="QComboBox" name="comboBoxEncoding"/>
       </item>
       <item row="6" column="0">
-       <widget class="QLabel" name="label_11">
+       <widget class="QLabel" name="lblSampleRate">
         <property name="text">
          <string>Sample rate (Hz)</string>
         </property>
        </widget>
       </item>
       <item row="6" column="2">
-       <widget class="QSpinBox" name="sampleRateSpinBox"/>
+       <widget class="QSpinBox" name="spinBoxSampleRate"/>
       </item>
       <item row="3" column="0">
-       <widget class="QLabel" name="label_9">
+       <widget class="QLabel" name="lblLanguage">
         <property name="text">
          <string>Language</string>
         </property>
        </widget>
       </item>
       <item row="5" column="0">
-       <widget class="QLabel" name="label_13">
+       <widget class="QLabel" name="lblChannelCount">
         <property name="text">
          <string>Channel count</string>
         </property>
        </widget>
       </item>
       <item row="5" column="2">
-       <widget class="QSpinBox" name="channelCountSpinBox"/>
+       <widget class="QSpinBox" name="spinBoxChannelCount"/>
       </item>
      </layout>
     </widget>
@@ -196,14 +196,14 @@
        </widget>
       </item>
       <item row="0" column="0">
-       <widget class="QLabel" name="label_2">
+       <widget class="QLabel" name="lblCameraCongifFile">
         <property name="text">
          <string>Camera configuration file</string>
         </property>
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QLineEdit" name="odasPath">
+       <widget class="QLineEdit" name="txtBoxOdasPath">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -228,7 +228,7 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QLineEdit" name="cameraConfigPath">
+       <widget class="QLineEdit" name="txtBoxCameraConfigPath">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -247,7 +247,7 @@
        </widget>
       </item>
       <item row="2" column="0">
-       <widget class="QLabel" name="label">
+       <widget class="QLabel" name="lblOdasLibrary">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
           <horstretch>0</horstretch>
@@ -260,7 +260,7 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QLineEdit" name="micConfigPath">
+       <widget class="QLineEdit" name="txtBoxMicConfigPath">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -279,7 +279,7 @@
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="label_3">
+       <widget class="QLabel" name="lblMicroConfigFile">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
           <horstretch>0</horstretch>
@@ -325,7 +325,7 @@
        </spacer>
       </item>
       <item row="3" column="1">
-       <widget class="QComboBox" name="cbFaceDetection">
+       <widget class="QComboBox" name="comboBoxFaceDetection">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -338,13 +338,13 @@
     </widget>
    </item>
    <item row="0" column="0">
-    <widget class="QGroupBox" name="groupBox_3">
+    <widget class="QGroupBox" name="groupBoxGeneral">
      <property name="title">
       <string>General</string>
      </property>
      <layout class="QGridLayout" name="gridLayout_5">
       <item row="0" column="1">
-       <widget class="QLineEdit" name="defaultOutputFolder">
+       <widget class="QLineEdit" name="txtBoxDefaultOutputFolder">
         <property name="enabled">
          <bool>false</bool>
         </property>
@@ -370,7 +370,7 @@
        </widget>
       </item>
       <item row="0" column="0">
-       <widget class="QLabel" name="label_5">
+       <widget class="QLabel" name="lblDefaultOutputFolder">
         <property name="minimumSize">
          <size>
           <width>203</width>

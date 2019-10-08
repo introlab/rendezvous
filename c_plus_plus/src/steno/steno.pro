@@ -36,6 +36,7 @@ HEADERS += \
     view/views/playback_view.h \
     view/views/recording_view.h \
     view/views/settings_view.h \
+    view/views/struct_appclication_settings.h \
     view/views/transcription_view.h
 
 FORMS += \
