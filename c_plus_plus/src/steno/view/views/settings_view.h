@@ -11,37 +11,27 @@ namespace Ui { class SettingsView; }
 namespace View
 {
 
-<<<<<<< HEAD
-    class SettingsView : public AbstractView
-    {
-        public:
-            explicit SettingsView(QWidget *parent = nullptr);
-            virtual ~SettingsView();
-
-        public slots:
-            void onbtnBrowseDefaultOutputFolderClick();
-            void onbtnBrowseCameraConfigFileClick();
-            void onbtnBrowseMicrophoneConfigFileClick();
-            void onbtnOdasLibraryBrowseClick();
-            void ontbtnFaceDetectionMethodBrowseClick();
-            void onbtnGoogleServiceAccountBrowseClick();
-
-        private:
-            Ui::SettingsView *m_ui;
-            QFileDialog m_dialog;
-            View::ApplicationSettingsStruct *m_structAppSettings;
-
-    };
-=======
 class SettingsView : public AbstractView
 {
-public:
-    explicit SettingsView(QWidget *parent = nullptr);
+    public:
+        explicit SettingsView(QWidget *parent = nullptr);
+        virtual ~SettingsView();
 
-private:
-    Ui::SettingsView *ui;
+    public slots:
+        void onbtnBrowseDefaultOutputFolderClick();
+        void onbtnBrowseCameraConfigFileClick();
+        void onbtnBrowseMicrophoneConfigFileClick();
+        void onbtnOdasLibraryBrowseClick();
+        void ontbtnFaceDetectionMethodBrowseClick();
+        void onbtnGoogleServiceAccountBrowseClick();
+
+    private:
+        Ui::SettingsView *m_ui;
+        QFileDialog m_dialog;
+        View::ApplicationSettingsStruct *m_structAppSettings;
+
 };
->>>>>>> master
+
 
 } // View
 
