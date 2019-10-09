@@ -66,7 +66,7 @@ class VideoStream:
     def printCameraSettings(self):
         if self.camera is None:
             print('Stream must be initiazed to print the camera settings')
-        else: 
+        else:
             print('Image width = {width}'.format(width=self.camera.get(cv2.CAP_PROP_FRAME_WIDTH)))
             print('Image height = {height}'.format(height=self.camera.get(cv2.CAP_PROP_FRAME_HEIGHT)))
             print('Codec = {codec}'.format(codec=self.__decode_fourcc(self.camera.get(cv2.CAP_PROP_FOURCC))))
