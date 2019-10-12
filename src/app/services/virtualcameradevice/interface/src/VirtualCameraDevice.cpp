@@ -4,19 +4,22 @@
 #include <string.h>
 #include <iostream>
 
-#define ROUND_UP_2(num) (((num) + 1) & ~1)
-
 using namespace std;
 
-VirtualCameraDevice::VirtualCameraDevice(const char* videoDevice, ImageFormat formatEnum, unsigned int w, unsigned int h, unsigned int fps)
+VirtualCameraDevice::VirtualCameraDevice(const char* videoDevice, ImageFormat formatEnum, unsigned int width, unsigned int height, unsigned int fps)
 {     
-    width = w;
-    height = h;
 
     unsigned int format;
-    if(formatEnum == ImageFormat::UYVY)
-    {
-        format = V4L2_PIX_FMT_UYVY;
+
+    switch(formatEnum){
+        case(ImageFormat::YUV420): format = V4L2_PIX_FMT_YUV420;
+        break;
+
+        case(ImageFormat::UYVY): format = V4L2_PIX_FMT_UYVY;
+        break;
+
+        case(ImageFormat::YUYV): format = V4L2_PIX_FMT_YUYV;
+        break;
     }
     
     V4L2DeviceParameters param(videoDevice, format, width, height, fps);
@@ -34,30 +37,19 @@ bool VirtualCameraDevice::isWritable(timeval timeout)
     return videoOutput->isWritable(&timeout) == 1;
 }
 
-size_t VirtualCameraDevice::write(char* buffer, size_t bufferSize)
+size_t VirtualCameraDevice::write(unsigned char * rgb, int width, int height, int channels)
 {
-    return videoOutput->write(buffer, bufferSize);
-}
+    int rgbSize = width * height * channels;
+    int yuvSize = 2 * rgbSize / 3;
 
-void VirtualCameraDevice::test()
-{
-    // Displays a green screen
-    
-    timeval timeout;
-    bool isWritable = (VirtualCameraDevice::isWritable(timeout) == 1);
+    unsigned char yuv422[yuvSize];
+    memset(yuv422, 0, yuvSize);
 
-    size_t linewidth = (ROUND_UP_2(width) * 2);
-    size_t framewidth = linewidth * height;
-    char buffer[framewidth];
+    convertToYUV422(width, height, channels, rgb, yuv422);
 
-    cout << endl << "WIDTH = " << width << endl;
-    cout << "HEIGHT = " << height << endl;
-    cout << "LINEWIDTH = " << linewidth << endl;
-    cout << "FRAMEWIDTH = " << framewidth << endl;
+    size_t ret = videoOutput->write((char*)yuv422, yuvSize);
 
-    memset(buffer, 0, framewidth);
-
-    size_t nb = VirtualCameraDevice::write(buffer, framewidth);
+    return ret;
 }
 
 void VirtualCameraDevice::stopDevice() 
@@ -65,20 +57,41 @@ void VirtualCameraDevice::stopDevice()
     videoOutput->stop();
 }
 
-/*char VirtualCameraDevice::convertToFormat(char* buffer, const unsigned int format, const unsigned int width, const unsigned int height)
+YUV422 VirtualCameraDevice::getYUV422(const RGB& rgb)
 {
-    size_t linewidth = 0;
-    size_t framewidth = 0;
+    YUV422 yuv;
+    int r = rgb.r;
+    int g = rgb.g;
+    int b = rgb.b;
 
-    if(format == V4L2_PIX_FMT_YUV420) 
+    yuv.y = ((66 * r + 129 * g + 25 * b + 128) >> 8) + 16;
+    yuv.u = ((-38 * r - 74 * g + 112 * b + 128) >> 8) + 128;
+    yuv.v = ((112 * r - 94 * g - 18 * b + 128) >> 8) + 128;
+
+    return yuv;
+}
+
+void VirtualCameraDevice::convertToYUV422(int width, int height, int channels, unsigned char* rgb, unsigned char* yuv422)
+{
+    int sizeRGB = width * height * channels;
+
+    for (int i = 0, j = 0; i < sizeRGB; i += 6, j += 4)
     {
-        linewidth = ROUND_UP_2(width) * 2;
-        framewidth = linewidth * height; 
+        RGB rgb1, rgb2;
+
+        rgb1.r = rgb[i];
+        rgb1.g = rgb[i + 1];
+        rgb1.b = rgb[i + 2];
+        rgb2.r = rgb[i + 3];
+        rgb2.g = rgb[i + 4];
+        rgb2.b = rgb[i + 5];
+
+        YUV422 yuv1 = getYUV422(rgb1);
+        YUV422 yuv2 = getYUV422(rgb2);
+
+        yuv422[j] = yuv1.u;
+        yuv422[j + 1] = yuv1.y;
+        yuv422[j + 2] = yuv1.v;
+        yuv422[j + 3] = yuv2.y;
     }
-
-    char convertedBuffer[framewidth];
-    // do conversion
-
-    return convertedBuffer;
-
-}*/
+}

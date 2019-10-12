@@ -1,5 +1,5 @@
 import time
-from virtual_camera_device import VirtualCameraDevice
+from interface.virtual_camera_device import VirtualCameraDevice
 
 def main():
     virtualCameraDevice = VirtualCameraDevice(videoDevice="/dev/video1", format=0, width=640, height=480, fps=15)

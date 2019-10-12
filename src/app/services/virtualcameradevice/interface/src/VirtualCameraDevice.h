@@ -9,7 +9,21 @@ using namespace std;
 enum ImageFormat
 {
     UYVY,
+    YUYV,
     YUV420
+};
+
+struct RGB
+{
+    unsigned char r;
+    unsigned char g;
+    unsigned char b;
+};
+
+struct YUV422 {
+    unsigned char u;
+    unsigned char y;
+    unsigned char v;
 };
 
 class VirtualCameraDevice
@@ -20,17 +34,14 @@ public:
 
     bool isWritable(timeval timeout);
 
-    size_t write(char* buffer, size_t bufferSize);
-
-    void test();
+    size_t write(unsigned char* buffer, int height, int width, int channels);
 
     void stopDevice();
 
-    //char convertToFormat(char* buffer, const unsigned int format);
-
 private:
     V4l2Output* videoOutput = nullptr;
-    unsigned int width;
-    unsigned int height;
 
+    void convertToYUV422(int width, int height, int channels, unsigned char* rgb, unsigned char* yuv422);
+
+    YUV422 getYUV422(const RGB& rgb);
 };
