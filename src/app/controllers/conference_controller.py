@@ -6,6 +6,11 @@ from PyQt5 import QtGui
 from src.app.application_container import ApplicationContainer
 from src.app.services.service.service_state import ServiceState
 from src.app.services.videoprocessing.virtualcamera.virtual_camera_display_builder import VirtualCameraDisplayBuilder
+from src.app.services.virtualcameradevice.interface.virtual_camera_device import VirtualCameraDevice
+
+# temp
+from matplotlib.image import imread # TO REMOVE
+import numpy as np
 
 
 class ConferenceController(QObject):
@@ -33,6 +38,13 @@ class ConferenceController(QObject):
         self.__videoProcessor.signalVirtualCameras.connect(self.__virtualCamerasReceived)
         self.__videoProcessor.signalStateChanged.connect(self.__videoProcessorStateChanged)
         self.__videoProcessor.signalException.connect(self.__videoProcessorExceptionHandling)
+        self.__virtualCameraDevice = VirtualCameraDevice(videoDevice="/dev/video1", format=0, width=800, height=600, fps=15)
+
+        # temp
+        data = imread("/home/walid/projet/sandbox/testImage.png")
+        data = 255 * data
+        self.__testImage = data.astype(np.uint8)
+        
 
 
     def startOdasLive(self, odasPath, micConfigPath):
@@ -128,6 +140,8 @@ class ConferenceController(QObject):
         combinedImage = VirtualCameraDisplayBuilder.buildImage(images, (800, 600),
                                                                 self.__virtualCameraFrame.palette().color(QtGui.QPalette.Background), 10)
 
+        self.__virtualCameraDevice.write(combinedImage)
+
         self.signalVirtualCamerasReceived.emit(combinedImage)
 
 
@@ -142,4 +156,3 @@ class ConferenceController(QObject):
         self.__caughtVideoExceptions.append(e)
         if self.__videoProcessor.state == ServiceState.RUNNING:
             self.stopVideoProcessor()
-
