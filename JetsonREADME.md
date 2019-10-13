@@ -120,7 +120,7 @@ Run the script
 
 Add a link to the opencv library in the project env :
 
-	$ mv /usr/local/lib/python3.5/site-packages/cv2.cpython-35m-aarch64-linux-gnu.so /usr/local/lib/python3.5/dist-packages/cv2.so
+	$ mv /usr/local/lib/python3.5/dist-packages/cv2.cpython-35m-aarch64-linux-gnu.so /usr/local/lib/python3.5/dist-packages/cv2.so
 	$ ln -s /usr/local/lib/python3.5/dist-packages/cv2.so /home/nvidia/dev/workspace/rendezvous/env/lib/python3.5/site-packages/cv2.so
 
 ### ODAS
@@ -253,5 +253,5 @@ To remove a v4l2loopback device:
 
     $ cd ~/dev/lib
     $ git clone https://github.com/mpromonet/libv4l2cpp
-    $ chmod +x ../workspace/rendezvous/scripts/build-libv4l2cpp.sh
-    $ ../workspace/rendezvous/scripts/build-libv4l2cpp.sh
+    $ cd libv4l2cpp/
+    $ make EXTRA_CXXFLAGS='-fPIC'
