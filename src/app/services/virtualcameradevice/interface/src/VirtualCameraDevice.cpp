@@ -64,9 +64,9 @@ YUV422 VirtualCameraDevice::getYUV422(const RGB& rgb)
     int g = rgb.g;
     int b = rgb.b;
 
-    yuv.y = ((66 * r + 129 * g + 25 * b + 128) >> 8) + 16;
-    yuv.u = ((-38 * r - 74 * g + 112 * b + 128) >> 8) + 128;
-    yuv.v = ((112 * r - 94 * g - 18 * b + 128) >> 8) + 128;
+    yuv.y = ((66 * b + 129 * g + 25 * r + 128) >> 8) + 16;
+    yuv.u = ((-38 * b - 74 * g + 112 * r + 128) >> 8) + 128;
+    yuv.v = ((112 * b - 94 * g - 18 * r + 128) >> 8) + 128;
 
     return yuv;
 }
