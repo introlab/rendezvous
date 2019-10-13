@@ -234,3 +234,24 @@ Download the neural network model and data:
     $ sudo apt-get install libvlccore8
     $ sudo apt-get install libvlc5
     $ pip install python-vlc
+
+
+### V4l2loopback
+
+Installation:
+    $ cd /usr/src/linux-headers-4.4.38-tegra
+    $ sudo make modules_prepare
+    $ sudo apt-get install v4l2loopback-dkms -y
+
+To create a v4l2loopback device:
+    $ sudo modprobe v4l2loopback
+
+To remove a v4l2loopback device:
+    $ sudo rmmod v4l2loopback
+
+### libv4l2cpp
+
+    $ cd ~/dev/lib
+    $ git clone https://github.com/mpromonet/libv4l2cpp
+    $ chmod +x ../workspace/rendezvous/scripts/build-libv4l2cpp.sh
+    $ ../workspace/rendezvous/scripts/build-libv4l2cpp.sh

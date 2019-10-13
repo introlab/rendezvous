@@ -43,6 +43,8 @@ class ConferenceController(QObject):
         # temp
         data = imread("/home/walid/projet/sandbox/testImage.png")
         data = 255 * data
+        data = np.delete(data, slice(598,600), 0)
+        data = np.delete(data, slice(798,800), 1)
         self.__testImage = data.astype(np.uint8)
         
 
@@ -140,7 +142,7 @@ class ConferenceController(QObject):
         combinedImage = VirtualCameraDisplayBuilder.buildImage(images, (800, 600),
                                                                 self.__virtualCameraFrame.palette().color(QtGui.QPalette.Background), 10)
 
-        self.__virtualCameraDevice.write(combinedImage)
+        #self.__virtualCameraDevice.write(self.__testImage)
 
         self.signalVirtualCamerasReceived.emit(combinedImage)
 
