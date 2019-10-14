@@ -18,6 +18,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     main.cpp \
     model/media_player.cpp \
+    model/settings.cpp \
     view/mainwindow.cpp \
     view/components/sidebar.cpp \
     view/views/conference_view.cpp \
@@ -28,7 +29,9 @@ SOURCES += \
 
 HEADERS += \
     model/i_media_player.h \
+    model/i_settings.h \
     model/media_player.h \
+    model/settings.h \
     view/mainwindow.h \
     view/components/sidebar.h \
     view/views/abstract_view.h \
