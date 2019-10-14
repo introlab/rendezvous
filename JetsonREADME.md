@@ -56,20 +56,19 @@ You can test the camera with this command:
 ### General dependencies
 Run the following commands:
 
-    $ sudo apt-get install python3 -y
-    $ sudo apt-get install python3-dev -y
-    $ sudo apt-get install cython
-    $ sudo apt-get install python3-pip -y
-    $ sudo pip3 install --upgrade pip
+	$ sudo apt-get install python3 \
+			     python3-dev \
+			     cython \
+			     python3-pip \
+			     cmake \
+			     python3-tk \
+			     xorg-dev libglu1-mesa-dev \
+			     swig \
+			     ffmpeg \
+			     autoconf \
+			     libtool
 
-    $ sudo apt-get install cmake -y
-
-    $ sudo apt-get install python3-tk -y
-    $ sudo apt-get install xorg-dev libglu1-mesa-dev -y
-    $ sudo apt-get install swig -y
-    $ sudo apt-get install ffmpeg -y
-    $ sudo apt-get install autoconf -y
-    $ sudo apt-get install libtool -y
+	$ sudo pip3 install --upgrade pip
 
 Create the directories:
 
