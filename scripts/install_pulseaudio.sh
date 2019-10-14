@@ -14,27 +14,18 @@ PULSEAUDIO_HOME=$INSTALL_DIR/pulseaudio
 PULSEAUDIO_BIN=$PULSEAUDIO_HOME/build
 
 # Dependencies
-sudo apt-get install autotools-dev \
-                     autoconf \
-                     libudev-dev \
-                     libspeex-dev \
-                     libspeexdsp-dev \
-                     autopoint \
-                     libsndfile-dev \
-                     libcap-dev \
-                     libdbus-1-dev \
-                     intltool \
-                     libasound2-dev
+#libtool-bin
+sudo apt-get install autotools-dev autoconf libudev-dev libspeex-dev libspeexdsp-dev autopoint libsndfile-dev libcap-dev libdbus-1-dev intltool libasound2-dev
 
 # WebRTC AEC library
 # https://freedesktop.org/software/pulseaudio/webrtc-audio-processing/
-#wget http://freedesktop.org/software/pulseaudio/webrtc-audio-processing/webrtc-audio-processing-0.2.tar.xz -O $INSTALL_DIR/webrtc-audio-processing-0.2.tar.xz
-#tar -xf $INSTALL_DIR/webrtc-audio-processing-0.2.tar.xz -C $INSTALL_DIR
-#cd $WEBRTC_HOME
-#./configure
-#make
-#sudo make install
-#sudo ldconfig
+wget http://freedesktop.org/software/pulseaudio/webrtc-audio-processing/webrtc-audio-processing-0.2.tar.xz -O $INSTALL_DIR/webrtc-audio-processing-0.2.tar.xz
+tar -xf $INSTALL_DIR/webrtc-audio-processing-0.2.tar.xz -C $INSTALL_DIR
+cd $WEBRTC_HOME
+./configure
+make
+sudo make install
+sudo ldconfig
 
 # Pulseaudio
 # https://colin.guthr.ie/2010/09/compiling-and-running-pulseaudio-from-git/
