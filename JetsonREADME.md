@@ -126,9 +126,9 @@ Add a link to the opencv library in the project env :
 
 Install the following dependencies:
 
-    $ sudo apt-get install libfftw3-dev -y
-    $ sudo apt-get install libconfig-dev -y
-    $ sudo apt-get install libasound2-dev -y
+    $ sudo apt-get install libfftw3-dev \
+	    		   libconfig-dev \
+    			   libasound2-dev
 
 Build Odas:
 
@@ -146,11 +146,11 @@ Build Odas:
 
 Install the following dependencies:
 
-    $ sudo apt-get install python3-pyqt5 -y
-    $ sudo apt-get install pyqt5-dev-tools -y
-    $ sudo apt-get install qttools5-dev-tools -y 
-    $ sudo apt-get install python3-sip -y
-    $ sudo apt-get install python3-scipy -y
+    $ sudo apt-get install python3-pyqt5 \
+    			   pyqt5-dev-tools \
+			   qttools5-dev-tools \
+			   python3-sip \
+    			   python3-scipy
 
 Copy the following files in the project env:
 
