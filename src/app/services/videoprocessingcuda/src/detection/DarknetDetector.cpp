@@ -1,0 +1,22 @@
+#include "DarknetDetector.h"
+
+DarknetDetector::DarknetDetector(const std::string& configFile, const std::string& weightsFile, const std::string& metaFile)
+    : BaseDarknetDetector(configFile, weightsFile, metaFile)
+{
+}
+
+image DarknetDetector::convertToDarknetImage(const ImageFloat& img)
+{
+    image darknetImage;
+    darknetImage.w = img.width;
+    darknetImage.h = img.height;
+    darknetImage.c = img.channels;
+    darknetImage.data = img.hostData;
+
+    return darknetImage;
+}
+
+void DarknetDetector::predictImage(network *net, const image& img)
+{
+    network_predict_letterbox_image(net, img);
+}

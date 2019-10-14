@@ -1,5 +1,8 @@
 #!/bin/bash
 
+REPO_DIR=$PWD
+
+### Download neural network and data ###
 git clone https://github.com/azmathmoosa/azFace
 
 mkdir -p config/yolo/cfg
@@ -12,7 +15,7 @@ sed -i 's/height=416/height=608/g' config/yolo/cfg/tiny-yolo-azface-fddb.cfg
 
 touch config/yolo/cfg/azface.data
 echo "classes=1" >> config/yolo/cfg/azface.data
-echo "names=/home/nvidia/dev/workspace/rendezvous/config/yolo/data/azface.names" >> config/yolo/cfg/azface.data
+echo "names=$REPO_DIR/config/yolo/data/azface.names" >> config/yolo/cfg/azface.data
 
 cp azFace/net_cfg/azface.names config/yolo/data/
 cp azFace/weights/tiny-yolo-azface-fddb_82000.weights config/yolo/weights/
@@ -22,7 +25,7 @@ wget https://raw.githubusercontent.com/pjreddie/darknet/master/cfg/yolov3-tiny.c
 
 touch config/yolo/cfg/coco.data
 echo "classes=1" >> config/yolo/cfg/coco.data
-echo "names=/home/nvidia/dev/workspace/rendezvous/config/yolo/data/coco.names" >> config/yolo/cfg/coco.data
+echo "names=$REPO_DIR/config/yolo/data/coco.names" >> config/yolo/cfg/coco.data
 
 touch config/yolo/data/coco.names
 echo "person" >> config/yolo/data/coco.names
