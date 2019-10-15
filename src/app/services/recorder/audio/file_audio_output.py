@@ -1,9 +1,9 @@
 import wave
 import os
 import numpy as np
+from src.app.services.recorder.audio.i_audio_output import IAudioOutput
 
-
-class AudioWriter():
+class FileAudioOutput(IAudioOutput):
     '''
         Writer of .wav and .raw files. For .wav files, the number of channels, the number of byte per sample and the sample rate are needed.
     '''
@@ -38,7 +38,7 @@ class AudioWriter():
 
     
     # Takes a raw audio in mono and creates a wav file.
-    def writeWavFrame(self, data):
+    def write(self, data):
         self.__wavFile.writeframesraw(data)
 
 
