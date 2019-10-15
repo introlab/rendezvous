@@ -1,0 +1,52 @@
+##################################
+# Dependencies
+##################################
+sudo apt-get install autotools-dev autoconf libtool libudev-dev libspeex-dev libspeexdsp-dev autopoint libsndfile-dev libcap-dev libdbus-1-dev intltool libasound2-dev
+
+##################################
+# WebRTC AEC lib
+# https://freedesktop.org/software/pulseaudio/webrtc-audio-processing/
+##################################
+wget http://freedesktop.org/software/pulseaudio/webrtc-audio-processing/webrtc-audio-processing-0.2.tar.xz
+tar -xf webrtc-audio-processing-0.2.tar.xz
+cd webrtc-audio-processing-0.2
+./configure
+make
+sudo make install
+sudo ldconfig
+
+##################################
+# Pulseaudio
+# https://colin.guthr.ie/2010/09/compiling-and-running-pulseaudio-from-git/
+# https://www.freedesktop.org/wiki/Software/PulseAudio/Documentation/Developer/PulseAudioFromGit/
+##################################
+git clone https://gitlab.freedesktop.org/pulseaudio/pulseaudio.git
+cd pulseaudio
+git checkout tags/v11.1 -b v11.1
+
+# OLD: $ NOCONFIGURE=1 ./bootstrap.sh
+./bootstrap.sh -V
+
+mkdir build && cd build
+
+# OLD: $ CFLAGS="$CFLAGS -g -O0" ../configure --enable-force-preopen --enable-webrtc-aec --enable-udev --enable-dbus --enable-alsa --prefix=$(pwd) 
+../configure --prefix=$(pwd)
+
+mkdir -p src/daemon
+make
+mkdir -p share/pulseaudio && cd share/pulseaudio
+ln -s ../../../src/modules/alsa/mixer 
+cd ../../
+ln -s pacat src/paplay
+ln -s pacat src/parec
+
+# Copy default.pa from repo to pulseaudio installation
+rm src/default.pa
+cp /path/to/rendezvous/config/pulseaudio/default.pa src/default.pa
+
+# Stop system pulse
+mkdir -p ~/.pulse
+echo "autospawn=no" >> ~/.pulse/client.conf
+
+# Run
+src/pulseaudio -n -F src/default.pa -p $(pwd)/src/ -vvvv

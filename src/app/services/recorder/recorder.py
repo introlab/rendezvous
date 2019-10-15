@@ -7,7 +7,7 @@ from enum import Enum, unique
 import numpy as np
 
 from PyQt5.QtCore import QObject, pyqtSignal
-from src.app.services.recorder.audio.audio_writer import AudioWriter
+from src.app.services.recorder.audio.file_audio_output import FileAudioOutput
 from src.app.services.recorder.video.video_writer import VideoWriter
 from src.app.services.service.service_state import ServiceState
 from src.utils.media_merger import MediaMerger
@@ -34,7 +34,7 @@ class Recorder(QObject, Thread):
         self.__videoPath = os.path.join(outputFolder, 'video.avi')
         self.__mediaPath = os.path.join(outputFolder, 'media.avi')
         
-        self.__audioWriter = AudioWriter(nChannels, byteDepth, sampleRate)
+        self.__audioWriter = FileAudioOutput(nChannels, byteDepth, sampleRate)
         self.__videoSource = VideoWriter(self.__videoPath, fourCC='MJPG', fps=15)
 
         self.state = ServiceState.TERMINATED
@@ -114,7 +114,7 @@ class Recorder(QObject, Thread):
             self.separateSourcesData(data[1])
 
             if self.__currentBufferIndex == self.__bufferSize:
-                self.__audioWriter.writeWavFrame(self.__humanSourcesBuff)
+                self.__audioWriter.write(self.__humanSourcesBuff)
                 self.__currentBufferIndex = 0
 
         elif dataType == 'video':
@@ -169,7 +169,7 @@ class Recorder(QObject, Thread):
             except:
                 pass
 
-            self.__audioWriter.writeWavFrame(self.__humanSourcesBuff[:self.__currentBufferIndex])
+            self.__audioWriter.write(self.__humanSourcesBuff[:self.__currentBufferIndex])
 
             self.__videoSource.close()
             self.__audioWriter.closeWav()
