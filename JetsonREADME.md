@@ -109,7 +109,7 @@ Run the script
 
 Add a link to the opencv library in the project env :
 
-	$ ln -s /usr/local/lib/python3.5/site-packages/cv2.cpython-35m-aarch64-linux-gnu.so /home/nvidia/dev/workspace/rendezvous/env/lib/python3.5/site-packages/cv2.so
+	$ ln -s /usr/local/lib/python3.5/dist-packages/cv2.cpython-35m-aarch64-linux-gnu.so /home/nvidia/dev/workspace/rendezvous/env/lib/python3.5/site-packages/cv2.so
 
 ### ODAS
 
