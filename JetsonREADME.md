@@ -56,20 +56,9 @@ You can test the camera with this command:
 ### General dependencies
 Run the following commands:
 
-    $ sudo apt-get install python3 -y
-    $ sudo apt-get install python3-dev -y
-    $ sudo apt-get install cython
-    $ sudo apt-get install python3-pip -y
-    $ sudo pip3 install --upgrade pip
+	$ sudo apt-get install python3 python3-dev cython python3-pip cmake python3-tk xorg-dev libglu1-mesa-dev swig ffmpeg autoconf libtool
 
-    $ sudo apt-get install cmake -y
-
-    $ sudo apt-get install python3-tk -y
-    $ sudo apt-get install xorg-dev libglu1-mesa-dev -y
-    $ sudo apt-get install swig -y
-    $ sudo apt-get install ffmpeg -y
-    $ sudo apt-get install autoconf -y
-    $ sudo apt-get install libtool -y
+	$ sudo pip3 install --upgrade pip
 
 Create the directories:
 
@@ -97,7 +86,7 @@ Install the requirements:
 
 ### OpenCV 3.4
 
-In the file /usr/local/cuda/include cuda_gl_interop.h, modify the following lines (add the comments).
+In the file /usr/local/cuda/include/cuda_gl_interop.h, modify the following lines (add the comments).
 
 	//#if defined(__arm__) || defined(__aarch64__)
 	//#ifndef GL_VERSION
@@ -120,16 +109,14 @@ Run the script
 
 Add a link to the opencv library in the project env :
 
-	$ mv /usr/local/lib/python3.5/dist-packages/cv2.cpython-35m-aarch64-linux-gnu.so /usr/local/lib/python3.5/dist-packages/cv2.so
-	$ ln -s /usr/local/lib/python3.5/dist-packages/cv2.so /home/nvidia/dev/workspace/rendezvous/env/lib/python3.5/site-packages/cv2.so
+    $ ln -s /usr/local/lib/python3.5/dist-packages/cv2.cpython-35m-aarch64-linux-gnu.so /home/nvidia/dev/workspace/rendezvous/env/lib/python3.5/site-packages/cv2.so
+
 
 ### ODAS
 
 Install the following dependencies:
 
-    $ sudo apt-get install libfftw3-dev -y
-    $ sudo apt-get install libconfig-dev -y
-    $ sudo apt-get install libasound2-dev -y
+    $ sudo apt-get install libfftw3-dev libconfig-dev libasound2-dev
 
 Build Odas:
 
@@ -147,11 +134,7 @@ Build Odas:
 
 Install the following dependencies:
 
-    $ sudo apt-get install python3-pyqt5 -y
-    $ sudo apt-get install pyqt5-dev-tools -y
-    $ sudo apt-get install qttools5-dev-tools -y 
-    $ sudo apt-get install python3-sip -y
-    $ sudo apt-get install python3-scipy -y
+    $ sudo apt-get install python3-pyqt5 pyqt5-dev-tools qttools5-dev-tools python3-sip python3-scipy
 
 Copy the following files in the project env:
 
@@ -234,3 +217,24 @@ Download the neural network model and data:
     $ sudo apt-get install libvlccore8
     $ sudo apt-get install libvlc5
     $ pip install python-vlc
+
+
+### V4l2loopback
+
+Installation:
+    $ cd /usr/src/linux-headers-4.4.38-tegra
+    $ sudo make modules_prepare
+    $ sudo apt-get install v4l2loopback-dkms -y
+
+To create a v4l2loopback device:
+    $ sudo modprobe v4l2loopback
+
+To remove a v4l2loopback device:
+    $ sudo rmmod v4l2loopback
+
+### libv4l2cpp
+
+    $ cd ~/dev/lib
+    $ git clone https://github.com/mpromonet/libv4l2cpp
+    $ cd libv4l2cpp/
+    $ make EXTRA_CXXFLAGS='-fPIC'
