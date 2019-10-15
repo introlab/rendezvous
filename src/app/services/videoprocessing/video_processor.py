@@ -238,6 +238,7 @@ class VideoProcessor(QObject):
                 prevTime = currentTime
                 currentTime = time.perf_counter()
                 actualFrameTime = currentTime - prevTime
+                print(actualFrameTime)
 
                 frameTimeDelta += frameTimeTarget - actualFrameTime
 
