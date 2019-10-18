@@ -2,7 +2,7 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets multimedia multimediawidgets
 
-CONFIG += c++11
+CONFIG += c++17
 
 # The following define makes your compiler emit warnings if you use
 # any Qt feature that has been marked deprecated (the exact warnings
@@ -18,7 +18,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     main.cpp \
     model/media_player.cpp \
-    model/settings.cpp \
+    model/settings/settings.cpp \
     view/mainwindow.cpp \
     view/components/sidebar.cpp \
     view/views/conference_view.cpp \
@@ -29,9 +29,10 @@ SOURCES += \
 
 HEADERS += \
     model/i_media_player.h \
-    model/i_settings.h \
     model/media_player.h \
-    model/settings.h \
+    model/settings/i_settings.h \
+    model/settings/settings.h \
+    model/settings/settings_constants.h \
     view/mainwindow.h \
     view/components/sidebar.h \
     view/views/abstract_view.h \

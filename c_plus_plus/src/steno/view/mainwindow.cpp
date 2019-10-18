@@ -15,7 +15,7 @@
 
 #include "model/media_player.h"
 
-MainWindow::MainWindow(QWidget *parent)
+MainWindow::MainWindow(Model::ISettings& settings, QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , sideBar(new View::SideBar)
@@ -23,14 +23,12 @@ MainWindow::MainWindow(QWidget *parent)
     , conferenceView(new View::ConferenceView)
     , recordingView(new View::RecordingView)
     , transcriptionView(new View::TranscriptionView)
-    , settingsView(new View::SettingsView())
+    , settingsView(new View::SettingsView(settings))
 {
     ui->setupUi(this);
 
     auto mediaPlayer = new Model::MediaPlayer();
     mediaPlayerView = new View::MediaPlayerView(*mediaPlayer);
-
-    //Model::ISettingsView *settingsView
 
 
     QFile File("view/stylesheets/globalStylesheet.qss");

@@ -2,11 +2,11 @@
 #define SETTINGS_VIEW_H
 
 #include "view/views/abstract_view.h"
-#include "view/views/struct_appclication_settings.h"
 
 #include<QFileDialog>
 
 namespace Ui { class SettingsView; }
+namespace Model { class ISettings; }
 
 namespace View
 {
@@ -14,22 +14,17 @@ namespace View
 class SettingsView : public AbstractView
 {
     public:
-        explicit SettingsView(QWidget *parent = nullptr);
-        virtual ~SettingsView();
+        explicit SettingsView(Model::ISettings& settings, QWidget *parent = nullptr);
 
     public slots:
-        void onbtnBrowseDefaultOutputFolderClick();
-        void onbtnBrowseCameraConfigFileClick();
-        void onbtnBrowseMicrophoneConfigFileClick();
-        void onbtnOdasLibraryBrowseClick();
-        void ontbtnFaceDetectionMethodBrowseClick();
-        void onbtnGoogleServiceAccountBrowseClick();
+        void onLanguageComboboxCurrentIndexChanged(const int& index);
+        void onAutoTranscriptionCheckBoxStateChanged(const int& state);
+        void onOutputFolderButtonClicked();
 
     private:
         Ui::SettingsView *m_ui;
         QFileDialog m_dialog;
-        View::ApplicationSettingsStruct *m_structAppSettings;
-
+        Model::ISettings &m_settings;
 };
 
 
