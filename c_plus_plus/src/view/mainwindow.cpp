@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include <QDir>
 #include <QFile>
 #include <QObject>
 #include <QStackedWidget>
@@ -30,7 +31,7 @@ MainWindow::MainWindow(QWidget *parent)
     auto mediaPlayer = new Model::MediaPlayer();
     mediaPlayerView = new View::MediaPlayerView(*mediaPlayer);
 
-    QFile File("src/view/stylesheets/globalStylesheet.qss");
+    QFile File(QDir::currentPath() + "/../src/view/stylesheets/globalStylesheet.qss");
     File.open(QFile::ReadOnly);
     this->setStyleSheet(QLatin1String(File.readAll()));
 
