@@ -5,13 +5,13 @@
 #include <QObject>
 #include <QStackedWidget>
 
-#include "view/components/sidebar.h"
-#include "view/views/abstract_view.h"
-#include "view/views/conference_view.h"
-#include "view/views/recording_view.h"
-#include "view/views/media_player_view.h"
-#include "view/views/transcription_view.h"
-#include "view/views/settings_view.h"
+#include "components/sidebar.h"
+#include "views/abstract_view.h"
+#include "views/conference_view.h"
+#include "views/recording_view.h"
+#include "views/media_player_view.h"
+#include "views/transcription_view.h"
+#include "views/settings_view.h"
 
 #include "model/media_player.h"
 
@@ -30,7 +30,7 @@ MainWindow::MainWindow(QWidget *parent)
     auto mediaPlayer = new Model::MediaPlayer();
     mediaPlayerView = new View::MediaPlayerView(*mediaPlayer);
 
-    QFile File("view/stylesheets/globalStylesheet.qss");
+    QFile File("src/view/stylesheets/globalStylesheet.qss");
     File.open(QFile::ReadOnly);
     this->setStyleSheet(QLatin1String(File.readAll()));
 
