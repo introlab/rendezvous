@@ -9,16 +9,17 @@ namespace Model
 {
 
 PulseAudioSink::PulseAudioSink(const std::string& device,
-                               uint8_t channels,
-                               uint32_t rate,
-                               pa_sample_format format) :
+                               const uint8_t channels,
+                               const uint32_t rate,
+                               const pa_sample_format format) :
     m_deviceName(device),
     m_stream(nullptr)
 {
-    m_ss = {
-        .format = format,
-        .rate = rate,
-        .channels = channels
+    m_ss = 
+    {
+        format,
+        rate,
+        channels
     };
 }
 
@@ -62,7 +63,8 @@ bool PulseAudioSink::close()
         return true;
 
     int error;
-    if (pa_simple_drain(m_stream, &error) < 0) {
+    if (pa_simple_drain(m_stream, &error) < 0) 
+    {
         std::cout << "pa_simple_drain() failed: " << pa_strerror(error) << std::endl;
         return false;
     }

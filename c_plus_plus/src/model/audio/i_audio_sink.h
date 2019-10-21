@@ -1,6 +1,7 @@
 #ifndef I_AUDIO_SINK_H
 #define I_AUDIO_SINK_H
 
+#include <stdint.h>
 
 namespace Model
 {

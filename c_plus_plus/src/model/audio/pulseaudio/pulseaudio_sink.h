@@ -14,10 +14,10 @@ class PulseAudioSink : public IAudioSink
 {
 public:
     PulseAudioSink(const std::string& device,
-                   uint8_t channels,
-                   uint32_t rate,
-                   pa_sample_format format);
-    virtual ~PulseAudioSink();
+                   const uint8_t channels,
+                   const uint32_t rate,
+                   const pa_sample_format format);
+    ~PulseAudioSink() override;
 
     bool open() override;
     bool close() override;
