@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "utils/images/Image.h"
+#include "utils/images/Images.h"
 #include "utils/models/Rectangle.h"
 
 class IDetector

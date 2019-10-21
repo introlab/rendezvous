@@ -10,7 +10,7 @@ image DarknetDetector::convertToDarknetImage(const ImageFloat& img)
     image darknetImage;
     darknetImage.w = img.width;
     darknetImage.h = img.height;
-    darknetImage.c = img.channels;
+    darknetImage.c = 3;
     darknetImage.data = img.hostData;
 
     return darknetImage;

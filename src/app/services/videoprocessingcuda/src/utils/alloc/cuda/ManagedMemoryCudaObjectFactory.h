@@ -3,7 +3,7 @@
 
 #include <cuda_runtime.h>
 
-#include "utils/objects/IObjectFactory.h"
+#include "utils/alloc/IObjectFactory.h"
 
 class ManagedMemoryCudaObjectFactory : public IObjectFactory
 {

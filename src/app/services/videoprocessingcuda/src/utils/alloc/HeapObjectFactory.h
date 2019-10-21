@@ -1,7 +1,7 @@
 #ifndef HEAP_OBJECT_FACTORY_H
 #define HEAP_OBJECT_FACTORY_H
 
-#include "utils/objects/IObjectFactory.h"
+#include "utils/alloc/IObjectFactory.h"
 
 class HeapObjectFactory : public IObjectFactory
 {

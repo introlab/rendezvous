@@ -37,7 +37,7 @@ __device__ Point<float> calculateSourcePixelPosition(const Dim2<int>& dst, const
     return srcPixelPosition;
 }
 
-__device__ LinearPixelFilter calculateLinearPixelFilter(const Point<float>& pixel, const Dim3<int>& dim)
+__device__ LinearPixelFilter calculateLinearPixelFilter(const Point<float>& pixel, const Dim2<int>& dim)
 {
     int xRoundDown = int(pixel.x);
     int yRoundDown = int(pixel.y);
@@ -48,10 +48,10 @@ __device__ LinearPixelFilter calculateLinearPixelFilter(const Point<float>& pixe
 
     LinearPixelFilter linearPixelFilter;
     
-    linearPixelFilter.pc1.index = (xRoundDown + (yRoundDown * dim.width)) * dim.channels;
-    linearPixelFilter.pc2.index = linearPixelFilter.pc1.index + dim.channels;
-    linearPixelFilter.pc3.index = linearPixelFilter.pc1.index + dim.width * dim.channels;
-    linearPixelFilter.pc4.index = linearPixelFilter.pc2.index + dim.width * dim.channels;
+    linearPixelFilter.pc1.index = (xRoundDown + (yRoundDown * dim.width)) * 3;
+    linearPixelFilter.pc2.index = linearPixelFilter.pc1.index + 3;
+    linearPixelFilter.pc3.index = linearPixelFilter.pc1.index + dim.width * 3;
+    linearPixelFilter.pc4.index = linearPixelFilter.pc2.index + dim.width * 3;
 
     linearPixelFilter.pc1.ratio = xOpposite * yOpposite;
     linearPixelFilter.pc2.ratio = xRatio * yOpposite;
@@ -61,9 +61,9 @@ __device__ LinearPixelFilter calculateLinearPixelFilter(const Point<float>& pixe
     return linearPixelFilter;
 }
 
-__device__ int calculateSourcePixelIndex(const Point<float>& pixel, const Dim3<int>& dim)
+__device__ int calculateSourcePixelIndex(const Point<float>& pixel, const Dim2<int>& dim)
 {
-    return (int(pixel.x) + int(pixel.y) * dim.width) * dim.channels;
+    return (int(pixel.x) + int(pixel.y) * dim.width) * 3;
 }
 
 int calculateKernelBlockCount(const Dim2<int>& dim, int blockSize)
@@ -94,7 +94,7 @@ __device__ void dewarpImagePixelFiltered(const Image& src, const Image& dst, con
     // Don't need to check the other ones, as they will be ok if these are
     if (linearPixelFilter.pc4.index < int(src.size) && linearPixelFilter.pc1.index > 0)
     {
-        for (int channelIndex = 0; channelIndex < src.channels; ++channelIndex)
+        for (int channelIndex = 0; channelIndex < 3; ++channelIndex)
         {
             int dstChannelIndex = dstIndex + channelIndex;
             dst.deviceData[dstChannelIndex] = src.deviceData[linearPixelFilter.pc1.index + channelIndex] * linearPixelFilter.pc1.ratio;
@@ -117,7 +117,7 @@ __global__ void dewarpImageKernel(Image src, Image dst, DewarpingParameters para
 
     if (index < dst.width * dst.height)
     {
-        int dstIndex = index * src.channels;
+        int dstIndex = index * 3;
         Point<float> srcPosition = calculateSourcePixelPosition(dst, params, index);
         int srcIndex = calculateSourcePixelIndex(srcPosition, src);
         dewarpImagePixel(src, dst, srcIndex, dstIndex);
@@ -130,7 +130,7 @@ __global__ void dewarpImageKernel(Image src, Image dst, DewarpingMapping mapping
 
     if (index < dst.width * dst.height)
     {
-        int dstIndex = index * src.channels;
+        int dstIndex = index * 3;
         dewarpImagePixel(src, dst, mapping.deviceData[index], dstIndex);
     }
 }
@@ -141,7 +141,7 @@ __global__ void dewarpImageFilteredKernel(Image src, Image dst, DewarpingParamet
 
     if (index < dst.width * dst.height)
     {
-        int dstIndex = index * src.channels;
+        int dstIndex = index * 3;
         Point<float> srcPosition = calculateSourcePixelPosition(dst, params, index);
         LinearPixelFilter linearPixelFilter = calculateLinearPixelFilter(srcPosition, src);
         dewarpImagePixelFiltered(src, dst, linearPixelFilter, dstIndex);
@@ -154,7 +154,7 @@ __global__ void dewarpImageFilteredKernel(Image src, Image dst, FilteredDewarpin
 
     if (index < dst.width * dst.height)
     {
-        int dstIndex = index * src.channels;
+        int dstIndex = index * 3;
         dewarpImagePixelFiltered(src, dst, mapping.deviceData[index], dstIndex);
     }
 }
@@ -191,13 +191,13 @@ void CudaFisheyeDewarper::dewarpImageFiltered(const Image& src, const Image& dst
     dewarpImageFilteredKernel<<<blockCount, BLOCK_SIZE, 0, stream_>>>(src, dst, mapping);
 }
 
-void CudaFisheyeDewarper::fillDewarpingMapping(const Dim3<int>& src, const DewarpingParameters& params, 
+void CudaFisheyeDewarper::fillDewarpingMapping(const Dim2<int>& src, const DewarpingParameters& params, 
                                                const DewarpingMapping& mapping) const
 {
     mappingFiller_.fillDewarpingMapping(src, params, mapping);
 }
 
-void CudaFisheyeDewarper::fillFilteredDewarpingMapping(const Dim3<int>& src, const DewarpingParameters& params, 
+void CudaFisheyeDewarper::fillFilteredDewarpingMapping(const Dim2<int>& src, const DewarpingParameters& params, 
                                                        const FilteredDewarpingMapping& mapping) const
 {
     mappingFiller_.fillFilteredDewarpingMapping(src, params, mapping);

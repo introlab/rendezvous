@@ -1,7 +1,7 @@
 #ifndef ZERO_COPY_CUDA_OBJECT_FACTORY_H
 #define ZERO_COPY_CUDA_OBJECT_FACTORY_H
 
-#include "utils/objects/IObjectFactory.h"
+#include "utils/alloc/IObjectFactory.h"
 
 class ZeroCopyCudaObjectFactory : public IObjectFactory
 {
