@@ -1,11 +1,9 @@
 #include "settings.h"
 
 #include "settings_constants.h"
-#include <iostream>
+
 #include <QDir>
 #include <QSettings>
-
-#include <iostream>
 
 namespace Model
 {
@@ -18,7 +16,6 @@ Settings::Settings()
 
 void Settings::set(const QString &key, const QVariant &value)
 {
-    std::cout << value.toString().toStdString() << std::endl;
     m_settings->setValue(key, value);
 }
 
