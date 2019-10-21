@@ -5,7 +5,7 @@
 #include "model/settings/settings_constants.h"
 
 #include <QComboBox>
-#include <QtGlobal>
+#include <QFileDialog>
 
 namespace View
 {
@@ -13,7 +13,6 @@ namespace View
 SettingsView::SettingsView(Model::ISettings& settings, QWidget *parent)
         : AbstractView("Settings", parent)
         , m_ui(new Ui::SettingsView)
-        , m_dialog(this)
         , m_settings(settings)
 {
     m_ui->setupUi(this);
@@ -34,10 +33,10 @@ SettingsView::SettingsView(Model::ISettings& settings, QWidget *parent)
 
 void SettingsView::onOutputFolderButtonClicked()
 {
-    QString outputFolder = m_dialog.getExistingDirectory(this,
-                                                         "Output Folder",
-                                                         m_settings.get(Model::General::keyName(Model::General::Key::OUTPUT_FOLDER)).toString(),
-                                                         QFileDialog::ShowDirsOnly);
+    QString outputFolder = QFileDialog::getExistingDirectory(this,
+                                                             "Output Folder",
+                                                             m_settings.get(Model::General::keyName(Model::General::Key::OUTPUT_FOLDER)).toString(),
+                                                             QFileDialog::ShowDirsOnly);
     if (!outputFolder.isEmpty())
     {
         m_settings.set(Model::General::keyName(Model::General::Key::OUTPUT_FOLDER), outputFolder);
@@ -53,7 +52,7 @@ void SettingsView::onLanguageComboboxCurrentIndexChanged(const int& index)
 void SettingsView::onAutoTranscriptionCheckBoxStateChanged(const int& state)
 {
     m_settings.set(Model::Transcription::keyName(Model::Transcription::Key::AUTOMATIC_TRANSCRIPTION),
-                   state == Qt::Checked ? true : false);
+                   state == Qt::Checked);
 }
 
 } // View

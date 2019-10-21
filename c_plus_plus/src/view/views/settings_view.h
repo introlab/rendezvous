@@ -3,8 +3,6 @@
 
 #include "abstract_view.h"
 
-#include <QFileDialog>
-
 namespace Ui { class SettingsView; }
 namespace Model { class ISettings; }
 
@@ -23,7 +21,6 @@ class SettingsView : public AbstractView
 
     private:
         Ui::SettingsView *m_ui;
-        QFileDialog m_dialog;
         Model::ISettings &m_settings;
 };
 
