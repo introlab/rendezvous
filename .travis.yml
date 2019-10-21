@@ -31,6 +31,9 @@ script:
   - sudo ln -s /usr/bin/g++-6 /usr/local/bin/g++
   - export CC=/usr/bin/gcc-6
   - export CXX=/usr/bin/g++-6
+  - mkdir ../../lib
+  - git clone https://github.com/mpromonet/libv4l2cpp ../../lib/libv4l2cpp
+  - pushd ../../lib/libv4l2cpp ; make EXTRA_CXXFLAGS='-fPIC' ; popd
   - make
   - pytest -v --cov=./ tests/
   - cd ./c_plus_plus/
