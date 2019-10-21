@@ -4,8 +4,8 @@
 #include "model/settings/i_settings.h"
 #include "model/settings/settings_constants.h"
 
-#include <iostream>
-
+#include <QComboBox>
+#include <QtGlobal>
 
 namespace View
 {

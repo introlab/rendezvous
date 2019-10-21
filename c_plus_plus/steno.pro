@@ -2,7 +2,7 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets multimedia multimediawidgets
 
-CONFIG += c++11
+CONFIG += c++14
 
 # The following define makes your compiler emit warnings if you use
 # any Qt feature that has been marked deprecated (the exact warnings
@@ -22,12 +22,13 @@ UI_DIR=bin
 
 INCLUDEPATH += src/
 
-LIBS += -lpulse-simple -lpulse
+#LIBS += -lpulse-simple -lpulse
 
 SOURCES += \
     src/main.cpp \
-    src/model/audio/pulseaudio/pulseaudio_sink.cpp \
+    #src/model/audio/pulseaudio/pulseaudio_sink.cpp \
     src/model/media_player.cpp \
+    src/model/settings/settings.cpp \
     src/view/mainwindow.cpp \
     src/view/components/sidebar.cpp \
     src/view/views/conference_view.cpp \
@@ -38,9 +39,12 @@ SOURCES += \
 
 HEADERS += \
     src/model/audio/i_audio_sink.h \
-    src/model/audio/pulseaudio/pulseaudio_sink.h \
+    #src/model/audio/pulseaudio/pulseaudio_sink.h \
     src/model/i_media_player.h \
     src/model/media_player.h \
+    src/model/settings/i_settings.h \
+    src/model/settings/settings.h \
+    src/model/settings/settings_constants.h \
     src/view/mainwindow.h \
     src/view/components/sidebar.h \
     src/view/views/abstract_view.h \
