@@ -1,9 +1,9 @@
 #ifndef SETTINGS_VIEW_H
 #define SETTINGS_VIEW_H
 
-#include "view/views/abstract_view.h"
+#include "abstract_view.h"
 
-#include<QFileDialog>
+#include <QFileDialog>
 
 namespace Ui { class SettingsView; }
 namespace Model { class ISettings; }
