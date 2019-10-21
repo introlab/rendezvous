@@ -33,7 +33,7 @@ script:
   - export CXX=/usr/bin/g++-6
   - make
   - pytest -v --cov=./ tests/
-  - cd ./c_plus_plus/src/steno
+  - cd ./c_plus_plus/src/
   - qmake steno.pro -spec linux-g++ CONFIG+=qtquickcompiler
   - make clean
   - make
