@@ -241,3 +241,7 @@ To remove a v4l2loopback device:
     $ git clone https://github.com/mpromonet/libv4l2cpp
     $ cd libv4l2cpp/
     $ make EXTRA_CXXFLAGS='-fPIC'
+
+Add the following line at the end of ~/.bashrc:
+
+    export LIBV4L2CPP_HOME=$HOME/dev/lib/libv4l2cpp
