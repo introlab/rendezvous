@@ -18,7 +18,7 @@ SettingsView::SettingsView(Model::ISettings& settings, QWidget *parent)
 {
     m_ui->setupUi(this);
 
-    for(auto i = 0; i != Model::Transcription::Language::COUNT; i++)
+    for (auto i = 0; i != Model::Transcription::Language::COUNT; i++)
     {
         m_ui->languageComboBox->addItem(Model::Transcription::languageName(static_cast<Model::Transcription::Language>(i)));
     }
