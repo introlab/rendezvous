@@ -222,14 +222,17 @@ Download the neural network model and data:
 ### V4l2loopback
 
 Installation:
+
     $ cd /usr/src/linux-headers-4.4.38-tegra
     $ sudo make modules_prepare
     $ sudo apt-get install v4l2loopback-dkms -y
 
 To create a v4l2loopback device:
+    
     $ sudo modprobe v4l2loopback
 
 To remove a v4l2loopback device:
+    
     $ sudo rmmod v4l2loopback
 
 ### libv4l2cpp
