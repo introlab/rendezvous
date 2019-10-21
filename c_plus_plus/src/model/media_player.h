@@ -1,7 +1,7 @@
 #ifndef MEDIA_PLAYER_H
 #define MEDIA_PLAYER_H
 
-#include "model/i_media_player.h"
+#include "i_media_player.h"
 
 #include <QMediaPlayer>
 #include <QWidget>
