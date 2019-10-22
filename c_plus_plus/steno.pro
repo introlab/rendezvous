@@ -25,6 +25,7 @@ INCLUDEPATH += src/
 SOURCES += \
     src/main.cpp \
     src/model/media_player.cpp \
+    src/model/recorder.cpp \
     src/view/mainwindow.cpp \
     src/view/components/sidebar.cpp \
     src/view/views/conference_view.cpp \
@@ -35,7 +36,9 @@ SOURCES += \
 
 HEADERS += \
     src/model/i_media_player.h \
+    src/model/i_recorder.h \
     src/model/media_player.h \
+    src/model/recorder.h \
     src/view/mainwindow.h \
     src/view/components/sidebar.h \
     src/view/views/abstract_view.h \
