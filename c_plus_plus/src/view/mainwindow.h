@@ -10,12 +10,14 @@ namespace Ui { class MainWindow; }
 namespace View { class SideBar;
                  class AbstractView; }
 
+namespace Model { class ISettings; }
+
 class MainWindow : public QMainWindow
 {
 Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
+    MainWindow(Model::ISettings& settings, QWidget *parent = nullptr);
 
 private:
     void addView(View::AbstractView *view);
