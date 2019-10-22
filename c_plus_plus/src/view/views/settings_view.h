@@ -1,21 +1,29 @@
 #ifndef SETTINGS_VIEW_H
 #define SETTINGS_VIEW_H
 
-#include "view/views/abstract_view.h"
+#include "abstract_view.h"
 
 namespace Ui { class SettingsView; }
+namespace Model { class ISettings; }
 
 namespace View
 {
 
 class SettingsView : public AbstractView
 {
-public:
-    explicit SettingsView(QWidget *parent = nullptr);
+    public:
+        explicit SettingsView(Model::ISettings& settings, QWidget *parent = nullptr);
 
-private:
-    Ui::SettingsView *ui;
+    public slots:
+        void onLanguageComboboxCurrentIndexChanged(const int& index);
+        void onAutoTranscriptionCheckBoxStateChanged(const int& state);
+        void onOutputFolderButtonClicked();
+
+    private:
+        Ui::SettingsView *m_ui;
+        Model::ISettings &m_settings;
 };
+
 
 } // View
 
