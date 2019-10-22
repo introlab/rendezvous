@@ -28,11 +28,8 @@ SOURCES += \
     src/main.cpp \
     src/model/audio/pulseaudio/pulseaudio_sink.cpp \
     src/model/media_player.cpp \
-<<<<<<< HEAD
     src/model/recorder.cpp \
-=======
     src/model/settings/settings.cpp \
->>>>>>> master
     src/view/mainwindow.cpp \
     src/view/components/sidebar.cpp \
     src/view/views/conference_view.cpp \
