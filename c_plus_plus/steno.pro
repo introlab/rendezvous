@@ -22,11 +22,11 @@ UI_DIR=bin
 
 INCLUDEPATH += src/
 
-#LIBS += -lpulse-simple -lpulse
+LIBS += -lpulse-simple -lpulse
 
 SOURCES += \
     src/main.cpp \
-    #src/model/audio/pulseaudio/pulseaudio_sink.cpp \
+    src/model/audio/pulseaudio/pulseaudio_sink.cpp \
     src/model/media_player.cpp \
     src/model/settings/settings.cpp \
     src/view/mainwindow.cpp \
@@ -39,7 +39,7 @@ SOURCES += \
 
 HEADERS += \
     src/model/audio/i_audio_sink.h \
-    #src/model/audio/pulseaudio/pulseaudio_sink.h \
+    src/model/audio/pulseaudio/pulseaudio_sink.h \
     src/model/i_media_player.h \
     src/model/media_player.h \
     src/model/settings/i_settings.h \
