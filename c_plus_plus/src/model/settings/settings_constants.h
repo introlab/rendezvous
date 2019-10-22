@@ -24,6 +24,7 @@ namespace Model
             {
             case General::Key::OUTPUT_FOLDER: return "outputFolder";
             }
+            return nullptr;
         }
     }
 
@@ -42,6 +43,7 @@ namespace Model
             case Transcription::Key::LANGUAGE: return "language";
             case Transcription::Key::AUTOMATIC_TRANSCRIPTION: return "automaticTranscription";
             }
+            return nullptr;
         }
 
         enum Encoding
