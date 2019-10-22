@@ -2,11 +2,9 @@
 #define RECORDING_VIEW_H
 
 #include "view/views/abstract_view.h"
+#include "model/recorder.h"
 
-class QCamera;
-class QCameraInfo;
 class QCameraViewfinder;
-class QListWidgetItem;
 
 namespace Ui { class RecordingView; }
 
@@ -26,10 +24,12 @@ protected:
     void hideEvent(QHideEvent *event) override;
 
 private:
-    QCameraInfo getCameraInfo();
+    QString getCameraDevice();
+    QString getAudioDevice();
+    QString getOutputPath();
 
     Ui::RecordingView *m_ui;
-    QCamera *m_camera;
+    Model::Recorder *m_recorder;
     QCameraViewfinder *m_cameraViewfinder;
     bool m_recordButtonState = false;
 };

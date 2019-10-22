@@ -4,9 +4,10 @@
 #include "i_recorder.h"
 
 class QMediaRecorder;
+class QAudioRecorder;
 class QCamera;
 class QCameraInfo;
-//class QAudioRecorder;
+class QCameraViewfinder;
 
 namespace Model
 {
@@ -14,14 +15,25 @@ namespace Model
 class Recorder : public IRecorder
 {
 public:
-    explicit Recorder(QWidget *parent = nullptr);
-    void start(std::string outputPath) override;
+    explicit Recorder(const QString cameraDevice, const QString audioDevice, QWidget *parent = nullptr);
+    void start(const QString outputPath) override;
     void stop() override;
 
+    void startCamera();
+    void stopCamera();
+    void setCameraViewfinder(QCameraViewfinder *viewfinder);
+
+public slots:
+    void onStartRecording();
+    void onStopRecording();
+
 private:
-    QCameraInfo getCameraInfo();
-    QMediaRecorder *m_mediaRecorder;
+    void setAudioInput(const QString audioDevice);
+    QCameraInfo getCameraInfo(const QString cameraDevice);
+
     QCamera *m_camera;
+    QMediaRecorder *m_mediaRecorder;
+    QAudioRecorder *m_audioRecorder;
 };
 
 } // Model

@@ -1,10 +1,8 @@
 #include "recording_view.h"
 #include "ui_recording_view.h"
 
-#include <QCamera>
-#include <QCameraInfo>
 #include <QCameraViewfinder>
-#include <QListWidgetItem>
+#include <QUrl>
 
 namespace View
 {
@@ -12,37 +10,16 @@ namespace View
 RecordingView::RecordingView(QWidget *parent)
     : AbstractView("Recording", parent)
     , m_ui(new Ui::RecordingView)
-    , m_camera(new QCamera(getCameraInfo()))
+    , m_recorder(new Model::Recorder(getCameraDevice(), getAudioDevice(), this))
     , m_cameraViewfinder(new QCameraViewfinder(this))
 {
     m_ui->setupUi(this);
     m_ui->virtualCameraLayout->addWidget(m_cameraViewfinder);
 
-    m_camera->setViewfinder(m_cameraViewfinder);
-
+    m_recorder->setCameraViewfinder(m_cameraViewfinder);
     m_cameraViewfinder->show();
 
     connect(m_ui->btnStartStopRecord, &QAbstractButton::clicked, [=]{ changeRecordButtonState(); });
-}
-
-QCameraInfo RecordingView::getCameraInfo()
-{
-    QCameraInfo cameraInfo;
-    QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
-    if(cameras.length() == 1)
-    {
-        cameraInfo = QCameraInfo::defaultCamera();
-    }
-    else
-    {
-        foreach (const QCameraInfo &camInfo, cameras)
-        {
-            if (camInfo.deviceName() == "/dev/video1")   //TODO: get device from config file
-                cameraInfo = camInfo;
-        }
-    }
-
-    return cameraInfo;
 }
 
 void RecordingView::changeRecordButtonState()
@@ -50,25 +27,41 @@ void RecordingView::changeRecordButtonState()
     m_recordButtonState = !m_recordButtonState;
 
     if(m_recordButtonState)
-        m_ui->btnStartStopRecord->setText("Stop recording");    // TODO: Call start on IRecorder
+    {
+        m_ui->btnStartStopRecord->setText("Stop recording");
+        m_recorder->start(getOutputPath());
+    }
     else
-        m_ui->btnStartStopRecord->setText("Start recording");   // TODO: Call stop on IRecorder
+    {
+        m_ui->btnStartStopRecord->setText("Start recording");
+        m_recorder->stop();
+    }
 }
 
 void RecordingView::showEvent(QShowEvent */*event*/)
 {
-    if(m_camera->state() != QCamera::State::ActiveState)
-    {
-        m_camera->start();
-    }
+    m_recorder->startCamera();
 }
 
 void RecordingView::hideEvent(QHideEvent */*event*/)
 {
-    if(m_camera->state() == QCamera::State::ActiveState)
-    {
-        m_camera->stop();
-    }
+    m_recorder->stopCamera();
+}
+
+QString RecordingView::getCameraDevice()
+{
+    return "/dev/video0";   //TODO: get device name from config file
+}
+
+
+QString RecordingView::getAudioDevice()
+{
+    return "default:";      //TODO: get device name from config file
+}
+
+QString RecordingView::getOutputPath()
+{
+    return "/home/walid/dev/workspace/";  //TODO: get path from settings
 }
 
 } // View

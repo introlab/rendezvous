@@ -1,8 +1,6 @@
 #ifndef I_RECORDER_H
 #define I_RECORDER_H
 
-#include <string>
-
 #include <QWidget>
 
 namespace Model
@@ -14,7 +12,7 @@ Q_OBJECT
 
 public:
     IRecorder(QWidget *parent = nullptr) : QWidget(parent) {}
-    virtual void start(std::string outputPath) = 0;
+    virtual void start(const QString outputPath) = 0;
     virtual void stop() = 0;
 };
 
