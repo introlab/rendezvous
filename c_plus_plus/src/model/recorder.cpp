@@ -52,8 +52,8 @@ QCameraInfo Recorder::getCameraInfo(QString cameraDevice)
 
 void Recorder::start(const QString outputPath)
 {
-    QUrl videoPath = QUrl::fromLocalFile(outputPath + "video");
-    QUrl audioPath = QUrl::fromLocalFile(outputPath + "audio");
+    QUrl videoPath = QUrl::fromLocalFile(outputPath + "/video");
+    QUrl audioPath = QUrl::fromLocalFile(outputPath + "/audio");
 
     m_mediaRecorder->setOutputLocation(videoPath);
     m_audioRecorder->setOutputLocation(audioPath);

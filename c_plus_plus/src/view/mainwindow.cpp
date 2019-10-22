@@ -22,7 +22,7 @@ MainWindow::MainWindow(Model::ISettings& settings, QWidget *parent)
     , sideBar(new View::SideBar)
     , views(new QStackedWidget)
     , conferenceView(new View::ConferenceView)
-    , recordingView(new View::RecordingView)
+    , recordingView(new View::RecordingView(settings))
     , transcriptionView(new View::TranscriptionView)
     , settingsView(new View::SettingsView(settings))
 {

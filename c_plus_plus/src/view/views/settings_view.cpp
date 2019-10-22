@@ -40,6 +40,7 @@ void SettingsView::onOutputFolderButtonClicked()
     if (!outputFolder.isEmpty())
     {
         m_settings.set(Model::General::keyName(Model::General::Key::OUTPUT_FOLDER), outputFolder);
+        m_ui->outputFolderLineEdit->setText(outputFolder);
     }
 }
 

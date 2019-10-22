@@ -1,5 +1,6 @@
 #include "recording_view.h"
 #include "ui_recording_view.h"
+#include "model/settings/settings_constants.h"
 
 #include <QCameraViewfinder>
 #include <QUrl>
@@ -7,10 +8,11 @@
 namespace View
 {
 
-RecordingView::RecordingView(QWidget *parent)
+RecordingView::RecordingView(Model::ISettings& settings, QWidget *parent)
     : AbstractView("Recording", parent)
     , m_ui(new Ui::RecordingView)
     , m_recorder(new Model::Recorder(getCameraDevice(), getAudioDevice(), this))
+    , m_settings(&settings)
     , m_cameraViewfinder(new QCameraViewfinder(this))
 {
     m_ui->setupUi(this);
@@ -61,7 +63,7 @@ QString RecordingView::getAudioDevice()
 
 QString RecordingView::getOutputPath()
 {
-    return "/home/walid/dev/workspace/";  //TODO: get path from settings
+    return m_settings->get(Model::General::keyName(Model::General::Key::OUTPUT_FOLDER)).toString();
 }
 
 } // View

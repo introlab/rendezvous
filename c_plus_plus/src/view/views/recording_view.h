@@ -2,6 +2,7 @@
 #define RECORDING_VIEW_H
 
 #include "view/views/abstract_view.h"
+#include "model/settings/i_settings.h"
 #include "model/recorder.h"
 
 class QCameraViewfinder;
@@ -14,7 +15,7 @@ namespace View
 class RecordingView : public AbstractView
 {
 public:
-    explicit RecordingView(QWidget *parent = nullptr);
+    explicit RecordingView(Model::ISettings& settings, QWidget *parent = nullptr);
 
 public slots:
     void changeRecordButtonState();
@@ -30,6 +31,7 @@ private:
 
     Ui::RecordingView *m_ui;
     Model::Recorder *m_recorder;
+    Model::ISettings *m_settings;
     QCameraViewfinder *m_cameraViewfinder;
     bool m_recordButtonState = false;
 };
