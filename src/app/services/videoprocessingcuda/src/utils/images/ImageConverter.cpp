@@ -1,86 +1,57 @@
 #include "ImageConverter.h"
 
 #include <stdexcept>
-#include <cstring>
-#include <iostream>
 
 #include "utils/math/Helpers.h"
 
 void ImageConverter::convert(const Image& inImage, const Image& outImage)
 {
+    int size = inImage.width * inImage.height;
+    
     if (inImage.format == ImageFormat::RGB_FMT && outImage.format == ImageFormat::UYVY_FMT)
     {
         const RGB* rbgData = reinterpret_cast<const RGB*>(inImage.hostData);
         UYVY* uyvyData = reinterpret_cast<UYVY*>(outImage.hostData);
-        convert(inImage, rbgData, uyvyData);
+
+        for (int i = 0, j = 0; i < size; i += 2, ++j)
+        {
+            getUYVYFromRGB(rbgData[i], rbgData[i + 1], uyvyData[j]);
+        }
     }
     else if (inImage.format == ImageFormat::RGB_FMT && outImage.format == ImageFormat::YUYV_FMT)
     {
         const RGB* rbgData = reinterpret_cast<const RGB*>(inImage.hostData);
         YUYV* yuyvData = reinterpret_cast<YUYV*>(outImage.hostData);
-        convert(inImage, rbgData, yuyvData);
+        
+        for (int i = 0, j = 0; i < size; i += 2, ++j)
+        {
+            getYUYVFromRGB(rbgData[i], rbgData[i + 1], yuyvData[j]);
+        }
     }
     else if (inImage.format == ImageFormat::UYVY_FMT && outImage.format == ImageFormat::RGB_FMT)
     {
         const UYVY* uyvyData = reinterpret_cast<const UYVY*>(inImage.hostData);
         RGB* rbgData = reinterpret_cast<RGB*>(outImage.hostData);
-        convert(inImage, uyvyData, rbgData);
+        
+        for (int i = 0, j = 0; i < size; i += 2, ++j)
+        {
+            getRGBFromUYVY(uyvyData[j], rbgData[i], rbgData[i + 1]);
+        }
     }
     else if (inImage.format == ImageFormat::YUYV_FMT && outImage.format == ImageFormat::RGB_FMT)
     {
         const YUYV* yuyvData = reinterpret_cast<const YUYV*>(inImage.hostData);
         RGB* rbgData = reinterpret_cast<RGB*>(outImage.hostData);
-        convert(inImage, yuyvData, rbgData);
-    }
-    else if (inImage.format == outImage.format)
-    {
-        std::memcpy(outImage.hostData, inImage.hostData, inImage.size);
-        std::cout << "WARNING : Conversion from same formats, copying data instead" << std::endl;
+        
+        for (int i = 0, j = 0; i < size; i += 2, ++j)
+        {
+            getRGBFromYUYV(yuyvData[j], rbgData[i], rbgData[i + 1]);
+        }
     }
     else
     {
         throw std::invalid_argument("Conversion from " + getImageFormatString(inImage.format) + " to " + 
                                     getImageFormatString(outImage.format) + " is not defined!");
-    }
-}
-
-void ImageConverter::convert(const Dim2<int>& dim, const RGB* inData, UYVY* outData)
-{
-    int size = dim.width * dim.height;
-
-    for (int i = 0, j = 0; i < size; i += 2, ++j)
-    {
-        getUYVYFromRGB(inData[i], inData[i + 1], outData[j]);
-    }
-}
-
-void ImageConverter::convert(const Dim2<int>& dim, const RGB* inData, YUYV* outData)
-{
-    int size = dim.width * dim.height;
-
-    for (int i = 0, j = 0; i < size; i += 2, ++j)
-    {
-        getYUYVFromRGB(inData[i], inData[i + 1], outData[j]);
-    }
-}
-
-void ImageConverter::convert(const Dim2<int>& dim, const UYVY* inData, RGB* outData)
-{
-    int size = dim.width * dim.height;
-
-    for (int i = 0, j = 0; i < size; i += 2, ++j)
-    {
-        getRGBFromUYVY(inData[j], outData[i], outData[i + 1]);
-    }
-}
-
-void ImageConverter::convert(const Dim2<int>& dim, const YUYV* inData, RGB* outData)
-{
-    int size = dim.width * dim.height;
-
-    for (int i = 0, j = 0; i < size; i += 2, ++j)
-    {
-        getRGBFromYUYV(inData[j], outData[i], outData[i + 1]);
     }
 }
 
