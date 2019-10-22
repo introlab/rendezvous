@@ -26,7 +26,7 @@ void dewarpImagePixelFiltered(const Image& src, const Image& dst, const LinearPi
     // Don't need to check the other ones, as they will be ok if these are
     if (linearPixelFilter.pc4.index < int(src.size) && linearPixelFilter.pc1.index > 0)
     {
-        for (int channelIndex = 0; channelIndex < src.channels; ++channelIndex)
+        for (int channelIndex = 0; channelIndex < 3; ++channelIndex)
         {
             int dstChannelIndex = dstIndex + channelIndex;
             dst.hostData[dstChannelIndex] = src.hostData[linearPixelFilter.pc1.index + channelIndex] * linearPixelFilter.pc1.ratio;
@@ -51,10 +51,10 @@ void CpuFisheyeDewarper::dewarpImage(const Image& src, const Image& dst, const D
     
     for (int index = 0; index < size; ++index)
     {
-        int dstIndex = index * src.channels;
+        int dstIndex = index * 3;
 
         Point<float> srcPosition = calculateSourcePixelPosition(dst, params, index);
-        int srcIndex = calculateSourcePixelIndex(srcPosition, src);
+        int srcIndex = calculateSourcePixelIndex(srcPosition, Dim3<int>(src, 3));
         dewarpImagePixel(src, dst, srcIndex, dstIndex);
     }
 }
@@ -65,7 +65,7 @@ void CpuFisheyeDewarper::dewarpImage(const Image& src, const Image& dst, const D
         
     for (int index = 0; index < size; ++index)
     {
-        int dstIndex = index * src.channels;
+        int dstIndex = index * 3;
         dewarpImagePixel(src, dst, mapping.hostData[index], dstIndex);
     }
 }
@@ -76,10 +76,10 @@ void CpuFisheyeDewarper::dewarpImageFiltered(const Image& src, const Image& dst,
     
     for (int index = 0; index < size; ++index)
     {
-        int dstIndex = index * src.channels;
+        int dstIndex = index * 3;
 
         Point<float> srcPosition = calculateSourcePixelPosition(dst, params, index);
-        LinearPixelFilter linearPixelFilter = calculateLinearPixelFilter(srcPosition, src);
+        LinearPixelFilter linearPixelFilter = calculateLinearPixelFilter(srcPosition, Dim3<int>(src, 3));
         dewarpImagePixelFiltered(src, dst, linearPixelFilter, dstIndex);
     }
 }
@@ -90,17 +90,17 @@ void CpuFisheyeDewarper::dewarpImageFiltered(const Image& src, const Image& dst,
         
     for (int index = 0; index < size; ++index)
     {
-        int dstIndex = index * src.channels;
+        int dstIndex = index * 3;
         dewarpImagePixelFiltered(src, dst, mapping.hostData[index], dstIndex);
     }
 }
 
-void CpuFisheyeDewarper::fillDewarpingMapping(const Dim3<int>& src, const DewarpingParameters& params, const DewarpingMapping& mapping) const
+void CpuFisheyeDewarper::fillDewarpingMapping(const Dim2<int>& src, const DewarpingParameters& params, const DewarpingMapping& mapping) const
 {
     mappingFiller_.fillDewarpingMapping(src, params, mapping);
 }
 
-void CpuFisheyeDewarper::fillFilteredDewarpingMapping(const Dim3<int>& src, const DewarpingParameters& params, 
+void CpuFisheyeDewarper::fillFilteredDewarpingMapping(const Dim2<int>& src, const DewarpingParameters& params, 
                                                       const FilteredDewarpingMapping& mapping) const
 {
     mappingFiller_.fillFilteredDewarpingMapping(src, params, mapping);

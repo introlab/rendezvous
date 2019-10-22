@@ -3,12 +3,15 @@
 
 #include "detection/DetectionThread.h"
 #include "impl/ImplementationFactory.h"
-#include "streaming/input/VideoStream.h"
+#include "stream/input/CameraConfig.h"
+#include "stream/input/CameraReader.h"
 #include "utils/math/AngleCalculations.h"
-#include "utils/images/VirtualCameraConsumer.h"
+#include "stream/output/VirtualCameraOutput.h"
 #include "VideoThread.h"
 #include "virtualcamera/VirtualCameraManager.h"
-#include "streaming/input/CameraConfig.h"
+
+#include "stream/output/ImageFileWriter.h"
+#include "stream/input/ImageFileReader.h"
 
 
 int main(int argc, char *argv[])
@@ -31,12 +34,11 @@ int main(int argc, char *argv[])
 
         int width = 2880;
         int height = 2160;
-        int channels = 3;
         int fpsTarget = 10;
-        CameraConfig cameraConfig(width, height, channels, fpsTarget, "/dev/video2");
+        CameraConfig cameraConfig(width, height, fpsTarget, "/dev/video2", ImageFormat::UYVY_FMT);
 
-        std::shared_ptr<LockTripleBuffer<Image>> imageBuffer = 
-            std::make_shared<LockTripleBuffer<Image>>(cameraConfig.resolution);
+        std::shared_ptr<LockTripleBuffer<Image>> imageBuffer =
+            std::make_shared<LockTripleBuffer<Image>>(RGBImage(cameraConfig.resolution));
         std::shared_ptr<moodycamel::ReaderWriterQueue<std::vector<AngleRect>>> detectionQueue = 
             std::make_shared<moodycamel::ReaderWriterQueue<std::vector<AngleRect>>>(1);
 
@@ -72,10 +74,12 @@ int main(int argc, char *argv[])
                                         dewarpingConfig,
                                         detectionDewarpingCount);
 
-        VideoThread videoThread(std::make_unique<VideoStream>(cameraConfig),
+        VideoThread videoThread(std::make_unique<CameraReader>(cameraConfig),
+                                //std::make_unique<ImageFileReader>("res/fisheye.jpg", ImageFormat::UYVY_FMT),
                                 implementationFactory.getFisheyeDewarper(),
                                 implementationFactory.getObjectFactory(),
-                                std::make_unique<VirtualCameraConsumer>("/dev/video4", 800, 600, fpsTarget),
+                                std::make_unique<VirtualCameraOutput>("/dev/video4", Dim2<int>(800, 600), ImageFormat::UYVY_FMT, fpsTarget),
+                                //std::make_unique<ImageFileWriter>("res", "test"),
                                 implementationFactory.getSynchronizer(),
                                 std::make_unique<VirtualCameraManager>(aspectRatio, minElevation, maxElevation),
                                 detectionQueue, imageBuffer, dewarpingConfig, cameraConfig);

@@ -8,19 +8,14 @@
 namespace Model
 {
 
-PulseAudioSink::PulseAudioSink(const std::string& device,
-                               const uint8_t channels,
-                               const uint32_t rate,
-                               const pa_sample_format format) :
-    m_deviceName(device),
-    m_stream(nullptr)
+PulseAudioSink::PulseAudioSink(std::string device,
+                               uint8_t channels,
+                               uint32_t rate,
+                               pa_sample_format format) :
+    m_deviceName(std::move(device)),
+    m_stream(nullptr),
+    m_ss({ format, rate, channels})
 {
-    m_ss = 
-    {
-        format,
-        rate,
-        channels
-    };
 }
 
 PulseAudioSink::~PulseAudioSink()

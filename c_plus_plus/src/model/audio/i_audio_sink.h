@@ -1,7 +1,7 @@
 #ifndef I_AUDIO_SINK_H
 #define I_AUDIO_SINK_H
 
-#include <stdint.h>
+#include <cstdint>
 
 namespace Model
 {
@@ -9,7 +9,7 @@ namespace Model
 class IAudioSink
 {
 public:
-    virtual ~IAudioSink() {}
+    virtual ~IAudioSink() = default;
     virtual bool open() = 0;
     virtual bool close() = 0;
     virtual int write(uint8_t* buffer, int nbytes) = 0;

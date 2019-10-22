@@ -2,9 +2,9 @@
 
 #include <iostream>
 
-#include "utils/math/MathConstants.h"
 #include "dewarping/DewarpingHelper.h"
-#include "utils/images/FileImageWriter.h"
+#include "stream/input/ImageFileReader.h"
+#include "utils/math/MathConstants.h"
 
 DetectionThread::DetectionThread(std::shared_ptr<LockTripleBuffer<Image>> imageBuffer, std::unique_ptr<IDetector> detector,
                                    std::shared_ptr<moodycamel::ReaderWriterQueue<std::vector<AngleRect>>> detectionQueue,
@@ -28,8 +28,8 @@ DetectionThread::DetectionThread(std::shared_ptr<LockTripleBuffer<Image>> imageB
 
 void DetectionThread::run()
 {
-    Dim3<int> resolution = imageBuffer_->getCurrent();
-    Dim3<int> detectionResolution(detector_->getInputImageDim(), resolution.channels);
+    Dim2<int> resolution(imageBuffer_->getCurrent());
+    Dim2<int> detectionResolution(detector_->getInputImageDim());
     Point<float> fisheyeCenter(resolution.width / 2.f, resolution.height / 2.f);
 
     std::vector<DewarpingParameters> dewarpingParams = getDetectionDewarpingParameters(resolution, dewarpCount_);
@@ -88,7 +88,7 @@ void DetectionThread::run()
     std::cout << "DetectionThread loop finished" << std::endl;
 }
 
-std::vector<DewarpingParameters> DetectionThread::getDetectionDewarpingParameters(const Dim3<int>& src, int dewarpCount)
+std::vector<DewarpingParameters> DetectionThread::getDetectionDewarpingParameters(const Dim2<int>& dim, int dewarpCount)
 {
     std::vector<DewarpingParameters> dewarpingParams;
     dewarpingParams.reserve(dewarpCount);
@@ -97,16 +97,16 @@ std::vector<DewarpingParameters> DetectionThread::getDetectionDewarpingParameter
 
     for (int i = 0; i < dewarpCount; ++i)
     {
-        dewarpingParams.push_back(getDewarpingParameters(src, dewarpingConfig_, i * angleSpan));
+        dewarpingParams.push_back(getDewarpingParameters(dim, dewarpingConfig_, i * angleSpan));
     }
 
     return dewarpingParams;
 }
 
-std::vector<ImageFloat> DetectionThread::getDetectionImages(const Dim3<int>& dim, int dewarpCount)
+std::vector<ImageFloat> DetectionThread::getDetectionImages(const Dim2<int>& dim, int dewarpCount)
 {
     std::vector<ImageFloat> detectionImages;
-    detectionImages.resize(dewarpCount, ImageFloat(dim.width, dim.height, dim.channels));
+    detectionImages.resize(dewarpCount, RGBImageFloat(dim));
 
     objectFactory_->allocateObjectVector(detectionImages);
 
@@ -121,7 +121,7 @@ std::vector<ImageFloat> DetectionThread::getDetectionImages(const Dim3<int>& dim
 }
 
 std::vector<DewarpingMapping> DetectionThread::getDewarpingMappings(const std::vector<DewarpingParameters>& dewarpingParams,
-                                                                     const Dim3<int>& src, const Dim2<int>& dst, int dewarpCount)
+                                                                    const Dim2<int>& src, const Dim2<int>& dst, int dewarpCount)
 {
     std::vector<DewarpingMapping> dewarpingMappings;
     Dim2<int> rectifiedDim = dewarper_->getRectifiedOutputDim(dst);

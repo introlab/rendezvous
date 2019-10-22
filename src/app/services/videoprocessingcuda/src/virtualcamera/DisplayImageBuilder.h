@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "utils/models/Dim2.h"
-#include "utils/images/Image.h"
+#include "utils/images/Images.h"
 
 class DisplayImageBuilder
 {

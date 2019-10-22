@@ -33,7 +33,7 @@ void dewarpImagePixelFilteredNormalized(const Image& src, const ImageFloat& dst,
     {
         
 
-        for (int channelIndex = 0; channelIndex < src.channels; ++channelIndex)
+        for (int channelIndex = 0; channelIndex < 3; ++channelIndex)
         {
             int dstChannelIndex = dstIndex + size * channelIndex;
             dst.hostData[dstChannelIndex] = (src.hostData[linearPixelFilter.pc1.index + channelIndex] * linearPixelFilter.pc1.ratio) / 255.f;
@@ -110,13 +110,13 @@ void CpuDarknetFisheyeDewarper::dewarpImageFiltered(const Image& src, const Imag
     }
 }
 
-void CpuDarknetFisheyeDewarper::fillDewarpingMapping(const Dim3<int>& src, const DewarpingParameters& params, 
+void CpuDarknetFisheyeDewarper::fillDewarpingMapping(const Dim2<int>& src, const DewarpingParameters& params, 
                                                     const DewarpingMapping& mapping) const
 {
     mappingFiller_.fillDewarpingMapping(src, params, mapping);
 }
 
-void CpuDarknetFisheyeDewarper::fillFilteredDewarpingMapping(const Dim3<int>& src, const DewarpingParameters& params, 
+void CpuDarknetFisheyeDewarper::fillFilteredDewarpingMapping(const Dim2<int>& src, const DewarpingParameters& params, 
                                                              const FilteredDewarpingMapping& mapping) const
 {
     mappingFiller_.fillFilteredDewarpingMapping(src, params, mapping);

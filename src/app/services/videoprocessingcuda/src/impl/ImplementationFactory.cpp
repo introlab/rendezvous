@@ -6,16 +6,16 @@
 #include "detection/DarknetDetector.h"
 #include "dewarping/CpuFisheyeDewarper.h"
 #include "dewarping/CpuDarknetFisheyeDewarper.h"
-#include "utils/objects/HeapObjectFactory.h"
+#include "utils/alloc/HeapObjectFactory.h"
 #include "utils/threads/sync/NopSynchronizer.h"
 #else
 #include "cuda_runtime.h"
 #include "detection/cuda/CudaDarknetDetector.h"
 #include "dewarping/cuda/CudaFisheyeDewarper.h"
 #include "dewarping/cuda/CudaDarknetFisheyeDewarper.h"
-#include "utils/objects/cuda/DeviceCudaObjectFactory.h"
-#include "utils/objects/cuda/ManagedMemoryCudaObjectFactory.h"
-#include "utils/objects/cuda/ZeroCopyCudaObjectFactory.h"
+#include "utils/alloc/cuda/DeviceCudaObjectFactory.h"
+#include "utils/alloc/cuda/ManagedMemoryCudaObjectFactory.h"
+#include "utils/alloc/cuda/ZeroCopyCudaObjectFactory.h"
 #include "utils/threads/sync/CudaSynchronizer.h"
 
 namespace

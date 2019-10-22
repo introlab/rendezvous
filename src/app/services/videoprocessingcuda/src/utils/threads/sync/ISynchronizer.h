@@ -5,7 +5,7 @@ class ISynchronizer
 {
 public:
 
-    virtual ~ISynchronizer() {};
+    virtual ~ISynchronizer() = default;
     virtual void sync() const = 0;
 
 };
