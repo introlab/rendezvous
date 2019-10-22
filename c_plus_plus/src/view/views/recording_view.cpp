@@ -1,24 +1,28 @@
 #include "recording_view.h"
 #include "ui_recording_view.h"
 
+#include <QCamera>
+#include <QCameraInfo>
+#include <QCameraViewfinder>
+#include <QListWidgetItem>
+
 namespace View
 {
 
 RecordingView::RecordingView(QWidget *parent)
     : AbstractView("Recording", parent)
-    , mUi(new Ui::RecordingView)
+    , m_ui(new Ui::RecordingView)
+    , m_camera(new QCamera(getCameraInfo()))
+    , m_cameraViewfinder(new QCameraViewfinder(this))
 {
-    mUi->setupUi(this);
+    m_ui->setupUi(this);
+    m_ui->virtualCameraLayout->addWidget(m_cameraViewfinder);
 
-    mCameraViewfinder = new QCameraViewfinder(this);
-    mCameraViewfinder->show();
+    m_camera->setViewfinder(m_cameraViewfinder);
 
-    mCamera = new QCamera(getCameraInfo());
-    mCamera->setViewfinder(mCameraViewfinder);
+    m_cameraViewfinder->show();
 
-    mUi->virtualCameraLayout->addWidget(mCameraViewfinder);
-
-    connect(mUi->btnStartStopRecord, &QAbstractButton::clicked, [=]{ changeRecordButtonState(); });
+    connect(m_ui->btnStartStopRecord, &QAbstractButton::clicked, [=]{ changeRecordButtonState(); });
 }
 
 QCameraInfo RecordingView::getCameraInfo()
@@ -43,27 +47,27 @@ QCameraInfo RecordingView::getCameraInfo()
 
 void RecordingView::changeRecordButtonState()
 {
-    mRecordButtonState = !mRecordButtonState;
+    m_recordButtonState = !m_recordButtonState;
 
-    if(mRecordButtonState)
-        mUi->btnStartStopRecord->setText("Stop recording");    // TODO: Call start on IRecorder
+    if(m_recordButtonState)
+        m_ui->btnStartStopRecord->setText("Stop recording");    // TODO: Call start on IRecorder
     else
-        mUi->btnStartStopRecord->setText("Start recording");   // TODO: Call stop on IRecorder
+        m_ui->btnStartStopRecord->setText("Start recording");   // TODO: Call stop on IRecorder
 }
 
-void RecordingView::showEvent(QShowEvent *event)
+void RecordingView::showEvent(QShowEvent */*event*/)
 {
-    if(mCamera->state() != QCamera::State::ActiveState)
+    if(m_camera->state() != QCamera::State::ActiveState)
     {
-        mCamera->start();
+        m_camera->start();
     }
 }
 
-void RecordingView::hideEvent(QHideEvent *event)
+void RecordingView::hideEvent(QHideEvent */*event*/)
 {
-    if(mCamera->state() == QCamera::State::ActiveState)
+    if(m_camera->state() == QCamera::State::ActiveState)
     {
-        mCamera->stop();
+        m_camera->stop();
     }
 }
 
