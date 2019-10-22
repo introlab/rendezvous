@@ -9,7 +9,6 @@ scripts/ConfigurationHelper/ODASOutput.json
 src/app/gui/*.py
 config/maps/*.npy
 *_ui.py
-output/
 config/service_account.json
 *.o
 *.a

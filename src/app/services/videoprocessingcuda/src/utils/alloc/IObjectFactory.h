@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "dewarping/models/DewarpingMapping.h"
-#include "utils/images/Image.h"
+#include "utils/images/Images.h"
 #include "utils/models/DualBuffer.h"
 #include "utils/threads/LockTripleBuffer.h"
 
@@ -12,7 +12,7 @@ class IObjectFactory
 {
 public:
 
-    virtual ~IObjectFactory() {};
+    virtual ~IObjectFactory() = default;
     virtual void allocateObject(Image& image) const = 0;
     virtual void deallocateObject(Image& image) const = 0;
     virtual void allocateObject(ImageFloat& image) const = 0;

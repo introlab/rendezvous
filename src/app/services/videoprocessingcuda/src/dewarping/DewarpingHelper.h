@@ -7,7 +7,7 @@
 #include "dewarping/models/DewarpingParameters.h"
 #include "dewarping/models/DonutSlice.h"
 #include "dewarping/models/LinearPixelFilter.h"
-#include "utils/images/Image.h"
+#include "utils/images/Images.h"
 #include "utils/models/AngleRect.h"
 #include "utils/models/Dim2.h"
 #include "utils/models/Point.h"
@@ -25,7 +25,7 @@ AngleRect getAngleRectFromDewarpedImageRectangle(const Rectangle& rectangle, con
                                                  const Dim2<int>& imageSize, const Point<float>& fisheyeCenter, float fisheyeAngle);
 
 Point<float> calculateSourcePixelPosition(const Dim2<int>& dst, const DewarpingParameters& params, int index);
-LinearPixelFilter calculateLinearPixelFilter(const Point<float>& pixel, const Dim3<int>& dim);
-int calculateSourcePixelIndex(const Point<float>& pixel, const Dim3<int>& dim);
+LinearPixelFilter calculateLinearPixelFilter(const Point<float>& pixel, const Dim2<int>& dim);
+int calculateSourcePixelIndex(const Point<float>& pixel, const Dim2<int>& dim);
 
 #endif // !DEWARPING_HELPER_H

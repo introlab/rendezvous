@@ -50,21 +50,21 @@ void DisplayImageBuilder::createDisplayImage(const std::vector<Image>& vcImages,
     int vcCount = (int)vcImages.size();
     if (displayDimention_ == outDisplayImage && vcCount > 0)
     {
-        Dim3<int> vcDim = vcImages[0];
-        int firstVcLeftOffset = ((outDisplayImage.width - vcCount * vcDim.width - (vcCount - 1) * VIRTUAL_CAMERA_SPACING) / 2) * vcDim.channels;
-        int topOffset = ((outDisplayImage.height - vcDim.height) / 2) * (outDisplayImage.width * vcDim.channels);
+        Dim2<int> vcDim = vcImages[0];
+        int firstVcLeftOffset = ((outDisplayImage.width - vcCount * vcDim.width - (vcCount - 1) * VIRTUAL_CAMERA_SPACING) / 2) * 3;
+        int topOffset = ((outDisplayImage.height - vcDim.height) / 2) * (outDisplayImage.width * 3);
 
         for (int k = 0; k < vcCount; ++k)
         {
             const Image& vcImage = vcImages[k];
-            int leftOffset = firstVcLeftOffset + k * (vcDim.width + VIRTUAL_CAMERA_SPACING) * vcDim.channels;
+            int leftOffset = firstVcLeftOffset + k * (vcDim.width + VIRTUAL_CAMERA_SPACING) * 3;
             int offset = topOffset + leftOffset;
 
             for (int i = 0; i < vcDim.width * 3; ++i)
             {
                 for (int j = 0; j < vcDim.height; ++j)
                 {
-                    outDisplayImage.hostData[offset + i + j * (outDisplayImage.width * vcDim.channels)] = vcImage.hostData[i + j * (vcDim.width * vcDim.channels)];
+                    outDisplayImage.hostData[offset + i + j * (outDisplayImage.width * 3)] = vcImage.hostData[i + j * (vcDim.width * 3)];
                 }
             }
         }
@@ -78,7 +78,7 @@ void DisplayImageBuilder::setDisplayImageColor(const Image& displayImage)
 
 void DisplayImageBuilder::clearVirtualCamerasOnDisplayImage(const Image& displayImage)
 {
-    int memsetSize = maxVirtualCameraDim_.height * (displayImage.width * displayImage.channels);
-    int memsetOffset = ((displayImage.height - maxVirtualCameraDim_.height) / 2) * (displayImage.width * displayImage.channels);
+    int memsetSize = maxVirtualCameraDim_.height * (displayImage.width * 3);
+    int memsetOffset = ((displayImage.height - maxVirtualCameraDim_.height) / 2) * (displayImage.width * 3);
     std::memset(displayImage.hostData + memsetOffset, RGB_BACKGROUND_VALUE, memsetSize);
 }

@@ -2,7 +2,7 @@
 
 #include "dewarping/DewarpingHelper.h"
 
-void CpuDewarpingMappingFiller::fillDewarpingMapping(const Dim3<int>& src, const DewarpingParameters& params, 
+void CpuDewarpingMappingFiller::fillDewarpingMapping(const Dim2<int>& src, const DewarpingParameters& params, 
                                                      const DewarpingMapping& mapping) const
 {
     int size = mapping.height * mapping.width;
@@ -14,7 +14,7 @@ void CpuDewarpingMappingFiller::fillDewarpingMapping(const Dim3<int>& src, const
     }
 }
 
-void CpuDewarpingMappingFiller::fillFilteredDewarpingMapping(const Dim3<int>& src, const DewarpingParameters& params, 
+void CpuDewarpingMappingFiller::fillFilteredDewarpingMapping(const Dim2<int>& src, const DewarpingParameters& params, 
                                                              const FilteredDewarpingMapping& mapping) const
 {
     int size = mapping.height * mapping.width;

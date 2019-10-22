@@ -37,7 +37,7 @@ __device__ Point<float> calculateSourcePixelPosition(const Dim2<int>& dst, const
     return srcPixelPosition;
 }
 
-__device__ LinearPixelFilter calculateLinearPixelFilter(const Point<float>& pixel, const Dim3<int>& dim)
+__device__ LinearPixelFilter calculateLinearPixelFilter(const Point<float>& pixel, const Dim2<int>& dim)
 {
     int xRoundDown = int(pixel.x);
     int yRoundDown = int(pixel.y);
@@ -48,10 +48,10 @@ __device__ LinearPixelFilter calculateLinearPixelFilter(const Point<float>& pixe
 
     LinearPixelFilter linearPixelFilter;
     
-    linearPixelFilter.pc1.index = (xRoundDown + (yRoundDown * dim.width)) * dim.channels;
-    linearPixelFilter.pc2.index = linearPixelFilter.pc1.index + dim.channels;
-    linearPixelFilter.pc3.index = linearPixelFilter.pc1.index + dim.width * dim.channels;
-    linearPixelFilter.pc4.index = linearPixelFilter.pc2.index + dim.width * dim.channels;
+    linearPixelFilter.pc1.index = (xRoundDown + (yRoundDown * dim.width)) * 3;
+    linearPixelFilter.pc2.index = linearPixelFilter.pc1.index + 3;
+    linearPixelFilter.pc3.index = linearPixelFilter.pc1.index + dim.width * 3;
+    linearPixelFilter.pc4.index = linearPixelFilter.pc2.index + dim.width * 3;
 
     linearPixelFilter.pc1.ratio = xOpposite * yOpposite;
     linearPixelFilter.pc2.ratio = xRatio * yOpposite;
@@ -61,9 +61,9 @@ __device__ LinearPixelFilter calculateLinearPixelFilter(const Point<float>& pixe
     return linearPixelFilter;
 }
 
-__device__ int calculateSourcePixelIndex(const Point<float>& pixel, const Dim3<int>& dim)
+__device__ int calculateSourcePixelIndex(const Point<float>& pixel, const Dim2<int>& dim)
 {
-    return (int(pixel.x) + int(pixel.y) * dim.width) * dim.channels;
+    return (int(pixel.x) + int(pixel.y) * dim.width) * 3;
 }
 
 int calculateKernelBlockCount(const Dim2<int>& dim, int blockSize)
@@ -73,7 +73,7 @@ int calculateKernelBlockCount(const Dim2<int>& dim, int blockSize)
 
 // END OF RANT
 
-__global__ void fillDewarpingMappingKernel(Dim3<int> src, DewarpingParameters params, DewarpingMapping mapping)
+__global__ void fillDewarpingMappingKernel(Dim2<int> src, DewarpingParameters params, DewarpingMapping mapping)
 {
     int index = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -84,7 +84,7 @@ __global__ void fillDewarpingMappingKernel(Dim3<int> src, DewarpingParameters pa
     }
 }
 
-__global__ void fillFilteredDewarpingMappingKernel(Dim3<int> src, DewarpingParameters params, FilteredDewarpingMapping mapping)
+__global__ void fillFilteredDewarpingMappingKernel(Dim2<int> src, DewarpingParameters params, FilteredDewarpingMapping mapping)
 {
     int index = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -102,14 +102,14 @@ CudaDewarpingMappingFiller::CudaDewarpingMappingFiller(cudaStream_t stream)
 {
 }
 
-void CudaDewarpingMappingFiller::fillDewarpingMapping(const Dim3<int>& src, const DewarpingParameters& params, 
+void CudaDewarpingMappingFiller::fillDewarpingMapping(const Dim2<int>& src, const DewarpingParameters& params, 
                                                       const DewarpingMapping& mapping) const
 {
     int blockCount = calculateKernelBlockCount(mapping, BLOCK_SIZE);
     fillDewarpingMappingKernel<<<blockCount, BLOCK_SIZE, 0, stream_>>>(src, params, mapping);
 }
 
-void CudaDewarpingMappingFiller::fillFilteredDewarpingMapping(const Dim3<int>& src, const DewarpingParameters& params, 
+void CudaDewarpingMappingFiller::fillFilteredDewarpingMapping(const Dim2<int>& src, const DewarpingParameters& params, 
                                                               const FilteredDewarpingMapping& mapping) const
 {
     int blockCount = calculateKernelBlockCount(mapping, BLOCK_SIZE);

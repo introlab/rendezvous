@@ -9,23 +9,23 @@
     #include <cuda_runtime.h>
 #endif
 
-
-#include "utils/objects/HeapObjectFactory.h"
+#include "utils/alloc/HeapObjectFactory.h"
 #include "utils/models/Point.h"
 #include "utils/math/Helpers.h"
 #include "dewarping/DewarpingHelper.h"
 #include "virtualcamera/DisplayImageBuilder.h"
+#include "utils/images/ImageConverter.h"
 
-VideoThread::VideoThread(std::unique_ptr<IVideoStream> videostream, std::unique_ptr<IFisheyeDewarper> dewarper,
-                         std::unique_ptr<IObjectFactory> objectFactory, std::unique_ptr<IImageConsumer> imageConsumer,
+VideoThread::VideoThread(std::unique_ptr<IVideoInput> videostream, std::unique_ptr<IFisheyeDewarper> dewarper,
+                         std::unique_ptr<IObjectFactory> objectFactory, std::unique_ptr<IVideoOutput> imageConsumer,
                          std::unique_ptr<ISynchronizer> synchronizer, std::unique_ptr<VirtualCameraManager> virtualCameraManager,
                          std::shared_ptr<moodycamel::ReaderWriterQueue<std::vector<AngleRect>>> detectionQueue,
                          std::shared_ptr<LockTripleBuffer<Image>> imageBuffer, const DewarpingConfig& dewarpingConfig,
                          const CameraConfig& cameraConfig)
-    : videostream_(std::move(videostream))
+    : videoInput_(std::move(videostream))
     , dewarper_(std::move(dewarper))
     , objectFactory_(std::move(objectFactory))
-    , imageConsumer_(std::move(imageConsumer))
+    , videoOutput_(std::move(imageConsumer))
     , synchronizer_(std::move(synchronizer))
     , virtualCameraManager_(std::move(virtualCameraManager))
     , detectionQueue_(detectionQueue)
@@ -33,7 +33,7 @@ VideoThread::VideoThread(std::unique_ptr<IVideoStream> videostream, std::unique_
     , dewarpingConfig_(dewarpingConfig)
     , cameraConfig_(cameraConfig)
 {
-    if (!videostream_ || !dewarper_ || !objectFactory_ || !imageConsumer_ || !synchronizer_ ||
+    if (!videoInput_ || !dewarper_ || !objectFactory_ || !videoOutput_ || !synchronizer_ ||
         !virtualCameraManager_ || !detectionQueue_ || !imageBuffer_)
     {
         throw std::invalid_argument("Error in VideoProcessorThread - Null is not a valid argument");
@@ -50,23 +50,16 @@ void VideoThread::run()
         heapObjectFactory.allocateObjectLockTripleBuffer(*imageBuffer_);
 #endif
 
-        Dim3<int> resolution;
-        videostream_->getResolution(resolution);
-
-        if (resolution != cameraConfig_.resolution)
-        {
-            throw std::invalid_argument("Video input resolution is not the specified one!");
-        }
-
-        Dim3<int> displayDim(800, 600, 3);
-        DualBuffer<Image> displayBuffers(displayDim);
+        const Dim2<int>& resolution = cameraConfig_.resolution;
+        Dim2<int> displayDim(800, 600);
+        DualBuffer<Image> displayBuffers(Image(displayDim, ImageFormat::RGB_FMT));
         DisplayImageBuilder displayImageBuilder(displayDim);
         heapObjectFactory.allocateObjectDualBuffer(displayBuffers);
         displayImageBuilder.setDisplayImageColor(displayBuffers.getCurrent());
         displayImageBuilder.setDisplayImageColor(displayBuffers.getInUse());
 
         Dim2<int> maxVcDim = displayImageBuilder.getMaxVirtualCameraDim();
-        std::vector<Image> vcImages(5, Image(maxVcDim.width, maxVcDim.height, resolution.channels));
+        std::vector<Image> vcImages(5, RGBImage(maxVcDim.width, maxVcDim.height));
         objectFactory_->allocateObjectVector(vcImages);
 
         Point<float> fisheyeCenter(resolution.width / 2.f, resolution.height / 2.f);
@@ -75,8 +68,11 @@ void VideoThread::run()
         // Prefetch an image
 
         const Image& imageCur = imageBuffer_->getCurrent();
-        std::cout << "video thread 1" << std::endl;
-        videostream_->copyFrameData(imageCur);
+        Image rawImage = videoInput_->readImage();
+
+        ImageConverter imageConverter;
+        imageConverter.convert(rawImage, imageCur);
+        videoOutput_->writeImage(imageCur);
 
 #ifndef NO_CUDA
         cudaStream_t stream;
@@ -110,8 +106,8 @@ void VideoThread::run()
 #endif
             imageBuffer_->swap();
             const Image& image = imageBuffer_->getCurrent();
-            //std::cout << "video thread 2" << std::endl;
-            videostream_->copyFrameData(image);
+            rawImage = videoInput_->readImage();
+            imageConverter.convert(rawImage, image);
 
 #ifndef NO_CUDA
             cudaMemcpyAsync(image.deviceData, image.hostData, image.size, cudaMemcpyHostToDevice, stream);
@@ -122,8 +118,8 @@ void VideoThread::run()
 
             if (vcCount > 0)
             {
-                Dim3<int> resizeDim(displayImageBuilder.getVirtualCameraDim(vcCount), resolution.channels);
-                std::vector<Image> vcResizeImages(vcCount, resizeDim);
+                Dim2<int> resizeDim(displayImageBuilder.getVirtualCameraDim(vcCount));
+                std::vector<Image> vcResizeImages(vcCount, RGBImage(resizeDim));
 
                 for (int i = 0; i < vcCount; ++i)
                 {
@@ -141,7 +137,7 @@ void VideoThread::run()
 
                 synchronizer_->sync();
                 displayImageBuilder.createDisplayImage(vcResizeImages, displayImage);
-                imageConsumer_->consumeImage(displayImage);
+                videoOutput_->writeImage(displayImage);
                 displayBuffers.swap();
             }
             
