@@ -10,8 +10,21 @@ struct CameraConfig
 {
 
     CameraConfig() = default;
-    CameraConfig(int width, int height, int fpsTarget, const std::string& deviceName, ImageFormat imageFormat);
-    CameraConfig(const Dim2<int>& resolution, int fpsTarget, const std::string& deviceName, ImageFormat imageFormat);
+    CameraConfig(int width, int height, int fpsTarget, const std::string& deviceName, ImageFormat imageFormat)
+        : resolution(width, height)
+        , fpsTarget(fpsTarget)
+        , deviceName(deviceName)
+        , imageFormat(imageFormat)
+    {
+    }
+
+    CameraConfig(const Dim2<int>& resolution, int fpsTarget, const std::string& deviceName, ImageFormat imageFormat)
+        : resolution(resolution)
+        , fpsTarget(fpsTarget)
+        , deviceName(deviceName)
+        , imageFormat(imageFormat)
+    {
+    }
 
     Dim2<int> resolution;
     int fpsTarget;

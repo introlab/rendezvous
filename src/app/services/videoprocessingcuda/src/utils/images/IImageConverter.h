@@ -7,7 +7,7 @@ class IImageConverter
 {
 public:
 
-    virtual ~IImageConverter() {};
+    virtual ~IImageConverter() = default;
     virtual void convert(const Image& inImage, const Image& outImage) = 0;
 
 };

@@ -9,7 +9,7 @@ class IDetectionFisheyeDewarper
 {
 public:
 
-    virtual ~IDetectionFisheyeDewarper() {};
+    virtual ~IDetectionFisheyeDewarper() = default;
     virtual void dewarpImage(const Image& src, const ImageFloat& dst, const DewarpingParameters& params) const = 0;
     virtual void dewarpImage(const Image& src, const ImageFloat& dst, const DewarpingMapping& mapping) const = 0;
     virtual void dewarpImageFiltered(const Image& src, const ImageFloat& dst, const DewarpingParameters& params) const = 0;

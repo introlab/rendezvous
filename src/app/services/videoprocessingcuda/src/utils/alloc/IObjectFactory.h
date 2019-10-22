@@ -12,7 +12,7 @@ class IObjectFactory
 {
 public:
 
-    virtual ~IObjectFactory() {};
+    virtual ~IObjectFactory() = default;
     virtual void allocateObject(Image& image) const = 0;
     virtual void deallocateObject(Image& image) const = 0;
     virtual void allocateObject(ImageFloat& image) const = 0;

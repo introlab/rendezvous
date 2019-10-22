@@ -7,7 +7,7 @@ class IVideoOutput
 {
 public:
 
-    virtual ~IVideoOutput() {};
+    virtual ~IVideoOutput() = default;
     virtual void writeImage(const Image& image) = 0;
 
 };

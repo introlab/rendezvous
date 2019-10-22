@@ -7,7 +7,7 @@ class IVideoInput
 {
 public:
 
-    virtual ~IVideoInput() {};
+    virtual ~IVideoInput() = default;
     virtual const Image& readImage() = 0;
 
 };

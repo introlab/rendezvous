@@ -9,7 +9,7 @@ class IFisheyeDewarper
 {
 public:
 
-    virtual ~IFisheyeDewarper() {};
+    virtual ~IFisheyeDewarper() = default;
     virtual void dewarpImage(const Image& src, const Image& dst, const DewarpingParameters& params) const = 0;
     virtual void dewarpImage(const Image& src, const Image& dst, const DewarpingMapping& mapping) const = 0;
     virtual void dewarpImageFiltered(const Image& src, const Image& dst, const DewarpingParameters& params) const = 0;

@@ -10,7 +10,7 @@ class IDetector
 {
 public:
 
-    virtual ~IDetector() {};
+    virtual ~IDetector() = default;
     virtual std::vector<Rectangle> detectInImage(const ImageFloat& image) = 0;
     virtual Dim2<int> getInputImageDim() = 0;
 
