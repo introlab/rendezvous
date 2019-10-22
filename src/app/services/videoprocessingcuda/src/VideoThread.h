@@ -3,11 +3,11 @@
 
 #include "dewarping/IFisheyeDewarper.h"
 #include "dewarping/models/DewarpingConfig.h"
-#include "streaming/input/IVideoStream.h"
-#include "streaming/input/CameraConfig.h"
-#include "utils/images/IImageConsumer.h"
+#include "stream/input/IVideoInput.h"
+#include "stream/input/CameraConfig.h"
+#include "stream/output/IVideoOutput.h"
+#include "utils/alloc/IObjectFactory.h"
 #include "utils/models/Rectangle.h"
-#include "utils/objects/IObjectFactory.h"
 #include "utils/threads/LockTripleBuffer.h"
 #include "utils/threads/readerwriterqueue.h"
 #include "utils/threads/sync/ISynchronizer.h"
@@ -18,8 +18,8 @@ class VideoThread : public Thread
 {
 public:
 
-    VideoThread(std::unique_ptr<IVideoStream> videostream, std::unique_ptr<IFisheyeDewarper> dewarper,
-                std::unique_ptr<IObjectFactory> objectFactory, std::unique_ptr<IImageConsumer> imageConsumer,
+    VideoThread(std::unique_ptr<IVideoInput> videostream, std::unique_ptr<IFisheyeDewarper> dewarper,
+                std::unique_ptr<IObjectFactory> objectFactory, std::unique_ptr<IVideoOutput> imageConsumer,
                 std::unique_ptr<ISynchronizer> synchronizer, std::unique_ptr<VirtualCameraManager> virtualCameraManager,
                 std::shared_ptr<moodycamel::ReaderWriterQueue<std::vector<AngleRect>>> detectionQueue,
                 std::shared_ptr<LockTripleBuffer<Image>> imageBuffer, const DewarpingConfig& dewarpingConfig,
@@ -31,10 +31,10 @@ protected:
 
 private:
 
-    std::unique_ptr<IVideoStream> videostream_;
+    std::unique_ptr<IVideoInput> videoInput_;
     std::unique_ptr<IFisheyeDewarper> dewarper_;
     std::unique_ptr<IObjectFactory> objectFactory_;
-    std::unique_ptr<IImageConsumer> imageConsumer_;
+    std::unique_ptr<IVideoOutput> videoOutput_;
     std::unique_ptr<ISynchronizer> synchronizer_;
     std::unique_ptr<VirtualCameraManager> virtualCameraManager_;
     std::shared_ptr<moodycamel::ReaderWriterQueue<std::vector<AngleRect>>> detectionQueue_;

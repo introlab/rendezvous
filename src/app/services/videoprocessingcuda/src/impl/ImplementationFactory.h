@@ -6,7 +6,7 @@
 #include "detection/IDetector.h"
 #include "dewarping/IFisheyeDewarper.h"
 #include "dewarping/IDetectionFisheyeDewarper.h"
-#include "utils/objects/IObjectFactory.h"
+#include "utils/alloc/IObjectFactory.h"
 #include "utils/threads/sync/ISynchronizer.h"
 
 class ImplementationFactory

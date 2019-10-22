@@ -1,7 +1,7 @@
 #ifndef DEVICE_CUDA_OBJECT_FACTORY_H
 #define DEVICE_CUDA_OBJECT_FACTORY_H
 
-#include "utils/objects/IObjectFactory.h"
+#include "utils/alloc/IObjectFactory.h"
 
 class DeviceCudaObjectFactory : public IObjectFactory
 {

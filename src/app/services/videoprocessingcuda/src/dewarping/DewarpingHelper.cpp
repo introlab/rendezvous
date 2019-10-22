@@ -168,7 +168,7 @@ Point<float> calculateSourcePixelPosition(const Dim2<int>& dst, const DewarpingP
     return srcPixelPosition;
 }
 
-LinearPixelFilter calculateLinearPixelFilter(const Point<float>& pixel, const Dim3<int>& dim)
+LinearPixelFilter calculateLinearPixelFilter(const Point<float>& pixel, const Dim2<int>& dim)
 {
     int xRoundDown = int(pixel.x);
     int yRoundDown = int(pixel.y);
@@ -179,10 +179,10 @@ LinearPixelFilter calculateLinearPixelFilter(const Point<float>& pixel, const Di
 
     LinearPixelFilter linearPixelFilter;
     
-    linearPixelFilter.pc1.index = (xRoundDown + (yRoundDown * dim.width)) * dim.channels;
-    linearPixelFilter.pc2.index = linearPixelFilter.pc1.index + dim.channels;
-    linearPixelFilter.pc3.index = linearPixelFilter.pc1.index + dim.width * dim.channels;
-    linearPixelFilter.pc4.index = linearPixelFilter.pc2.index + dim.width * dim.channels;
+    linearPixelFilter.pc1.index = (xRoundDown + (yRoundDown * dim.width)) * 3;
+    linearPixelFilter.pc2.index = linearPixelFilter.pc1.index + 3;
+    linearPixelFilter.pc3.index = linearPixelFilter.pc1.index + dim.width * 3;
+    linearPixelFilter.pc4.index = linearPixelFilter.pc2.index + dim.width * 3;
 
     linearPixelFilter.pc1.ratio = xOpposite * yOpposite;
     linearPixelFilter.pc2.ratio = xRatio * yOpposite;
@@ -192,7 +192,7 @@ LinearPixelFilter calculateLinearPixelFilter(const Point<float>& pixel, const Di
     return linearPixelFilter;
 }
 
-int calculateSourcePixelIndex(const Point<float>& pixel, const Dim3<int>& dim)
+int calculateSourcePixelIndex(const Point<float>& pixel, const Dim2<int>& dim)
 {
-    return (int(pixel.x) + int(pixel.y) * dim.width) * dim.channels;
+    return (int(pixel.x) + int(pixel.y) * dim.width) * 3;
 }

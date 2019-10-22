@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "dewarping/models/DewarpingMapping.h"
-#include "utils/images/Image.h"
+#include "utils/images/Images.h"
 #include "utils/models/DualBuffer.h"
 #include "utils/threads/LockTripleBuffer.h"
 
