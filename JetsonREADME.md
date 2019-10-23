@@ -1,171 +1,122 @@
 # Jetson setup for the Rendezvous project.
 
-## OS
-Install Jetpack 3.3 using the following guide:
-    https://developer.nvidia.com/embedded/dlc/jetpack-install-guide-3_3
+## Jetpack
+Download and install the SDK Manager for the JetPack 4.2.2 on your host: 
+    https://developer.nvidia.com/embedded/jetpack-archive
 
-## Hardware: Install the CSI camera driver
-This is only meant for users who already flashed the standard L4T_R28.2.1/L4T_R28.2 (Jetpack v3.3) package for TX2.
-In this procedure, the existing kernel Image and the device tree blob (dtb) in the Jetson
-board will be replaced by the pre-built binaries given with the Release package; Existing
-Root Filesystem in the Jetson board will be preserved by this procedure. 
+Follow the guide to configure the Jetson via the SDK Manager:
+    https://docs.nvidia.com/sdk-manager/install-with-sdkm-jetson/index.html
 
-To complete this procedure, you will need the e-CAM131_CUTX2_JETSON_TX2_L4T_28.2.1_18-SEP-2018_R01.tar.gz 
-found on the SC Card supplied with the camera kit or you can download it at 
-this address: https://www.e-consystems.com/13mp-nvidia-jetson-tx2-camera-board.asp
+## Overclock
 
-Setup the environment in a terminal window in Jetson, copy the release package to the
-board and extract it using the following commands from the Jetson board.
+https://github.com/introlab/rendezvous/wiki/Jetson-Overclock-Automation 
 
-	$ mkdir top_dir/ -p 
-	$ export TOP_DIR=<absolute path to>/top_dir  
-	$ export RELEASE_PACK_DIR=<absolute path to>/top_dir/e-CAM131_CUTX2_JETSON_TX2_L4T_28.2.1_18-SEP-2018_R01 
-	$ cp e-CAM131_CUTX2_JETSON_TX2_L4T_28.2.1_18-SEP-2018_R01.tar.gz $TOP_DIR/ 
-	$ cd $TOP_DIR 
-	$ tar -xaf e-CAM131_CUTX2_JETSON_TX2_L4T_28.2.1_18-SEP-2018_R01.tar.gz
+## Environnement
 
-Now replace the existing kernel Image with e-con’s pre-built Image and related driver
-modules given with the Release package using the commands below:
+Create working directories
 
-	$ sudo cp $RELEASE_PACK_DIR/Kernel/Binaries/Image /boot/Image -f
+    cd ~
+    mkdir dev
+    mkdir dev/workspace
+    mkdir dev/lib
 
-Copy the e-CAM131_CUTX2 Camera driver and other driver modules given with the release
-package using the commands below:
-	 
-	$ sudo tar xjpmf $RELEASE_PACK_DIR/Kernel/Binaries/kernel_supplements.tar.bz2 -C / 
-	$ sudo cp $RELEASE_PACK_DIR/Rootfs/modules /etc/modules -f
-	 
-Flash the Signed DTB to necessary eMMC partition (mmcblk0p26).
+Get the repository
 
-	$ sudo dd if=$RELEASE_PACK_DIR/Kernel/Binaries/tegra186-quill-p3310-1000-c03-00-base_sigheader.dtb.encrypt of=/dev/mmcblk0p26 bs=1M
+    cd ~/dev/workspace
+    git clone https://github.com/introlab/rendezvous.git
 
-Now reboot the Jetson development kit. The Jetson TX2 board will now be running the latest
-binaries. The module drivers for e-CAM131_CUTX2 will be loaded automatically in the Jetson during
-booting. Check the presence of video node using the following command: 
+## Qt
 
-	$ ls /dev/video0
+### Requirements
+Install platform plugin dependencies
 
-You can test the camera with this command:
+    sudo apt-get install libfontconfig1-dev \
+                         libfreetype6-dev \
+                         libx11-dev \
+                         libxext-dev \
+                         libxfixes-dev \
+                         libxi-dev \
+                         libxrender-dev \
+                         libxcb1-dev \
+                         libx11-xcb-dev \
+                         libxcb-glx0-dev \
+                         libxkbcommon-x11-dev
 
-	$ gst-launch-1.0 v4l2src device=/dev/video0 ! "video/x-raw, format=(string)UYVY, width=(int)3840,height=(int)2160" ! nvvidconv ! "video/x-raw(memory:NVMM), format=(string)I420, width=(int)1920,height=(int)1080" ! nvoverlaysink overlay-w=1920 overlay-h=1080 sync=false
-	
-	
-## Project and dependencies
-*Note: Keep the same console for the whole process and do everything in order. 
- 
-### General dependencies
-Run the following commands:
+Install multimedia dependencies
 
-	$ sudo apt-get install python3 python3-dev cython python3-pip cmake python3-tk xorg-dev libglu1-mesa-dev swig ffmpeg autoconf libtool
+    sudoapt-get install libgstreamer1.0-0 \
+                        gstreamer1.0-plugins-base \
+                        gstreamer1.0-plugins-good \
+                        gstreamer1.0-plugins-bad \
+                        gstreamer1.0-plugins-ugly \
+                        gstreamer1.0-libav \
+                        gstreamer1.0-doc \
+                        gstreamer1.0-tools \
+                        gstreamer1.0-x \
+                        gstreamer1.0-alsa \
+                        gstreamer1.0-gl \
+                        gstreamer1.0-gtk3 \
+                        gstreamer1.0-qt5 \
+                        gstreamer1.0-pulseaudio \
+                        gstreamer0.10-ffmpeg
 
-	$ sudo pip3 install --upgrade pip
+### Download and unpacking the archive
+Download qt-everywhere 5.12.5 : https://download.qt.io/archive/qt/5.12/5.12.5/single/qt-everywhere-src-5.12.5.tar.xz 
 
-Create the directories:
+Move the download to dev/lib/ and unpack
 
-    $ cd ~
-    $ mkdir dev
-    $ mkdir dev/workspace
-    $ mkdir dev/lib
+    mv $HOME/Downloads/qt-everywhere-src-5.12.5.tar.xz dev/lib
+    cd ~/dev/lib/
+    tar xvf qt-everywhere-src-5.12.5.tar.xz
 
-### RendezVous
-Get the repo
+### Build the library
 
-    $ cd ~/dev/workspace
-    $ git clone https://github.com/introlab/rendezvous.git
+Configure Qt build
 
-Setup and activate the environment
+    cd qt-everywhere-src-5.12.5
+    ./configure -prefix /opt/qt5 \
+                -confirm-license \
+                -opensource \
+                -nomake examples \
+	            -nomake tests \
+                -skip qtwebengine
 
-    $ cd rendezvous
-    $ python3 -m pip install --user virtualenv
-    $ python3 -m virtualenv env
-    $ source env/bin/activate
+Create and install Qt (~2-3 hours)
 
-Install the requirements:
+    make -j6
+    make install
 
-    $ pip3 install -r requirements-jetson.txt
-
-### OpenCV 3.4
-
-In the file /usr/local/cuda/include/cuda_gl_interop.h, modify the following lines (add the comments).
-
-	//#if defined(__arm__) || defined(__aarch64__)
-	//#ifndef GL_VERSION
-	//#error Please include the appropriate gl headers before including cuda_gl_interop.h
-	//#endif
-	//#else
-	 #include <GL/gl.h>
-	//#endif
-
-Create the following link:
-
-    $ cd /usr/lib/aarch64-linux-gnu/
-    $ sudo ln -sf tegra/libGL.so libGL.so
-
-Run the script
-
-    $ mkdir dev/lib
-    $ chmod +x scripts/install_opencv34.sh
-    $ ./scripts/install_opencv34.sh
-
-Add a link to the opencv library in the project env :
-
-    $ ln -s /usr/local/lib/python3.5/dist-packages/cv2.cpython-35m-aarch64-linux-gnu.so /home/nvidia/dev/workspace/rendezvous/env/lib/python3.5/site-packages/cv2.so
-
-
-### ODAS
+## Pulse Audio
 
 Install the following dependencies:
 
-    $ sudo apt-get install libfftw3-dev libconfig-dev libasound2-dev
+    sudo apt-get install libpulse-dev   
+
+## ODAS
+
+Install the following dependencies:
+
+    sudo apt-get install libfftw3-dev libconfig-dev libasound2-dev
 
 Build Odas:
 
-    $ cd ~/dev/lib
-    $ git clone https://github.com/introlab/odas.git
-    $ cd odas
-    $ mkdir build
-    $ cd build
-    $ cmake ../
-    $ make
+    cd ~/dev/lib
+    git clone https://github.com/introlab/odas.git
+    cd odas
+    mkdir build
+    cd build
+    cmake ../
+    make
 
+## Yolov3
 
+Build Yolov3 from source
 
-### PyQt5
+    cd ~/dev/lib 
+    git clone https://github.com/pjreddie/darknet yolov3
+    cd yolov3
 
-Install the following dependencies:
-
-    $ sudo apt-get install python3-pyqt5 pyqt5-dev-tools qttools5-dev-tools python3-sip python3-scipy
-
-Copy the following files in the project env:
-
-    $ cp -r /usr/lib/python3/dist-packages/PyQt5 ~/dev/workspace/rendezvous/env/lib/python3.5/site-packages
-    $ cp -r /usr/lib/python3/dist-packages/scipy ~/dev/workspace/rendezvous/env/lib/python3.5/site-packages
-    $ cp /usr/lib/python3/dist-packages/sipconfig.py ~/dev/workspace/rendezvous/env/lib/python3.5/site-packages
-    $ cp /usr/lib/python3/dist-packages/sipconfig_nd5.py ~/dev/workspace/rendezvous/env/lib/python3.5/site-packages
-    $ cp /usr/lib/python3/dist-packages/sip.cpython-35m-aarch64-linux-gnu.so ~/dev/workspace/rendezvous/env/lib/python3.5/site-packages
-
-
-
-### RNNoise
-
-    $ cd ~/dev/lib
-    $ git clone https://github.com/xiph/rnnoise
-    $ cd rnnoise
-    $ ./autogen.sh
-    $ ./configure
-    $ sudo make install
-
-
-
-### Yolov3
-
-Build Yolov3 from source:
-
-    $ cd ~/dev/lib 
-    $ git clone https://github.com/pjreddie/darknet yolov3
-    $ cd yolov3
-
-Change the following lines in the Makefile:
+Change the following lines in the Makefile
 
 	GPU=1
 	CUDNN=1
@@ -174,74 +125,63 @@ Change the following lines in the Makefile:
 	ARCH= -gencode arch=compute_53,code=[sm_53,compute_53] \
 	      -gencode arch=compute_62,code=[sm_62,compute_62]
 
-Build:
+Build
 
-    $ make
+    make
 
-Add the following lines at the end of ~/.bashrc:
+Add the following lines at the end of ~/.bashrc
 
 	export DARKNET_HOME=$HOME/dev/lib/yolov3
 	export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$DARKNET_HOME
 	export CUDA_HOME=/usr/local/cuda
 
-Install Yolov3 for python in the project env:
+Install Yolov3 for python in the project env
 
-    $ cd ~/dev/workspace/rendezvous
-    $ git clone https://github.com/madhawav/YOLO3-4-Py.git
-    $ cd YOLO3-4-Py
-    $ export CUDA=1
-    $ export OPENCV=1 
-    $ pip3 install .
-    $ cd ..
-    $ rm -rf Yolo3-4-Py.git
+    cd ~/dev/workspace/rendezvous
+    git clone https://github.com/madhawav/YOLO3-4-Py.git
+    cd YOLO3-4-Py
+    export CUDA=1
+    export OPENCV=1 
+    pip3 install .
+    cd ..
+    rm -rf Yolo3-4-Py.git
 
-Download the neural network model and data:
+Download the neural network model and data
 
-    $ chmod +x scripts/yolo_setup.sh
-    $ ./scripts/yolo_setup.sh
-
-
-
-### VLC
-
-    $ cd ~/dev/lib
-    $ sudo apt-get build-dep vlc && sudo apt-get install libtool build-essential
-    $ wget http://download.videolan.org/pub/videolan/vlc/2.2.6/vlc-2.2.6.tar.xz  
-    $ tar -xf vlc-2.2.6.tar.xz 
-    $ rm  vlc-2.2.6.tar.xz
-    $ cd vlc-2.2.6
-    $ ./configure --disable-qt
-    $ sudo make install
-
-    $ sudo apt-get install vlc-data=2.2.2-5ubuntu0.16.04.4
-    $ sudo apt-get install libvlccore8
-    $ sudo apt-get install libvlc5
-    $ pip install python-vlc
+    chmod +x scripts/yolo_setup.sh
+    ./scripts/yolo_setup.sh
 
 
-### V4l2loopback
+## V4l2loopback
 
-Installation:
+Installation
 
-    $ cd /usr/src/linux-headers-4.4.38-tegra
-    $ sudo make modules_prepare
-    $ sudo apt-get install v4l2loopback-dkms -y
+    cd /usr/src/linux-headers-4.4.38-tegra
+    sudo make modules_prepare
+    sudo apt-get install v4l2loopback-dkms -y
 
 To create a v4l2loopback device:
     
-    $ sudo modprobe v4l2loopback
+    sudo modprobe v4l2loopback
 
 To remove a v4l2loopback device:
     
-    $ sudo rmmod v4l2loopback
+    sudo rmmod v4l2loopback
 
-### libv4l2cpp
+## libv4l2cpp
 
-    $ cd ~/dev/lib
-    $ git clone https://github.com/mpromonet/libv4l2cpp
-    $ cd libv4l2cpp/
-    $ make EXTRA_CXXFLAGS='-fPIC'
+Installation
+
+    cd ~/dev/lib
+    git clone https://github.com/mpromonet/libv4l2cpp
+    cd libv4l2cpp/
+    make EXTRA_CXXFLAGS='-fPIC'
 
 Add the following line at the end of ~/.bashrc:
 
     export LIBV4L2CPP_HOME=$HOME/dev/lib/libv4l2cpp
+
+## References  
+
+- https://doc.qt.io/qt-5/linux-building.html
+- https://doc.qt.io/qt-5/linux-requirements.html
