@@ -3,7 +3,7 @@
 namespace
 {
     template <typename T>
-    void malloc(T*& ptr, size_t size)
+    void malloc(T*& ptr, std::size_t size)
     {
         ptr = new T[size];
     }

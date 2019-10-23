@@ -8,7 +8,7 @@
 
 #include "components/sidebar.h"
 #include "views/abstract_view.h"
-#include "views/conference_view.h"
+#include "views/online_conference_view.h"
 #include "views/recording_view.h"
 #include "views/media_player_view.h"
 #include "views/transcription_view.h"
@@ -21,7 +21,7 @@ MainWindow::MainWindow(Model::ISettings& settings, QWidget *parent)
     , ui(new Ui::MainWindow)
     , sideBar(new View::SideBar)
     , views(new QStackedWidget)
-    , conferenceView(new View::ConferenceView)
+    , onlineConferenceView(new View::OnlineConferenceView)
     , recordingView(new View::RecordingView(settings))
     , transcriptionView(new View::TranscriptionView)
     , settingsView(new View::SettingsView(settings))
@@ -35,7 +35,7 @@ MainWindow::MainWindow(Model::ISettings& settings, QWidget *parent)
     File.open(QFile::ReadOnly);
     this->setStyleSheet(QLatin1String(File.readAll()));
 
-    addView(conferenceView);
+    addView(onlineConferenceView);
     addView(recordingView);
     addView(mediaPlayerView);
     addView(transcriptionView);

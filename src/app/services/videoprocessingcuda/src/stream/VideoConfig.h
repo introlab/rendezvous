@@ -1,16 +1,16 @@
-#ifndef CAMERA_CONFIG_H
-#define CAMERA_CONFIG_H
+#ifndef VIDEO_CONFIG_H
+#define VIDEO_CONFIG_H
 
 #include <string>
 
 #include "utils/models/Dim2.h"
 #include "utils/images/ImageFormat.h"
 
-struct CameraConfig
+struct VideoConfig
 {
 
-    CameraConfig() = default;
-    CameraConfig(int width, int height, int fpsTarget, const std::string& deviceName, ImageFormat imageFormat)
+    VideoConfig() = default;
+    VideoConfig(int width, int height, int fpsTarget, const std::string& deviceName, ImageFormat imageFormat)
         : resolution(width, height)
         , fpsTarget(fpsTarget)
         , deviceName(deviceName)
@@ -18,7 +18,7 @@ struct CameraConfig
     {
     }
 
-    CameraConfig(const Dim2<int>& resolution, int fpsTarget, const std::string& deviceName, ImageFormat imageFormat)
+    VideoConfig(const Dim2<int>& resolution, int fpsTarget, const std::string& deviceName, ImageFormat imageFormat)
         : resolution(resolution)
         , fpsTarget(fpsTarget)
         , deviceName(deviceName)
@@ -33,4 +33,4 @@ struct CameraConfig
 
 };
 
-#endif // !CAMERA_CONFIG_H
+#endif // !VIDEO_CONFIG_H

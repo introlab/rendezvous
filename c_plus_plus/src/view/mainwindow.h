@@ -25,7 +25,7 @@ private:
     Ui::MainWindow *ui;
     View::SideBar *sideBar;
     QStackedWidget *views;
-    View::AbstractView *conferenceView;
+    View::AbstractView *onlineConferenceView;
     View::AbstractView *recordingView;
     View::AbstractView *mediaPlayerView;
     View::AbstractView *transcriptionView;

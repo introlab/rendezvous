@@ -1,5 +1,5 @@
-#ifndef VIDEO_STREAM_MOCK_H
-#define VIDEO_STREAM_MOCK_H
+#ifndef IMAGE_FILE_READER_H
+#define IMAGE_FILE_READER_H
 
 #include <string>
 #include <memory>
@@ -17,14 +17,17 @@ public:
 
     const Image& readImage() override;
 
+protected:
+
+    Image image_;
+
 private:
 
     bool loadImage(const char* fileName, unsigned char*& data, int& width, int& height, int& channels, int desiredChannels = 0) const;
 
-    Image image_;
     ImageConverter imageConverter_;
     HeapObjectFactory heapObjectFactory_;
 
 };
 
-#endif // !VIDEO_STREAM_MOCK_H
+#endif // !IMAGE_FILE_READER_H

@@ -1,5 +1,5 @@
-#ifndef I_DETECTOR_MOCK_H
-#define I_DETECTOR_MOCK_H
+#ifndef DETECTOR_MOCK_H
+#define DETECTOR_MOCK_H
 
 #include "IDetector.h"
 
@@ -12,4 +12,4 @@ public:
 
 };
 
-#endif //!I_DETECTOR_MOCK_H
+#endif //!DETECTOR_MOCK_H

@@ -1,6 +1,8 @@
 #include "ImageConverter.h"
 
 #include <stdexcept>
+#include <iostream>
+#include <cstring>
 
 #include "utils/math/Helpers.h"
 
@@ -47,6 +49,11 @@ void ImageConverter::convert(const Image& inImage, const Image& outImage)
         {
             getRGBFromYUYV(yuyvData[j], rbgData[i], rbgData[i + 1]);
         }
+    }
+    else if (inImage.format == outImage.format)
+    {
+        std::cout << "Warning! Convertion input and output format are the same!" << std::endl;
+        std::memcpy(outImage.hostData, inImage.hostData, inImage.size);
     }
     else
     {

@@ -27,7 +27,7 @@ struct DewarpingMappingTemplate : public Dim2<int>
     {
     }
 
-    size_t size;
+    std::size_t size;
 
     T* hostData;
     T* deviceData;

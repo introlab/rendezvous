@@ -1,6 +1,8 @@
 #include "CudaImageConverter.h"
 
 #include <stdexcept>
+#include <iostream>
+#include <cstring>
 
 #include "utils/images/ImageFormat.h"
 #include "utils/math/CudaHelpers.cuh"
@@ -118,6 +120,11 @@ __global__ void convertYUYVToRGBKernel(int size, const YUYV* inData, RGB* outDat
 
 }
 
+CudaImageConverter::CudaImageConverter(cudaStream_t stream)
+    : stream_(stream)
+{
+}
+
 void CudaImageConverter::convert(const Image& inImage, const Image& outImage)
 {
     int size = inImage.width * inImage.height;
@@ -128,32 +135,38 @@ void CudaImageConverter::convert(const Image& inImage, const Image& outImage)
         const RGB* rbgData = reinterpret_cast<const RGB*>(inImage.deviceData);
         UYVY* uyvyData = reinterpret_cast<UYVY*>(outImage.deviceData);
 
-        convertRGBToUYVYKernel<<<blockCount / 2, BLOCK_SIZE>>>(size / 2, rbgData, uyvyData);
+        convertRGBToUYVYKernel<<<blockCount / 2, BLOCK_SIZE, 0, stream_>>>(size / 2, rbgData, uyvyData);
     }
     else if (inImage.format == ImageFormat::RGB_FMT && outImage.format == ImageFormat::YUYV_FMT)
     {
         const RGB* rbgData = reinterpret_cast<const RGB*>(inImage.deviceData);
         YUYV* yuyvData = reinterpret_cast<YUYV*>(outImage.deviceData);
         
-        convertRGBToYUYVKernel<<<blockCount / 2, BLOCK_SIZE>>>(size / 2, rbgData, yuyvData);
+        convertRGBToYUYVKernel<<<blockCount / 2, BLOCK_SIZE, 0, stream_>>>(size / 2, rbgData, yuyvData);
     }
     else if (inImage.format == ImageFormat::UYVY_FMT && outImage.format == ImageFormat::RGB_FMT)
     {
         const UYVY* uyvyData = reinterpret_cast<const UYVY*>(inImage.deviceData);
         RGB* rbgData = reinterpret_cast<RGB*>(outImage.deviceData);
         
-        convertUYVYToRGBKernel<<<blockCount / 2, BLOCK_SIZE>>>(size / 2, uyvyData, rbgData);
+        convertUYVYToRGBKernel<<<blockCount / 2, BLOCK_SIZE, 0, stream_>>>(size / 2, uyvyData, rbgData);
     }
     else if (inImage.format == ImageFormat::YUYV_FMT && outImage.format == ImageFormat::RGB_FMT)
     {
         const YUYV* yuyvData = reinterpret_cast<const YUYV*>(inImage.deviceData);
         RGB* rbgData = reinterpret_cast<RGB*>(outImage.deviceData);
         
-        convertYUYVToRGBKernel<<<blockCount / 2, BLOCK_SIZE>>>(size / 2, yuyvData, rbgData);
+        convertYUYVToRGBKernel<<<blockCount / 2, BLOCK_SIZE, 0, stream_>>>(size / 2, yuyvData, rbgData);
+    }
+    else if (inImage.format == outImage.format)
+    {
+        std::cout << "Warning! Convertion input and output format are the same!" << std::endl;
+        std::memcpy(outImage.hostData, inImage.hostData, inImage.size);
     }
     else
     {
         throw std::invalid_argument("Conversion from " + getImageFormatString(inImage.format) + " to " + 
                                     getImageFormatString(outImage.format) + " is not defined!");
     }
+    cudaStreamSynchronize(stream_);
 }
