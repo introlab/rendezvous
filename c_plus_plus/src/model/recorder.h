@@ -28,7 +28,7 @@ public slots:
     void onStopRecording();
 
 private:
-    void setAudioInput(const QString audioDevice);
+    QString getAudioInput(const QString audioDevice);
     QCameraInfo getCameraInfo(const QString cameraDevice);
 
     QCamera *m_camera;

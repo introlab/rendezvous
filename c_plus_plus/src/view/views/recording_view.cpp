@@ -52,13 +52,13 @@ void RecordingView::hideEvent(QHideEvent */*event*/)
 
 QString RecordingView::getCameraDevice()
 {
-    return "/dev/video1";   //TODO: get device name from config file
+    return Model::CAMERA_DEVICE;
 }
 
 
 QString RecordingView::getAudioDevice()
 {
-    return "default:";      //TODO: get device name from config file
+    return Model::AUDIO_DEVICE;
 }
 
 QString RecordingView::getOutputPath()

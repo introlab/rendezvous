@@ -14,10 +14,11 @@ namespace Model
 Recorder::Recorder(const QString cameraDevice, const QString audioDevice, QWidget *parent)
     : IRecorder(parent)
     , m_camera(new QCamera(getCameraInfo(cameraDevice)))
-    , m_audioRecorder(new QAudioRecorder(this))
+    , m_audioRecorder(new QAudioRecorder())
 {
     m_camera->setCaptureMode(QCamera::CaptureMode::CaptureVideo);
 
+    // Video
     QVideoEncoderSettings videoSettings;
     videoSettings.setCodec("video/x-h264");
     videoSettings.setQuality(QMultimedia::VeryHighQuality);
@@ -26,28 +27,14 @@ Recorder::Recorder(const QString cameraDevice, const QString audioDevice, QWidge
     m_mediaRecorder->setVideoSettings(videoSettings);
     m_mediaRecorder->setContainerFormat("avi");
 
+    // Audio
+    QAudioEncoderSettings audioSettings;
+    audioSettings.setSampleRate(16000);
+    audioSettings.setQuality(QMultimedia::VeryHighQuality);
+    m_audioRecorder->setAudioSettings(audioSettings);
+
     m_audioRecorder->setContainerFormat("audio/x-wav");
-    setAudioInput(audioDevice);
-}
-
-QCameraInfo Recorder::getCameraInfo(QString cameraDevice)
-{
-    QCameraInfo cameraInfo;
-    QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
-    if(cameras.length() == 1)
-    {
-        cameraInfo = QCameraInfo::defaultCamera();
-    }
-    else
-    {
-        foreach (const QCameraInfo &camInfo, cameras)
-        {
-            if (camInfo.deviceName() == cameraDevice)
-                cameraInfo = camInfo;
-        }
-    }
-
-    return cameraInfo;
+    m_audioRecorder->setAudioInput(getAudioInput(audioDevice));
 }
 
 void Recorder::start(const QString outputPath)
@@ -71,18 +58,40 @@ void Recorder::stop()
     m_audioRecorder->stop();
 }
 
-void Recorder::setAudioInput(const QString audioDevice)
+QCameraInfo Recorder::getCameraInfo(QString cameraDevice)
 {
-    QStringList inputs = m_audioRecorder->audioInputs();
-    QString selectedInput = m_audioRecorder->defaultAudioInput();
+    QCameraInfo defaultCameraInfo = QCameraInfo::defaultCamera();
 
-    foreach (QString input, inputs)
+    if(cameraDevice != "")
     {
-        if(input == audioDevice)
-            selectedInput = input;
+        QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
+
+        foreach (const QCameraInfo &cameraInfo, cameras)
+        {
+            if (cameraInfo.deviceName() == cameraDevice)
+                return cameraInfo;
+        }
     }
 
-    m_audioRecorder->setAudioInput(selectedInput);
+    return defaultCameraInfo;
+}
+
+QString Recorder::getAudioInput(const QString audioDevice)
+{
+    QString defaultInput = m_audioRecorder->defaultAudioInput();
+
+    if(audioDevice != "")
+    {
+        QStringList inputs = m_audioRecorder->audioInputs();
+
+        foreach (QString input, inputs)
+        {
+            if(input == audioDevice)
+                return input;
+        }
+    }
+
+    return defaultInput;
 }
 
 void Recorder::startCamera()

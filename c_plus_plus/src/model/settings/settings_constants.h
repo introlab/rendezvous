@@ -10,6 +10,8 @@ namespace Model
     const QString MICROPHONE_CONFIGURATION = QDir::homePath();
     const QString ODAS_LIBRARY = QDir::homePath();
     const QString GOOGLE_SERVICE_ACCOUNT_FILE = QDir::homePath();
+    const QString AUDIO_DEVICE = "";
+    const QString CAMERA_DEVICE = "";
 
     namespace General
     {
