@@ -4,9 +4,9 @@
 #include <cstdlib>
 
 template<typename T>
-void fillArray(T* array, const T& value, size_t size)
+void fillArray(T* array, const T& value, std::size_t size)
 {
-    for (size_t i = 0; i < size; ++i)
+    for (std::size_t i = 0; i < size; ++i)
     {
         array[i] = value;
     }

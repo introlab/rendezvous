@@ -3,43 +3,47 @@
 
 #include <linux/videodev2.h>
 
-#include "stream/input/CameraConfig.h"
 #include "stream/input/IVideoInput.h"
-#include "utils/models/TripleBuffer.h"
+#include "stream/VideoConfig.h"
+#include "utils/models/CircularBuffer.h"
 
 
 class CameraReader : public IVideoInput
 {
 public:
 
-    CameraReader(const CameraConfig& cameraConfig);
+    CameraReader(const VideoConfig& cameraConfig, std::size_t bufferCount);
     virtual ~CameraReader();
 
     const Image& readImage() override;
 
-private:
+protected:
 
     struct IndexedImage
     {
         static int v4l2Index;
 
+        IndexedImage() = default;
         IndexedImage(const Image& image);
 
         int index;
         Image image;
     };
 
+    VideoConfig videoConfig_;
+    CircularBuffer<IndexedImage> images_;
+
+private:
+
     void queueCapture(v4l2_buffer& buf);
     void dequeueCapture(v4l2_buffer& buf);
-    void requestBuffers();
+    void requestBuffers(std::size_t bufferCount);
     void mapBuffer(IndexedImage& indexedImage);
     void unmapBuffer(IndexedImage& indexedImage);
     void checkCaps();
     void setImageFormat();
     int xioctl(int request, void* arg);
 
-    CameraConfig cameraConfig_;
-    TripleBuffer<IndexedImage> images_;
     v4l2_buffer buffer_;
     int fd_;
 

@@ -6,16 +6,22 @@
 #include "detection/DarknetDetector.h"
 #include "dewarping/CpuFisheyeDewarper.h"
 #include "dewarping/CpuDarknetFisheyeDewarper.h"
+#include "stream/input/CameraReader.h"
+#include "stream/input/ImageFileReader.h"
 #include "utils/alloc/HeapObjectFactory.h"
+#include "utils/images/ImageConverter.h"
 #include "utils/threads/sync/NopSynchronizer.h"
 #else
 #include "cuda_runtime.h"
 #include "detection/cuda/CudaDarknetDetector.h"
 #include "dewarping/cuda/CudaFisheyeDewarper.h"
 #include "dewarping/cuda/CudaDarknetFisheyeDewarper.h"
+#include "stream/input/cuda/CudaCameraReader.h"
+#include "stream/input/cuda/CudaImageFileReader.h"
 #include "utils/alloc/cuda/DeviceCudaObjectFactory.h"
 #include "utils/alloc/cuda/ManagedMemoryCudaObjectFactory.h"
 #include "utils/alloc/cuda/ZeroCopyCudaObjectFactory.h"
+#include "utils/images/cuda/CudaImageConverter.h"
 #include "utils/threads/sync/CudaSynchronizer.h"
 
 namespace
@@ -40,14 +46,18 @@ ImplementationFactory::ImplementationFactory(bool useZeroCopyIfSupported)
     isZeroCopySupported_ = deviceProp.integrated;
     message = isZeroCopySupported_ ? "Graphic card supports zero copy" : "Graphic card doesn't support zero copy";
 
-    if (!useZeroCopyIfSupported_ || !isZeroCopySupported_)
-    {
-        cudaStreamCreate(&stream);
-        cudaStreamCreate(&detectionStream);
-    }
-
+    cudaStreamCreate(&stream);
+    cudaStreamCreate(&detectionStream);
 #endif
     std::cout << message << std::endl;
+}
+
+ImplementationFactory::~ImplementationFactory()
+{
+#ifndef NO_CUDA
+    cudaStreamDestroy(stream);
+    cudaStreamDestroy(detectionStream);    
+#endif
 }
 
 std::unique_ptr<IDetector> ImplementationFactory::getDetector(const std::string& configFile, const std::string& weightsFile, 
@@ -154,4 +164,43 @@ std::unique_ptr<ISynchronizer> ImplementationFactory::getDetectionSynchronizer()
 #endif
 
     return synchronizer;
+}
+
+std::unique_ptr<IImageConverter> ImplementationFactory::getImageConverter()
+{
+    std::unique_ptr<IImageConverter> imageConverter = nullptr;
+
+#ifdef NO_CUDA
+    imageConverter = std::make_unique<ImageConverter>();
+#else
+    imageConverter = std::make_unique<CudaImageConverter>(stream);
+#endif
+
+    return imageConverter;
+}
+
+std::unique_ptr<IVideoInput> ImplementationFactory::getFileImageReader(const std::string& imageFilePath, ImageFormat format)
+{
+    std::unique_ptr<IVideoInput> fileImageReader = nullptr;
+
+#ifdef NO_CUDA
+    fileImageReader = std::make_unique<ImageFileReader>(imageFilePath, format);
+#else
+    fileImageReader = std::make_unique<CudaImageFileReader>(imageFilePath, format);
+#endif
+
+    return fileImageReader;
+}
+
+std::unique_ptr<IVideoInput> ImplementationFactory::getCameraReader(const VideoConfig& videoConfig)
+{
+    std::unique_ptr<IVideoInput> cameraReader = nullptr;
+
+#ifdef NO_CUDA
+    cameraReader = std::make_unique<CameraReader>(videoConfig, 2);
+#else
+    cameraReader = std::make_unique<CudaCameraReader>(videoConfig);
+#endif
+
+    return cameraReader;
 }
