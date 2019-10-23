@@ -62,6 +62,9 @@ FORMS += \
     src/view/gui/settings_view.ui \
     src/view/gui/transcription_view.ui
 
+RESOURCES += \
+    ressources/ressources.qrc
+
 DISTFILES += \
     src/view/stylesheets/globalStylesheet.qss
 
@@ -70,5 +73,3 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
-RESOURCES += \
-    ressources/logo.qrc

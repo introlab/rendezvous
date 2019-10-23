@@ -16,7 +16,7 @@ class OnlineConferenceView : public AbstractView
 public:
     explicit OnlineConferenceView(QWidget *parent = nullptr);
 
-public slots:
+private slots:
     void onStoppedStateEntered();
     void onStartedStateEntered();
 
