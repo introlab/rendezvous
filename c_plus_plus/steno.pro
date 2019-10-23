@@ -63,7 +63,7 @@ FORMS += \
     src/view/gui/transcription_view.ui
 
 RESOURCES += \
-    ressources/ressources.qrc
+    resources/resources.qrc
 
 DISTFILES += \
     src/view/stylesheets/globalStylesheet.qss
