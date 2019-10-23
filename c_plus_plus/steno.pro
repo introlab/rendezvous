@@ -32,9 +32,9 @@ SOURCES += \
     src/model/settings/settings.cpp \
     src/view/mainwindow.cpp \
     src/view/components/sidebar.cpp \
+    src/view/views/local_conference_view.cpp \
     src/view/views/media_player_view.cpp \
     src/view/views/online_conference_view.cpp \
-    src/view/views/recording_view.cpp \
     src/view/views/settings_view.cpp \
     src/view/views/transcription_view.cpp
 
@@ -51,17 +51,17 @@ HEADERS += \
     src/view/mainwindow.h \
     src/view/components/sidebar.h \
     src/view/views/abstract_view.h \
+    src/view/views/local_conference_view.h \
     src/view/views/media_player_view.h \
     src/view/views/online_conference_view.h \
-    src/view/views/recording_view.h \
     src/view/views/settings_view.h \
     src/view/views/transcription_view.h
 
 FORMS += \
+    src/view/gui/local_conference_view.ui \
     src/view/gui/mainwindow.ui \
     src/view/gui/media_player_view.ui \
     src/view/gui/online_conference_view.ui \
-    src/view/gui/recording_view.ui \
     src/view/gui/settings_view.ui \
     src/view/gui/transcription_view.ui
 

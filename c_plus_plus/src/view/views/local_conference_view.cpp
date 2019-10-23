@@ -1,5 +1,5 @@
-#include "recording_view.h"
-#include "ui_recording_view.h"
+#include "local_conference_view.h"
+#include "ui_local_conference_view.h"
 #include "model/settings/settings_constants.h"
 
 #include <QCameraViewfinder>
@@ -8,9 +8,9 @@
 namespace View
 {
 
-RecordingView::RecordingView(Model::ISettings& settings, QWidget *parent)
-    : AbstractView("Recording", parent)
-    , m_ui(new Ui::RecordingView)
+LocalConferenceView::LocalConferenceView(Model::ISettings& settings, QWidget *parent)
+    : AbstractView("Local Conference", parent)
+    , m_ui(new Ui::LocalConferenceView)
     , m_recorder(new Model::Recorder(getCameraDevice(), getAudioDevice(), this))
     , m_settings(&settings)
     , m_cameraViewfinder(new QCameraViewfinder(this))
@@ -24,7 +24,7 @@ RecordingView::RecordingView(Model::ISettings& settings, QWidget *parent)
     connect(m_ui->btnStartStopRecord, &QAbstractButton::clicked, [=]{ changeRecordButtonState(); });
 }
 
-void RecordingView::changeRecordButtonState()
+void LocalConferenceView::changeRecordButtonState()
 {
     m_recordButtonState = !m_recordButtonState;
 
@@ -40,28 +40,28 @@ void RecordingView::changeRecordButtonState()
     }
 }
 
-void RecordingView::showEvent(QShowEvent */*event*/)
+void LocalConferenceView::showEvent(QShowEvent */*event*/)
 {
     m_recorder->startCamera();
 }
 
-void RecordingView::hideEvent(QHideEvent */*event*/)
+void LocalConferenceView::hideEvent(QHideEvent */*event*/)
 {
     m_recorder->stopCamera();
 }
 
-QString RecordingView::getCameraDevice()
+QString LocalConferenceView::getCameraDevice()
 {
     return Model::CAMERA_DEVICE;
 }
 
 
-QString RecordingView::getAudioDevice()
+QString LocalConferenceView::getAudioDevice()
 {
     return Model::AUDIO_DEVICE;
 }
 
-QString RecordingView::getOutputPath()
+QString LocalConferenceView::getOutputPath()
 {
     return m_settings->get(Model::General::keyName(Model::General::Key::OUTPUT_FOLDER)).toString();
 }

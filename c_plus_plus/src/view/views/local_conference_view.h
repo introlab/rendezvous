@@ -1,5 +1,5 @@
-#ifndef RECORDING_VIEW_H
-#define RECORDING_VIEW_H
+#ifndef LOCAL_CONFERENCE_VIEW_H
+#define LOCAL_CONFERENCE_VIEW_H
 
 #include "view/views/abstract_view.h"
 #include "model/settings/i_settings.h"
@@ -7,15 +7,15 @@
 
 class QCameraViewfinder;
 
-namespace Ui { class RecordingView; }
+namespace Ui { class LocalConferenceView; }
 
 namespace View
 {
 
-class RecordingView : public AbstractView
+class LocalConferenceView : public AbstractView
 {
 public:
-    explicit RecordingView(Model::ISettings& settings, QWidget *parent = nullptr);
+    explicit LocalConferenceView(Model::ISettings& settings, QWidget *parent = nullptr);
 
 public slots:
     void changeRecordButtonState();
@@ -29,7 +29,7 @@ private:
     QString getAudioDevice();
     QString getOutputPath();
 
-    Ui::RecordingView *m_ui;
+    Ui::LocalConferenceView *m_ui;
     Model::Recorder *m_recorder;
     Model::ISettings *m_settings;
     QCameraViewfinder *m_cameraViewfinder;
@@ -38,4 +38,4 @@ private:
 
 } // View
 
-#endif // RECORDING_VIEW_H
+#endif // LOCAL_CONFERENCE_VIEW_H
