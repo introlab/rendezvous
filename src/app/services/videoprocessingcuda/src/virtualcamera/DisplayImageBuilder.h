@@ -20,6 +20,10 @@ public:
 
 private:
 
+    void fillImage(int offset, const Dim2<int>& vcDim, const Dim2<int>& displayDim, const RGB* vcData, RGB* displayData);
+    void fillImage(int offset, Dim2<int> vcDim, Dim2<int> displayDim, const UYVY* vcData, UYVY* displayData);
+    void fillImage(int offset, Dim2<int> vcDim, Dim2<int> displayDim, const YUYV* vcData, YUYV* displayData);
+
     Dim2<int> displayDimention_;
     Dim2<int> maxVirtualCameraDim_;
 

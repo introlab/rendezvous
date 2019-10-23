@@ -1,11 +1,11 @@
 #include "DeviceCudaObjectFactory.h"
 
-#include "ErrorHelper.h"
+#include "utils/CudaUtils.cuh"
 
 namespace
 {
     template <typename T>
-    void mallocDevice(T*& ptr, size_t size)
+    void mallocDevice(T*& ptr, std::size_t size)
     {
         checkCuda(cudaMalloc(&ptr, size * sizeof(T)));
     }

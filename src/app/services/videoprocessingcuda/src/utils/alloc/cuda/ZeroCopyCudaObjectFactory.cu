@@ -1,11 +1,11 @@
 #include "ZeroCopyCudaObjectFactory.h"
 
-#include "ErrorHelper.h"
+#include "utils/CudaUtils.cuh"
 
 namespace
 {
     template <typename T>
-    void mallocHost(T*& hostPtr, size_t size)
+    void mallocHost(T*& hostPtr, std::size_t size)
     {
         checkCuda(cudaHostAlloc(&hostPtr,  size * sizeof(T),  cudaHostAllocMapped));
     }

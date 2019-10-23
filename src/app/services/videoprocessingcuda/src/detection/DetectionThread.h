@@ -1,5 +1,5 @@
-#ifndef DETECTION_THREAD2_H
-#define DETECTION_THREAD2_H
+#ifndef DETECTION_THREAD_H
+#define DETECTION_THREAD_H
 
 #include "detection/IDetector.h"
 #include "dewarping/IDetectionFisheyeDewarper.h"
@@ -42,4 +42,4 @@ private:
 
 };
 
-#endif //!DETECTION_THREAD2_H
+#endif //!DETECTION_THREAD_H

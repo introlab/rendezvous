@@ -1,11 +1,11 @@
 #include "ManagedMemoryCudaObjectFactory.h"
 
-#include "ErrorHelper.h"
+#include "utils/CudaUtils.cuh"
 
 namespace
 {
     template <typename T>
-    void mallocManaged(T*& ptr, size_t size, const cudaStream_t& stream)
+    void mallocManaged(T*& ptr, std::size_t size, const cudaStream_t& stream)
     {
         checkCuda(cudaMallocManaged(&ptr, size * sizeof(T)));
         checkCuda(cudaStreamAttachMemAsync(stream, ptr));

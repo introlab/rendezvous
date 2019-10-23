@@ -1,9 +1,6 @@
 #ifndef HELPERS_H
 #define HELPERS_H
 
-#include "dewarping/models/DewarpingParameters.h"
-#include "utils/models/Point.h"
-
 namespace math
 {
 
