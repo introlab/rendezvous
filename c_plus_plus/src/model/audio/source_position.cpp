@@ -12,11 +12,7 @@ SourcePosition::SourcePosition(double azimuth, double elevation) :
 {
 }
 
-SourcePosition::~SourcePosition()
-{
-}
-
-SourcePosition SourcePosition::deserialize(const QJsonValue jsonSource)
+SourcePosition SourcePosition::deserialize(const QJsonValue& jsonSource)
 {
     double x = jsonSource["x"].toDouble();
     double y = jsonSource["y"].toDouble();

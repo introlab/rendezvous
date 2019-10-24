@@ -18,7 +18,7 @@ public:
 
     bool open() override;
     bool close() override;
-    int read(uint8_t* audioBuf, int nbytes) override;
+    int read(uint8_t* audioBuf, int bytesToRead) override;
 
 private:
     std::unique_ptr<LocalSocketServer> m_socketServer;

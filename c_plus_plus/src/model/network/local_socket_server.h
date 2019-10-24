@@ -21,7 +21,7 @@ public:
 
     bool start() override;
     bool stop() override;
-    int read(char* buffer, const int size) override;
+    int read(char* buffer, int bytesToRead) override;
 
 private slots:
     void onNewConnection();

@@ -16,7 +16,7 @@ public:
     
     virtual bool start() = 0;
     virtual bool stop() = 0;
-    virtual int read(char* buffer, const int size) = 0;
+    virtual int read(char* buffer, int bytesToRead) = 0;
 
 signals:
     void dataReady(int bytes);

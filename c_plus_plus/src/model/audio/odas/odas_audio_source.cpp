@@ -24,10 +24,9 @@ bool OdasAudioSource::close()
     return m_socketServer->stop();
 }
 
-int OdasAudioSource::read(uint8_t* audioBuf, int nbytes)
+int OdasAudioSource::read(uint8_t* audioBuf, int bytesToRead)
 {
-    char* readBuffer = reinterpret_cast<char*>(audioBuf);
-    qint64 bytesRead = m_socketServer->read(readBuffer, nbytes);
+    qint64 bytesRead = m_socketServer->read(reinterpret_cast<char*>(audioBuf), bytesToRead);
     return static_cast<int>(bytesRead);
 }
 

@@ -10,7 +10,8 @@ namespace Model
 {
 
 OdasPositionSource::OdasPositionSource(quint16 port) :
-    m_socketServer(std::make_unique<LocalSocketServer>(port))
+    m_socketServer(std::make_unique<LocalSocketServer>(port)),
+    m_mutex(std::make_unique<QMutex>())
 {
     connect(m_socketServer.get(), SIGNAL(dataReady(int)), this, SLOT(onPositionsReady(int)));
 }
@@ -32,32 +33,34 @@ bool OdasPositionSource::close()
 
 std::vector<SourcePosition> OdasPositionSource::getPositions()
 {
-    QMutexLocker locker(&m_mutex);
+    QMutexLocker locker(m_mutex.get());
     return m_sourcePositions;
 }
 
-void OdasPositionSource::updatePositions(std::vector<SourcePosition> sources)
+void OdasPositionSource::updatePositions(std::vector<SourcePosition>& sourcePositions)
 {
-    QMutexLocker locker(&m_mutex);
-    m_sourcePositions = sources;
+    QMutexLocker locker(m_mutex.get());
+    m_sourcePositions = sourcePositions;
 }
 
 void OdasPositionSource::onPositionsReady(int numberOfBytes)
 {
-    std::vector<SourcePosition> sources;
+    std::vector<SourcePosition> sourcePositions;
 
-    m_socketServer->read(m_buffer, numberOfBytes);
-    QByteArray byteArray = QByteArray::fromRawData(m_buffer, numberOfBytes);
+    int bufferMaxSize = m_buffer.max_size();
+    int maxBytesToRead = bufferMaxSize < numberOfBytes ? bufferMaxSize : numberOfBytes;
+    int bytesRead = m_socketServer->read(m_buffer.data(), maxBytesToRead);
+    QByteArray byteArray = QByteArray::fromRawData(m_buffer.data(), bytesRead);
     QJsonDocument json = QJsonDocument::fromJson(byteArray);
 
     QJsonArray odasSources = json["src"].toArray();
     for (auto it = odasSources.begin(); it < odasSources.end(); it++)
     {
         SourcePosition source = SourcePosition::deserialize(*it);
-        sources.push_back(source);
+        sourcePositions.push_back(source);
     }
 
-    updatePositions(sources);
+    updatePositions(sourcePositions);
 }
 
 } // Model

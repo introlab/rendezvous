@@ -14,7 +14,7 @@ public:
     
     virtual bool open() = 0;
     virtual bool close() = 0;
-    virtual int read(uint8_t* audioBuf, int nbytes)  = 0;
+    virtual int read(uint8_t* audioBuf, int bytesToRead)  = 0;
 };
 
 } // Model

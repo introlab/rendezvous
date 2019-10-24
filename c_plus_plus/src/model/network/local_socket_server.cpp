@@ -39,7 +39,7 @@ bool LocalSocketServer::stop()
     return !m_server->isListening();
 }
 
-int LocalSocketServer::read(char* buffer, const int size) 
+int LocalSocketServer::read(char* buffer, int bytesToRead) 
 {
     if (m_socket == nullptr ||
         m_socket->state() != QAbstractSocket::ConnectedState)
@@ -47,7 +47,7 @@ int LocalSocketServer::read(char* buffer, const int size)
         return -1;
     }
 
-    return m_socket->read(buffer, size);
+    return m_socket->read(buffer, bytesToRead);
 }
 
 void LocalSocketServer::onNewConnection()

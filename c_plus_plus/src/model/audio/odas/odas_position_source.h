@@ -3,12 +3,12 @@
 
 #include <memory>
 
-#include <QMutex>
-
 #include "model/audio/i_position_source.h"
 #include "model/network/local_socket_server.h"
 
-#define POSITION_BUFFER_SIZE 10000
+constexpr int POSITION_BUFFER_SIZE = 10000;
+
+class QMutex;
 
 namespace Model
 {
@@ -29,14 +29,12 @@ private slots:
     void onPositionsReady(int numberOfBytes);
 
 private:
-    void updatePositions(std::vector<SourcePosition>);
+    void updatePositions(std::vector<SourcePosition>& sourcePositions);
 
     std::unique_ptr<LocalSocketServer> m_socketServer;
-
-    QMutex m_mutex;
+    std::unique_ptr<QMutex> m_mutex;
     std::vector<SourcePosition> m_sourcePositions;
-
-    char m_buffer[POSITION_BUFFER_SIZE];
+    std::array<char, POSITION_BUFFER_SIZE> m_buffer;
 };
 
 } // Model

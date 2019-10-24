@@ -10,9 +10,9 @@ namespace Model
 struct SourcePosition
 {
     SourcePosition(double azimuth, double elevation);
-    ~SourcePosition();
+    ~SourcePosition() = default;
 
-    static SourcePosition deserialize(const QJsonValue jsonValue);
+    static SourcePosition deserialize(const QJsonValue& jsonSource);
 
     double azimuth;
     double elevation;
