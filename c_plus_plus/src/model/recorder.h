@@ -3,11 +3,13 @@
 
 #include "i_recorder.h"
 
+#include <QAudioRecorder>
+
 class QMediaRecorder;
-class QAudioRecorder;
 class QCamera;
 class QCameraInfo;
 class QCameraViewfinder;
+class QProcess;
 
 namespace Model
 {
@@ -26,12 +28,16 @@ public:
 public slots:
     void onStartRecording();
     void onStopRecording();
+    void onAudioRecorderStateChanged(QAudioRecorder::State state);
 
 private:
+    void mergeAudioVideo();
     QString getAudioInput(const QString audioDevice);
     QCameraInfo getCameraInfo(const QString cameraDevice);
 
     QCamera *m_camera;
+    QProcess *m_process;
+    QString m_outputPath;
     QMediaRecorder *m_mediaRecorder;
     QAudioRecorder *m_audioRecorder;
 };
