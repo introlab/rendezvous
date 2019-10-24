@@ -1,4 +1,4 @@
-QT       += core gui
+QT       += core gui network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets multimedia multimediawidgets
 
@@ -26,7 +26,12 @@ LIBS += -lpulse-simple -lpulse
 
 SOURCES += \
     src/main.cpp \
+    src/model/network/local_socket_server.cpp \
+    src/model/audio/odas/odas_audio_source.cpp \
+    src/model/audio/odas/odas_position_source.cpp \
+    src/model/audio/source_position.cpp \
     src/model/audio/pulseaudio/pulseaudio_sink.cpp \
+    src/model/utils/spherical_angle_converter.cpp \
     src/model/media_player.cpp \
     src/model/settings/settings.cpp \
     src/view/mainwindow.cpp \
@@ -38,8 +43,16 @@ SOURCES += \
     src/view/views/transcription_view.cpp
 
 HEADERS += \
+    src/model/network/i_socket_server.h \
+    src/model/network/local_socket_server.h \
     src/model/audio/i_audio_sink.h \
+    src/model/audio/i_audio_source.h \
+    src/model/audio/i_position_source.h \
+    src/model/audio/source_position.h \
     src/model/audio/pulseaudio/pulseaudio_sink.h \
+    src/model/audio/odas/odas_audio_source.h \
+    src/model/audio/odas/odas_position_source.h \
+    src/model/utils/spherical_angle_converter.h \
     src/model/i_media_player.h \
     src/model/media_player.h \
     src/model/settings/i_settings.h \
