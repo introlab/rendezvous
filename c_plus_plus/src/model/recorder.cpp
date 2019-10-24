@@ -125,7 +125,6 @@ void Recorder::mergeAudioVideo()
 
     if(ret == 0)
     {
-        m_process->execute("rm " + m_outputPath + "/audio.wav");
         m_process->execute("rm " + m_outputPath + "/video.avi");
     }
 
