@@ -26,7 +26,6 @@ protected:
 
 private:
     QString getCameraDevice();
-    QString getAudioDevice();
     QString getOutputPath();
 
     Ui::LocalConferenceView *m_ui;

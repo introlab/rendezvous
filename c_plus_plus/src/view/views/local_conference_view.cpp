@@ -11,7 +11,7 @@ namespace View
 LocalConferenceView::LocalConferenceView(Model::ISettings& settings, QWidget *parent)
     : AbstractView("Local Conference", parent)
     , m_ui(new Ui::LocalConferenceView)
-    , m_recorder(new Model::Recorder(getCameraDevice(), getAudioDevice(), this))
+    , m_recorder(new Model::Recorder(getCameraDevice(), this))
     , m_settings(&settings)
     , m_cameraViewfinder(new QCameraViewfinder(this))
 {
@@ -52,13 +52,7 @@ void LocalConferenceView::hideEvent(QHideEvent */*event*/)
 
 QString LocalConferenceView::getCameraDevice()
 {
-    return Model::CAMERA_DEVICE;
-}
-
-
-QString LocalConferenceView::getAudioDevice()
-{
-    return Model::AUDIO_DEVICE;
+    return Model::VIRTUAL_CAMERA_DEVICE;
 }
 
 QString LocalConferenceView::getOutputPath()
