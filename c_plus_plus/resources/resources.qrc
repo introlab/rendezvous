@@ -2,4 +2,7 @@
     <qresource prefix="/images">
         <file>logo.svg</file>
     </qresource>
+    <qresource prefix="/stylesheets">
+        <file>globalStylesheet.qss</file>
+    </qresource>
 </RCC>
