@@ -6,7 +6,7 @@
 
 namespace Model
 {
-    const QString CAMERA_CONFIGURATION = QDir::homePath();
+    const QString CAMERA_CONFIGURATION = ":/configs/camera_conf.json";
     const QString MICROPHONE_CONFIGURATION = QDir::homePath();
     const QString ODAS_LIBRARY = QDir::homePath();
     const QString GOOGLE_SERVICE_ACCOUNT_FILE = QDir::homePath();
