@@ -26,9 +26,9 @@ public:
 private:
     void addView(View::AbstractView *view);
 
-    Ui::MainWindow *ui;
-    View::SideBar *sideBar;
-    QStackedWidget *views;
+    Ui::MainWindow *m_ui;
+    View::SideBar *m_sideBar;
+    QStackedWidget *m_views;
 };
 
 } // View

@@ -10,9 +10,6 @@
 #include "views/online_conference_view.h"
 #include "views/settings_view.h"
 
-#include <QDir>
-#include <QFile>
-#include <QObject>
 #include <QStackedWidget>
 
 namespace View
@@ -20,18 +17,13 @@ namespace View
 
 MainWindow::MainWindow(Model::ISettings &settings, Model::IMediaPlayer &mediaPlayer, QWidget *parent)
     : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
-    , sideBar(new View::SideBar)
-    , views(new QStackedWidget)
+    , m_ui(new Ui::MainWindow)
+    , m_sideBar(new View::SideBar)
+    , m_views(new QStackedWidget)
 {
-
-    ui->setupUi(this);
-    ui->mainLayout->addWidget(sideBar);
-    ui->mainLayout->addWidget(views);
-
-    QFile File(QDir::currentPath() + "/../src/view/stylesheets/globalStylesheet.qss");
-    File.open(QFile::ReadOnly);
-    this->setStyleSheet(QLatin1String(File.readAll()));
+    m_ui->setupUi(this);
+    m_ui->mainLayout->addWidget(m_sideBar);
+    m_ui->mainLayout->addWidget(m_views);
 
     View::AbstractView *onlineConferenceView = new View::OnlineConferenceView();
     View::AbstractView *localConferenceView = new View::LocalConferenceView();
@@ -43,15 +35,15 @@ MainWindow::MainWindow(Model::ISettings &settings, Model::IMediaPlayer &mediaPla
     addView(mediaPlayerView);
     addView(settingsView);
 
-    sideBar->setCurrentRow(0);
+    m_sideBar->setCurrentRow(0);
 
-    connect(sideBar, &View::SideBar::currentRowChanged, [=](const int& index){ views->setCurrentIndex(index); });
+    connect(m_sideBar, &View::SideBar::currentRowChanged, [=](const int& index){ m_views->setCurrentIndex(index); });
 }
 
 void MainWindow::addView(View::AbstractView *view)
 {
-    sideBar->add(view->getName());
-    views->addWidget(view);
+    m_sideBar->add(view->getName());
+    m_views->addWidget(view);
 }
 
 } // View
