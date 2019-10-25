@@ -5,19 +5,23 @@
 
 class QStackedWidget;
 
-namespace Ui { class MainWindow; }
+namespace Model { class ISettings;
+                  class IMediaPlayer; }
 
 namespace View { class SideBar;
                  class AbstractView; }
 
-namespace Model { class ISettings; }
+namespace Ui { class MainWindow; }
+
+namespace View
+{
 
 class MainWindow : public QMainWindow
 {
 Q_OBJECT
 
 public:
-    MainWindow(Model::ISettings& settings, QWidget *parent = nullptr);
+    MainWindow(Model::ISettings &settings, Model::IMediaPlayer &mediaPlayer, QWidget *parent = nullptr);
 
 private:
     void addView(View::AbstractView *view);
@@ -25,11 +29,8 @@ private:
     Ui::MainWindow *ui;
     View::SideBar *sideBar;
     QStackedWidget *views;
-    View::AbstractView *onlineConferenceView;
-    View::AbstractView *localConferenceView;
-    View::AbstractView *mediaPlayerView;
-    View::AbstractView *transcriptionView;
-    View::AbstractView *settingsView;
 };
+
+} // View
 
 #endif // MAINWINDOW_H

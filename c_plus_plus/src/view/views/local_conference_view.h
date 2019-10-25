@@ -1,11 +1,14 @@
-#ifndef LOCAL_CONFERENCE_VIEW_H
-#define LOCAL_CONFERENCE_VIEW_H
+#ifndef RECORDING_VIEW_H
+#define RECORDING_VIEW_H
 
 #include "view/views/abstract_view.h"
-#include "model/settings/i_settings.h"
-#include "model/recorder.h"
+#include "model/recorder/recorder.h"
+#include "model/settings/settings.h"
 
+class QCamera;
+class QCameraInfo;
 class QCameraViewfinder;
+class QListWidgetItem;
 
 namespace Ui { class LocalConferenceView; }
 
@@ -37,4 +40,4 @@ private:
 
 } // View
 
-#endif // LOCAL_CONFERENCE_VIEW_H
+#endif // RECORDING_VIEW_H
