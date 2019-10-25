@@ -8,15 +8,15 @@ class QCameraInfo;
 class QCameraViewfinder;
 class QListWidgetItem;
 
-namespace Ui { class RecordingView; }
+namespace Ui { class LocalConferenceView; }
 
 namespace View
 {
 
-class RecordingView : public AbstractView
+class LocalConferenceView : public AbstractView
 {
 public:
-    explicit RecordingView(QWidget *parent = nullptr);
+    explicit LocalConferenceView(QWidget *parent = nullptr);
 
 public slots:
     void changeRecordButtonState();
@@ -28,7 +28,7 @@ protected:
 private:
     QCameraInfo getCameraInfo();
 
-    Ui::RecordingView *m_ui;
+    Ui::LocalConferenceView *m_ui;
     QCamera *m_camera;
     QCameraViewfinder *m_cameraViewfinder;
     bool m_recordButtonState = false;

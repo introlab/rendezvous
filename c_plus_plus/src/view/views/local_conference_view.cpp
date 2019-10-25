@@ -1,5 +1,5 @@
-#include "recording_view.h"
-#include "ui_recording_view.h"
+#include "local_conference_view.h"
+#include "ui_local_conference_view.h"
 
 #include <QCamera>
 #include <QCameraInfo>
@@ -9,9 +9,9 @@
 namespace View
 {
 
-RecordingView::RecordingView(QWidget *parent)
-    : AbstractView("Recording", parent)
-    , m_ui(new Ui::RecordingView)
+LocalConferenceView::LocalConferenceView(QWidget *parent)
+    : AbstractView("Local Conference", parent)
+    , m_ui(new Ui::LocalConferenceView)
     , m_camera(new QCamera(getCameraInfo()))
     , m_cameraViewfinder(new QCameraViewfinder(this))
 {
@@ -25,7 +25,7 @@ RecordingView::RecordingView(QWidget *parent)
     connect(m_ui->btnStartStopRecord, &QAbstractButton::clicked, [=]{ changeRecordButtonState(); });
 }
 
-QCameraInfo RecordingView::getCameraInfo()
+QCameraInfo LocalConferenceView::getCameraInfo()
 {
     QCameraInfo cameraInfo;
     QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
@@ -45,7 +45,7 @@ QCameraInfo RecordingView::getCameraInfo()
     return cameraInfo;
 }
 
-void RecordingView::changeRecordButtonState()
+void LocalConferenceView::changeRecordButtonState()
 {
     m_recordButtonState = !m_recordButtonState;
 
@@ -55,7 +55,7 @@ void RecordingView::changeRecordButtonState()
         m_ui->btnStartStopRecord->setText("Start recording");   // TODO: Call stop on IRecorder
 }
 
-void RecordingView::showEvent(QShowEvent */*event*/)
+void LocalConferenceView::showEvent(QShowEvent */*event*/)
 {
     if(m_camera->state() != QCamera::State::ActiveState)
     {
@@ -63,7 +63,7 @@ void RecordingView::showEvent(QShowEvent */*event*/)
     }
 }
 
-void RecordingView::hideEvent(QHideEvent */*event*/)
+void LocalConferenceView::hideEvent(QHideEvent */*event*/)
 {
     if(m_camera->state() == QCamera::State::ActiveState)
     {

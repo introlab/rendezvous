@@ -1,7 +1,7 @@
 #include "media_player_view.h"
 #include "ui_media_player_view.h"
 
-#include "model/i_media_player.h"
+#include "model/media_player/i_media_player.h"
 
 #include <QFileDialog>
 #include <QStandardPaths>
