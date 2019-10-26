@@ -3,14 +3,13 @@
 
 namespace Model
 {
-
 class SphericalAngleConverter
 {
-public:
+   public:
     static double getAzimuthFromPosition(double x, double y);
     static double getElevationFromPosition(double x, double y, double z);
 };
 
-} // Model
+}    // Model
 
-#endif // SPHERICALANGLECONVERTER_H
+#endif    // SPHERICALANGLECONVERTER_H

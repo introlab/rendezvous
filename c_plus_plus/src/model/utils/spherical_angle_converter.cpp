@@ -2,10 +2,8 @@
 
 #include "spherical_angle_converter.h"
 
-
 namespace Model
 {
-
 double SphericalAngleConverter::getAzimuthFromPosition(double x, double y)
 {
     double tanRes = atan2(y, x);
@@ -19,4 +17,4 @@ double SphericalAngleConverter::getElevationFromPosition(double x, double y, dou
     return std::fmod(tanRes, 2 * M_PI);
 }
 
-} // Model
+}    // Model
