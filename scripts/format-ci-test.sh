@@ -6,9 +6,9 @@ chmod +x ./scripts/format.sh
 dirty=$(git ls-files --modified)
 failedMsg="C++ formatting test failed, please format your code:"
 
-if [[ $dirty ]]; then
+if [[ "$dirty" ]]; then
     echo $failedMsg
-    echo $dirty
+    echo "$dirty"
     exit 1
 fi
 
