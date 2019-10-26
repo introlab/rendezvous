@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-dirty="$(git diff -U0 --no-color HEAD^ | ./scripts/format.sh)"
+dirty="$(./scripts/format.sh | git diff -U0 --no-color HEAD^)"
 
 failedMsg="C++ formatting test failed, please format your code:"
 
