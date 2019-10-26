@@ -2,13 +2,18 @@
 #define RECORDING_VIEW_H
 
 #include "view/views/abstract_view.h"
-#include "model/recorder/recorder.h"
-#include "model/settings/settings.h"
+
+namespace Model
+{
+    class IRecorder;
+    class ISettings;
+}
 
 class QCamera;
 class QCameraInfo;
 class QCameraViewfinder;
-class QListWidgetItem;
+class QStateMachine;
+class QState;
 
 namespace Ui { class LocalConferenceView; }
 
@@ -19,9 +24,7 @@ class LocalConferenceView : public AbstractView
 {
 public:
     explicit LocalConferenceView(Model::ISettings& settings, QWidget *parent = nullptr);
-
-public slots:
-    void changeRecordButtonState();
+    ~LocalConferenceView() override;
 
 protected:
     void showEvent(QShowEvent *event) override;
@@ -30,12 +33,18 @@ protected:
 private:
     QString getCameraDevice();
     QString getOutputPath();
+    QCameraInfo getCameraInfo();
+    void startCamera();
+    void stopCamera();
 
     Ui::LocalConferenceView *m_ui;
-    Model::Recorder *m_recorder;
-    Model::ISettings *m_settings;
+    Model::ISettings& m_settings;
+    QCamera *m_camera;
     QCameraViewfinder *m_cameraViewfinder;
-    bool m_recordButtonState = false;
+    Model::IRecorder *m_recorder;
+    QStateMachine *m_stateMachine;
+    QState *m_stopped;
+    QState *m_started;
 };
 
 } // View
