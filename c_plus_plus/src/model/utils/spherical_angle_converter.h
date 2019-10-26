@@ -10,6 +10,6 @@ class SphericalAngleConverter
     static double getElevationFromPosition(double x, double y, double z);
 };
 
-}    // Model
+}    // namespace Model
 
 #endif    // SPHERICALANGLECONVERTER_H

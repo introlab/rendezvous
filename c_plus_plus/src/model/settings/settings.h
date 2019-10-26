@@ -22,6 +22,6 @@ class Settings : public ISettings
     QSettings *m_settings;
 };
 
-}    // Model
+}    // namespace Model
 
 #endif    // SETTINGS_H

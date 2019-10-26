@@ -28,4 +28,4 @@ void Settings::load()
     }
 }
 
-}    // Model
+}    // namespace Model

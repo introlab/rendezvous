@@ -50,4 +50,4 @@ void MediaPlayer::onErrorOccured()
     emit errorOccured(message);
 }
 
-}    // Model
+}    // namespace Model

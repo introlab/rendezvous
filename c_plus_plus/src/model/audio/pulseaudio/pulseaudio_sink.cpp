@@ -62,4 +62,4 @@ int PulseAudioSink::write(uint8_t* buffer, int nbytes)
     return bytesWritten;
 }
 
-}    // Model
+}    // namespace Model

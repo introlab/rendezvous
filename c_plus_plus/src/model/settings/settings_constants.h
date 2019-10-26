@@ -28,7 +28,7 @@ inline const char* keyName(General::Key key)
     }
     return nullptr;
 }
-}
+}    // namespace General
 
 namespace Transcription
 {
@@ -127,7 +127,7 @@ inline const char* modelName(Transcription::Model model)
             return "Video";
     }
 }
-}    // Transcription
-}    // Model
+}    // namespace Transcription
+}    // namespace Model
 
 #endif    // KEYS_H

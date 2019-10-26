@@ -9,13 +9,13 @@ namespace Model
 {
 class ISettings;
 class IMediaPlayer;
-}
+}    // namespace Model
 
 namespace View
 {
 class SideBar;
 class AbstractView;
-}
+}    // namespace View
 
 namespace Ui
 {
@@ -39,6 +39,6 @@ class MainWindow : public QMainWindow
     QStackedWidget *m_views;
 };
 
-}    // View
+}    // namespace View
 
 #endif    // MAINWINDOW_H

@@ -6,11 +6,8 @@
 
 namespace Model
 {
-
 Recorder::Recorder(QCamera *camera, QWidget *parent)
-    : IRecorder(parent)
-    , m_camera(camera)
-    , m_mediaRecorder(new QMediaRecorder(m_camera, this))
+    : IRecorder(parent), m_camera(camera), m_mediaRecorder(new QMediaRecorder(m_camera, this))
 {
     QVideoEncoderSettings videoSettings;
     videoSettings.setQuality(QMultimedia::VeryHighQuality);
@@ -27,20 +24,17 @@ Recorder::Recorder(QCamera *camera, QWidget *parent)
 
 void Recorder::start(const QString outputPath)
 {
-    if(!outputPath.isEmpty())
+    if (!outputPath.isEmpty())
     {
         m_mediaRecorder->setOutputLocation(QUrl::fromLocalFile(outputPath + "/media"));
     }
 
-    if(m_mediaRecorder->isAvailable() && m_camera->status() == QCamera::Status::ActiveStatus)
+    if (m_mediaRecorder->isAvailable() && m_camera->status() == QCamera::Status::ActiveStatus)
     {
         m_mediaRecorder->record();
     }
 }
 
-void Recorder::stop()
-{
-    m_mediaRecorder->stop();
-}
+void Recorder::stop() { m_mediaRecorder->stop(); }
 
-} // Model
+}    // namespace Model

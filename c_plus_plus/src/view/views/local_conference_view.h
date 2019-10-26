@@ -5,9 +5,9 @@
 
 namespace Model
 {
-    class IRecorder;
-    class ISettings;
-}
+class IRecorder;
+class ISettings;
+}    // namespace Model
 
 class QCamera;
 class QCameraInfo;
@@ -24,15 +24,15 @@ namespace View
 {
 class LocalConferenceView : public AbstractView
 {
-public:
-    explicit LocalConferenceView(Model::ISettings& settings, QWidget *parent = nullptr);
+   public:
+    explicit LocalConferenceView(Model::ISettings &settings, QWidget *parent = nullptr);
     ~LocalConferenceView() override;
 
-protected:
+   protected:
     void showEvent(QShowEvent *event) override;
     void hideEvent(QHideEvent *event) override;
 
-private:
+   private:
     QString getCameraDevice();
     QString getOutputPath();
     QCameraInfo getCameraInfo();
@@ -40,7 +40,7 @@ private:
     void stopCamera();
 
     Ui::LocalConferenceView *m_ui;
-    Model::ISettings& m_settings;
+    Model::ISettings &m_settings;
     QCamera *m_camera;
     QCameraViewfinder *m_cameraViewfinder;
     Model::IRecorder *m_recorder;
@@ -49,6 +49,6 @@ private:
     QState *m_started;
 };
 
-}    // View
+}    // namespace View
 
 #endif    // RECORDING_VIEW_H

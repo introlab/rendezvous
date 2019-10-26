@@ -38,6 +38,6 @@ class MediaPlayerView : public AbstractView
     const uint8_t m_maxVolume = 100;
 };
 
-}    // View
+}    // namespace View
 
 #endif    // MEDIA_PLAYER_VIEW_H

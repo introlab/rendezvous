@@ -12,4 +12,4 @@ int OdasAudioSource::read(uint8_t* audioBuf, int bytesToRead)
     return static_cast<int>(bytesRead);
 }
 
-}    // Model
+}    // namespace Model

@@ -15,6 +15,6 @@ struct SourcePosition
     double azimuth;
     double elevation;
 };
-}
+}    // namespace Model
 
 #endif    // SOURCE_POSITION_H

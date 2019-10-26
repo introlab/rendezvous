@@ -42,4 +42,4 @@ void MainWindow::addView(View::AbstractView *view)
     m_views->addWidget(view);
 }
 
-}    // View
+}    // namespace View

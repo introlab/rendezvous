@@ -36,6 +36,6 @@ class OdasPositionSource : public QObject, public IPositionSource
     std::array<char, POSITION_BUFFER_SIZE> m_buffer;
 };
 
-}    // Model
+}    // namespace Model
 
 #endif    // ODAS_POSITION_SOURCE_H

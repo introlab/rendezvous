@@ -45,4 +45,4 @@ void OnlineConferenceView::onStartedStateEntered()
     // TODO start virtual devices
 }
 
-}    // View
+}    // namespace View
