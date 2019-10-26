@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+git checkout $TRAVIS_BRANCH
 clean="$(git diff)"
 
 ./scripts/format.sh  
