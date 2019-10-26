@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
-dirty="$(./scripts/format.sh | git diff -U0 --no-color HEAD^)"
+git checkout $TRAVIS_BRANCH
+./scripts/format.sh  
 
+dirty="$(git diff)"
 failedMsg="C++ formatting test failed, please format your code:"
 
 if [[ $dirty ]]; then
