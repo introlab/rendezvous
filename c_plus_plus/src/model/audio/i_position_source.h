@@ -5,13 +5,11 @@
 
 #include "source_position.h"
 
-
 namespace Model
 {
-
 class IPositionSource
 {
-public:
+   public:
     virtual ~IPositionSource() = default;
 
     virtual bool open() = 0;
@@ -19,6 +17,6 @@ public:
     virtual std::vector<SourcePosition> getPositions() = 0;
 };
 
-} // Model
+}    // Model
 
-#endif // I_POSITION_SOURCE_H
+#endif    // I_POSITION_SOURCE_H

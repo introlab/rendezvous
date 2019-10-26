@@ -1,28 +1,17 @@
 #include "local_socket_server.h"
 
-
 namespace Model
 {
-
-LocalSocketServer::LocalSocketServer(int port) :
-    m_server(new QTcpServer(this)),
-    m_socket(nullptr),
-    m_port(port)
+LocalSocketServer::LocalSocketServer(int port) : m_server(new QTcpServer(this)), m_socket(nullptr), m_port(port)
 {
-    connect(m_server, SIGNAL(newConnection()),
-            this, SLOT(onNewConnection()));
+    connect(m_server, SIGNAL(newConnection()), this, SLOT(onNewConnection()));
 }
 
-LocalSocketServer::~LocalSocketServer()
-{
-    stop();
-}
-
+LocalSocketServer::~LocalSocketServer() { stop(); }
 bool LocalSocketServer::start()
 {
-    if (m_server->isListening())
-        return true;
-        
+    if (m_server->isListening()) return true;
+
     return m_server->listen(QHostAddress::Any, m_port);
 }
 
@@ -39,10 +28,9 @@ bool LocalSocketServer::stop()
     return !m_server->isListening();
 }
 
-int LocalSocketServer::read(char* buffer, int bytesToRead) 
+int LocalSocketServer::read(char* buffer, int bytesToRead)
 {
-    if (m_socket == nullptr ||
-        m_socket->state() != QAbstractSocket::ConnectedState)
+    if (m_socket == nullptr || m_socket->state() != QAbstractSocket::ConnectedState)
     {
         return -1;
     }
@@ -52,16 +40,14 @@ int LocalSocketServer::read(char* buffer, int bytesToRead)
 
 void LocalSocketServer::onNewConnection()
 {
-    if (m_socket)
-        return;
+    if (m_socket) return;
 
     m_socket = m_server->nextPendingConnection();
 
-    connect(m_socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), 
-           this, SLOT(onSocketStateChanged(QAbstractSocket::SocketState)));
+    connect(m_socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this,
+            SLOT(onSocketStateChanged(QAbstractSocket::SocketState)));
 
-    connect(m_socket, &QTcpSocket::readyRead, 
-           this, [&]{ emit dataReady(m_socket->bytesAvailable()); }); 
+    connect(m_socket, &QTcpSocket::readyRead, this, [&] { emit dataReady(m_socket->bytesAvailable()); });
 }
 
 void LocalSocketServer::onSocketStateChanged(QAbstractSocket::SocketState socketState)
@@ -72,4 +58,4 @@ void LocalSocketServer::onSocketStateChanged(QAbstractSocket::SocketState socket
     }
 }
 
-} // Model
+}    // Model

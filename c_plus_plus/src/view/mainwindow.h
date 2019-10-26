@@ -5,25 +5,33 @@
 
 class QStackedWidget;
 
-namespace Model { class ISettings;
-                  class IMediaPlayer; }
-
-namespace View { class SideBar;
-                 class AbstractView; }
-
-namespace Ui { class MainWindow; }
+namespace Model
+{
+class ISettings;
+class IMediaPlayer;
+}
 
 namespace View
 {
+class SideBar;
+class AbstractView;
+}
 
+namespace Ui
+{
+class MainWindow;
+}
+
+namespace View
+{
 class MainWindow : public QMainWindow
 {
-Q_OBJECT
+    Q_OBJECT
 
-public:
+   public:
     MainWindow(Model::ISettings &settings, Model::IMediaPlayer &mediaPlayer, QWidget *parent = nullptr);
 
-private:
+   private:
     void addView(View::AbstractView *view);
 
     Ui::MainWindow *m_ui;
@@ -31,6 +39,6 @@ private:
     QStackedWidget *m_views;
 };
 
-} // View
+}    // View
 
-#endif // MAINWINDOW_H
+#endif    // MAINWINDOW_H

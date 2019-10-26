@@ -9,9 +9,9 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
-    QFile File(":/stylesheets/globalStylesheet.qss");
-    File.open(QFile::ReadOnly);
-    a.setStyleSheet(QLatin1String(File.readAll()));
+    QFile file(":/stylesheets/globalStylesheet.qss");
+    file.open(QFile::ReadOnly);
+    a.setStyleSheet(QLatin1String(file.readAll()));
 
     Model::Settings settings;
     Model::MediaPlayer mediaPlayer;

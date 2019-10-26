@@ -7,23 +7,9 @@
 
 namespace Model
 {
-
-Settings::Settings()
-    : m_settings(new QSettings("RendezVous", "Steno"))
-{
-    load();
-}
-
-void Settings::set(const QString &key, const QVariant &value)
-{
-    m_settings->setValue(key, value);
-}
-
-QVariant Settings::get(const QString &key) const
-{
-    return m_settings->value(key);
-}
-
+Settings::Settings() : m_settings(new QSettings("RendezVous", "Steno")) { load(); }
+void Settings::set(const QString &key, const QVariant &value) { m_settings->setValue(key, value); }
+QVariant Settings::get(const QString &key) const { return m_settings->value(key); }
 void Settings::load()
 {
     if (!m_settings->value(General::keyName(General::Key::OUTPUT_FOLDER)).isValid())
@@ -42,5 +28,4 @@ void Settings::load()
     }
 }
 
-} // Model
-
+}    // Model

@@ -88,7 +88,7 @@ QCameraInfo LocalConferenceView::getCameraInfo()
 
 void LocalConferenceView::startCamera()
 {
-    if(m_camera->state() != QCamera::State::ActiveState)
+    if (m_camera->state() != QCamera::State::ActiveState)
     {
         m_camera->start();
     }
@@ -96,10 +96,10 @@ void LocalConferenceView::startCamera()
 
 void LocalConferenceView::stopCamera()
 {
-    if(m_camera->state() == QCamera::State::ActiveState)
+    if (m_camera->state() == QCamera::State::ActiveState)
     {
         m_camera->stop();
     }
 }
 
-} // View
+}    // View

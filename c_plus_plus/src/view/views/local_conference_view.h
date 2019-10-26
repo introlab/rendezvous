@@ -15,11 +15,13 @@ class QCameraViewfinder;
 class QStateMachine;
 class QState;
 
-namespace Ui { class LocalConferenceView; }
+namespace Ui
+{
+class LocalConferenceView;
+}
 
 namespace View
 {
-
 class LocalConferenceView : public AbstractView
 {
 public:
@@ -47,6 +49,6 @@ private:
     QState *m_started;
 };
 
-} // View
+}    // View
 
-#endif // RECORDING_VIEW_H
+#endif    // RECORDING_VIEW_H
