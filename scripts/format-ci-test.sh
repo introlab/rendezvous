@@ -2,7 +2,7 @@
 
 ./scripts/format.sh  
 
-dirty="$(git diff --no-color)"
+dirty="$(git diff)"
 failedMsg="C++ formatting test failed, please format your code:"
 
 if [[ $dirty ]]; then
