@@ -5,16 +5,15 @@
 
 namespace Model
 {
-
 class IAudioSink
 {
-public:
+   public:
     virtual ~IAudioSink() = default;
     virtual bool open() = 0;
     virtual bool close() = 0;
     virtual int write(uint8_t* buffer, int nbytes) = 0;
 };
 
-} // Model
+}    // Model
 
-#endif // I_AUDIO_SINK_H
+#endif    // I_AUDIO_SINK_H

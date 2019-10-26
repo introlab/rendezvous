@@ -4,39 +4,21 @@
 
 namespace Model
 {
-
 MediaPlayer::MediaPlayer(QWidget *parent)
-    : IMediaPlayer(parent)
-    , m_mediaPlayer(new QMediaPlayer(this, QMediaPlayer::VideoSurface))
+    : IMediaPlayer(parent), m_mediaPlayer(new QMediaPlayer(this, QMediaPlayer::VideoSurface))
 
 {
-    connect(m_mediaPlayer, &QMediaPlayer::stateChanged, [=](QMediaPlayer::State state){ emit stateChanged(state); });
-    connect(m_mediaPlayer, &QMediaPlayer::positionChanged, [=](qint64 position){ emit positionChanged(position); });
-    connect(m_mediaPlayer, &QMediaPlayer::durationChanged, [=](qint64 duration){ emit durationChanged(duration); });
-    connect(m_mediaPlayer, &QMediaPlayer::volumeChanged, [=](int volume){ emit volumeChanged(volume); });
-    connect(m_mediaPlayer, QOverload<QMediaPlayer::Error>::of(&QMediaPlayer::error), [=]{ onErrorOccured(); });
+    connect(m_mediaPlayer, &QMediaPlayer::stateChanged, [=](QMediaPlayer::State state) { emit stateChanged(state); });
+    connect(m_mediaPlayer, &QMediaPlayer::positionChanged, [=](qint64 position) { emit positionChanged(position); });
+    connect(m_mediaPlayer, &QMediaPlayer::durationChanged, [=](qint64 duration) { emit durationChanged(duration); });
+    connect(m_mediaPlayer, &QMediaPlayer::volumeChanged, [=](int volume) { emit volumeChanged(volume); });
+    connect(m_mediaPlayer, QOverload<QMediaPlayer::Error>::of(&QMediaPlayer::error), [=] { onErrorOccured(); });
 }
 
-void MediaPlayer::setVideoOutput(QVideoWidget *videoOutput)
-{
-    m_mediaPlayer->setVideoOutput(videoOutput);
-}
-
-void MediaPlayer::setVolume(int volume)
-{
-    m_mediaPlayer->setVolume(volume);
-}
-
-int MediaPlayer::volume() const
-{
-    return m_mediaPlayer->volume();
-}
-
-void MediaPlayer::setMedia(const QUrl &url)
-{
-    m_mediaPlayer->setMedia(url);
-}
-
+void MediaPlayer::setVideoOutput(QVideoWidget *videoOutput) { m_mediaPlayer->setVideoOutput(videoOutput); }
+void MediaPlayer::setVolume(int volume) { m_mediaPlayer->setVolume(volume); }
+int MediaPlayer::volume() const { return m_mediaPlayer->volume(); }
+void MediaPlayer::setMedia(const QUrl &url) { m_mediaPlayer->setMedia(url); }
 void MediaPlayer::play()
 {
     switch (m_mediaPlayer->state())
@@ -50,11 +32,7 @@ void MediaPlayer::play()
     }
 }
 
-void MediaPlayer::setPosition(int position)
-{
-    m_mediaPlayer->setPosition(position);
-}
-
+void MediaPlayer::setPosition(int position) { m_mediaPlayer->setPosition(position); }
 void MediaPlayer::onErrorOccured()
 {
     const QString errorString = m_mediaPlayer->errorString();
@@ -72,4 +50,4 @@ void MediaPlayer::onErrorOccured()
     emit errorOccured(message);
 }
 
-} // Model
+}    // Model
