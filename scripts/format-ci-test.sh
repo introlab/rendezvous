@@ -6,6 +6,7 @@ failedMsg="C++ formatting test failed, please format your code:"
 
 if [[ $dirty ]]; then
     echo $failedMsg
+    echo $dirty
     exit 1
 fi
 
