@@ -44,8 +44,8 @@ LocalConferenceView::LocalConferenceView(Model::ISettings& settings, QWidget *pa
     m_stateMachine->setInitialState(m_stopped);
     m_stateMachine->start();
 
-    connect(m_stopped, &QState::entered, [=]{ m_recorder->start(getOutputPath()); });
-    connect(m_started, &QState::entered, [=]{ m_recorder->stop(); });
+    connect(m_started, &QState::entered, [=]{ m_recorder->start(getOutputPath()); });
+    connect(m_stopped, &QState::entered, [=]{ m_recorder->stop(); });
 }
 
 LocalConferenceView::~LocalConferenceView()
