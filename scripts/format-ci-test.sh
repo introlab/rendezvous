@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
-dirty="$(./scripts/format.sh | git diff --no-color)"
+./scripts/format.sh  
 
+dirty="$(git diff --no-color)"
 failedMsg="C++ formatting test failed, please format your code:"
 
 if [[ $dirty ]]; then
