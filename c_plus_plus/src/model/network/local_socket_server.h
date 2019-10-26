@@ -2,20 +2,18 @@
 #define LOCAL_SOCKET_SERVER_H
 
 #include <QPointer>
-#include <QTcpSocket>
 #include <QTcpServer>
+#include <QTcpSocket>
 
 #include "i_socket_server.h"
 
-
 namespace Model
 {
-
 class LocalSocketServer : public ISocketServer
 {
-Q_OBJECT
+    Q_OBJECT
 
-public:
+   public:
     LocalSocketServer(int port);
     ~LocalSocketServer() override;
 
@@ -23,16 +21,16 @@ public:
     bool stop() override;
     int read(char* buffer, int bytesToRead) override;
 
-private slots:
+   private slots:
     void onNewConnection();
     void onSocketStateChanged(QAbstractSocket::SocketState);
-    
-private:
+
+   private:
     QPointer<QTcpServer> m_server;
     QPointer<QTcpSocket> m_socket;
     int m_port;
 };
 
-} // Model
+}    // Model
 
-#endif // LOCAL_SOCKET_SERVER_H
+#endif    // LOCAL_SOCKET_SERVER_H

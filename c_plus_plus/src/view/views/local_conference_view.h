@@ -8,24 +8,26 @@ class QCameraInfo;
 class QCameraViewfinder;
 class QListWidgetItem;
 
-namespace Ui { class LocalConferenceView; }
+namespace Ui
+{
+class LocalConferenceView;
+}
 
 namespace View
 {
-
 class LocalConferenceView : public AbstractView
 {
-public:
+   public:
     explicit LocalConferenceView(QWidget *parent = nullptr);
 
-public slots:
+   public slots:
     void changeRecordButtonState();
 
-protected:
+   protected:
     void showEvent(QShowEvent *event) override;
     void hideEvent(QHideEvent *event) override;
 
-private:
+   private:
     QCameraInfo getCameraInfo();
 
     Ui::LocalConferenceView *m_ui;
@@ -34,6 +36,6 @@ private:
     bool m_recordButtonState = false;
 };
 
-} // View
+}    // View
 
-#endif // RECORDING_VIEW_H
+#endif    // RECORDING_VIEW_H

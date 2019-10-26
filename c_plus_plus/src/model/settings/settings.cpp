@@ -7,9 +7,7 @@
 
 namespace Model
 {
-
-Settings::Settings()
-    : m_settings(new QSettings("RendezVous", "Steno"))
+Settings::Settings() : m_settings(new QSettings("RendezVous", "Steno"))
 {
     load();
 }
@@ -26,21 +24,27 @@ QVariant Settings::get(const QString &key) const
 
 void Settings::load()
 {
-    if (!m_settings->value(General::keyName(General::Key::OUTPUT_FOLDER)).isValid())
+    if (!m_settings->value(General::keyName(General::Key::OUTPUT_FOLDER))
+             .isValid())
     {
         set(General::keyName(General::Key::OUTPUT_FOLDER), QDir::homePath());
     }
 
-    if (!m_settings->value(Transcription::keyName(Transcription::Key::LANGUAGE)).isValid())
+    if (!m_settings->value(Transcription::keyName(Transcription::Key::LANGUAGE))
+             .isValid())
     {
-        set(Transcription::keyName(Transcription::Key::LANGUAGE), Transcription::Language::FR_CA);
+        set(Transcription::keyName(Transcription::Key::LANGUAGE),
+            Transcription::Language::FR_CA);
     }
 
-    if (!m_settings->value(Transcription::keyName(Transcription::Key::AUTOMATIC_TRANSCRIPTION)).isValid())
+    if (!m_settings
+             ->value(Transcription::keyName(
+                 Transcription::Key::AUTOMATIC_TRANSCRIPTION))
+             .isValid())
     {
-        set(Transcription::keyName(Transcription::Key::AUTOMATIC_TRANSCRIPTION), false);
+        set(Transcription::keyName(Transcription::Key::AUTOMATIC_TRANSCRIPTION),
+            false);
     }
 }
 
-} // Model
-
+}    // Model

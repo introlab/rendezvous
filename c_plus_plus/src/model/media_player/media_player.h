@@ -10,10 +10,9 @@ class QUrl;
 
 namespace Model
 {
-
 class MediaPlayer : public IMediaPlayer
 {
-public:
+   public:
     explicit MediaPlayer(QWidget *parent = nullptr);
     void setMedia(const QUrl &url) override;
     void play() override;
@@ -22,12 +21,12 @@ public:
     void setVolume(int volume) override;
     int volume() const override;
 
-private:
+   private:
     void onErrorOccured();
 
-    QMediaPlayer* m_mediaPlayer;
+    QMediaPlayer *m_mediaPlayer;
 };
 
-} // Model
+}    // Model
 
-#endif // MEDIA_PLAYER_H
+#endif    // MEDIA_PLAYER_H

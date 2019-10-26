@@ -3,10 +3,8 @@
 
 #include <QJsonValue>
 
-
 namespace Model
 {
-
 struct SourcePosition
 {
     SourcePosition(double azimuth, double elevation);
@@ -17,7 +15,6 @@ struct SourcePosition
     double azimuth;
     double elevation;
 };
-
 }
 
-#endif // SOURCE_POSITION_H
+#endif    // SOURCE_POSITION_H
