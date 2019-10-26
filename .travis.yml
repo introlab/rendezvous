@@ -18,7 +18,7 @@ install:
   - sudo apt-get install -y swig || travis_terminate 1
   - sudo apt-get install qt512base qt512svg qt512charts-no-lgpl qt512xmlpatterns qt512multimedia qt512webengine || travis_terminate 1
   - source /opt/qt512/bin/qt512-env.sh || travis_terminate 1
-  - sudo apt-get install clang-format || travis_terminate 1
+  - sudo apt-get install clang-format-3.8 || travis_terminate 1
 addons:
   apt:
     sources:
