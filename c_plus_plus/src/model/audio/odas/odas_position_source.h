@@ -12,11 +12,12 @@ class QMutex;
 
 namespace Model
 {
+
 class OdasPositionSource : public QObject, public IPositionSource
 {
-    Q_OBJECT
+Q_OBJECT
 
-   public:
+public:
     OdasPositionSource(quint16 port);
     ~OdasPositionSource() override;
 
@@ -24,10 +25,10 @@ class OdasPositionSource : public QObject, public IPositionSource
     bool close() override;
     std::vector<SourcePosition> getPositions() override;
 
-   private slots:
+private slots:
     void onPositionsReady(int numberOfBytes);
 
-   private:
+private:
     void updatePositions(std::vector<SourcePosition>& sourcePositions);
 
     std::unique_ptr<LocalSocketServer> m_socketServer;
@@ -36,6 +37,6 @@ class OdasPositionSource : public QObject, public IPositionSource
     std::array<char, POSITION_BUFFER_SIZE> m_buffer;
 };
 
-}    // Model
+} // Model
 
-#endif    // ODAS_POSITION_SOURCE_H
+#endif // ODAS_POSITION_SOURCE_H

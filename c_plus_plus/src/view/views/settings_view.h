@@ -3,32 +3,28 @@
 
 #include "abstract_view.h"
 
-namespace Ui
-{
-class SettingsView;
-}
-namespace Model
-{
-class ISettings;
-}
+namespace Ui { class SettingsView; }
+namespace Model { class ISettings; }
 
 namespace View
 {
+
 class SettingsView : public AbstractView
 {
-   public:
-    explicit SettingsView(Model::ISettings& settings, QWidget* parent = nullptr);
+    public:
+        explicit SettingsView(Model::ISettings& settings, QWidget *parent = nullptr);
 
-   public slots:
-    void onLanguageComboboxCurrentIndexChanged(const int& index);
-    void onAutoTranscriptionCheckBoxStateChanged(const int& state);
-    void onOutputFolderButtonClicked();
+    public slots:
+        void onLanguageComboboxCurrentIndexChanged(const int& index);
+        void onAutoTranscriptionCheckBoxStateChanged(const int& state);
+        void onOutputFolderButtonClicked();
 
-   private:
-    Ui::SettingsView* m_ui;
-    Model::ISettings& m_settings;
+    private:
+        Ui::SettingsView *m_ui;
+        Model::ISettings &m_settings;
 };
 
-}    // View
 
-#endif    // SETTINGS_VIEW_H
+} // View
+
+#endif // SETTINGS_VIEW_H

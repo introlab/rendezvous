@@ -5,29 +5,24 @@
 
 #include "view/views/abstract_view.h"
 
-namespace Ui
-{
-class MediaPlayerView;
-}
-namespace Model
-{
-class IMediaPlayer;
-}
+namespace Ui { class MediaPlayerView; }
+namespace Model { class IMediaPlayer; }
 
 namespace View
 {
+
 class MediaPlayerView : public AbstractView
 {
-   public:
-    explicit MediaPlayerView(Model::IMediaPlayer &videoPlayer, QWidget *parent = nullptr);
+public:
+    explicit MediaPlayerView(Model::IMediaPlayer& videoPlayer, QWidget *parent = nullptr);
 
-   public slots:
+public slots:
     void onMediaStateChanged(QMediaPlayer::State state);
     void onPositionChanged(qint64 position);
     void onDurationChanged(qint64 duration);
     void onErrorOccured(const QString &error);
 
-   private:
+private:
     void openFile();
     void setVolume(int);
     int volume() const;
@@ -38,6 +33,6 @@ class MediaPlayerView : public AbstractView
     const uint8_t m_maxVolume = 100;
 };
 
-}    // View
+} // View
 
-#endif    // MEDIA_PLAYER_VIEW_H
+#endif // MEDIA_PLAYER_VIEW_H

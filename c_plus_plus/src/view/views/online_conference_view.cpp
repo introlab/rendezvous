@@ -8,12 +8,13 @@
 
 namespace View
 {
+
 OnlineConferenceView::OnlineConferenceView(QWidget *parent)
-    : AbstractView("Online Conference", parent),
-      m_ui(new Ui::OnlineConferenceView),
-      m_stateMachine(new QStateMachine),
-      m_stopped(new QState),
-      m_started(new QState)
+    : AbstractView("Online Conference", parent)
+    , m_ui(new Ui::OnlineConferenceView)
+    , m_stateMachine(new QStateMachine)
+    , m_stopped(new QState)
+    , m_started(new QState)
 {
     m_ui->setupUi(this);
 
@@ -29,10 +30,9 @@ OnlineConferenceView::OnlineConferenceView(QWidget *parent)
     m_stateMachine->setInitialState(m_stopped);
     m_stateMachine->start();
 
-    connect(m_ui->websiteButton, &QAbstractButton::clicked,
-            [] { QDesktopServices::openUrl(QUrl("https://rendezvous-meet.com/")); });
-    connect(m_stopped, &QState::entered, [=] { onStoppedStateEntered(); });
-    connect(m_started, &QState::entered, [=] { onStartedStateEntered(); });
+    connect(m_ui->websiteButton, &QAbstractButton::clicked, []{ QDesktopServices::openUrl(QUrl("https://rendezvous-meet.com/")); });
+    connect(m_stopped, &QState::entered, [=]{ onStoppedStateEntered(); });
+    connect(m_started, &QState::entered, [=]{ onStartedStateEntered(); });
 }
 
 void OnlineConferenceView::onStoppedStateEntered()
@@ -45,4 +45,4 @@ void OnlineConferenceView::onStartedStateEntered()
     // TODO start virtual devices
 }
 
-}    // View
+} // View

@@ -8,11 +8,12 @@ class QVideoWidget;
 
 namespace Model
 {
+
 class IMediaPlayer : public QWidget
 {
-    Q_OBJECT
+Q_OBJECT
 
-   public:
+public:
     IMediaPlayer(QWidget *parent = nullptr) : QWidget(parent) {}
     virtual void setMedia(const QUrl &url) = 0;
     virtual void play() = 0;
@@ -21,14 +22,14 @@ class IMediaPlayer : public QWidget
     virtual void setVolume(int volume) = 0;
     virtual int volume() const = 0;
 
-   signals:
+signals:
     void stateChanged(QMediaPlayer::State state);
     void positionChanged(qint64 position);
     void durationChanged(qint64 duration);
     void volumeChanged(int volume);
-    void errorOccured(const QString &error);
+    void errorOccured(const QString& error);
 };
 
-}    // Model
+} // Model
 
-#endif    // I_MEDIA_PLAYER_H
+#endif // I_MEDIA_PLAYER_H
