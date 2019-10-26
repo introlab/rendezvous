@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-dirty="$(find ./c_plus_plus/ -regex '.*\.\(cpp\|hpp\|cu\|c\|h\)' -exec clang-format -style=file -i {} -output-replacements-xml \;)"
+dirty="$(git diff -U0 --no-color HEAD^ | ./scripts/format.sh)"
 
 failedMsg="C++ formatting test failed, please format your code:"
 
