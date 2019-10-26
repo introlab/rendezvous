@@ -7,7 +7,7 @@ clean="$(git diff)"
 dirty="$(git diff)"
 failedMsg="C++ formatting test failed, please format your code:"
 
-if [ $dirty = $clean ]; then
+if [ $dirty == $clean ]; then
     echo "C++ formatting test passed!!"
     exit 0
 fi
