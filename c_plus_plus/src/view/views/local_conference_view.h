@@ -3,10 +3,17 @@
 
 #include "view/views/abstract_view.h"
 
+namespace Model
+{
+class IRecorder;
+class ISettings;
+}    // namespace Model
+
 class QCamera;
 class QCameraInfo;
 class QCameraViewfinder;
-class QListWidgetItem;
+class QStateMachine;
+class QState;
 
 namespace Ui
 {
@@ -18,24 +25,30 @@ namespace View
 class LocalConferenceView : public AbstractView
 {
    public:
-    explicit LocalConferenceView(QWidget *parent = nullptr);
-
-   public slots:
-    void changeRecordButtonState();
+    explicit LocalConferenceView(Model::ISettings &settings, QWidget *parent = nullptr);
+    ~LocalConferenceView() override;
 
    protected:
     void showEvent(QShowEvent *event) override;
     void hideEvent(QHideEvent *event) override;
 
    private:
+    QString getCameraDevice();
+    QString getOutputPath();
     QCameraInfo getCameraInfo();
+    void startCamera();
+    void stopCamera();
 
     Ui::LocalConferenceView *m_ui;
+    Model::ISettings &m_settings;
     QCamera *m_camera;
     QCameraViewfinder *m_cameraViewfinder;
-    bool m_recordButtonState = false;
+    Model::IRecorder *m_recorder;
+    QStateMachine *m_stateMachine;
+    QState *m_stopped;
+    QState *m_started;
 };
 
-}    // View
+}    // namespace View
 
 #endif    // RECORDING_VIEW_H

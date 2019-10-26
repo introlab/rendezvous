@@ -156,8 +156,6 @@ Download the neural network model and data
 
 Installation
 
-    cd /usr/src/linux-headers-4.4.38-tegra
-    sudo make modules_prepare
     sudo apt-get install v4l2loopback-dkms -y
 
 To create a v4l2loopback device:
@@ -180,6 +178,12 @@ Installation
 Add the following line at the end of ~/.bashrc:
 
     export LIBV4L2CPP_HOME=$HOME/dev/lib/libv4l2cpp
+
+## Note
+
+If you are missing some audio/video codecs, try the following command:
+
+    $ sudo apt-get install ubuntu-restricted-extras
 
 ## References  
 

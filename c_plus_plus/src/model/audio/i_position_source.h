@@ -17,6 +17,6 @@ class IPositionSource
     virtual std::vector<SourcePosition> getPositions() = 0;
 };
 
-}    // Model
+}    // namespace Model
 
 #endif    // I_POSITION_SOURCE_H

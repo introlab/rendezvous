@@ -16,4 +16,4 @@ SourcePosition SourcePosition::deserialize(const QJsonValue& jsonSource)
     return SourcePosition(azimuth, elevation);
 }
 
-}    // Model
+}    // namespace Model

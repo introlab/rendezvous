@@ -25,6 +25,6 @@ class PulseAudioSink : public IAudioSink
     pa_sample_spec m_ss{};
 };
 
-}    // Model
+}    // namespace Model
 
 #endif    // I_PULSEAUDIO_SINK_H

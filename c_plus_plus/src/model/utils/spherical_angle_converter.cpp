@@ -17,4 +17,4 @@ double SphericalAngleConverter::getElevationFromPosition(double x, double y, dou
     return std::fmod(tanRes, 2 * M_PI);
 }
 
-}    // Model
+}    // namespace Model

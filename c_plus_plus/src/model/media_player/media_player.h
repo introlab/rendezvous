@@ -27,6 +27,6 @@ class MediaPlayer : public IMediaPlayer
     QMediaPlayer *m_mediaPlayer;
 };
 
-}    // Model
+}    // namespace Model
 
 #endif    // MEDIA_PLAYER_H

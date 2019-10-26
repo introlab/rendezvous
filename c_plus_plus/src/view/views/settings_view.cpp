@@ -58,4 +58,4 @@ void SettingsView::onAutoTranscriptionCheckBoxStateChanged(const int& state)
                    state == Qt::Checked);
 }
 
-}    // View
+}    // namespace View

@@ -92,4 +92,4 @@ void MediaPlayerView::setVolume(int volume)
     m_ui->volumeSlider->setValue(qRound(logarithmicVolume * m_maxVolume));
 }
 
-}    // View
+}    // namespace View

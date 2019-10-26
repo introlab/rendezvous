@@ -31,6 +31,6 @@ class LocalSocketServer : public ISocketServer
     int m_port;
 };
 
-}    // Model
+}    // namespace Model
 
 #endif    // LOCAL_SOCKET_SERVER_H
