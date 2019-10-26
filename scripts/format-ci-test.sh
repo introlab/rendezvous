@@ -1,18 +1,14 @@
 #!/usr/bin/env bash
 
-git checkout $TRAVIS_BRANCH
-clean="$(git diff)"
+dirty="$(./scripts/format.sh | git diff -U0 --no-color HEAD^)"
 
-./scripts/format.sh  
-
-dirty="$(git diff)"
 failedMsg="C++ formatting test failed, please format your code:"
 
-if [ "$dirty" == "$clean" ]; then
-    echo "C++ formatting test passed!!"
-    exit 0
+if [[ $dirty ]]; then
+    echo $failedMsg
+    echo $dirty
+    exit 1
 fi
 
-echo $failedMsg
-echo $dirty
-exit 1
+echo "C++ formatting test passed!!"
+exit 0
