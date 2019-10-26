@@ -1,17 +1,16 @@
 #!/usr/bin/env bash
 
-clean="$(git diff)"
-
+chmod +x ./scripts/format.sh
 ./scripts/format.sh  
 
-dirty="$(git diff)"
+dirty=$(git ls-files --modified)
 failedMsg="C++ formatting test failed, please format your code:"
 
-if [ "$dirty" == "$clean" ]; then
-    echo "C++ formatting test passed!!"
-    exit 0
+if [[ $dirty ]]; then
+    echo $failedMsg
+    echo $dirty
+    exit 1
 fi
 
-echo $failedMsg
-echo $dirty
-exit 1
+echo "C++ formatting test passed!!"
+exit 0
