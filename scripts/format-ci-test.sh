@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-git checkout $TRAVIS_BRANCH
+chmod +x ./scripts/format.sh
 ./scripts/format.sh  
 
-dirty="$(git diff)"
+dirty=$(git ls-files --modified)
 failedMsg="C++ formatting test failed, please format your code:"
 
 if [[ $dirty ]]; then
