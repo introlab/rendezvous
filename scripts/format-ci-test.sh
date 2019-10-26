@@ -3,6 +3,8 @@
 find ./c_plus_plus/ -regex '.*\.\(cpp\|hpp\|cu\|c\|h\)' -exec clang-format -style=file -i {} \; 
 
 failedMsg="C++ formatting test failed because of these files:"
+
+git checkout $TRAVIS_BRANCH
 dirty=$(git ls-files --modified)
 
 if [[ $dirty ]]; then
