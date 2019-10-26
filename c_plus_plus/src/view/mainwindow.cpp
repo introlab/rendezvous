@@ -1,57 +1,49 @@
 #include "mainwindow.h"
+
 #include "ui_mainwindow.h"
 
-#include <QDir>
-#include <QFile>
-#include <QObject>
-#include <QStackedWidget>
-
 #include "components/sidebar.h"
+#include "model/media_player/i_media_player.h"
 #include "views/abstract_view.h"
-#include "views/online_conference_view.h"
-#include "views/recording_view.h"
+#include "views/local_conference_view.h"
 #include "views/media_player_view.h"
-#include "views/transcription_view.h"
+#include "views/online_conference_view.h"
 #include "views/settings_view.h"
 
-#include "model/media_player.h"
+#include <QStackedWidget>
 
-MainWindow::MainWindow(Model::ISettings& settings, QWidget *parent)
-    : QMainWindow(parent)
-    , ui(new Ui::MainWindow)
-    , sideBar(new View::SideBar)
-    , views(new QStackedWidget)
-    , onlineConferenceView(new View::OnlineConferenceView)
-    , recordingView(new View::RecordingView)
-    , transcriptionView(new View::TranscriptionView)
-    , settingsView(new View::SettingsView(settings))
+namespace View
 {
-    ui->setupUi(this);
 
-    auto mediaPlayer = new Model::MediaPlayer();
-    mediaPlayerView = new View::MediaPlayerView(*mediaPlayer);
+MainWindow::MainWindow(Model::ISettings &settings, Model::IMediaPlayer &mediaPlayer, QWidget *parent)
+    : QMainWindow(parent)
+    , m_ui(new Ui::MainWindow)
+    , m_sideBar(new View::SideBar)
+    , m_views(new QStackedWidget)
+{
+    m_ui->setupUi(this);
+    m_ui->mainLayout->addWidget(m_sideBar);
+    m_ui->mainLayout->addWidget(m_views);
 
-    QFile File(QDir::currentPath() + "/../src/view/stylesheets/globalStylesheet.qss");
-    File.open(QFile::ReadOnly);
-    this->setStyleSheet(QLatin1String(File.readAll()));
+    View::AbstractView *onlineConferenceView = new View::OnlineConferenceView();
+    View::AbstractView *localConferenceView = new View::LocalConferenceView();
+    View::AbstractView *mediaPlayerView = new View::MediaPlayerView(mediaPlayer);
+    View::AbstractView *settingsView = new View::SettingsView(settings);
 
     addView(onlineConferenceView);
-    addView(recordingView);
+    addView(localConferenceView);
     addView(mediaPlayerView);
-    addView(transcriptionView);
     addView(settingsView);
 
-    ui->mainLayout->addWidget(sideBar);
-    ui->mainLayout->addWidget(views);
+    m_sideBar->setCurrentRow(0);
 
-    sideBar->setCurrentRow(0);
-
-    connect(sideBar, &View::SideBar::currentRowChanged,
-            [=](const int& index){ views->setCurrentIndex(index); });
+    connect(m_sideBar, &View::SideBar::currentRowChanged, [=](const int& index){ m_views->setCurrentIndex(index); });
 }
 
 void MainWindow::addView(View::AbstractView *view)
 {
-    sideBar->add(view->getName());
-    views->addWidget(view);
+    m_sideBar->add(view->getName());
+    m_views->addWidget(view);
 }
+
+} // View

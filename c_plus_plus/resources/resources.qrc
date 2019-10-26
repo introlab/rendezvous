@@ -2,4 +2,13 @@
     <qresource prefix="/images">
         <file>logo.svg</file>
     </qresource>
+    <qresource prefix="/stylesheets">
+        <file>globalStylesheet.qss</file>
+    </qresource>
+    <qresource prefix="/configs">
+        <file>odas_8_mic.cfg</file>
+        <file>odas_16_mic.cfg</file>
+        <file>camera_conf.json</file>
+        <file>pulseaudio_config.pa</file>
+    </qresource>
 </RCC>
