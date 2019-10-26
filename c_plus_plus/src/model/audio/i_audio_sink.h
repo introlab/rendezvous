@@ -14,6 +14,6 @@ class IAudioSink
     virtual int write(uint8_t* buffer, int nbytes) = 0;
 };
 
-}    // Model
+}    // namespace Model
 
 #endif    // I_AUDIO_SINK_H

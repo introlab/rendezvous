@@ -10,6 +10,7 @@ const QString CAMERA_CONFIGURATION = ":/configs/camera_conf.json";
 const QString MICROPHONE_CONFIGURATION = QDir::homePath();
 const QString ODAS_LIBRARY = QDir::homePath();
 const QString GOOGLE_SERVICE_ACCOUNT_FILE = QDir::homePath();
+const QString VIRTUAL_CAMERA_DEVICE = "/dev/video1";
 
 namespace General
 {
@@ -27,7 +28,7 @@ inline const char* keyName(General::Key key)
     }
     return nullptr;
 }
-}
+}    // namespace General
 
 namespace Transcription
 {
@@ -126,7 +127,7 @@ inline const char* modelName(Transcription::Model model)
             return "Video";
     }
 }
-}    // Transcription
-}    // Model
+}    // namespace Transcription
+}    // namespace Model
 
 #endif    // KEYS_H

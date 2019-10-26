@@ -22,7 +22,7 @@ MainWindow::MainWindow(Model::ISettings &settings, Model::IMediaPlayer &mediaPla
     m_ui->mainLayout->addWidget(m_views);
 
     View::AbstractView *onlineConferenceView = new View::OnlineConferenceView();
-    View::AbstractView *localConferenceView = new View::LocalConferenceView();
+    View::AbstractView *localConferenceView = new View::LocalConferenceView(settings);
     View::AbstractView *mediaPlayerView = new View::MediaPlayerView(mediaPlayer);
     View::AbstractView *settingsView = new View::SettingsView(settings);
 
@@ -42,4 +42,4 @@ void MainWindow::addView(View::AbstractView *view)
     m_views->addWidget(view);
 }
 
-}    // View
+}    // namespace View

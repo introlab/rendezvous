@@ -48,4 +48,4 @@ void OdasPositionSource::onPositionsReady(int numberOfBytes)
     updatePositions(sourcePositions);
 }
 
-}    // Model
+}    // namespace Model

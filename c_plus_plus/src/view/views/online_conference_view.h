@@ -29,6 +29,6 @@ class OnlineConferenceView : public AbstractView
     QState *m_started;
 };
 
-}    // View
+}    // namespace View
 
 #endif    // ONLINE_CONFERENCE_VIEW_H

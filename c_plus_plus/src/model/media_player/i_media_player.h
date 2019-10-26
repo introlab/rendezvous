@@ -29,6 +29,6 @@ class IMediaPlayer : public QWidget
     void errorOccured(const QString &error);
 };
 
-}    // Model
+}    // namespace Model
 
 #endif    // I_MEDIA_PLAYER_H

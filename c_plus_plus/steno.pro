@@ -19,6 +19,7 @@ SOURCES += \
     src/model/audio/odas/odas_position_source.cpp \
     src/model/audio/source_position.cpp \
     src/model/audio/pulseaudio/pulseaudio_sink.cpp \
+    src/model/recorder/recorder.cpp \
     src/model/utils/spherical_angle_converter.cpp \
     src/model/settings/settings.cpp \
     src/view/mainwindow.cpp \
@@ -40,6 +41,8 @@ HEADERS += \
     src/model/audio/pulseaudio/pulseaudio_sink.h \
     src/model/audio/odas/odas_audio_source.h \
     src/model/audio/odas/odas_position_source.h \
+    src/model/recorder/i_recorder.h \
+    src/model/recorder/recorder.h \
     src/model/utils/spherical_angle_converter.h \
     src/model/settings/i_settings.h \
     src/model/settings/settings.h \

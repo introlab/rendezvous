@@ -13,4 +13,4 @@ void SideBar::add(const QString& name)
     }
 }
 
-}    // View
+}    // namespace View

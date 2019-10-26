@@ -29,6 +29,6 @@ class SettingsView : public AbstractView
     Model::ISettings& m_settings;
 };
 
-}    // View
+}    // namespace View
 
 #endif    // SETTINGS_VIEW_H

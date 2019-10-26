@@ -58,4 +58,4 @@ void LocalSocketServer::onSocketStateChanged(QAbstractSocket::SocketState socket
     }
 }
 
-}    // Model
+}    // namespace Model

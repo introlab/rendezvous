@@ -20,6 +20,6 @@ class SideBar : public QListWidget
     const QSize m_itemSize;
 };
 
-}    // View
+}    // namespace View
 
 #endif    // SIDEBAR_H

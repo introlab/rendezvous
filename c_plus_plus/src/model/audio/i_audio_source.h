@@ -15,6 +15,6 @@ class IAudioSource
     virtual int read(uint8_t* audioBuf, int bytesToRead) = 0;
 };
 
-}    // Model
+}    // namespace Model
 
 #endif    // I_AUDIO_SOURCE_H

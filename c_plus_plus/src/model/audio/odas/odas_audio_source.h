@@ -22,6 +22,6 @@ class OdasAudioSource : public IAudioSource
     std::unique_ptr<LocalSocketServer> m_socketServer;
 };
 
-}    // Model
+}    // namespace Model
 
 #endif    // ODAS_AUDIO_SOURCE_H

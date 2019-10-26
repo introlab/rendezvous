@@ -20,6 +20,6 @@ class ISocketServer : public QObject
     void dataReady(int bytes);
 };
 
-}    // Model
+}    // namespace Model
 
 #endif    // I_SOCKET_SERVER_H
