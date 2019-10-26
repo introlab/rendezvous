@@ -1,3 +1,1 @@
-void fonction( int x, int d ) {
-
-}
+void fonction(int x, int d) {}
