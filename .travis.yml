@@ -28,6 +28,7 @@ addons:
       - gcc-6
       - g++-6
 script:
+  - bash ./scripts/format-ci-test.sh || travis_terminate 1
   - sudo ln -s /usr/bin/gcc-6 /usr/local/bin/gcc
   - sudo ln -s /usr/bin/g++-6 /usr/local/bin/g++
   - export CC=/usr/bin/gcc-6
