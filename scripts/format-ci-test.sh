@@ -1,15 +1,11 @@
 #!/usr/bin/env bash
 
-find ./c_plus_plus/ -regex '.*\.\(cpp\|hpp\|cu\|c\|h\)' -exec clang-format -style=file -i {} \; 
+dirty="$(find ./c_plus_plus/ -regex '.*\.\(cpp\|hpp\|cu\|c\|h\)' -exec clang-format -style=file -i {} -output-replacements-xml \;)"
 
-failedMsg="C++ formatting test failed because of these files:"
-
-git checkout $TRAVIS_BRANCH
-dirty=$(git ls-files --modified)
+failedMsg="C++ formatting test failed, please format your code:"
 
 if [[ $dirty ]]; then
     echo $failedMsg
-    echo $dirty
     exit 1
 fi
 
