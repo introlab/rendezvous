@@ -3,18 +3,20 @@
 
 #include <cinttypes>
 
+
 namespace Model
 {
+
 class IAudioSource
 {
-   public:
+public:
     virtual ~IAudioSource() = default;
-
+    
     virtual bool open() = 0;
     virtual bool close() = 0;
-    virtual int read(uint8_t* audioBuf, int bytesToRead) = 0;
+    virtual int read(uint8_t* audioBuf, int bytesToRead)  = 0;
 };
 
-}    // Model
+} // Model
 
-#endif    // I_AUDIO_SOURCE_H
+#endif // I_AUDIO_SOURCE_H

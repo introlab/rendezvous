@@ -2,20 +2,35 @@
 #include <QJsonDocument>
 #include <QMutexLocker>
 
-#include "model/utils/spherical_angle_converter.h"
 #include "odas_position_source.h"
+#include "model/utils/spherical_angle_converter.h"
+
 
 namespace Model
 {
-OdasPositionSource::OdasPositionSource(quint16 port)
-    : m_socketServer(std::make_unique<LocalSocketServer>(port)), m_mutex(std::make_unique<QMutex>())
+
+OdasPositionSource::OdasPositionSource(quint16 port) :
+    m_socketServer(std::make_unique<LocalSocketServer>(port)),
+    m_mutex(std::make_unique<QMutex>())
 {
     connect(m_socketServer.get(), SIGNAL(dataReady(int)), this, SLOT(onPositionsReady(int)));
 }
 
-OdasPositionSource::~OdasPositionSource() { close(); }
-bool OdasPositionSource::open() { return m_socketServer->start(); }
-bool OdasPositionSource::close() { return m_socketServer->stop(); }
+OdasPositionSource::~OdasPositionSource()
+{
+    close();
+}
+
+bool OdasPositionSource::open()
+{
+    return m_socketServer->start();
+}
+
+bool OdasPositionSource::close()
+{
+    return m_socketServer->stop();
+}
+
 std::vector<SourcePosition> OdasPositionSource::getPositions()
 {
     QMutexLocker locker(m_mutex.get());
@@ -38,7 +53,7 @@ void OdasPositionSource::onPositionsReady(int numberOfBytes)
     QByteArray byteArray = QByteArray::fromRawData(m_buffer.data(), bytesRead);
     QJsonDocument json = QJsonDocument::fromJson(byteArray);
 
-    QJsonArray odasSources = json[ "src" ].toArray();
+    QJsonArray odasSources = json["src"].toArray();
     for (auto it = odasSources.begin(); it < odasSources.end(); it++)
     {
         SourcePosition source = SourcePosition::deserialize(*it);
@@ -48,4 +63,4 @@ void OdasPositionSource::onPositionsReady(int numberOfBytes)
     updatePositions(sourcePositions);
 }
 
-}    // Model
+} // Model
