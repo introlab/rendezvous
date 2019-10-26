@@ -17,15 +17,11 @@ OnlineConferenceView::OnlineConferenceView(QWidget *parent)
 {
     m_ui->setupUi(this);
 
-    m_stopped->assignProperty(m_ui->startButton, "text",
-                              "Start virtual devices");
-    m_started->assignProperty(m_ui->startButton, "text",
-                              "Stop virtual devices");
+    m_stopped->assignProperty(m_ui->startButton, "text", "Start virtual devices");
+    m_started->assignProperty(m_ui->startButton, "text", "Stop virtual devices");
 
-    m_stopped->addTransition(m_ui->startButton, &QAbstractButton::clicked,
-                             m_started);
-    m_started->addTransition(m_ui->startButton, &QAbstractButton::clicked,
-                             m_stopped);
+    m_stopped->addTransition(m_ui->startButton, &QAbstractButton::clicked, m_started);
+    m_started->addTransition(m_ui->startButton, &QAbstractButton::clicked, m_stopped);
 
     m_stateMachine->addState(m_stopped);
     m_stateMachine->addState(m_started);
@@ -33,9 +29,8 @@ OnlineConferenceView::OnlineConferenceView(QWidget *parent)
     m_stateMachine->setInitialState(m_stopped);
     m_stateMachine->start();
 
-    connect(m_ui->websiteButton, &QAbstractButton::clicked, [] {
-        QDesktopServices::openUrl(QUrl("https://rendezvous-meet.com/"));
-    });
+    connect(m_ui->websiteButton, &QAbstractButton::clicked,
+            [] { QDesktopServices::openUrl(QUrl("https://rendezvous-meet.com/")); });
     connect(m_stopped, &QState::entered, [=] { onStoppedStateEntered(); });
     connect(m_started, &QState::entered, [=] { onStartedStateEntered(); });
 }

@@ -19,8 +19,7 @@ namespace View
 class MediaPlayerView : public AbstractView
 {
    public:
-    explicit MediaPlayerView(Model::IMediaPlayer &videoPlayer,
-                             QWidget *parent = nullptr);
+    explicit MediaPlayerView(Model::IMediaPlayer &videoPlayer, QWidget *parent = nullptr);
 
    public slots:
     void onMediaStateChanged(QMediaPlayer::State state);

@@ -14,12 +14,8 @@
 
 namespace View
 {
-MainWindow::MainWindow(Model::ISettings &settings,
-                       Model::IMediaPlayer &mediaPlayer, QWidget *parent)
-    : QMainWindow(parent),
-      m_ui(new Ui::MainWindow),
-      m_sideBar(new View::SideBar),
-      m_views(new QStackedWidget)
+MainWindow::MainWindow(Model::ISettings &settings, Model::IMediaPlayer &mediaPlayer, QWidget *parent)
+    : QMainWindow(parent), m_ui(new Ui::MainWindow), m_sideBar(new View::SideBar), m_views(new QStackedWidget)
 {
     m_ui->setupUi(this);
     m_ui->mainLayout->addWidget(m_sideBar);
@@ -27,8 +23,7 @@ MainWindow::MainWindow(Model::ISettings &settings,
 
     View::AbstractView *onlineConferenceView = new View::OnlineConferenceView();
     View::AbstractView *localConferenceView = new View::LocalConferenceView();
-    View::AbstractView *mediaPlayerView =
-        new View::MediaPlayerView(mediaPlayer);
+    View::AbstractView *mediaPlayerView = new View::MediaPlayerView(mediaPlayer);
     View::AbstractView *settingsView = new View::SettingsView(settings);
 
     addView(onlineConferenceView);
@@ -38,8 +33,7 @@ MainWindow::MainWindow(Model::ISettings &settings,
 
     m_sideBar->setCurrentRow(0);
 
-    connect(m_sideBar, &View::SideBar::currentRowChanged,
-            [=](const int &index) { m_views->setCurrentIndex(index); });
+    connect(m_sideBar, &View::SideBar::currentRowChanged, [=](const int &index) { m_views->setCurrentIndex(index); });
 }
 
 void MainWindow::addView(View::AbstractView *view)

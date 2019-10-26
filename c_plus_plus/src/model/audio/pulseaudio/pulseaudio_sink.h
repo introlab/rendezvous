@@ -12,8 +12,7 @@ namespace Model
 class PulseAudioSink : public IAudioSink
 {
    public:
-    PulseAudioSink(std::string device, uint8_t channels, uint32_t rate,
-                   pa_sample_format format);
+    PulseAudioSink(std::string device, uint8_t channels, uint32_t rate, pa_sample_format format);
     ~PulseAudioSink() override;
 
     bool open() override;

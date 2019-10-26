@@ -29,8 +29,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
    public:
-    MainWindow(Model::ISettings &settings, Model::IMediaPlayer &mediaPlayer,
-               QWidget *parent = nullptr);
+    MainWindow(Model::ISettings &settings, Model::IMediaPlayer &mediaPlayer, QWidget *parent = nullptr);
 
    private:
     void addView(View::AbstractView *view);

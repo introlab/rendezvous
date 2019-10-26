@@ -2,8 +2,7 @@
 
 namespace Model
 {
-LocalSocketServer::LocalSocketServer(int port)
-    : m_server(new QTcpServer(this)), m_socket(nullptr), m_port(port)
+LocalSocketServer::LocalSocketServer(int port) : m_server(new QTcpServer(this)), m_socket(nullptr), m_port(port)
 {
     connect(m_server, SIGNAL(newConnection()), this, SLOT(onNewConnection()));
 }
@@ -31,8 +30,7 @@ bool LocalSocketServer::stop()
 
 int LocalSocketServer::read(char* buffer, int bytesToRead)
 {
-    if (m_socket == nullptr ||
-        m_socket->state() != QAbstractSocket::ConnectedState)
+    if (m_socket == nullptr || m_socket->state() != QAbstractSocket::ConnectedState)
     {
         return -1;
     }
@@ -49,12 +47,10 @@ void LocalSocketServer::onNewConnection()
     connect(m_socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this,
             SLOT(onSocketStateChanged(QAbstractSocket::SocketState)));
 
-    connect(m_socket, &QTcpSocket::readyRead, this,
-            [&] { emit dataReady(m_socket->bytesAvailable()); });
+    connect(m_socket, &QTcpSocket::readyRead, this, [&] { emit dataReady(m_socket->bytesAvailable()); });
 }
 
-void LocalSocketServer::onSocketStateChanged(
-    QAbstractSocket::SocketState socketState)
+void LocalSocketServer::onSocketStateChanged(QAbstractSocket::SocketState socketState)
 {
     if (socketState == QAbstractSocket::UnconnectedState)
     {

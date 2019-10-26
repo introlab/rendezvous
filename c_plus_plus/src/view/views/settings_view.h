@@ -17,8 +17,7 @@ namespace View
 class SettingsView : public AbstractView
 {
    public:
-    explicit SettingsView(Model::ISettings& settings,
-                          QWidget* parent = nullptr);
+    explicit SettingsView(Model::ISettings& settings, QWidget* parent = nullptr);
 
    public slots:
     void onLanguageComboboxCurrentIndexChanged(const int& index);

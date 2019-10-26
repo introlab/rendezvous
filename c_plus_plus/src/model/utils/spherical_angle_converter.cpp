@@ -10,8 +10,7 @@ double SphericalAngleConverter::getAzimuthFromPosition(double x, double y)
     return std::fmod(tanRes, 2 * M_PI);
 }
 
-double SphericalAngleConverter::getElevationFromPosition(double x, double y,
-                                                         double z)
+double SphericalAngleConverter::getElevationFromPosition(double x, double y, double z)
 {
     double xyHypotenuse = sqrt(pow(y, 2) + pow(x, 2));
     double tanRes = atan2(z, xyHypotenuse);
