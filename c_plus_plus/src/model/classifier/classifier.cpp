@@ -3,9 +3,9 @@
 namespace Model
 {
 
-std::vector<int> Classifier::classify(std::vector<SourcePosition> audioPositions, std::vector<SourcePosition> imagePositions, int rangeThreshold)
+std::vector<int> Classifier::classify(std::vector<SourcePosition> audioPositions, std::vector<SphericalAngleRect> imagePositions, int rangeThreshold)
 {
-    std::vector<int> sources;
+    std::vector<int> sourcesToSuppress;
 
     for(size_t i = 0; i < audioPositions.size(); i++)
     {
@@ -13,16 +13,16 @@ std::vector<int> Classifier::classify(std::vector<SourcePosition> audioPositions
         {
             for(size_t j = 0; j < imagePositions.size(); j++)
             {
-                if(std::abs(audioPositions[i].azimuth - imagePositions[j].azimuth) <= rangeThreshold
-                        && std::abs(audioPositions[i].elevation - imagePositions[j].elevation) <= rangeThreshold)
+                if(std::abs(audioPositions[i].azimuth - imagePositions[j].azimuth) > rangeThreshold
+                        || std::abs(audioPositions[i].elevation - imagePositions[j].elevation) > rangeThreshold)
                 {
-                    sources.push_back(static_cast<int>(i));
+                    sourcesToSuppress.push_back(static_cast<int>(i));
                 }
             }
         }
     }
 
-    return sources;
+    return sourcesToSuppress;
 }
 
 }

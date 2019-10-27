@@ -16,6 +16,7 @@ LIBS += -lpulse-simple -lpulse -lpthread -L$(DARKNET_HOME) -ldarknet -L$(LIBV4L2
 
 SOURCES += \
     src/main.cpp \
+    src/model/audio_suppresser/audio_suppresser.cpp \
     src/model/classifier/classifier.cpp \
     src/model/media_player/media_player.cpp \
     src/model/network/local_socket_server.cpp \
@@ -59,6 +60,7 @@ SOURCES += \
     src/view/views/settings_view.cpp
 
 HEADERS += \
+    src/model/audio_suppresser/audio_suppresser.h \
     src/model/classifier/classifier.h \
     src/model/media_player/i_media_player.h \
     src/model/media_player/media_player.h \

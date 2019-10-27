@@ -3,7 +3,8 @@
 
 #include <vector>
 
-#include "model/audio/source_position.h"
+#include "model/stream/audio/source_position.h"
+#include "model/stream/utils/models/spherical_angle_rect.h"
 
 namespace Model
 {
@@ -11,9 +12,7 @@ namespace Model
 class Classifier
 {
 public:
-    // TODO: change the return type if its not the index that we want
-    // TODO: change SourcePosition for ImagePosition
-    static std::vector<int> classify(std::vector<SourcePosition> audioPositions, std::vector<SourcePosition> imagePositions, int rangeThreshold);
+    static std::vector<int> classify(std::vector<SourcePosition> audioPositions, std::vector<SphericalAngleRect> imagePositions, int rangeThreshold);
 };
 
 }   // Model
