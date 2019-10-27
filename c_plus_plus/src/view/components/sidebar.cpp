@@ -2,7 +2,12 @@
 
 namespace View
 {
-SideBar::SideBar(QWidget* parent) : QListWidget(parent), m_itemSize(0, m_itemHeight) { setFixedWidth(m_itemWidth); }
+SideBar::SideBar(QWidget* parent)
+    : QListWidget(parent)
+    , m_itemSize(0, m_itemHeight)
+{
+    setFixedWidth(m_itemWidth);
+}
 void SideBar::add(const QString& name)
 {
     addItem(name);

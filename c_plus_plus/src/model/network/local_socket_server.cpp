@@ -2,7 +2,10 @@
 
 namespace Model
 {
-LocalSocketServer::LocalSocketServer(int port) : m_server(new QTcpServer(this)), m_socket(nullptr), m_port(port)
+LocalSocketServer::LocalSocketServer(int port)
+    : m_server(new QTcpServer(this))
+    , m_socket(nullptr)
+    , m_port(port)
 {
     connect(m_server, SIGNAL(newConnection()), this, SLOT(onNewConnection()));
 }

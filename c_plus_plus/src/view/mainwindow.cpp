@@ -15,7 +15,10 @@
 namespace View
 {
 MainWindow::MainWindow(Model::ISettings &settings, Model::IMediaPlayer &mediaPlayer, QWidget *parent)
-    : QMainWindow(parent), m_ui(new Ui::MainWindow), m_sideBar(new View::SideBar), m_views(new QStackedWidget)
+    : QMainWindow(parent)
+    , m_ui(new Ui::MainWindow)
+    , m_sideBar(new View::SideBar)
+    , m_views(new QStackedWidget)
 {
     m_ui->setupUi(this);
     m_ui->mainLayout->addWidget(m_sideBar);

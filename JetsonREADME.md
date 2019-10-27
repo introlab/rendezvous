@@ -110,43 +110,20 @@ Build Odas:
 
 ## Yolov3
 
-Build Yolov3 from source
+Compile darknet library:
 
-    cd ~/dev/lib 
-    git clone https://github.com/pjreddie/darknet yolov3
-    cd yolov3
+    $ chmod +x scripts/darknet_setup.sh
+    $ ./scripts/darknet_setup.sh
 
-Change the following lines in the Makefile
+> Note: To compile without CUDA use -CPU
 
-	GPU=1
-	CUDNN=1
-	OPENCV=1
-	......
-	ARCH= -gencode arch=compute_53,code=[sm_53,compute_53] \
-	      -gencode arch=compute_62,code=[sm_62,compute_62]
+    $ ./scripts/darknet_setup.sh -CPU
 
-Build
+> Note: To compile to a specific path
 
-    make
+    $ ./scripts/darknet_setup.sh /my/path
 
-Add the following lines at the end of ~/.bashrc
-
-	export DARKNET_HOME=$HOME/dev/lib/yolov3
-	export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$DARKNET_HOME
-	export CUDA_HOME=/usr/local/cuda
-
-Install Yolov3 for python in the project env
-
-    cd ~/dev/workspace/rendezvous
-    git clone https://github.com/madhawav/YOLO3-4-Py.git
-    cd YOLO3-4-Py
-    export CUDA=1
-    export OPENCV=1 
-    pip3 install .
-    cd ..
-    rm -rf Yolo3-4-Py.git
-
-Download the neural network model and data
+Download the neural network model and data:
 
     chmod +x scripts/yolo_setup.sh
     ./scripts/yolo_setup.sh
@@ -168,16 +145,14 @@ To remove a v4l2loopback device:
 
 ## libv4l2cpp
 
-Installation
+Compile libv4l2cpp library:
 
-    cd ~/dev/lib
-    git clone https://github.com/mpromonet/libv4l2cpp
-    cd libv4l2cpp/
-    make EXTRA_CXXFLAGS='-fPIC'
+    $ chmod +x scripts/libv4l2cpp_setup.sh
+    $ ./scripts/libv4l2cpp_setup.sh
 
-Add the following line at the end of ~/.bashrc:
+> Note: To compile to a specific path
 
-    export LIBV4L2CPP_HOME=$HOME/dev/lib/libv4l2cpp
+    $ ./scripts/libv4l2cpp_setup.sh /my/path
 
 ## Note
 

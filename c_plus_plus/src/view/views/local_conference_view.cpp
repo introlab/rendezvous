@@ -14,15 +14,15 @@
 namespace View
 {
 LocalConferenceView::LocalConferenceView(Model::ISettings &settings, QWidget *parent)
-    : AbstractView("Local Conference", parent),
-      m_ui(new Ui::LocalConferenceView),
-      m_settings(settings),
-      m_camera(new QCamera(getCameraInfo(), this)),
-      m_cameraViewfinder(new QCameraViewfinder(this)),
-      m_recorder(new Model::Recorder(m_camera, this)),
-      m_stateMachine(new QStateMachine),
-      m_stopped(new QState),
-      m_started(new QState)
+    : AbstractView("Local Conference", parent)
+    , m_ui(new Ui::LocalConferenceView)
+    , m_settings(settings)
+    , m_camera(new QCamera(getCameraInfo(), this))
+    , m_cameraViewfinder(new QCameraViewfinder(this))
+    , m_recorder(new Model::Recorder(m_camera, this))
+    , m_stateMachine(new QStateMachine)
+    , m_stopped(new QState)
+    , m_started(new QState)
 {
     m_ui->setupUi(this);
     m_ui->virtualCameraLayout->addWidget(m_cameraViewfinder);

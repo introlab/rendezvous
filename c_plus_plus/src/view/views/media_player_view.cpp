@@ -10,7 +10,9 @@
 namespace View
 {
 MediaPlayerView::MediaPlayerView(Model::IMediaPlayer& videoPlayer, QWidget* parent)
-    : AbstractView("Media Player", parent), m_ui(new Ui::MediaPlayerView), m_videoPlayer(videoPlayer)
+    : AbstractView("Media Player", parent)
+    , m_ui(new Ui::MediaPlayerView)
+    , m_videoPlayer(videoPlayer)
 {
     m_ui->setupUi(this);
     m_ui->playButton->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
