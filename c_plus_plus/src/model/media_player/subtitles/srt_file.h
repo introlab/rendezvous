@@ -9,13 +9,12 @@
 
 namespace Model
 {
-
 class SrtFile
 {
-public:
+   public:
     static std::vector<SubtitleItem> parse(const QString &path);
 };
 
-} // Model
+}    // namespace Model
 
-#endif // SRT_FILE_H
+#endif    // SRT_FILE_H

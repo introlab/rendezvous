@@ -1,8 +1,8 @@
 #include "media_player.h"
 
 #include <QFileInfo>
-#include <QVideoWidget>
 #include <QUrl>
+#include <QVideoWidget>
 
 namespace Model
 {
@@ -10,13 +10,14 @@ MediaPlayer::MediaPlayer(QWidget *parent)
     : IMediaPlayer(parent)
     , m_mediaPlayer(new QMediaPlayer(this, QMediaPlayer::VideoSurface))
 
-{   
-    connect(&m_mediaPlayer, &QMediaPlayer::stateChanged, [=](QMediaPlayer::State state){ onStateChanged(state); });
-    connect(&m_mediaPlayer, &QMediaPlayer::positionChanged, [=](qint64 position){ emit positionChanged(position); });
-    connect(&m_mediaPlayer, &QMediaPlayer::durationChanged, [=](qint64 duration){ emit durationChanged(duration); });
-    connect(&m_mediaPlayer, &QMediaPlayer::volumeChanged, [=](int volume){ emit volumeChanged(volume); });
-    connect(&m_mediaPlayer, QOverload<QMediaPlayer::Error>::of(&QMediaPlayer::error), [=]{ onErrorOccured(); });
-    connect(&m_subtitles, &Subtitles::subtitleChanged, [=](const QString &subtitle){ emit subtitleChanged(subtitle); });
+{
+    connect(&m_mediaPlayer, &QMediaPlayer::stateChanged, [=](QMediaPlayer::State state) { onStateChanged(state); });
+    connect(&m_mediaPlayer, &QMediaPlayer::positionChanged, [=](qint64 position) { emit positionChanged(position); });
+    connect(&m_mediaPlayer, &QMediaPlayer::durationChanged, [=](qint64 duration) { emit durationChanged(duration); });
+    connect(&m_mediaPlayer, &QMediaPlayer::volumeChanged, [=](int volume) { emit volumeChanged(volume); });
+    connect(&m_mediaPlayer, QOverload<QMediaPlayer::Error>::of(&QMediaPlayer::error), [=] { onErrorOccured(); });
+    connect(&m_subtitles, &Subtitles::subtitleChanged,
+            [=](const QString &subtitle) { emit subtitleChanged(subtitle); });
 }
 
 void MediaPlayer::setVideoOutput(QVideoWidget *videoOutput)

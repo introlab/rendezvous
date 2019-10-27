@@ -5,13 +5,13 @@
 
 namespace Model
 {
-
 class Time
 {
-public:
-    static qint64 milliseconds(const QString &hour, const QString &minute, const QString &second, const QString &millisecond);
+   public:
+    static qint64 milliseconds(const QString &hour, const QString &minute, const QString &second,
+                               const QString &millisecond);
 };
 
-} // Model
+}    // namespace Model
 
-#endif // TIME_H
+#endif    // TIME_H

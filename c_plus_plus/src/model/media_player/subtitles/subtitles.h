@@ -11,14 +11,13 @@
 
 namespace Model
 {
-
 class SubtitleItem;
 
 class Subtitles : public QObject
 {
-Q_OBJECT
+    Q_OBJECT
 
-public:
+   public:
     Subtitles(QObject *parent = nullptr);
 
     void open(const QString &srtFilePath);
@@ -27,13 +26,13 @@ public:
     void stop();
     void setCurrentTime(qint64 time);
 
-signals:
+   signals:
     void subtitleChanged(const QString &subtitle);
 
-private slots:
+   private slots:
     void onTimerTimeout();
 
-private:
+   private:
     void reset();
     QString currentSubtitle(qint64 time, bool manual);
 
@@ -46,6 +45,6 @@ private:
     const int m_timerInterval = 200;
 };
 
-} // Model
+}    // namespace Model
 
-#endif // SUBTITLES_H
+#endif    // SUBTITLES_H

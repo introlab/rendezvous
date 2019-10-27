@@ -6,7 +6,6 @@
 
 namespace Model
 {
-
 Subtitles::Subtitles(QObject *parent)
     : QObject(parent)
     , m_subtitles({})
@@ -18,7 +17,7 @@ Subtitles::Subtitles(QObject *parent)
     m_timer.setTimerType(Qt::PreciseTimer);
     m_timer.setInterval(m_timerInterval);
 
-    connect(&m_timer, &QTimer::timeout, [=]{ onTimerTimeout(); });
+    connect(&m_timer, &QTimer::timeout, [=] { onTimerTimeout(); });
 }
 
 void Subtitles::open(const QString &srtFilePath)
@@ -37,10 +36,10 @@ void Subtitles::play()
 
 void Subtitles::pause()
 {
-   if (!m_subtitles.empty())
-   {
-       m_timer.stop();
-   }
+    if (!m_subtitles.empty())
+    {
+        m_timer.stop();
+    }
 }
 
 void Subtitles::stop()
@@ -92,7 +91,6 @@ QString Subtitles::currentSubtitle(qint64 time, bool manual)
 
     if (m_subtitles.size() != 0 && time < m_subtitles.back().end)
     {
-
         if (m_lastSubtitleIndex != 0 && !manual)
         {
             //  Linear search for automatic next
@@ -141,4 +139,4 @@ QString Subtitles::currentSubtitle(qint64 time, bool manual)
     return subtitle;
 }
 
-} // Model
+}    // namespace Model

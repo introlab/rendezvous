@@ -3,12 +3,11 @@
 #include "model/utils/time.h"
 
 #include <QFile>
-#include <QTextStream>
 #include <QRegularExpression>
+#include <QTextStream>
 
 namespace Model
 {
-
 std::vector<SubtitleItem> SrtFile::parse(const QString &path)
 {
     std::vector<SubtitleItem> subtitles;
@@ -21,7 +20,8 @@ std::vector<SubtitleItem> SrtFile::parse(const QString &path)
 
         QString content = in.readAll();
 
-        QRegularExpression patternStr(R"((\d+).*?\n(\d{2}):(\d{2}):(\d{2}),(\d{3}) --> (\d{2}):(\d{2}):(\d{2}),(\d{3}).*?\n([\s\S]*?)\n\n)");
+        QRegularExpression patternStr(
+            R"((\d+).*?\n(\d{2}):(\d{2}):(\d{2}),(\d{3}) --> (\d{2}):(\d{2}):(\d{2}),(\d{3}).*?\n([\s\S]*?)\n\n)");
 
         QRegularExpressionMatchIterator it = patternStr.globalMatch(content);
 
@@ -29,10 +29,9 @@ std::vector<SubtitleItem> SrtFile::parse(const QString &path)
         while (it.hasNext())
         {
             QRegularExpressionMatch m = it.next();
-            SubtitleItem currentSubtitle = SubtitleItem(m.captured(1).toUInt(),
-                                                        Time::milliseconds(m.captured(2), m.captured(3), m.captured(4), m.captured(5)),
-                                                        Time::milliseconds(m.captured(6), m.captured(7), m.captured(8), m.captured(9)),
-                                                        m.captured(10));
+            SubtitleItem currentSubtitle = SubtitleItem(
+                m.captured(1).toUInt(), Time::milliseconds(m.captured(2), m.captured(3), m.captured(4), m.captured(5)),
+                Time::milliseconds(m.captured(6), m.captured(7), m.captured(8), m.captured(9)), m.captured(10));
 
             if (!(currentSubtitle.start < previousSubtitle.start || currentSubtitle.end < currentSubtitle.start))
             {
@@ -45,4 +44,4 @@ std::vector<SubtitleItem> SrtFile::parse(const QString &path)
     return subtitles;
 }
 
-} // Model
+}    // namespace Model

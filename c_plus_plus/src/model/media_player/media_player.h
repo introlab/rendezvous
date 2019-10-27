@@ -23,11 +23,11 @@ class MediaPlayer : public IMediaPlayer
     void setVolume(int volume) override;
     int volume() const override;
 
-private slots:
+   private slots:
     void onStateChanged(QMediaPlayer::State state);
     void onErrorOccured();
 
-private:
+   private:
     QMediaPlayer m_mediaPlayer;
     Subtitles m_subtitles;
 };

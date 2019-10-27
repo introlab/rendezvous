@@ -21,17 +21,22 @@ MediaPlayerView::MediaPlayerView(Model::IMediaPlayer& videoPlayer, QWidget* pare
 
     m_videoPlayer.setVideoOutput(m_ui->videoWidget);
 
-    connect(m_ui->openButton, &QAbstractButton::clicked, [=]{ openFile(); });
-    connect(m_ui->playButton, &QAbstractButton::clicked, [=]{ m_videoPlayer.play(); });
-    connect(m_ui->positionSlider, &QAbstractSlider::sliderMoved, [=](int position){ m_videoPlayer.setPosition(position); });
-    connect(m_ui->volumeSlider, &QSlider::valueChanged, [=]{ m_videoPlayer.setVolume(volume()); });
-    
-    connect(&m_videoPlayer, &Model::IMediaPlayer::stateChanged, [=](QMediaPlayer::State state){ onMediaStateChanged(state); });
-    connect(&m_videoPlayer, &Model::IMediaPlayer::positionChanged, [=](qint64 position){ onPositionChanged(position); });
-    connect(&m_videoPlayer, &Model::IMediaPlayer::durationChanged, [=](qint64 duration){ onDurationChanged(duration); });
-    connect(&m_videoPlayer, &Model::IMediaPlayer::volumeChanged, [=](int volume){ setVolume(volume); });
-    connect(&m_videoPlayer, &Model::IMediaPlayer::subtitleChanged, [=](QString subtitle){ onSubtitleChanged(subtitle); });
-    connect(&m_videoPlayer, &Model::IMediaPlayer::errorOccured, [=](const QString& error){ onErrorOccured(error); });
+    connect(m_ui->openButton, &QAbstractButton::clicked, [=] { openFile(); });
+    connect(m_ui->playButton, &QAbstractButton::clicked, [=] { m_videoPlayer.play(); });
+    connect(m_ui->positionSlider, &QAbstractSlider::sliderMoved,
+            [=](int position) { m_videoPlayer.setPosition(position); });
+    connect(m_ui->volumeSlider, &QSlider::valueChanged, [=] { m_videoPlayer.setVolume(volume()); });
+
+    connect(&m_videoPlayer, &Model::IMediaPlayer::stateChanged,
+            [=](QMediaPlayer::State state) { onMediaStateChanged(state); });
+    connect(&m_videoPlayer, &Model::IMediaPlayer::positionChanged,
+            [=](qint64 position) { onPositionChanged(position); });
+    connect(&m_videoPlayer, &Model::IMediaPlayer::durationChanged,
+            [=](qint64 duration) { onDurationChanged(duration); });
+    connect(&m_videoPlayer, &Model::IMediaPlayer::volumeChanged, [=](int volume) { setVolume(volume); });
+    connect(&m_videoPlayer, &Model::IMediaPlayer::subtitleChanged,
+            [=](QString subtitle) { onSubtitleChanged(subtitle); });
+    connect(&m_videoPlayer, &Model::IMediaPlayer::errorOccured, [=](const QString& error) { onErrorOccured(error); });
 }
 
 void MediaPlayerView::onMediaStateChanged(QMediaPlayer::State state)
@@ -57,7 +62,7 @@ void MediaPlayerView::onDurationChanged(qint64 duration)
     m_ui->positionSlider->setRange(0, static_cast<int>(duration));
 }
 
-void MediaPlayerView::onSubtitleChanged(const QString &subtitle)
+void MediaPlayerView::onSubtitleChanged(const QString& subtitle)
 {
     m_ui->statusLabel->setText(subtitle);
 }

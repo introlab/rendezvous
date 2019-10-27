@@ -30,7 +30,7 @@ class IMediaPlayer : public QWidget
     void durationChanged(qint64 duration);
     void volumeChanged(int volume);
     void subtitleChanged(QString subtitle);
-    void errorOccured(const QString& error);
+    void errorOccured(const QString &error);
 };
 
 }    // namespace Model
