@@ -16,12 +16,12 @@ LIBS += -lpulse-simple -lpulse -lpthread -L$(DARKNET_HOME) -ldarknet -L$(LIBV4L2
 
 SOURCES += \
     src/main.cpp \
-    src/model/audio/odas/odas_client.cpp \
     src/model/media_player/media_player.cpp \
     src/model/network/local_socket_server.cpp \
     src/model/recorder/recorder.cpp \
     src/model/settings/settings.cpp \
     src/model/stream/audio/odas/odas_audio_source.cpp \
+    src/model/stream/audio/odas/odas_client.cpp \
     src/model/stream/audio/odas/odas_position_source.cpp \
     src/model/stream/audio/pulseaudio/pulseaudio_sink.cpp \
     src/model/stream/audio/source_position.cpp \
@@ -59,7 +59,6 @@ SOURCES += \
     src/view/views/settings_view.cpp
 
 HEADERS += \
-    src/model/audio/odas/odas_client.h \
     src/model/media_player/i_media_player.h \
     src/model/media_player/media_player.h \
     src/model/network/i_socket_server.h \
@@ -73,6 +72,7 @@ HEADERS += \
     src/model/stream/audio/i_audio_source.h \
     src/model/stream/audio/i_position_source.h \
     src/model/stream/audio/odas/odas_audio_source.h \
+    src/model/stream/audio/odas/odas_client.h \
     src/model/stream/audio/odas/odas_position_source.h \
     src/model/stream/audio/pulseaudio/pulseaudio_sink.h \
     src/model/stream/audio/source_position.h \
