@@ -14,6 +14,7 @@ class AbstractView : public QWidget
    public:
     explicit AbstractView(QString name, QWidget* parent) : QWidget(parent), name(std::move(name)) {}
     const QString& getName() { return name; }
+
    private:
     QString name;
 };
