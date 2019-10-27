@@ -36,5 +36,4 @@ void Recorder::start(const QString outputPath)
 }
 
 void Recorder::stop() { m_mediaRecorder->stop(); }
-
 }    // namespace Model
