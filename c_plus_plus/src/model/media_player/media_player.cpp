@@ -6,7 +6,6 @@
 
 namespace Model
 {
-
 MediaPlayer::MediaPlayer(QWidget *parent)
     : IMediaPlayer(parent)
     , m_mediaPlayer(new QMediaPlayer(this, QMediaPlayer::VideoSurface))
@@ -96,4 +95,4 @@ void MediaPlayer::onErrorOccured()
     emit errorOccured(message);
 }
 
-} // Model
+}    // namespace Model

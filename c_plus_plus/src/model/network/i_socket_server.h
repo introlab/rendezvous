@@ -3,25 +3,23 @@
 
 #include <QObject>
 
-
 namespace Model
 {
-
 class ISocketServer : public QObject
 {
-Q_OBJECT
+    Q_OBJECT
 
-public:
+   public:
     virtual ~ISocketServer() = default;
-    
+
     virtual bool start() = 0;
     virtual bool stop() = 0;
     virtual int read(char* buffer, int bytesToRead) = 0;
 
-signals:
+   signals:
     void dataReady(int bytes);
 };
 
-} // Model
+}    // namespace Model
 
-#endif // I_SOCKET_SERVER_H
+#endif    // I_SOCKET_SERVER_H

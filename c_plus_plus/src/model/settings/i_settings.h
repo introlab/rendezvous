@@ -6,15 +6,13 @@ class QVariant;
 
 namespace Model
 {
-
 class ISettings
 {
-public:
+   public:
     virtual ~ISettings() = default;
     virtual void set(const QString &key, const QVariant &value) = 0;
     virtual QVariant get(const QString &key) const = 0;
 };
+}    // namespace Model
 
-}
-
-#endif // I_SETTINGS_H
+#endif    // I_SETTINGS_H

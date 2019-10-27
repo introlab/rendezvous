@@ -6,27 +6,29 @@
 class QStateMachine;
 class QState;
 
-namespace Ui { class OnlineConferenceView; }
+namespace Ui
+{
+class OnlineConferenceView;
+}
 
 namespace View
 {
-
 class OnlineConferenceView : public AbstractView
 {
-public:
+   public:
     explicit OnlineConferenceView(QWidget *parent = nullptr);
 
-private slots:
+   private slots:
     void onStoppedStateEntered();
     void onStartedStateEntered();
 
-private:
+   private:
     Ui::OnlineConferenceView *m_ui;
     QStateMachine *m_stateMachine;
     QState *m_stopped;
     QState *m_started;
 };
 
-} // View
+}    // namespace View
 
-#endif // ONLINE_CONFERENCE_VIEW_H
+#endif    // ONLINE_CONFERENCE_VIEW_H

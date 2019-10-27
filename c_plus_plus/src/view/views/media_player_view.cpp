@@ -9,8 +9,7 @@
 
 namespace View
 {
-
-MediaPlayerView::MediaPlayerView(Model::IMediaPlayer &videoPlayer, QWidget *parent)
+MediaPlayerView::MediaPlayerView(Model::IMediaPlayer& videoPlayer, QWidget* parent)
     : AbstractView("Media Player", parent)
     , m_ui(new Ui::MediaPlayerView)
     , m_videoPlayer(videoPlayer)
@@ -37,7 +36,7 @@ MediaPlayerView::MediaPlayerView(Model::IMediaPlayer &videoPlayer, QWidget *pare
 
 void MediaPlayerView::onMediaStateChanged(QMediaPlayer::State state)
 {
-    switch(state)
+    switch (state)
     {
         case QMediaPlayer::PlayingState:
             m_ui->playButton->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
@@ -75,7 +74,8 @@ void MediaPlayerView::openFile()
     fileDialog.setAcceptMode(QFileDialog::AcceptOpen);
     fileDialog.setWindowTitle(tr("Open Media File"));
 
-    fileDialog.setDirectory(QStandardPaths::standardLocations(QStandardPaths::MoviesLocation).value(0, QDir::homePath()));
+    fileDialog.setDirectory(
+        QStandardPaths::standardLocations(QStandardPaths::MoviesLocation).value(0, QDir::homePath()));
     if (fileDialog.exec() == QDialog::Accepted)
     {
         m_videoPlayer.setMedia(fileDialog.selectedUrls().constFirst());
@@ -87,19 +87,17 @@ void MediaPlayerView::openFile()
 int MediaPlayerView::volume() const
 {
     qreal linearVolume = QAudio::convertVolume(m_ui->volumeSlider->value() / qreal(m_maxVolume),
-                                               QAudio::LogarithmicVolumeScale,
-                                               QAudio::LinearVolumeScale);
+                                               QAudio::LogarithmicVolumeScale, QAudio::LinearVolumeScale);
 
     return qRound(linearVolume * m_maxVolume);
 }
 
 void MediaPlayerView::setVolume(int volume)
 {
-    qreal logarithmicVolume = QAudio::convertVolume(volume / qreal(m_maxVolume),
-                                                    QAudio::LinearVolumeScale,
-                                                    QAudio::LogarithmicVolumeScale);
+    qreal logarithmicVolume =
+        QAudio::convertVolume(volume / qreal(m_maxVolume), QAudio::LinearVolumeScale, QAudio::LogarithmicVolumeScale);
 
     m_ui->volumeSlider->setValue(qRound(logarithmicVolume * m_maxVolume));
 }
 
-} // View
+}    // namespace View

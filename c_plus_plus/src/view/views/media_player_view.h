@@ -10,11 +10,10 @@ namespace Ui { class MediaPlayerView; }
 
 namespace View
 {
-
 class MediaPlayerView : public AbstractView
 {
-public:
-    explicit MediaPlayerView(Model::IMediaPlayer& videoPlayer, QWidget *parent = nullptr);
+   public:
+    explicit MediaPlayerView(Model::IMediaPlayer &videoPlayer, QWidget *parent = nullptr);
 
 private slots:
     void onMediaStateChanged(QMediaPlayer::State state);
@@ -23,7 +22,7 @@ private slots:
     void onSubtitleChanged(const QString &subtitle);
     void onErrorOccured(const QString &error);
 
-private:
+   private:
     void openFile();
     void setVolume(int);
     int volume() const;
@@ -34,6 +33,6 @@ private:
     const uint8_t m_maxVolume = 100;
 };
 
-} // View
+}    // namespace View
 
-#endif // MEDIA_PLAYER_VIEW_H
+#endif    // MEDIA_PLAYER_VIEW_H

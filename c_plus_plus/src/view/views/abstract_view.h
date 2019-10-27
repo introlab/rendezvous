@@ -7,23 +7,25 @@
 
 namespace View
 {
-
 class AbstractView : public QWidget
 {
-Q_OBJECT
+    Q_OBJECT
 
-public:
-    explicit AbstractView(QString name, QWidget *parent)
+   public:
+    explicit AbstractView(QString name, QWidget* parent)
         : QWidget(parent)
         , name(std::move(name))
-    {}
+    {
+    }
+    const QString& getName()
+    {
+        return name;
+    }
 
-    const QString& getName() {return name;}
-
-private:
+   private:
     QString name;
 };
 
-} // View
+}    // namespace View
 
-#endif // ABSTRACT_VIEW_H
+#endif    // ABSTRACT_VIEW_H

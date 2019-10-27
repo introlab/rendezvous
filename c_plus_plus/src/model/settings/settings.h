@@ -9,20 +9,19 @@ class QVariant;
 
 namespace Model
 {
-
 class Settings : public ISettings
 {
-public:
+   public:
     Settings();
     void set(const QString &key, const QVariant &value) override;
     QVariant get(const QString &key) const override;
 
-private:
+   private:
     void load();
 
     QSettings *m_settings;
 };
 
-} // Model
+}    // namespace Model
 
-#endif // SETTINGS_H
+#endif    // SETTINGS_H

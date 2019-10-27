@@ -7,7 +7,6 @@
 
 namespace Model
 {
-
 Settings::Settings()
     : m_settings(new QSettings("RendezVous", "Steno"))
 {
@@ -42,5 +41,4 @@ void Settings::load()
     }
 }
 
-} // Model
-
+}    // namespace Model
