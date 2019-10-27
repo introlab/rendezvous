@@ -1,0 +1,35 @@
+#ifndef ANGLE_CALCULATIONS_H
+#define ANGLE_CALCULATIONS_H
+
+#include "model/stream/utils/models/point.h"
+#include "model/stream/video/dewarping/models/dewarping_parameters.h"
+
+namespace Model
+{
+namespace math
+{
+float deg2rad(float deg);
+float rad2deg(float rad);
+
+float getAzimuthFromPosition(float x, float y);
+float getElevationFromPosition(float x, float y, float z);
+
+float getElevationFromImage(const Point<float>& pixel, float fisheyeAngle, const Point<float>& fisheyeCenter,
+                            const DewarpingParameters& dewarpingParameters);
+float getAzimuthFromImage(const Point<float>& pixel, const Point<float>& fisheyeCenter,
+                          const DewarpingParameters& dewarpingParameters);
+
+float getSmallestAbsAzimuthDifference(float srcAzimuth, float dstAzimuth);
+float getSignedAzimuthDifference(float srcAzimuth, float dstAzimuth);
+float getLinearApproximatedSphericalAnglesDistance(float srcAzimuth, float srcElevation, float dstAzimuth,
+                                                   float dstElevation);
+float getApproximatedSphericalAnglesDistance(float srcElevation, float azimuthDifference, float elevationDifference);
+float getApproximatedSphericalAnglesDistance(float srcAzimuth, float srcElevation, float dstAzimuth,
+                                             float dstElevation);
+float getSphericalAnglesDistance(float srcAzimuth, float srcElevation, float dstAzimuth, float dstElevation);
+
+}    // namespace math
+
+}    // namespace Model
+
+#endif    //! ANGLE_CALCULATIONS_H

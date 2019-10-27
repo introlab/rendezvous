@@ -10,7 +10,10 @@ class IRecorder : public QWidget
     Q_OBJECT
 
    public:
-    IRecorder(QWidget *parent = nullptr) : QWidget(parent) {}
+    IRecorder(QWidget *parent = nullptr)
+        : QWidget(parent)
+    {
+    }
     virtual void start(const QString outputPath) = 0;
     virtual void stop() = 0;
 };
