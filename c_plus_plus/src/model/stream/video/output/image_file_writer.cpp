@@ -11,7 +11,10 @@ ImageFileWriter::ImageFileWriter(const std::string& folder, const std::string& i
 {
 }
 
-ImageFileWriter::~ImageFileWriter() { objectFactory_.deallocateObject(image_); }
+ImageFileWriter::~ImageFileWriter()
+{
+    objectFactory_.deallocateObject(image_);
+}
 
 void ImageFileWriter::writeImage(const Image& image)
 {

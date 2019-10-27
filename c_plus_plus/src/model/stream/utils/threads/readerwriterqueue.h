@@ -225,7 +225,10 @@ class ReaderWriterQueue
     // Enqueues a copy of element if there is room in the queue.
     // Returns true if the element was enqueued, false otherwise.
     // Does not allocate memory.
-    AE_FORCEINLINE bool try_enqueue(T const& element) AE_NO_TSAN { return inner_enqueue<CannotAlloc>(element); }
+    AE_FORCEINLINE bool try_enqueue(T const& element) AE_NO_TSAN
+    {
+        return inner_enqueue<CannotAlloc>(element);
+    }
 
     // Enqueues a moved copy of element if there is room in the queue.
     // Returns true if the element was enqueued, false otherwise.
@@ -247,12 +250,18 @@ class ReaderWriterQueue
     // Enqueues a copy of element on the queue.
     // Allocates an additional block of memory if needed.
     // Only fails (returns false) if memory allocation fails.
-    AE_FORCEINLINE bool enqueue(T const& element) AE_NO_TSAN { return inner_enqueue<CanAlloc>(element); }
+    AE_FORCEINLINE bool enqueue(T const& element) AE_NO_TSAN
+    {
+        return inner_enqueue<CanAlloc>(element);
+    }
 
     // Enqueues a moved copy of element on the queue.
     // Allocates an additional block of memory if needed.
     // Only fails (returns false) if memory allocation fails.
-    AE_FORCEINLINE bool enqueue(T&& element) AE_NO_TSAN { return inner_enqueue<CanAlloc>(std::forward<T>(element)); }
+    AE_FORCEINLINE bool enqueue(T&& element) AE_NO_TSAN
+    {
+        return inner_enqueue<CanAlloc>(std::forward<T>(element));
+    }
 
 #if MOODYCAMEL_HAS_EMPLACE
     // Like enqueue() but with emplace semantics (i.e. construct-in-place).
@@ -629,10 +638,14 @@ class ReaderWriterQueue
     }
 
     // Disable copying
-    ReaderWriterQueue(ReaderWriterQueue const&) {}
+    ReaderWriterQueue(ReaderWriterQueue const&)
+    {
+    }
 
     // Disable assignment
-    ReaderWriterQueue& operator=(ReaderWriterQueue const&) {}
+    ReaderWriterQueue& operator=(ReaderWriterQueue const&)
+    {
+    }
 
     AE_FORCEINLINE static size_t ceilToPow2(size_t x)
     {
@@ -669,7 +682,10 @@ class ReaderWriterQueue
             inSection = true;
         }
 
-        AE_NO_TSAN ~ReentrantGuard() { inSection = false; }
+        AE_NO_TSAN ~ReentrantGuard()
+        {
+            inSection = false;
+        }
 
        private:
         ReentrantGuard& operator=(ReentrantGuard const&);
@@ -893,7 +909,10 @@ class BlockingReaderWriterQueue
     // queue appears empty at the time the method is called, nullptr is
     // returned instead.
     // Must be called only from the consumer thread.
-    AE_FORCEINLINE T* peek() AE_NO_TSAN { return inner.peek(); }
+    AE_FORCEINLINE T* peek() AE_NO_TSAN
+    {
+        return inner.peek();
+    }
 
     // Removes the front element from the queue, if any, without returning it.
     // Returns true on success, or false if the queue appeared empty at the time
@@ -912,12 +931,19 @@ class BlockingReaderWriterQueue
 
     // Returns the approximate number of items currently in the queue.
     // Safe to call from both the producer and consumer threads.
-    AE_FORCEINLINE size_t size_approx() const AE_NO_TSAN { return sema->availableApprox(); }
+    AE_FORCEINLINE size_t size_approx() const AE_NO_TSAN
+    {
+        return sema->availableApprox();
+    }
 
    private:
     // Disable copying & assignment
-    BlockingReaderWriterQueue(BlockingReaderWriterQueue const&) {}
-    BlockingReaderWriterQueue& operator=(BlockingReaderWriterQueue const&) {}
+    BlockingReaderWriterQueue(BlockingReaderWriterQueue const&)
+    {
+    }
+    BlockingReaderWriterQueue& operator=(BlockingReaderWriterQueue const&)
+    {
+    }
 
    private:
     ReaderWriterQueue inner;

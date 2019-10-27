@@ -16,11 +16,20 @@ class DualBuffer
     {
     }
 
-    T& getCurrent() { return *current_; }
+    T& getCurrent()
+    {
+        return *current_;
+    }
 
-    T& getInUse() { return *inUse_; }
+    T& getInUse()
+    {
+        return *inUse_;
+    }
 
-    void swap() { std::swap(current_, inUse_); }
+    void swap()
+    {
+        std::swap(current_, inUse_);
+    }
 
    private:
     T first_;

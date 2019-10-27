@@ -13,7 +13,11 @@ PulseAudioSink::PulseAudioSink(std::string device, uint8_t channels, uint32_t ra
 {
 }
 
-PulseAudioSink::~PulseAudioSink() { close(); }
+PulseAudioSink::~PulseAudioSink()
+{
+    close();
+}
+
 bool PulseAudioSink::open()
 {
     if (m_stream != nullptr)

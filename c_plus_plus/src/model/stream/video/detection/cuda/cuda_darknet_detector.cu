@@ -1,5 +1,7 @@
 #include "cuda_darknet_detector.h"
 
+namespace Model
+{
 CudaDarknetDetector::CudaDarknetDetector(const std::string& configFile, const std::string& weightsFile,
                                          const std::string& metaFile)
     : BaseDarknetDetector(configFile, weightsFile, metaFile)
@@ -21,3 +23,4 @@ void CudaDarknetDetector::predictImage(network* net, const image& img)
 {
     network_predict_letterbox_gpu_device_image(net, img);
 }
+}    // namespace Model

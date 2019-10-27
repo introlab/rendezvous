@@ -21,9 +21,15 @@ Point<float> getSourceFromCenterDelta(const Point<float>& pixel, const Point<flo
 
 namespace math
 {
-float deg2rad(float deg) { return deg * PI / 180.f; }
+float deg2rad(float deg)
+{
+    return deg * PI / 180.f;
+}
 
-float rad2deg(float rad) { return rad / PI * 180.f; }
+float rad2deg(float rad)
+{
+    return rad / PI * 180.f;
+}
 
 float getAzimuthFromPosition(float x, float y)
 {

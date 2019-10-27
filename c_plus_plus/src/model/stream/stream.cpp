@@ -69,7 +69,10 @@ Stream::Stream(const VideoConfig& inputConfig, const VideoConfig& outputConfig, 
         implementationFactory.getImageConverter(), dewarpingConfig_, inputConfig_, outputConfig_);
 }
 
-Stream::~Stream() { objectFactory_->deallocateObjectLockTripleBuffer(*imageBuffer_); }
+Stream::~Stream()
+{
+    objectFactory_->deallocateObjectLockTripleBuffer(*imageBuffer_);
+}
 
 void Stream::start()
 {

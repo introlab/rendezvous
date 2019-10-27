@@ -10,7 +10,11 @@ LocalSocketServer::LocalSocketServer(int port)
     connect(m_server, SIGNAL(newConnection()), this, SLOT(onNewConnection()));
 }
 
-LocalSocketServer::~LocalSocketServer() { stop(); }
+LocalSocketServer::~LocalSocketServer()
+{
+    stop();
+}
+
 bool LocalSocketServer::start()
 {
     if (m_server->isListening()) return true;

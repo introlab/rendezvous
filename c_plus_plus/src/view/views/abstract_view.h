@@ -17,7 +17,10 @@ class AbstractView : public QWidget
         , name(std::move(name))
     {
     }
-    const QString& getName() { return name; }
+    const QString& getName()
+    {
+        return name;
+    }
 
    private:
     QString name;
