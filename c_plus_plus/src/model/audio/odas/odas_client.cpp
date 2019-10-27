@@ -25,7 +25,7 @@ void OdasClient::run()
 
     while (m_isRunning)
     {
-        if (!m_pProcess->isOpen() || m_pProcess->exitCode() != 0)
+        if (!m_pProcess->isOpen() || m_pProcess->exitStatus() == QProcess::CrashExit)
         {
             qCritical() << "Odaslive stopped working.";
             return;

@@ -6,6 +6,11 @@
 class QStateMachine;
 class QState;
 
+namespace Model
+{
+class OdasClient;
+}
+
 namespace Ui
 {
 class OnlineConferenceView;
@@ -27,6 +32,7 @@ class OnlineConferenceView : public AbstractView
     QStateMachine *m_stateMachine;
     QState *m_stopped;
     QState *m_started;
+    Model::OdasClient *m_odaslive;
 };
 
 }    // namespace View
