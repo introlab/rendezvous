@@ -7,7 +7,9 @@
 namespace Model
 {
 Recorder::Recorder(QCamera *camera, QWidget *parent)
-    : IRecorder(parent), m_camera(camera), m_mediaRecorder(new QMediaRecorder(m_camera, this))
+    : IRecorder(parent)
+    , m_camera(camera)
+    , m_mediaRecorder(new QMediaRecorder(m_camera, this))
 {
     QVideoEncoderSettings videoSettings;
     videoSettings.setQuality(QMultimedia::VeryHighQuality);
@@ -36,5 +38,4 @@ void Recorder::start(const QString outputPath)
 }
 
 void Recorder::stop() { m_mediaRecorder->stop(); }
-
 }    // namespace Model

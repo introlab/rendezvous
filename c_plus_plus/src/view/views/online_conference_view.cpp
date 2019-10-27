@@ -9,11 +9,11 @@
 namespace View
 {
 OnlineConferenceView::OnlineConferenceView(QWidget *parent)
-    : AbstractView("Online Conference", parent),
-      m_ui(new Ui::OnlineConferenceView),
-      m_stateMachine(new QStateMachine),
-      m_stopped(new QState),
-      m_started(new QState)
+    : AbstractView("Online Conference", parent)
+    , m_ui(new Ui::OnlineConferenceView)
+    , m_stateMachine(new QStateMachine)
+    , m_stopped(new QState)
+    , m_started(new QState)
 {
     m_ui->setupUi(this);
 

@@ -13,7 +13,10 @@ class IMediaPlayer : public QWidget
     Q_OBJECT
 
    public:
-    IMediaPlayer(QWidget *parent = nullptr) : QWidget(parent) {}
+    IMediaPlayer(QWidget *parent = nullptr)
+        : QWidget(parent)
+    {
+    }
     virtual void setMedia(const QUrl &url) = 0;
     virtual void play() = 0;
     virtual void setPosition(int position) = 0;
