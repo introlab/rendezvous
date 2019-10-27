@@ -1,5 +1,5 @@
 #include "online_conference_view.h"
-#include "model/audio/odas/odas_client.h"
+#include "model/stream/audio/odas/odas_client.h"
 #include "ui_online_conference_view.h"
 
 #include <QDesktopServices>
