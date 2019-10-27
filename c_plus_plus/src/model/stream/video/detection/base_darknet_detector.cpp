@@ -9,7 +9,10 @@ BaseDarknetDetector::BaseDarknetDetector(const std::string& configFile, const st
     metadata_ = get_metadata(const_cast<char*>(metadataFile.c_str()));
 }
 
-BaseDarknetDetector::~BaseDarknetDetector() { free_network(network_); }
+BaseDarknetDetector::~BaseDarknetDetector()
+{
+    free_network(network_);
+}
 
 std::vector<Rectangle> BaseDarknetDetector::detectInImage(const ImageFloat& img)
 {
@@ -17,7 +20,10 @@ std::vector<Rectangle> BaseDarknetDetector::detectInImage(const ImageFloat& img)
     return detect(darknetImage, 0.5, 0.5, 0.45);
 }
 
-Dim2<int> BaseDarknetDetector::getInputImageDim() { return Dim2<int>(network_->w, network_->h); }
+Dim2<int> BaseDarknetDetector::getInputImageDim()
+{
+    return Dim2<int>(network_->w, network_->h);
+}
 
 std::vector<Rectangle> BaseDarknetDetector::detect(const image& img, float threshold, float hierThreshold, float nms)
 {

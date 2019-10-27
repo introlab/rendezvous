@@ -36,7 +36,10 @@ ImageFileReader::ImageFileReader(const std::string& imageFilePath, ImageFormat f
     }
 }
 
-const Image& ImageFileReader::readImage() { return image_; }
+const Image& ImageFileReader::readImage()
+{
+    return image_;
+}
 
 bool ImageFileReader::loadImage(const char* fileName, unsigned char*& data, int& width, int& height, int& channels,
                                 int desiredChannels) const

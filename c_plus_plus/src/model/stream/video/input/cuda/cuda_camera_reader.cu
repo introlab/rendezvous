@@ -2,6 +2,8 @@
 
 #include "model/stream/utils/cuda_utils.cuh"
 
+namespace Model
+{
 CudaCameraReader::CudaCameraReader(const VideoConfig& videoConfig)
     : CameraReader(videoConfig, 3)
     , nextImage_(nullptr)
@@ -45,3 +47,4 @@ const Image& CudaCameraReader::readImage()
 
     return image;
 }
+}    // namespace Model

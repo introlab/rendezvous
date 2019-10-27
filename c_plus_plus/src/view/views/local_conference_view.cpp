@@ -47,9 +47,21 @@ LocalConferenceView::LocalConferenceView(Model::ISettings &settings, QWidget *pa
     connect(m_stopped, &QState::entered, [=] { m_recorder->stop(); });
 }
 
-LocalConferenceView::~LocalConferenceView() { stopCamera(); }
-void LocalConferenceView::showEvent(QShowEvent * /*event*/) { startCamera(); }
-void LocalConferenceView::hideEvent(QHideEvent * /*event*/) { stopCamera(); }
+LocalConferenceView::~LocalConferenceView()
+{
+    stopCamera();
+}
+
+void LocalConferenceView::showEvent(QShowEvent * /*event*/)
+{
+    startCamera();
+}
+
+void LocalConferenceView::hideEvent(QHideEvent * /*event*/)
+{
+    stopCamera();
+}
+
 QString LocalConferenceView::getOutputPath()
 {
     return m_settings.get(Model::General::keyName(Model::General::Key::OUTPUT_FOLDER)).toString();

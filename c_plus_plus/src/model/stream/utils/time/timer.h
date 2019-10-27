@@ -8,7 +8,10 @@ namespace Model
 class Timer
 {
    public:
-    void reset() { start_ = std::chrono::steady_clock::now(); }
+    void reset()
+    {
+        start_ = std::chrono::steady_clock::now();
+    }
 
     template <typename Precision>
     uint64_t getElapsedTime()

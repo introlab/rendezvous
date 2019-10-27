@@ -226,7 +226,10 @@ int stbi_write_tga_with_rle = 1;
 int stbi_write_force_png_filter = -1;
 #endif
 
-STBIWDEF void stbi_flip_vertically_on_write(int flag) { stbi__flip_vertically_on_write = flag; }
+STBIWDEF void stbi_flip_vertically_on_write(int flag)
+{
+    stbi__flip_vertically_on_write = flag;
+}
 
 typedef struct
 {
@@ -243,7 +246,10 @@ static void stbi__start_write_callbacks(stbi__write_context *s, stbi_write_func 
 
 #ifndef STBI_WRITE_NO_STDIO
 
-static void stbi__stdio_write(void *context, void *data, int size) { fwrite(data, 1, size, (FILE *)context); }
+static void stbi__stdio_write(void *context, void *data, int size)
+{
+    fwrite(data, 1, size, (FILE *)context);
+}
 
 #if defined(_MSC_VER) && defined(STBI_WINDOWS_UTF8)
 #ifdef __cplusplus
@@ -295,7 +301,10 @@ static int stbi__start_write_file(stbi__write_context *s, const char *filename)
     return f != NULL;
 }
 
-static void stbi__end_write_file(stbi__write_context *s) { fclose((FILE *)s->context); }
+static void stbi__end_write_file(stbi__write_context *s)
+{
+    fclose((FILE *)s->context);
+}
 
 #endif    // !STBI_WRITE_NO_STDIO
 
@@ -351,7 +360,10 @@ static void stbiw__writef(stbi__write_context *s, const char *fmt, ...)
     va_end(v);
 }
 
-static void stbiw__putc(stbi__write_context *s, unsigned char c) { s->func(s->context, &c, 1); }
+static void stbiw__putc(stbi__write_context *s, unsigned char c)
+{
+    s->func(s->context, &c, 1);
+}
 
 static void stbiw__write3(stbi__write_context *s, unsigned char a, unsigned char b, unsigned char c)
 {

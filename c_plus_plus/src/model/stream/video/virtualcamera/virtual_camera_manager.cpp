@@ -133,7 +133,10 @@ void VirtualCameraManager::updateVirtualCamerasGoal(const std::vector<SphericalA
     }
 }
 
-const std::vector<VirtualCamera>& VirtualCameraManager::getVirtualCameras() { return virtualCameras_; }
+const std::vector<VirtualCamera>& VirtualCameraManager::getVirtualCameras()
+{
+    return virtualCameras_;
+}
 
 float VirtualCameraManager::getElevationOverflow(float elevation, float elevationSpan)
 {

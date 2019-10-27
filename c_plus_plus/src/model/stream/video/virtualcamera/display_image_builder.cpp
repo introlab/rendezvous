@@ -45,7 +45,10 @@ Dim2<int> DisplayImageBuilder::getVirtualCameraDim(int virtualCameraCount)
     return Dim2<int>(vcWidth, vcHeight);
 }
 
-Dim2<int> DisplayImageBuilder::getMaxVirtualCameraDim() { return maxVirtualCameraDim_; }
+Dim2<int> DisplayImageBuilder::getMaxVirtualCameraDim()
+{
+    return maxVirtualCameraDim_;
+}
 
 void DisplayImageBuilder::createDisplayImage(const std::vector<Image>& vcImages, const Image& outDisplayImage)
 {

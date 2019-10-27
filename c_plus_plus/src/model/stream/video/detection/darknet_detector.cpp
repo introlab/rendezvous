@@ -19,5 +19,8 @@ image DarknetDetector::convertToDarknetImage(const ImageFloat& img)
     return darknetImage;
 }
 
-void DarknetDetector::predictImage(network* net, const image& img) { network_predict_letterbox_image(net, img); }
+void DarknetDetector::predictImage(network* net, const image& img)
+{
+    network_predict_letterbox_image(net, img);
+}
 }    // namespace Model

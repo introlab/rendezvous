@@ -14,7 +14,10 @@ VideoStabilizer::VideoStabilizer(int targetFps)
 {
 }
 
-void VideoStabilizer::startFrame() { timer_.reset(); }
+void VideoStabilizer::startFrame()
+{
+    timer_.reset();
+}
 
 void VideoStabilizer::endFrame()
 {
@@ -42,5 +45,8 @@ void VideoStabilizer::endFrame()
     }
 }
 
-int VideoStabilizer::getLastFrameTimeMs() { return frameTimeMs_; }
+int VideoStabilizer::getLastFrameTimeMs()
+{
+    return frameTimeMs_;
+}
 }    // namespace Model

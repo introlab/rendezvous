@@ -2,6 +2,8 @@
 
 #include "model/stream/utils/cuda_utils.cuh"
 
+namespace Model
+{
 namespace
 {
 template <typename T>
@@ -72,3 +74,5 @@ void ManagedMemoryCudaObjectFactory::deallocateObject(FilteredDewarpingMapping& 
     deallocManaged(mapping.hostData);
     mapping.deviceData = nullptr;    // With managed memory host and device memory is same ptr (so only dealloc once)
 }
+
+}    // namespace Model

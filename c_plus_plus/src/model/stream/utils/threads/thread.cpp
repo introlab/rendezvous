@@ -36,9 +36,15 @@ void Thread::join()
     }
 }
 
-bool Thread::isRunning() { return isRunning_; }
+bool Thread::isRunning()
+{
+    return isRunning_;
+}
 
-bool Thread::isAbortRequested() { return isAbortRequested_; }
+bool Thread::isAbortRequested()
+{
+    return isAbortRequested_;
+}
 
 void Thread::threadExecution()
 {

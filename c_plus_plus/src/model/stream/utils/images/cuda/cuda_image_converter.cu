@@ -7,6 +7,8 @@
 #include "model/stream/utils/images/image_format.h"
 #include "model/stream/utils/math/cuda_helpers.cuh"
 
+namespace Model
+{
 namespace
 {
 const int BLOCK_SIZE = 1024;
@@ -169,3 +171,5 @@ void CudaImageConverter::convert(const Image& inImage, const Image& outImage)
     }
     cudaStreamSynchronize(stream_);
 }
+
+}    // namespace Model

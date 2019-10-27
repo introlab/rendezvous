@@ -13,9 +13,21 @@ OdasPositionSource::OdasPositionSource(quint16 port)
     connect(m_socketServer.get(), SIGNAL(dataReady(int)), this, SLOT(onPositionsReady(int)));
 }
 
-OdasPositionSource::~OdasPositionSource() { close(); }
-bool OdasPositionSource::open() { return m_socketServer->start(); }
-bool OdasPositionSource::close() { return m_socketServer->stop(); }
+OdasPositionSource::~OdasPositionSource()
+{
+    close();
+}
+
+bool OdasPositionSource::open()
+{
+    return m_socketServer->start();
+}
+
+bool OdasPositionSource::close()
+{
+    return m_socketServer->stop();
+}
+
 std::vector<SourcePosition> OdasPositionSource::getPositions()
 {
     QMutexLocker locker(m_mutex.get());
