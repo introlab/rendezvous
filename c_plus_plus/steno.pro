@@ -13,6 +13,7 @@ LIBS += -lpulse-simple -lpulse
 
 SOURCES += \
     src/main.cpp \
+    src/model/audio/odas/odas_client.cpp \
     src/model/media_player/media_player.cpp \
     src/model/network/local_socket_server.cpp \
     src/model/audio/odas/odas_audio_source.cpp \
@@ -30,6 +31,7 @@ SOURCES += \
     src/view/views/settings_view.cpp
 
 HEADERS += \
+    src/model/audio/odas/odas_client.h \
     src/model/media_player/i_media_player.h \
     src/model/media_player/media_player.h \
     src/model/network/i_socket_server.h \
