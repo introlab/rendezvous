@@ -33,9 +33,10 @@ script:
   - sudo ln -s /usr/bin/g++-6 /usr/local/bin/g++
   - export CC=/usr/bin/gcc-6
   - export CXX=/usr/bin/g++-6
-  - mkdir ../../lib || travis_terminate 1
-  - git clone https://github.com/mpromonet/libv4l2cpp ../../lib/libv4l2cpp || travis_terminate 1
-  - pushd ../../lib/libv4l2cpp ; make EXTRA_CXXFLAGS='-fPIC' ; popd || travis_terminate 1
+  - ./scripts/libv4l2cpp_setup.sh ../../lib || travis_terminate 1
+  - pushd ../../lib/libv4l2cpp ; export LIBV4L2CPP_HOME=$PWD ; popd || travis_terminate 1
+  - ./scripts/darknet_setup.sh ../../lib -CPU || travis_terminate 1
+  - pushd ../../lib/darknet ; export DARKNET_HOME=$PWD ; popd || travis_terminate 1
   - make || travis_terminate 1
   - pytest -v --cov=./ tests/ || travis_terminate 1
   - cd ./c_plus_plus/ || travis_terminate 1
