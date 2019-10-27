@@ -7,7 +7,8 @@
 
 namespace Model
 {
-OdasClient::OdasClient() : m_pProcess(std::make_unique<QProcess>())
+OdasClient::OdasClient()
+    : m_pProcess(std::make_unique<QProcess>())
 {
     m_pProcess->moveToThread(this);
     qInfo() << Model::ODAS_LIBRARY;
@@ -23,20 +24,25 @@ void OdasClient::run()
     arguments << "-c" << Model::MICROPHONE_CONFIGURATION;
     m_pProcess->start(program, arguments);
 
+    bool returnValue = false;
+    QByteArray output;
     while (m_isRunning)
     {
-        if (!m_pProcess->isOpen() || m_pProcess->exitStatus() == QProcess::CrashExit)
+        returnValue = m_pProcess->waitForFinished(1000);
+        if (returnValue)
         {
             qCritical() << "Odaslive stopped working.";
+            output.append(m_pProcess->readAll());
+            if (!output.isEmpty())
+            {
+                qWarning() << "Odas output:" << output;
+            }
             return;
         }
-
-        qInfo() << "running odas";
-        this->msleep(1000);    // ms
     }
 
     m_pProcess->close();
-    m_pProcess->waitForFinished();
+    m_pProcess->waitForFinished(500);
     if (m_pProcess->isOpen())
     {
         qWarning() << "Odaslive were killed.";
