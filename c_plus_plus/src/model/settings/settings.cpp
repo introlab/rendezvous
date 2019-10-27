@@ -7,7 +7,11 @@
 
 namespace Model
 {
-Settings::Settings() : m_settings(new QSettings("RendezVous", "Steno")) { load(); }
+Settings::Settings()
+    : m_settings(new QSettings("RendezVous", "Steno"))
+{
+    load();
+}
 void Settings::set(const QString &key, const QVariant &value) { m_settings->setValue(key, value); }
 QVariant Settings::get(const QString &key) const { return m_settings->value(key); }
 void Settings::load()

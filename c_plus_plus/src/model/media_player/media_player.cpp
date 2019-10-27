@@ -5,7 +5,8 @@
 namespace Model
 {
 MediaPlayer::MediaPlayer(QWidget *parent)
-    : IMediaPlayer(parent), m_mediaPlayer(new QMediaPlayer(this, QMediaPlayer::VideoSurface))
+    : IMediaPlayer(parent)
+    , m_mediaPlayer(new QMediaPlayer(this, QMediaPlayer::VideoSurface))
 
 {
     connect(m_mediaPlayer, &QMediaPlayer::stateChanged, [=](QMediaPlayer::State state) { emit stateChanged(state); });

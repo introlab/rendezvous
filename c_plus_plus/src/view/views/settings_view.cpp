@@ -10,7 +10,9 @@
 namespace View
 {
 SettingsView::SettingsView(Model::ISettings& settings, QWidget* parent)
-    : AbstractView("Settings", parent), m_ui(new Ui::SettingsView), m_settings(settings)
+    : AbstractView("Settings", parent)
+    , m_ui(new Ui::SettingsView)
+    , m_settings(settings)
 {
     m_ui->setupUi(this);
 
