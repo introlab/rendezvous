@@ -31,6 +31,7 @@ MediaPlayerView::MediaPlayerView(Model::IMediaPlayer &videoPlayer, QWidget *pare
     connect(&m_videoPlayer, &Model::IMediaPlayer::positionChanged, [=](qint64 position){ onPositionChanged(position); });
     connect(&m_videoPlayer, &Model::IMediaPlayer::durationChanged, [=](qint64 duration){ onDurationChanged(duration); });
     connect(&m_videoPlayer, &Model::IMediaPlayer::volumeChanged, [=](int volume){ setVolume(volume); });
+    connect(&m_videoPlayer, &Model::IMediaPlayer::subtitleChanged, [=](QString subtitle){ onSubtitleChanged(subtitle); });
     connect(&m_videoPlayer, &Model::IMediaPlayer::errorOccured, [=](const QString& error){ onErrorOccured(error); });
 }
 
@@ -57,10 +58,15 @@ void MediaPlayerView::onDurationChanged(qint64 duration)
     m_ui->positionSlider->setRange(0, static_cast<int>(duration));
 }
 
+void MediaPlayerView::onSubtitleChanged(const QString &subtitle)
+{
+    m_ui->statusLabel->setText(subtitle);
+}
+
 void MediaPlayerView::onErrorOccured(const QString& error)
 {
     m_ui->playButton->setEnabled(false);
-    m_ui->errorLabel->setText(error);
+    m_ui->statusLabel->setText(error);
 }
 
 void MediaPlayerView::openFile()
@@ -73,7 +79,7 @@ void MediaPlayerView::openFile()
     if (fileDialog.exec() == QDialog::Accepted)
     {
         m_videoPlayer.setMedia(fileDialog.selectedUrls().constFirst());
-        m_ui->errorLabel->setText(QString());
+        m_ui->statusLabel->setText(QString());
         m_ui->playButton->setEnabled(true);
     }
 }

@@ -14,6 +14,8 @@ LIBS += -lpulse-simple -lpulse
 SOURCES += \
     src/main.cpp \
     src/model/media_player/media_player.cpp \
+    src/model/media_player/subtitles/srt_file.cpp \
+    src/model/media_player/subtitles/subtitles.cpp \
     src/model/network/local_socket_server.cpp \
     src/model/audio/odas/odas_audio_source.cpp \
     src/model/audio/odas/odas_position_source.cpp \
@@ -21,6 +23,7 @@ SOURCES += \
     src/model/audio/pulseaudio/pulseaudio_sink.cpp \
     src/model/utils/spherical_angle_converter.cpp \
     src/model/settings/settings.cpp \
+    src/model/utils/time.cpp \
     src/view/mainwindow.cpp \
     src/view/components/sidebar.cpp \
     src/view/views/local_conference_view.cpp \
@@ -31,6 +34,9 @@ SOURCES += \
 HEADERS += \
     src/model/media_player/i_media_player.h \
     src/model/media_player/media_player.h \
+    src/model/media_player/subtitles/srt_file.h \
+    src/model/media_player/subtitles/subtitle_item.h \
+    src/model/media_player/subtitles/subtitles.h \
     src/model/network/i_socket_server.h \
     src/model/network/local_socket_server.h \
     src/model/audio/i_audio_sink.h \
@@ -44,6 +50,7 @@ HEADERS += \
     src/model/settings/i_settings.h \
     src/model/settings/settings.h \
     src/model/settings/settings_constants.h \
+    src/model/utils/time.h \
     src/view/mainwindow.h \
     src/view/components/sidebar.h \
     src/view/views/abstract_view.h \

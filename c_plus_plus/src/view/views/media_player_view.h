@@ -1,12 +1,12 @@
 #ifndef MEDIA_PLAYER_VIEW_H
 #define MEDIA_PLAYER_VIEW_H
 
+#include "view/views/abstract_view.h"
+#include "model/media_player/i_media_player.h"
+
 #include <QMediaPlayer>
 
-#include "view/views/abstract_view.h"
-
 namespace Ui { class MediaPlayerView; }
-namespace Model { class IMediaPlayer; }
 
 namespace View
 {
@@ -16,10 +16,11 @@ class MediaPlayerView : public AbstractView
 public:
     explicit MediaPlayerView(Model::IMediaPlayer& videoPlayer, QWidget *parent = nullptr);
 
-public slots:
+private slots:
     void onMediaStateChanged(QMediaPlayer::State state);
     void onPositionChanged(qint64 position);
     void onDurationChanged(qint64 duration);
+    void onSubtitleChanged(const QString &subtitle);
     void onErrorOccured(const QString &error);
 
 private:

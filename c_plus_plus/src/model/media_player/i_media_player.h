@@ -27,6 +27,7 @@ signals:
     void positionChanged(qint64 position);
     void durationChanged(qint64 duration);
     void volumeChanged(int volume);
+    void subtitleChanged(QString subtitle);
     void errorOccured(const QString& error);
 };
 
