@@ -1,2 +1,0 @@
-[run]
-omit = env/*, tests/*, src/app/gui/*, setup.py
