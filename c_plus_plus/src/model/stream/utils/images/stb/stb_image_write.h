@@ -399,7 +399,7 @@ static void stbiw__write_pixel(stbi__write_context *s, int rgb_dir, int comp, in
                 stbiw__write3(s, px[1 - rgb_dir], px[1], px[1 + rgb_dir]);
                 break;
             }
-            /* FALLTHROUGH */
+        /* FALLTHROUGH */
         case 3:
             stbiw__write3(s, d[1 - rgb_dir], d[1], d[1 + rgb_dir]);
             break;
@@ -892,9 +892,9 @@ static unsigned int stbiw__zhash(unsigned char *data)
 #define stbiw__zlib_huff2(n) stbiw__zlib_huffa(0x190 + (n)-144, 9)
 #define stbiw__zlib_huff3(n) stbiw__zlib_huffa(0 + (n)-256, 7)
 #define stbiw__zlib_huff4(n) stbiw__zlib_huffa(0xc0 + (n)-280, 8)
-#define stbiw__zlib_huff(n)            \
-    ((n) <= 143 ? stbiw__zlib_huff1(n) \
-                : (n) <= 255 ? stbiw__zlib_huff2(n) : (n) <= 279 ? stbiw__zlib_huff3(n) : stbiw__zlib_huff4(n))
+#define stbiw__zlib_huff(n)                                                                                    \
+    ((n) <= 143 ? stbiw__zlib_huff1(n) : (n) <= 255 ? stbiw__zlib_huff2(n) : (n) <= 279 ? stbiw__zlib_huff3(n) \
+                                                                                        : stbiw__zlib_huff4(n))
 #define stbiw__zlib_huffb(n) ((n) <= 143 ? stbiw__zlib_huff1(n) : stbiw__zlib_huff2(n))
 
 #define stbiw__ZHASH 16384

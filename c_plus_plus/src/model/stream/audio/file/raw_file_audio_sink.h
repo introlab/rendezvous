@@ -5,13 +5,11 @@
 
 #include "model/stream/audio/i_audio_sink.h"
 
-
 namespace Model
 {
-
 class RawFileAudioSink : public IAudioSink
 {
-public:
+   public:
     RawFileAudioSink(std::string fileName);
     ~RawFileAudioSink() override;
 
@@ -19,11 +17,11 @@ public:
     bool close() override;
     int write(uint8_t* buffer, int bytesToWrite) override;
 
-private:
+   private:
     FILE* m_file;
     std::string m_fileName;
 };
 
-} // Model
+}    // Model
 
-#endif // RAW_FILE_AUDIO_SINK_H
+#endif    // RAW_FILE_AUDIO_SINK_H

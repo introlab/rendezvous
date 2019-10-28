@@ -1,12 +1,10 @@
 #include "raw_file_audio_sink.h"
 
-
-namespace Model 
+namespace Model
 {
-
-RawFileAudioSink::RawFileAudioSink(std::string fileName) :
-    m_file(nullptr),
-    m_fileName(std::move(fileName))
+RawFileAudioSink::RawFileAudioSink(std::string fileName)
+    : m_file(nullptr)
+    , m_fileName(std::move(fileName))
 {
 }
 
@@ -30,5 +28,4 @@ int RawFileAudioSink::write(uint8_t* buffer, int bytesToWrite)
 {
     return fwrite(buffer, sizeof(buffer[0]), bytesToWrite, m_file);
 }
-
 }
