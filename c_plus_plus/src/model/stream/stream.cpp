@@ -28,7 +28,7 @@ Stream::Stream(const VideoConfig& inputConfig, const VideoConfig& outputConfig, 
     float minElevation = math::deg2rad(0.f);
     float maxElevation = math::deg2rad(90.f);
 
-    imageBuffer_ = std::make_shared<LockTripleBuffer<Image>>(Image(inputConfig_.resolution, inputConfig.imageFormat));
+    imageBuffer_ = std::make_shared<LockTripleBuffer<Image>>(RGBImage(inputConfig_.resolution));
     std::shared_ptr<moodycamel::ReaderWriterQueue<std::vector<SphericalAngleRect>>> detectionQueue =
         std::make_shared<moodycamel::ReaderWriterQueue<std::vector<SphericalAngleRect>>>(1);
 
