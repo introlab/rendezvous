@@ -2,6 +2,8 @@
 
 #include "model/stream/utils/cuda_utils.cuh"
 
+namespace Model
+{
 namespace
 {
 template <typename T>
@@ -24,7 +26,10 @@ void getDevicePointer(T* hostPtr, T*& devicePtr)
 }
 }    // namespace
 
-ZeroCopyCudaObjectFactory::ZeroCopyCudaObjectFactory() { cudaSetDeviceFlags(cudaDeviceMapHost); }
+ZeroCopyCudaObjectFactory::ZeroCopyCudaObjectFactory()
+{
+    cudaSetDeviceFlags(cudaDeviceMapHost);
+}
 
 void ZeroCopyCudaObjectFactory::allocateObject(Image& image) const
 {
@@ -73,3 +78,4 @@ void ZeroCopyCudaObjectFactory::deallocateObject(FilteredDewarpingMapping& mappi
     deallocHost(mapping.hostData);
     mapping.deviceData = nullptr;
 }
+}    // namespace Model

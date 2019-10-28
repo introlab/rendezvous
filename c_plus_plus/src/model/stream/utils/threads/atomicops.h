@@ -92,7 +92,7 @@ enum memory_order
 }    // end namespace moodycamel
 
 #if (defined(AE_VCPP) && (_MSC_VER < 1700 || defined(__cplusplus_cli))) || (defined(AE_ICC) && __INTEL_COMPILER < 1600)
-     // VS2010 and ICC13 don't support std::atomic_*_fence, implement our own fences
+// VS2010 and ICC13 don't support std::atomic_*_fence, implement our own fences
 
 #include <intrin.h>
 
@@ -205,7 +205,7 @@ AE_FORCEINLINE void fence(memory_order order) AE_NO_TSAN
 #endif
 }    // end namespace moodycamel
 #else
-     // Use standard library of atomics
+// Use standard library of atomics
 #include <atomic>
 
 namespace moodycamel
@@ -279,7 +279,9 @@ template <typename T>
 class weak_atomic
 {
    public:
-    AE_NO_TSAN weak_atomic() {}
+    AE_NO_TSAN weak_atomic()
+    {
+    }
 #ifdef AE_VCPP
 #pragma warning(push)
 #pragma warning(disable : 4100)    // Get rid of (erroneous) 'unreferenced formal parameter' warning
@@ -308,7 +310,10 @@ class weak_atomic
 #pragma warning(pop)
 #endif
 
-    AE_FORCEINLINE operator T() const AE_NO_TSAN { return load(); }
+    AE_FORCEINLINE operator T() const AE_NO_TSAN
+    {
+        return load();
+    }
 
 #ifndef AE_USE_STD_ATOMIC_FOR_WEAK_ATOMIC
     template <typename U>
@@ -323,7 +328,10 @@ class weak_atomic
         return *this;
     }
 
-    AE_FORCEINLINE T load() const AE_NO_TSAN { return value; }
+    AE_FORCEINLINE T load() const AE_NO_TSAN
+    {
+        return value;
+    }
 
     AE_FORCEINLINE T fetch_add_acquire(T increment) AE_NO_TSAN
     {
@@ -368,7 +376,10 @@ class weak_atomic
         return *this;
     }
 
-    AE_FORCEINLINE T load() const AE_NO_TSAN { return value.load(std::memory_order_relaxed); }
+    AE_FORCEINLINE T load() const AE_NO_TSAN
+    {
+        return value.load(std::memory_order_relaxed);
+    }
 
     AE_FORCEINLINE T fetch_add_acquire(T increment) AE_NO_TSAN
     {
@@ -396,20 +407,18 @@ class weak_atomic
 // Portable single-producer, single-consumer semaphore below:
 
 #if defined(_WIN32)
-     // Avoid including windows.h in a header; we only need a handful of
-     // items, so we'll redeclare them here (this is relatively safe since
-     // the API generally has to remain stable between Windows versions).
-     // I know this is an ugly hack but it still beats polluting the global
-     // namespace with thousands of generic names or adding a .cpp for nothing.
-extern "C"
-{
-    struct _SECURITY_ATTRIBUTES;
-    __declspec(dllimport) void* __stdcall CreateSemaphoreW(_SECURITY_ATTRIBUTES* lpSemaphoreAttributes,
-                                                           long lInitialCount, long lMaximumCount,
-                                                           const wchar_t* lpName);
-    __declspec(dllimport) int __stdcall CloseHandle(void* hObject);
-    __declspec(dllimport) unsigned long __stdcall WaitForSingleObject(void* hHandle, unsigned long dwMilliseconds);
-    __declspec(dllimport) int __stdcall ReleaseSemaphore(void* hSemaphore, long lReleaseCount, long* lpPreviousCount);
+// Avoid including windows.h in a header; we only need a handful of
+// items, so we'll redeclare them here (this is relatively safe since
+// the API generally has to remain stable between Windows versions).
+// I know this is an ugly hack but it still beats polluting the global
+// namespace with thousands of generic names or adding a .cpp for nothing.
+extern "C" {
+struct _SECURITY_ATTRIBUTES;
+__declspec(dllimport) void* __stdcall CreateSemaphoreW(_SECURITY_ATTRIBUTES* lpSemaphoreAttributes, long lInitialCount,
+                                                       long lMaximumCount, const wchar_t* lpName);
+__declspec(dllimport) int __stdcall CloseHandle(void* hObject);
+__declspec(dllimport) unsigned long __stdcall WaitForSingleObject(void* hHandle, unsigned long dwMilliseconds);
+__declspec(dllimport) int __stdcall ReleaseSemaphore(void* hSemaphore, long lReleaseCount, long* lpPreviousCount);
 }
 #elif defined(__MACH__)
 #include <mach/mach.h>
@@ -459,7 +468,10 @@ class Semaphore
         m_hSema = CreateSemaphoreW(nullptr, initialCount, maxLong, nullptr);
     }
 
-    AE_NO_TSAN ~Semaphore() { CloseHandle(m_hSema); }
+    AE_NO_TSAN ~Semaphore()
+    {
+        CloseHandle(m_hSema);
+    }
 
     void wait() AE_NO_TSAN
     {
@@ -479,7 +491,10 @@ class Semaphore
         return WaitForSingleObject(m_hSema, (unsigned long)(usecs / 1000)) != RC_WAIT_TIMEOUT;
     }
 
-    void signal(int count = 1) AE_NO_TSAN { ReleaseSemaphore(m_hSema, count, nullptr); }
+    void signal(int count = 1) AE_NO_TSAN
+    {
+        ReleaseSemaphore(m_hSema, count, nullptr);
+    }
 };
 #elif defined(__MACH__)
 //---------------------------------------------------------
@@ -501,11 +516,20 @@ class Semaphore
         semaphore_create(mach_task_self(), &m_sema, SYNC_POLICY_FIFO, initialCount);
     }
 
-    AE_NO_TSAN ~Semaphore() { semaphore_destroy(mach_task_self(), m_sema); }
+    AE_NO_TSAN ~Semaphore()
+    {
+        semaphore_destroy(mach_task_self(), m_sema);
+    }
 
-    void wait() AE_NO_TSAN { semaphore_wait(m_sema); }
+    void wait() AE_NO_TSAN
+    {
+        semaphore_wait(m_sema);
+    }
 
-    bool try_wait() AE_NO_TSAN { return timed_wait(0); }
+    bool try_wait() AE_NO_TSAN
+    {
+        return timed_wait(0);
+    }
 
     bool timed_wait(std::int64_t timeout_usecs) AE_NO_TSAN
     {
@@ -520,7 +544,10 @@ class Semaphore
         return rc != KERN_OPERATION_TIMED_OUT && rc != KERN_ABORTED;
     }
 
-    void signal() AE_NO_TSAN { semaphore_signal(m_sema); }
+    void signal() AE_NO_TSAN
+    {
+        semaphore_signal(m_sema);
+    }
 
     void signal(int count) AE_NO_TSAN
     {
@@ -549,7 +576,10 @@ class Semaphore
         sem_init(&m_sema, 0, initialCount);
     }
 
-    AE_NO_TSAN ~Semaphore() { sem_destroy(&m_sema); }
+    AE_NO_TSAN ~Semaphore()
+    {
+        sem_destroy(&m_sema);
+    }
 
     void wait() AE_NO_TSAN
     {
@@ -595,7 +625,10 @@ class Semaphore
         return !(rc == -1 && errno == ETIMEDOUT);
     }
 
-    void signal() AE_NO_TSAN { sem_post(&m_sema); }
+    void signal() AE_NO_TSAN
+    {
+        sem_post(&m_sema);
+    }
 
     void signal(int count) AE_NO_TSAN
     {
@@ -653,9 +686,8 @@ class LightweightSemaphore
         while (true)
         {
             oldCount = m_count.fetch_add_release(1);
-            if (oldCount < 0)
-                return false;    // successfully restored things to the way they were
-                                 // Oh, the producer thread just signaled the semaphore after all. Try again:
+            if (oldCount < 0) return false;    // successfully restored things to the way they were
+            // Oh, the producer thread just signaled the semaphore after all. Try again:
             oldCount = m_count.fetch_add_acquire(-1);
             if (oldCount > 0 && m_sema.try_wait()) return true;
         }
@@ -683,7 +715,10 @@ class LightweightSemaphore
         if (!tryWait()) waitWithPartialSpinning();
     }
 
-    bool wait(std::int64_t timeout_usecs) AE_NO_TSAN { return tryWait() || waitWithPartialSpinning(timeout_usecs); }
+    bool wait(std::int64_t timeout_usecs) AE_NO_TSAN
+    {
+        return tryWait() || waitWithPartialSpinning(timeout_usecs);
+    }
 
     void signal(ssize_t count = 1) AE_NO_TSAN
     {

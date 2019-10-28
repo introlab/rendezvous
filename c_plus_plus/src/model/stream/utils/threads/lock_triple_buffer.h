@@ -90,7 +90,10 @@ class LockTripleBuffer
         }
     }
 
-    void releaseLock() { lock_.clear(std::memory_order_release); }
+    void releaseLock()
+    {
+        lock_.clear(std::memory_order_release);
+    }
 
     std::vector<T> buf_;
     T* current_;

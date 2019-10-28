@@ -21,6 +21,9 @@ std::vector<Rectangle> DetectorMock::detectInImage(const ImageFloat& image)
     return std::vector<Rectangle>{Rectangle(x, y, width, height)};
 }
 
-Dim2<int> DetectorMock::getInputImageDim() { return Dim2<int>(800, 600); }
+Dim2<int> DetectorMock::getInputImageDim()
+{
+    return Dim2<int>(800, 600);
+}
 
 }    // namespace Model

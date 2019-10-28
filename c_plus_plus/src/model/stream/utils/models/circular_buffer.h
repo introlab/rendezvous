@@ -20,13 +20,25 @@ class CircularBuffer
         }
     }
 
-    std::size_t size() { return size_; }
+    std::size_t size()
+    {
+        return size_;
+    }
 
-    const std::unique_ptr<T[]>& buffers() { return buffers_; }
+    const std::unique_ptr<T[]>& buffers()
+    {
+        return buffers_;
+    }
 
-    T& current() { return buffers_[index_]; }
+    T& current()
+    {
+        return buffers_[index_];
+    }
 
-    void next() { index_ = (index_ + 1) % size_; }
+    void next()
+    {
+        index_ = (index_ + 1) % size_;
+    }
 
    private:
     std::size_t size_;

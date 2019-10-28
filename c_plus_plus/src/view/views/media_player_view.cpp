@@ -50,7 +50,11 @@ void MediaPlayerView::onMediaStateChanged(QMediaPlayer::State state)
     }
 }
 
-void MediaPlayerView::onPositionChanged(qint64 position) { m_ui->positionSlider->setValue(static_cast<int>(position)); }
+void MediaPlayerView::onPositionChanged(qint64 position)
+{
+    m_ui->positionSlider->setValue(static_cast<int>(position));
+}
+
 void MediaPlayerView::onDurationChanged(qint64 duration)
 {
     m_ui->positionSlider->setRange(0, static_cast<int>(duration));

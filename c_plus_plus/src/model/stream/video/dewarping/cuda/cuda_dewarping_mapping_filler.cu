@@ -1,11 +1,6 @@
 #include "cuda_dewarping_mapping_filler.h"
 
 //#include "model/stream/video/dewarping/cuda/cuda_dewarping_helper.cuh"
-
-namespace
-{
-const int BLOCK_SIZE = 1024;
-
 // THIS SHOULD BE IN CudaDewarpingHelper, BUT SWIG IS A BITCH
 #include "model/stream/utils/math/math_constants.h"
 #include "model/stream/utils/models/dim3.h"
@@ -13,6 +8,13 @@ const int BLOCK_SIZE = 1024;
 #include "model/stream/video/dewarping/models/dewarping_parameters.h"
 #include "model/stream/video/dewarping/models/linear_pixel_filter.h"
 
+namespace Model
+{
+namespace
+{
+const int BLOCK_SIZE = 1024;
+
+// THIS SHOULD BE IN CudaDewarpingHelper, BUT SWIG IS A BITCH
 __device__ Point<float> calculateSourcePixelPosition(const Dim2<int>& dst, const DewarpingParameters& params, int index)
 {
     float x = index % dst.width;
@@ -115,3 +117,4 @@ void CudaDewarpingMappingFiller::fillFilteredDewarpingMapping(const Dim2<int>& s
     int blockCount = calculateKernelBlockCount(mapping, BLOCK_SIZE);
     fillFilteredDewarpingMappingKernel<<<blockCount, BLOCK_SIZE, 0, stream_>>>(src, params, mapping);
 }
+}    // namespace Model

@@ -2,6 +2,8 @@
 
 #include "model/stream/utils/cuda_utils.cuh"
 
+namespace Model
+{
 namespace
 {
 template <typename T>
@@ -18,20 +20,35 @@ void deallocManaged(T*& ptr)
 }
 }    // namespace
 
-void DeviceCudaObjectFactory::allocateObject(ImageFloat& image) const { mallocDevice(image.deviceData, image.size); }
+void DeviceCudaObjectFactory::allocateObject(ImageFloat& image) const
+{
+    mallocDevice(image.deviceData, image.size);
+}
 
-void DeviceCudaObjectFactory::deallocateObject(ImageFloat& image) const { deallocManaged(image.deviceData); }
+void DeviceCudaObjectFactory::deallocateObject(ImageFloat& image) const
+{
+    deallocManaged(image.deviceData);
+}
 
-void DeviceCudaObjectFactory::allocateObject(Image& image) const { mallocDevice(image.deviceData, image.size); }
+void DeviceCudaObjectFactory::allocateObject(Image& image) const
+{
+    mallocDevice(image.deviceData, image.size);
+}
 
-void DeviceCudaObjectFactory::deallocateObject(Image& image) const { deallocManaged(image.deviceData); }
+void DeviceCudaObjectFactory::deallocateObject(Image& image) const
+{
+    deallocManaged(image.deviceData);
+}
 
 void DeviceCudaObjectFactory::allocateObject(DewarpingMapping& mapping) const
 {
     mallocDevice(mapping.deviceData, mapping.size);
 }
 
-void DeviceCudaObjectFactory::deallocateObject(DewarpingMapping& mapping) const { deallocManaged(mapping.deviceData); }
+void DeviceCudaObjectFactory::deallocateObject(DewarpingMapping& mapping) const
+{
+    deallocManaged(mapping.deviceData);
+}
 
 void DeviceCudaObjectFactory::allocateObject(FilteredDewarpingMapping& mapping) const
 {
@@ -42,3 +59,4 @@ void DeviceCudaObjectFactory::deallocateObject(FilteredDewarpingMapping& mapping
 {
     deallocManaged(mapping.deviceData);
 }
+}    // namespace Model

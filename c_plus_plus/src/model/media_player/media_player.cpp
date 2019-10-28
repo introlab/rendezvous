@@ -16,10 +16,26 @@ MediaPlayer::MediaPlayer(QWidget *parent)
     connect(m_mediaPlayer, QOverload<QMediaPlayer::Error>::of(&QMediaPlayer::error), [=] { onErrorOccured(); });
 }
 
-void MediaPlayer::setVideoOutput(QVideoWidget *videoOutput) { m_mediaPlayer->setVideoOutput(videoOutput); }
-void MediaPlayer::setVolume(int volume) { m_mediaPlayer->setVolume(volume); }
-int MediaPlayer::volume() const { return m_mediaPlayer->volume(); }
-void MediaPlayer::setMedia(const QUrl &url) { m_mediaPlayer->setMedia(url); }
+void MediaPlayer::setVideoOutput(QVideoWidget *videoOutput)
+{
+    m_mediaPlayer->setVideoOutput(videoOutput);
+}
+
+void MediaPlayer::setVolume(int volume)
+{
+    m_mediaPlayer->setVolume(volume);
+}
+
+int MediaPlayer::volume() const
+{
+    return m_mediaPlayer->volume();
+}
+
+void MediaPlayer::setMedia(const QUrl &url)
+{
+    m_mediaPlayer->setMedia(url);
+}
+
 void MediaPlayer::play()
 {
     switch (m_mediaPlayer->state())
@@ -33,7 +49,11 @@ void MediaPlayer::play()
     }
 }
 
-void MediaPlayer::setPosition(int position) { m_mediaPlayer->setPosition(position); }
+void MediaPlayer::setPosition(int position)
+{
+    m_mediaPlayer->setPosition(position);
+}
+
 void MediaPlayer::onErrorOccured()
 {
     const QString errorString = m_mediaPlayer->errorString();

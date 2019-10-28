@@ -131,7 +131,10 @@ void CpuDarknetFisheyeDewarper::fillFilteredDewarpingMapping(const Dim2<int>& sr
     mappingFiller_.fillFilteredDewarpingMapping(src, params, mapping);
 }
 
-void CpuDarknetFisheyeDewarper::prepareOutputImage(ImageFloat& dst) const { fillArray(dst.hostData, 0.5f, dst.size); }
+void CpuDarknetFisheyeDewarper::prepareOutputImage(ImageFloat& dst) const
+{
+    fillArray(dst.hostData, 0.5f, dst.size);
+}
 
 Dim2<int> CpuDarknetFisheyeDewarper::getRectifiedOutputDim(const Dim2<int>& dst) const
 {
