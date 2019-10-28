@@ -2,8 +2,10 @@
 #define MEDIA_PLAYER_H
 
 #include "i_media_player.h"
+#include "subtitles/subtitles.h"
 
 #include <QMediaPlayer>
+#include <QUrl>
 #include <QWidget>
 
 class QUrl;
@@ -21,10 +23,13 @@ class MediaPlayer : public IMediaPlayer
     void setVolume(int volume) override;
     int volume() const override;
 
-   private:
+   private slots:
+    void onStateChanged(QMediaPlayer::State state);
     void onErrorOccured();
 
-    QMediaPlayer *m_mediaPlayer;
+   private:
+    QMediaPlayer m_mediaPlayer;
+    Subtitles m_subtitles;
 };
 
 }    // namespace Model
