@@ -18,7 +18,7 @@ install:
   - sudo apt-get install -y swig || travis_terminate 1
   - sudo apt-get install qt512base qt512svg qt512charts-no-lgpl qt512xmlpatterns qt512multimedia qt512webengine || travis_terminate 1
   - source /opt/qt512/bin/qt512-env.sh || travis_terminate 1
-  - sudo apt-get install clang-format-3.8 || travis_terminate 1
+  #- sudo apt-get install clang-format-3.8 || travis_terminate 1
 addons:
   apt:
     sources:
@@ -28,7 +28,7 @@ addons:
       - gcc-6
       - g++-6
 script:
-  - bash ./scripts/format-ci-test.sh || travis_terminate 1
+  #- bash ./scripts/format-ci-test.sh || travis_terminate 1
   - sudo ln -s /usr/bin/gcc-6 /usr/local/bin/gcc
   - sudo ln -s /usr/bin/g++-6 /usr/local/bin/g++
   - export CC=/usr/bin/gcc-6

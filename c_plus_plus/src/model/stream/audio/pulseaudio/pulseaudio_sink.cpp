@@ -56,10 +56,10 @@ bool PulseAudioSink::close()
     return true;
 }
 
-int PulseAudioSink::write(uint8_t* buffer, int nbytes)
+int PulseAudioSink::write(uint8_t* buffer, int bytesToWrite)
 {
     int error;
-    int bytesWritten = pa_simple_write(m_stream, buffer, static_cast<size_t>(nbytes), &error);
+    int bytesWritten = pa_simple_write(m_stream, buffer, static_cast<size_t>(bytesToWrite), &error);
     if (bytesWritten < 0)
     {
         std::cout << "pa_simple_write() failed: " << pa_strerror(error) << std::endl;

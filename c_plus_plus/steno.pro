@@ -23,6 +23,7 @@ SOURCES += \
     src/model/recorder/recorder.cpp \
     src/model/settings/settings.cpp \
     src/model/utils/time.cpp \
+    src/model/stream/audio/file/raw_file_audio_sink.cpp \
     src/model/stream/audio/odas/odas_audio_source.cpp \
     src/model/stream/audio/odas/odas_position_source.cpp \
     src/model/stream/audio/pulseaudio/pulseaudio_sink.cpp \
@@ -77,6 +78,7 @@ HEADERS += \
     src/model/stream/audio/i_audio_sink.h \
     src/model/stream/audio/i_audio_source.h \
     src/model/stream/audio/i_position_source.h \
+    src/model/stream/audio/file/raw_file_audio_sink.cpp \
     src/model/stream/audio/odas/odas_audio_source.h \
     src/model/stream/audio/odas/odas_position_source.h \
     src/model/stream/audio/pulseaudio/pulseaudio_sink.h \
