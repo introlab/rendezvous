@@ -1,7 +1,11 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <memory>
+
 #include <QMainWindow>
+
+#include "model/stream/i_stream.h"
 
 class QStackedWidget;
 
@@ -29,7 +33,8 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
    public:
-    MainWindow(Model::ISettings &settings, Model::IMediaPlayer &mediaPlayer, QWidget *parent = nullptr);
+    MainWindow(Model::ISettings &settings, Model::IMediaPlayer &mediaPlayer, std::shared_ptr<Model::IStream> stream,
+               QWidget *parent = nullptr);
 
    private:
     void addView(View::AbstractView *view);

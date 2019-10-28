@@ -14,7 +14,8 @@
 
 namespace View
 {
-MainWindow::MainWindow(Model::ISettings &settings, Model::IMediaPlayer &mediaPlayer, QWidget *parent)
+MainWindow::MainWindow(Model::ISettings &settings, Model::IMediaPlayer &mediaPlayer,
+                       std::shared_ptr<Model::IStream> stream, QWidget *parent)
     : QMainWindow(parent)
     , m_ui(new Ui::MainWindow)
     , m_sideBar(new View::SideBar)
@@ -24,7 +25,7 @@ MainWindow::MainWindow(Model::ISettings &settings, Model::IMediaPlayer &mediaPla
     m_ui->mainLayout->addWidget(m_sideBar);
     m_ui->mainLayout->addWidget(m_views);
 
-    View::AbstractView *onlineConferenceView = new View::OnlineConferenceView();
+    View::AbstractView *onlineConferenceView = new View::OnlineConferenceView(stream);
     View::AbstractView *localConferenceView = new View::LocalConferenceView(settings);
     View::AbstractView *mediaPlayerView = new View::MediaPlayerView(mediaPlayer);
     View::AbstractView *settingsView = new View::SettingsView(settings);
