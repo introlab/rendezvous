@@ -15,7 +15,7 @@ void AudioSuppresser::suppressSources(std::vector<int> sourcesToSuppress, uint8_
 
     // Build mask
     int index;
-    for(size_t i = 0; i < sourcesToSuppress.size(); i++)
+    for(std::size_t i = 0; i < sourcesToSuppress.size(); i++)
     {
         index = sourcesToSuppress[i];
         switch (index)
