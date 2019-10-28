@@ -9,7 +9,6 @@ compiler:
 before_install:
   - sudo apt-get update
 install:
-  - pip install -r ./requirements.txt || travis_terminate 1
   - sudo apt-get install -y xorg-dev libglu1-mesa-dev libpulse-dev || travis_terminate 1
   - sudo apt-get install -y swig || travis_terminate 1
   - sudo apt-get install qt512base qt512svg qt512charts-no-lgpl qt512xmlpatterns qt512multimedia qt512webengine || travis_terminate 1
