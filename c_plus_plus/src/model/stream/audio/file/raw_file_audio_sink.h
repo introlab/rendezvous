@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "model/audio/i_audio_sink.h"
+#include "model/stream/audio/i_audio_sink.h"
 
 
 namespace Model

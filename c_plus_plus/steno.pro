@@ -18,14 +18,9 @@ SOURCES += \
     src/main.cpp \
     src/model/media_player/media_player.cpp \
     src/model/network/local_socket_server.cpp \
-    src/model/audio/odas/odas_audio_source.cpp \
-    src/model/audio/odas/odas_position_source.cpp \
-    src/model/audio/file/raw_file_audio_sink.cpp \
-    src/model/audio/source_position.cpp \
-    src/model/audio/pulseaudio/pulseaudio_sink.cpp \
-    src/model/utils/spherical_angle_converter.cpp \
     src/model/recorder/recorder.cpp \
     src/model/settings/settings.cpp \
+    src/model/stream/audio/file/raw_file_audio_sink.cpp \
     src/model/stream/audio/odas/odas_audio_source.cpp \
     src/model/stream/audio/odas/odas_position_source.cpp \
     src/model/stream/audio/pulseaudio/pulseaudio_sink.cpp \
@@ -68,15 +63,6 @@ HEADERS += \
     src/model/media_player/media_player.h \
     src/model/network/i_socket_server.h \
     src/model/network/local_socket_server.h \
-    src/model/audio/i_audio_sink.h \
-    src/model/audio/i_audio_source.h \
-    src/model/audio/i_position_source.h \
-    src/model/audio/source_position.h \
-    src/model/audio/pulseaudio/pulseaudio_sink.h \
-    src/model/audio/odas/odas_audio_source.h \
-    src/model/audio/odas/odas_position_source.h \
-    src/model/audio/file/raw_file_audio_sink.h \
-    src/model/utils/spherical_angle_converter.h \
     src/model/recorder/i_recorder.h \
     src/model/recorder/recorder.h \
     src/model/settings/i_settings.h \
@@ -85,6 +71,7 @@ HEADERS += \
     src/model/stream/audio/i_audio_sink.h \
     src/model/stream/audio/i_audio_source.h \
     src/model/stream/audio/i_position_source.h \
+    src/model/stream/audio/file/raw_file_audio_sink.cpp \
     src/model/stream/audio/odas/odas_audio_source.h \
     src/model/stream/audio/odas/odas_position_source.h \
     src/model/stream/audio/pulseaudio/pulseaudio_sink.h \
