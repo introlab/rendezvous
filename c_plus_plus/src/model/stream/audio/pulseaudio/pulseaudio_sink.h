@@ -17,7 +17,7 @@ class PulseAudioSink : public IAudioSink
 
     bool open() override;
     bool close() override;
-    int write(uint8_t* buffer, int nbytes) override;
+    int write(uint8_t* buffer, int bytesToWrite) override;
 
    private:
     std::string m_deviceName;
