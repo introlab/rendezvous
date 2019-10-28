@@ -22,8 +22,6 @@ compilation = no_cuda
 # Add 3rd party library dependency
 LIBS += $$V4L2_LIBS $$DARKNET_LIBS -lpulse-simple -lpulse -lpthread
 
-message($$LIBS)
-
 INCLUDEPATH *= src
 
 SOURCES += \
