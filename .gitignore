@@ -22,3 +22,4 @@ src/app/services/videoprocessing/dewarping/interface/fisheye_dewarping_wrap.cpp
 */bin/*
 src/app/services/virtualcameradevice/interface/virtual_camera_device.py
 src/app/services/virtualcameradevice/interface/virtual_camera_device_wrap.cpp
+!c_plus_plus/3rd/*
