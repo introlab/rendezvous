@@ -10,10 +10,10 @@ namespace Model
 class AudioSuppresser
 {
 public:
-    static void suppressSources(std::vector<int> indexToSuppress, uint8_t* audioBuf, uint8_t* audioBufSuppressed);
+    static void suppressSources(std::vector<int> indexToSuppress, uint8_t* audioBuf, const int bufferLength);
 
 private:
-    static void createMaskFromIndex(int index, uint8_t *mask);
+    static void createMaskFromIndex(int index, uint8_t *mask, int maskLength);
 };
 
 }
