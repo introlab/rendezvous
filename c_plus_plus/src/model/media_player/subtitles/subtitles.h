@@ -35,6 +35,8 @@ class Subtitles : public QObject
    private:
     void reset();
     QString currentSubtitle(qint64 time, bool manual);
+    void linearSearch(qint64 time, QString &subtitle);
+    void binarySearch(qint64 time, QString &subtitle);
 
     std::vector<SubtitleItem> m_subtitles;
     quint64 m_lastSubtitleIndex;

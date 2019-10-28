@@ -94,49 +94,59 @@ QString Subtitles::currentSubtitle(qint64 time, bool manual)
         if (m_lastSubtitleIndex != 0 && !manual)
         {
             //  Linear search for automatic next
-            for (quint64 i = m_lastSubtitleIndex, len = m_subtitles.size(); i < len; i++)
-            {
-                SubtitleItem item = m_subtitles[i];
-                if (time >= item.start && time <= item.end)
-                {
-                    m_lastSubtitleIndex = i;
-                    subtitle = item.text;
-                    break;
-                }
-            }
+            linearSearch(time, subtitle);
         }
         else
         {
-            // Binary Search for initialization or manual changes
-            quint64 lo = 0, hi = m_subtitles.size() - 1;
-            while (lo < hi)
-            {
-                quint64 mid = lo + (hi - lo) / 2;
-                SubtitleItem item = m_subtitles[mid];
-                if (time >= item.start && time <= item.end)
-                {
-                    lo = mid;
-                    break;
-                }
-                else if (time > item.end)
-                {
-                    lo = mid + 1;
-                }
-                else
-                {
-                    hi = mid;
-                }
-            }
-
-            if (time >= m_subtitles[lo].start && time <= m_subtitles[lo].end)
-            {
-                m_lastSubtitleIndex = lo;
-                subtitle = m_subtitles.at(lo).text;
-            }
+            // When initialization or manual changes
+            binarySearch(time, subtitle);
         }
     }
 
     return subtitle;
+}
+
+void Subtitles::linearSearch(qint64 time, QString &subtitle)
+{
+    for (quint64 i = m_lastSubtitleIndex, len = m_subtitles.size(); i < len; i++)
+    {
+        SubtitleItem item = m_subtitles[i];
+        if (time >= item.start && time <= item.end)
+        {
+            m_lastSubtitleIndex = i;
+            subtitle = item.text;
+            break;
+        }
+    }
+}
+
+void Subtitles::binarySearch(qint64 time, QString &subtitle)
+{
+    quint64 lo = 0, hi = m_subtitles.size() - 1;
+    while (lo < hi)
+    {
+        quint64 mid = lo + (hi - lo) / 2;
+        SubtitleItem item = m_subtitles[mid];
+        if (time >= item.start && time <= item.end)
+        {
+            lo = mid;
+            break;
+        }
+        else if (time > item.end)
+        {
+            lo = mid + 1;
+        }
+        else
+        {
+            hi = mid;
+        }
+    }
+
+    if (time >= m_subtitles[lo].start && time <= m_subtitles[lo].end)
+    {
+        m_lastSubtitleIndex = lo;
+        subtitle = m_subtitles.at(lo).text;
+    }
 }
 
 }    // namespace Model
