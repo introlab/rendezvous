@@ -7,7 +7,7 @@
 #define GPU
 #endif
 
-#include <darknet.h>
+#include <3rd/darknet/include/darknet.h>
 
 #include "model/stream/video/detection/i_detector.h"
 

@@ -1,0 +1,3 @@
+V4L2_DIR = 3rd/v4l2
+INCLUDEPATH *= $$V4L2_DIR/include
+V4L2_LIBS = -L$$V4L2_DIR/lib -lv4l2

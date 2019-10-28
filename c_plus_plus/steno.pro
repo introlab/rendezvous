@@ -1,3 +1,11 @@
+! include (3rd/v4l2.pri) {
+    error( "Couldn't find v4l2.pri file!" )
+}
+
+! include (3rd/darknet.pri) {
+    error( "Couldn't find darknet.pri file!" )
+}
+
 QT += core gui network widgets multimedia multimediawidgets
 
 CONFIG += c++14
@@ -10,9 +18,13 @@ UI_DIR = bin
 # If you want to compile without using CUDA (Everything will run on cpu)
 compilation = no_cuda
 
-INCLUDEPATH += src $(DARKNET_HOME)/include $(LIBV4L2CPP_HOME)/inc
 
-LIBS += -lpulse-simple -lpulse -lpthread -L$(DARKNET_HOME) -ldarknet -L$(LIBV4L2CPP_HOME) -lv4l2wrapper
+# Add 3rd party library dependency
+LIBS += $$V4L2_LIBS $$DARKNET_LIBS -lpulse-simple -lpulse -lpthread
+
+message($$LIBS)
+
+INCLUDEPATH *= src
 
 SOURCES += \
     src/main.cpp \
