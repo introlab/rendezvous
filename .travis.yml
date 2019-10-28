@@ -1,12 +1,8 @@
 sudo: required
 dist: xenial
 language: 
-  - python
   - cpp
-python:
-  - "3.5.2"
 cache: 
-  - pip
   - ccache
 compiler: 
   - g++
@@ -37,8 +33,6 @@ script:
   - pushd ../../lib/libv4l2cpp ; export LIBV4L2CPP_HOME=$PWD ; popd || travis_terminate 1
   - ./scripts/darknet_setup.sh ../../lib -CPU || travis_terminate 1
   - pushd ../../lib/darknet ; export DARKNET_HOME=$PWD ; popd || travis_terminate 1
-  - make || travis_terminate 1
-  - pytest -v --cov=./ tests/ || travis_terminate 1
   - cd ./c_plus_plus/ || travis_terminate 1
   - qmake steno.pro -spec linux-g++ CONFIG+=qtquickcompiler || travis_terminate 1
   - make clean || travis_terminate 1
