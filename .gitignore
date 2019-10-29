@@ -13,8 +13,10 @@ config/service_account.json
 *.o
 *.a
 *.so
-!c_plus_plus/3rd/darknet/lib/*.so
-!c_plus_plus/3rd/v4l2/lib/*.a
+!c_plus_plus/3rd/darknet/lib/x86_64*.so
+!c_plus_plus/3rd/darknet/lib/aarch64*.so
+!c_plus_plus/3rd/v4l2/lib/x86_64*.a
+!c_plus_plus/3rd/v4l2/lib/aarch64*.a
 
 lib/*/build
 config/yolo/
