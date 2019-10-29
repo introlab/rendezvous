@@ -1,7 +1,9 @@
-#include "video_thread.h"
+#include "media_thread.h"
 
 #include <iostream>
 
+#include "model/audio_suppresser/audio_suppresser.h"
+#include "model/classifier/classifier.h"
 #include "model/stream/utils/alloc/heap_object_factory.h"
 #include "model/stream/utils/models/point.h"
 #include "model/stream/video/dewarping/dewarping_helper.h"
@@ -10,15 +12,20 @@
 
 namespace Model
 {
-VideoThread::VideoThread(std::unique_ptr<IVideoInput> videoInput, std::unique_ptr<IFisheyeDewarper> dewarper,
-                         std::unique_ptr<IObjectFactory> objectFactory, std::unique_ptr<IVideoOutput> videoOutput,
-                         std::unique_ptr<ISynchronizer> synchronizer,
+MediaThread::MediaThread(std::unique_ptr<IAudioSource> audioSource, std::unique_ptr<IAudioSink> audioSink,
+                         std::unique_ptr<IPositionSource> positionSource, std::unique_ptr<IVideoInput> videoInput,
+                         std::unique_ptr<IFisheyeDewarper> dewarper, std::unique_ptr<IObjectFactory> objectFactory,
+                         std::unique_ptr<IVideoOutput> videoOutput, std::unique_ptr<ISynchronizer> synchronizer,
                          std::unique_ptr<VirtualCameraManager> virtualCameraManager,
                          std::shared_ptr<moodycamel::ReaderWriterQueue<std::vector<SphericalAngleRect>>> detectionQueue,
                          std::shared_ptr<LockTripleBuffer<Image>> imageBuffer,
                          std::unique_ptr<IImageConverter> imageConverter, const DewarpingConfig& dewarpingConfig,
-                         const VideoConfig& inputConfig, const VideoConfig& outputConfig)
-    : videoInput_(std::move(videoInput))
+                         const VideoConfig& videoInputConfig, const VideoConfig& videoOutputConfig,
+                         const AudioConfig& audioInputConfig, const AudioConfig& audioOutputConfig)
+    : audioSource_(std::move(audioSource))
+    , audioSink_(std::move(audioSink))
+    , positionSource_(std::move(positionSource))
+    , videoInput_(std::move(videoInput))
     , dewarper_(std::move(dewarper))
     , objectFactory_(std::move(objectFactory))
     , videoOutput_(std::move(videoOutput))
@@ -28,23 +35,36 @@ VideoThread::VideoThread(std::unique_ptr<IVideoInput> videoInput, std::unique_pt
     , imageBuffer_(imageBuffer)
     , imageConverter_(std::move(imageConverter))
     , dewarpingConfig_(dewarpingConfig)
-    , inputConfig_(inputConfig)
-    , outputConfig_(outputConfig)
+    , videoInputConfig_(videoInputConfig)
+    , videoOutputConfig_(videoOutputConfig)
+    , audioInputConfig_(audioInputConfig)
+    , audioOutputConfig_(audioOutputConfig)
 {
-    if (!videoInput_ || !dewarper_ || !objectFactory_ || !videoOutput_ || !synchronizer_ || !virtualCameraManager_ ||
-        !detectionQueue_ || !imageBuffer_ || !imageConverter_)
+    if (!audioSource_ || !audioSink_ || !positionSource_ || !videoInput_ || !dewarper_ || !objectFactory_ ||
+        !videoOutput_ || !synchronizer_ || !virtualCameraManager_ || !detectionQueue_ || !imageBuffer_ ||
+        !imageConverter_)
     {
-        throw std::invalid_argument("Error in VideoProcessorThread - Null is not a valid argument");
+        throw std::invalid_argument("Error in MediaThread - Null is not a valid argument");
     }
 }
 
-void VideoThread::run()
+void MediaThread::run()
 {
+    // TODO: config?
+    const int classifierRangeThreshold = 2;
+
+    // TODO: will be managed by odas audio source
+    uint8_t* audioBuffer = new uint8_t[audioInputConfig_.bufferSize];
+
     try
     {
+        audioSource_->open();
+        audioSink_->open();
+        positionSource_->open();
+
         HeapObjectFactory heapObjectFactory;
-        DualBuffer<Image> displayBuffers(Image(outputConfig_.resolution, outputConfig_.imageFormat));
-        DisplayImageBuilder displayImageBuilder(outputConfig_.resolution);
+        DualBuffer<Image> displayBuffers(Image(videoOutputConfig_.resolution, videoOutputConfig_.imageFormat));
+        DisplayImageBuilder displayImageBuilder(videoOutputConfig_.resolution);
 
         heapObjectFactory.allocateObjectDualBuffer(displayBuffers);
         displayImageBuilder.setDisplayImageColor(displayBuffers.getCurrent());
@@ -54,14 +74,14 @@ void VideoThread::run()
         std::vector<Image> vcImages(5, RGBImage(maxVcDim.width, maxVcDim.height));
         objectFactory_->allocateObjectVector(vcImages);
 
-        Point<float> fisheyeCenter(inputConfig_.resolution.width / 2.f, inputConfig_.resolution.height / 2.f);
+        Point<float> fisheyeCenter(videoInputConfig_.resolution.width / 2.f, videoInputConfig_.resolution.height / 2.f);
         std::vector<SphericalAngleRect> detections;
 
-        VideoStabilizer videoStabilizer(inputConfig_.fpsTarget);
+        VideoStabilizer videoStabilizer(videoInputConfig_.fpsTarget);
 
-        // Video loop start
+        // Media loop start
 
-        std::cout << "VideoThread loop started" << std::endl;
+        std::cout << "MediaThread loop started" << std::endl;
 
         while (!isAbortRequested())
         {
@@ -73,6 +93,9 @@ void VideoThread::run()
             }
 
             virtualCameraManager_->updateVirtualCameras(videoStabilizer.getLastFrameTimeMs());
+
+            int audioBytesRead = audioSource_->read(audioBuffer, sizeof(audioBuffer));
+            std::vector<SourcePosition> sourcePositions = positionSource_->getPositions();
 
             const Image& rawImage = videoInput_->readImage();
             const Image& rgbImage = imageBuffer_->getCurrent();
@@ -109,7 +132,7 @@ void VideoThread::run()
                     // Ok, this is a hack until we work with raw data for dewarping of virtual cameras (convert on
                     // itself, only work from RGB)
                     Image inImage = vcResizeImage;
-                    vcResizeImages[i] = Image(inImage.width, inImage.height, outputConfig_.imageFormat);
+                    vcResizeImages[i] = Image(inImage.width, inImage.height, videoOutputConfig_.imageFormat);
                     vcResizeImages[i].deviceData = inImage.deviceData;
                     vcResizeImages[i].hostData = inImage.hostData;
                     imageConverter_->convert(inImage, vcResizeImage);
@@ -122,6 +145,23 @@ void VideoThread::run()
                 displayImageBuilder.createDisplayImage(vcResizeImages, displayImage);
                 videoOutput_->writeImage(displayImage);
                 displayBuffers.swap();
+            }
+
+            if (audioBytesRead > 0)
+            {
+                std::vector<SphericalAngleRect> imagePositions;
+                imagePositions.reserve(virtualCameras.size());
+                for (auto vc : virtualCameras)
+                {
+                    imagePositions.push_back(vc);
+                }
+
+                std::vector<int> sourcesToSuppress =
+                    Classifier::classify(sourcePositions, imagePositions, classifierRangeThreshold);
+
+                AudioSuppresser::suppressSources(sourcesToSuppress, audioBuffer, audioBytesRead);
+
+                audioSink_->write(audioBuffer, audioBytesRead);
             }
 
             detections.clear();
@@ -137,6 +177,12 @@ void VideoThread::run()
         std::cout << e.what() << std::endl;
     }
 
-    std::cout << "VideoThread loop finished" << std::endl;
+    audioSource_->close();
+    audioSink_->close();
+    positionSource_->close();
+
+    delete[] audioBuffer;
+
+    std::cout << "MediaThread loop finished" << std::endl;
 }
 }    // namespace Model

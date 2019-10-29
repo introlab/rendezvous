@@ -5,6 +5,7 @@
 
 #include <pulse/simple.h>
 
+#include "model/stream/audio/audio_config.h"
 #include "model/stream/audio/i_audio_sink.h"
 
 namespace Model
@@ -12,11 +13,11 @@ namespace Model
 class PulseAudioSink : public IAudioSink
 {
    public:
-    PulseAudioSink(std::string device, uint8_t channels, uint32_t rate, pa_sample_format format);
+    PulseAudioSink(const AudioConfig& audioConfig);
     ~PulseAudioSink() override;
 
-    bool open() override;
-    bool close() override;
+    void open() override;
+    void close() override;
     int write(uint8_t* buffer, int bytesToWrite) override;
 
    private:
