@@ -19,9 +19,12 @@ SOURCES += \
     src/model/audio_suppresser/audio_suppresser.cpp \
     src/model/classifier/classifier.cpp \
     src/model/media_player/media_player.cpp \
+    src/model/media_player/subtitles/srt_file.cpp \
+    src/model/media_player/subtitles/subtitles.cpp \
     src/model/network/local_socket_server.cpp \
     src/model/recorder/recorder.cpp \
     src/model/settings/settings.cpp \
+    src/model/utils/time.cpp \
     src/model/stream/audio/file/raw_file_audio_sink.cpp \
     src/model/stream/audio/odas/odas_audio_source.cpp \
     src/model/stream/audio/odas/odas_position_source.cpp \
@@ -65,12 +68,16 @@ HEADERS += \
     src/model/classifier/classifier.h \
     src/model/media_player/i_media_player.h \
     src/model/media_player/media_player.h \
+    src/model/media_player/subtitles/srt_file.h \
+    src/model/media_player/subtitles/subtitle_item.h \
+    src/model/media_player/subtitles/subtitles.h \
     src/model/network/i_socket_server.h \
     src/model/network/local_socket_server.h \
     src/model/recorder/i_recorder.h \
     src/model/recorder/recorder.h \
     src/model/settings/i_settings.h \
     src/model/settings/settings_constants.h \
+    src/model/utils/time.h \
     src/model/settings/settings.h \
     src/model/stream/audio/i_audio_sink.h \
     src/model/stream/audio/i_audio_source.h \

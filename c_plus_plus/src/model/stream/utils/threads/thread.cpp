@@ -57,6 +57,7 @@ void Thread::threadExecution()
         std::cout << "Unknown exception during thread execution" << std::endl;
     }
 
+    isAbortRequested_ = false;
     isRunning_ = false;
 }
 
