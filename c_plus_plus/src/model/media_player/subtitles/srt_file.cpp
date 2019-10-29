@@ -8,7 +8,7 @@
 
 namespace Model
 {
-std::vector<SubtitleItem> SrtFile::parse(const QString &path)
+std::vector<SubtitleItem> SrtFile::parse(const QString& path)
 {
     std::vector<SubtitleItem> subtitles;
 
