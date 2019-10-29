@@ -6,11 +6,28 @@
 
 namespace Model
 {
-PulseAudioSink::PulseAudioSink(std::string device, uint8_t channels, uint32_t rate, pa_sample_format format)
-    : m_deviceName(std::move(device))
+PulseAudioSink::PulseAudioSink(const AudioConfig& audioConfig)
+    : m_deviceName(audioConfig.deviceName)
     , m_stream(nullptr)
-    , m_ss({format, rate, channels})
 {
+    // default format is 16 bits little endian
+    pa_sample_format sampleFormat = PA_SAMPLE_S16LE;
+    switch (audioConfig.formatBytes)
+    {
+        case 8:
+            sampleFormat = PA_SAMPLE_U8;
+            break;
+        case 16:
+            sampleFormat = audioConfig.isLittleEndian ? PA_SAMPLE_S16LE : PA_SAMPLE_S16BE;
+            break;
+        case 32:
+            sampleFormat = audioConfig.isLittleEndian ? PA_SAMPLE_S32LE : PA_SAMPLE_S32BE;
+            break;
+        default:
+            break;
+    }
+
+    m_ss = {sampleFormat, static_cast<unsigned int>(audioConfig.rate), static_cast<uint8_t>(audioConfig.channels)};
 }
 
 PulseAudioSink::~PulseAudioSink()
@@ -18,42 +35,40 @@ PulseAudioSink::~PulseAudioSink()
     close();
 }
 
-bool PulseAudioSink::open()
+void PulseAudioSink::open()
 {
     if (m_stream != nullptr)
     {
-        std::cout << "stream already initialized!" << std::endl;
-        return false;
+        throw std::runtime_error("pulseaudio stream already initialized");
+    }
+
+    // dev of nullptr tells pulsaudio to use the default device
+    const char* dev = nullptr;
+    if (!m_deviceName.empty())
+    {
+        dev = m_deviceName.c_str();
     }
 
     int error;
-    m_stream = pa_simple_new(nullptr, "Fooapp", PA_STREAM_PLAYBACK, m_deviceName.c_str(), "Music", &m_ss, nullptr,
-                             nullptr, &error);
+    m_stream = pa_simple_new(nullptr, "record", PA_STREAM_PLAYBACK, dev, "record", &m_ss, nullptr, nullptr, &error);
 
     if (m_stream == nullptr)
     {
-        std::cout << "pa_simple_new() failed: " << pa_strerror(error) << std::endl;
-        return false;
+        throw std::runtime_error("cannot initialize pulseaudio stream: " + std::string(pa_strerror(error)));
     }
-
-    return true;
 }
 
-bool PulseAudioSink::close()
+void PulseAudioSink::close()
 {
-    if (m_stream == nullptr) return true;
-
-    int error;
-    if (pa_simple_drain(m_stream, &error) < 0)
+    if (m_stream == nullptr)
     {
-        std::cout << "pa_simple_drain() failed: " << pa_strerror(error) << std::endl;
-        return false;
+        return;
     }
+
+    pa_simple_flush(m_stream, nullptr);
 
     pa_simple_free(m_stream);
     m_stream = nullptr;
-
-    return true;
 }
 
 int PulseAudioSink::write(uint8_t* buffer, int bytesToWrite)
@@ -62,7 +77,7 @@ int PulseAudioSink::write(uint8_t* buffer, int bytesToWrite)
     int bytesWritten = pa_simple_write(m_stream, buffer, static_cast<size_t>(bytesToWrite), &error);
     if (bytesWritten < 0)
     {
-        std::cout << "pa_simple_write() failed: " << pa_strerror(error) << std::endl;
+        throw std::runtime_error("pulseaudio write failed: " + std::string(pa_strerror(error)));
     }
 
     return bytesWritten;

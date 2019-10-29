@@ -18,14 +18,17 @@ OdasPositionSource::~OdasPositionSource()
     close();
 }
 
-bool OdasPositionSource::open()
+void OdasPositionSource::open()
 {
-    return m_socketServer->start();
+    if (!m_socketServer->start())
+    {
+        throw std::runtime_error("cannot start socket server");
+    }
 }
 
-bool OdasPositionSource::close()
+void OdasPositionSource::close()
 {
-    return m_socketServer->stop();
+    m_socketServer->stop();
 }
 
 std::vector<SourcePosition> OdasPositionSource::getPositions()
