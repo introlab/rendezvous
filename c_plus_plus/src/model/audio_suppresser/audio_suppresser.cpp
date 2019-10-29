@@ -3,7 +3,7 @@
 namespace Model
 {
 
-void AudioSuppresser::suppressSources(std::vector<int> sourcesToSuppress, uint8_t* audioBuf, const int bufferLength)
+void AudioSuppresser::suppressSources(const std::vector<int> &sourcesToSuppress, uint8_t* audioBuf, const int bufferLength)
 {
     // Initialize mask
     uint8_t mask[bufferLength];
@@ -18,17 +18,7 @@ void AudioSuppresser::suppressSources(std::vector<int> sourcesToSuppress, uint8_
     for(std::size_t i = 0; i < sourcesToSuppress.size(); i++)
     {
         index = sourcesToSuppress[i];
-        switch (index)
-        {
-        case 0: createMaskFromIndex(static_cast<int>(index), mask, bufferLength);
-                break;
-        case 1: createMaskFromIndex(static_cast<int>(index), mask, bufferLength);
-                break;
-        case 2: createMaskFromIndex(static_cast<int>(index), mask, bufferLength);
-                break;
-        case 3: createMaskFromIndex(static_cast<int>(index), mask, bufferLength);
-                break;
-        }
+        createMaskFromIndex(index, mask, bufferLength);
     }
 
     // Supress sources
@@ -38,14 +28,15 @@ void AudioSuppresser::suppressSources(std::vector<int> sourcesToSuppress, uint8_
     }
 }
 
-void AudioSuppresser::createMaskFromIndex(int index, uint8_t *mask, int maskLength)
+void AudioSuppresser::createMaskFromIndex(const int index, uint8_t *mask, const int maskLength)
 {
-    // by default we use 16 bits precision => 2 bytes per sources
-    for(int i = 2*index; i < maskLength; i = i + 8)
+    // By default we use 16 bits precision => 2 bytes per source
+    for(int i = 2 * index; i < maskLength; i = i + 8)
     {
-        // TODO: insert white noise instead of 0
         mask[i] = 0;
-        mask[i+1] = 0;
+
+        if(i + 1 < maskLength)
+            mask[i+1] = 0;
     }
 }
 

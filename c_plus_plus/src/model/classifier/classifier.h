@@ -12,7 +12,9 @@ namespace Model
 class Classifier
 {
 public:
-    static std::vector<int> classify(std::vector<SourcePosition> audioPositions, std::vector<SphericalAngleRect> imagePositions, int rangeThreshold);
+    static std::vector<int> classify(const std::vector<SourcePosition> &audioPositions,
+                                     const std::vector<SphericalAngleRect> &imagePositions,
+                                     const int &rangeThreshold);
 };
 
 }   // Model

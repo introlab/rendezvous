@@ -1,4 +1,4 @@
-#ifndef AUDIO_SUPPRESSER_H
+    #ifndef AUDIO_SUPPRESSER_H
 #define AUDIO_SUPPRESSER_H
 
 #include <cstdint>
@@ -10,10 +10,10 @@ namespace Model
 class AudioSuppresser
 {
 public:
-    static void suppressSources(std::vector<int> indexToSuppress, uint8_t* audioBuf, const int bufferLength);
+    static void suppressSources(const std::vector<int> &indexToSuppress, uint8_t* audioBuf, const int bufferLength);
 
 private:
-    static void createMaskFromIndex(int index, uint8_t *mask, int maskLength);
+    static void createMaskFromIndex(const int index, uint8_t *mask, const int maskLength);
 };
 
 }
