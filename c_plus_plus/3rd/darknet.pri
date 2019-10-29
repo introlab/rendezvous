@@ -10,6 +10,3 @@ contains(architecture, aarch64) {
 contains(architecture, x86_64) {
     DARKNET_LIBS = -L$$DARKNET_DIR/lib/x86_64 -ldarknet
 }
-
-
-message($$DARKNET_LIBS)
