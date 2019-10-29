@@ -8,5 +8,5 @@ contains(architecture, aarch64) {
 }
 
 contains(architecture, x86_64) {
-    V4L2_LIBS = -L$$V4L2_DIR/lib/x86_64-lv4l2
+    V4L2_LIBS = -L$$V4L2_DIR/lib/x86_64 -lv4l2
 }
