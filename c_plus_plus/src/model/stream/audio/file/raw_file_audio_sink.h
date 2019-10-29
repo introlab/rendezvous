@@ -22,6 +22,6 @@ class RawFileAudioSink : public IAudioSink
     std::string m_fileName;
 };
 
-}    // Model
+}    // namespace Model
 
 #endif    // RAW_FILE_AUDIO_SINK_H
