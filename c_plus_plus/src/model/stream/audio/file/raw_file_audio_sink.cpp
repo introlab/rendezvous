@@ -28,4 +28,4 @@ int RawFileAudioSink::write(uint8_t* buffer, int bytesToWrite)
 {
     return fwrite(buffer, sizeof(buffer[0]), bytesToWrite, m_file);
 }
-}
+}    // namespace Model

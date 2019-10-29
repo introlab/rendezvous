@@ -8,15 +8,13 @@
 
 namespace Model
 {
-
 class Classifier
 {
-public:
+   public:
     static std::vector<int> classify(const std::vector<SourcePosition> &audioPositions,
-                                     const std::vector<SphericalAngleRect> &imagePositions,
-                                     const int &rangeThreshold);
+                                     const std::vector<SphericalAngleRect> &imagePositions, const int &rangeThreshold);
 };
 
-}   // Model
+}    // namespace Model
 
-#endif // CLASSIFIER_H
+#endif    // CLASSIFIER_H
