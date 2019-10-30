@@ -2915,7 +2915,7 @@ static void stbi__idct_simd(stbi_uc *out, int out_stride, short data[64])
         uint8x8_t p6 = vqrshrun_n_s16(row6, 1);
         uint8x8_t p7 = vqrshrun_n_s16(row7, 1);
 
-        // again, these can translate into one instruction, but often don't.
+// again, these can translate into one instruction, but often don't.
 #define dct_trn8_8(x, y)               \
     {                                  \
         uint8x8x2_t t = vtrn_u8(x, y); \
@@ -6185,7 +6185,7 @@ static int stbi__tga_get_comp(int bits_per_pixel, int is_grey, int *is_rgb16)
             return STBI_grey;
         case 16:
             if (is_grey) return STBI_grey_alpha;
-            // fallthrough
+        // fallthrough
         case 15:
             if (is_rgb16) *is_rgb16 = 1;
             return STBI_rgb;

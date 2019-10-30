@@ -27,6 +27,7 @@ bool LocalSocketServer::stop()
     if (m_socket != nullptr)
     {
         m_socket->close();
+        delete m_socket;
         m_socket = nullptr;
     }
 
@@ -47,22 +48,14 @@ int LocalSocketServer::read(char* buffer, int bytesToRead)
 
 void LocalSocketServer::onNewConnection()
 {
-    if (m_socket) return;
+    if (m_socket != nullptr && m_socket->state() == QAbstractSocket::ConnectedState)
+    {
+        return;
+    }
 
     m_socket = m_server->nextPendingConnection();
 
-    connect(m_socket, SIGNAL(stateChanged(QAbstractSocket::SocketState)), this,
-            SLOT(onSocketStateChanged(QAbstractSocket::SocketState)));
-
     connect(m_socket, &QTcpSocket::readyRead, this, [&] { emit dataReady(m_socket->bytesAvailable()); });
-}
-
-void LocalSocketServer::onSocketStateChanged(QAbstractSocket::SocketState socketState)
-{
-    if (socketState == QAbstractSocket::UnconnectedState)
-    {
-        m_socket->deleteLater();
-    }
 }
 
 }    // namespace Model

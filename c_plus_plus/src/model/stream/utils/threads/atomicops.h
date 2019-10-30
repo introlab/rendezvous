@@ -92,7 +92,7 @@ enum memory_order
 }    // end namespace moodycamel
 
 #if (defined(AE_VCPP) && (_MSC_VER < 1700 || defined(__cplusplus_cli))) || (defined(AE_ICC) && __INTEL_COMPILER < 1600)
-     // VS2010 and ICC13 don't support std::atomic_*_fence, implement our own fences
+// VS2010 and ICC13 don't support std::atomic_*_fence, implement our own fences
 
 #include <intrin.h>
 
@@ -205,7 +205,7 @@ AE_FORCEINLINE void fence(memory_order order) AE_NO_TSAN
 #endif
 }    // end namespace moodycamel
 #else
-     // Use standard library of atomics
+// Use standard library of atomics
 #include <atomic>
 
 namespace moodycamel
@@ -407,11 +407,11 @@ class weak_atomic
 // Portable single-producer, single-consumer semaphore below:
 
 #if defined(_WIN32)
-     // Avoid including windows.h in a header; we only need a handful of
-     // items, so we'll redeclare them here (this is relatively safe since
-     // the API generally has to remain stable between Windows versions).
-     // I know this is an ugly hack but it still beats polluting the global
-     // namespace with thousands of generic names or adding a .cpp for nothing.
+// Avoid including windows.h in a header; we only need a handful of
+// items, so we'll redeclare them here (this is relatively safe since
+// the API generally has to remain stable between Windows versions).
+// I know this is an ugly hack but it still beats polluting the global
+// namespace with thousands of generic names or adding a .cpp for nothing.
 extern "C"
 {
     struct _SECURITY_ATTRIBUTES;
@@ -688,9 +688,8 @@ class LightweightSemaphore
         while (true)
         {
             oldCount = m_count.fetch_add_release(1);
-            if (oldCount < 0)
-                return false;    // successfully restored things to the way they were
-                                 // Oh, the producer thread just signaled the semaphore after all. Try again:
+            if (oldCount < 0) return false;    // successfully restored things to the way they were
+            // Oh, the producer thread just signaled the semaphore after all. Try again:
             oldCount = m_count.fetch_add_acquire(-1);
             if (oldCount > 0 && m_sema.try_wait()) return true;
         }

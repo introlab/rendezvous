@@ -1,15 +1,13 @@
 #ifndef ONLINE_CONFERENCE_VIEW_H
 #define ONLINE_CONFERENCE_VIEW_H
 
+#include <memory>
+
+#include "model/stream/i_stream.h"
 #include "view/views/abstract_view.h"
 
 class QStateMachine;
 class QState;
-
-namespace Model
-{
-class OdasClient;
-}
 
 namespace Ui
 {
@@ -21,7 +19,7 @@ namespace View
 class OnlineConferenceView : public AbstractView
 {
    public:
-    explicit OnlineConferenceView(QWidget *parent = nullptr);
+    explicit OnlineConferenceView(std::shared_ptr<Model::IStream> stream, QWidget *parent = nullptr);
 
    private slots:
     void onStoppedStateEntered();
@@ -32,7 +30,7 @@ class OnlineConferenceView : public AbstractView
     QStateMachine *m_stateMachine;
     QState *m_stopped;
     QState *m_started;
-    Model::OdasClient *m_odaslive;
+    std::shared_ptr<Model::IStream> m_stream;
 };
 
 }    // namespace View

@@ -213,9 +213,9 @@ void CameraReader::setImageFormat()
     else if (fmt.fmt.pix.width != (unsigned int)videoConfig_.resolution.width ||
              fmt.fmt.pix.height != (unsigned int)videoConfig_.resolution.height)
     {
-        throw std::runtime_error(
-            "Camera does not support specified image size : " + std::to_string(videoConfig_.resolution.width) + " x " +
-            std::to_string(videoConfig_.resolution.height));
+        throw std::runtime_error("Camera does not support specified image size : " +
+                                 std::to_string(videoConfig_.resolution.width) + " x " +
+                                 std::to_string(videoConfig_.resolution.height));
     }
     else
     {

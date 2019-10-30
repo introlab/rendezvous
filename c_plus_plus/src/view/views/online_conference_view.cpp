@@ -1,6 +1,7 @@
 #include "online_conference_view.h"
-#include "model/stream/audio/odas/odas_client.h"
 #include "ui_online_conference_view.h"
+
+#include <stdexcept>
 
 #include <QDesktopServices>
 #include <QState>
@@ -9,14 +10,19 @@
 
 namespace View
 {
-OnlineConferenceView::OnlineConferenceView(QWidget *parent)
+OnlineConferenceView::OnlineConferenceView(std::shared_ptr<Model::IStream> stream, QWidget *parent)
     : AbstractView("Online Conference", parent)
     , m_ui(new Ui::OnlineConferenceView)
     , m_stateMachine(new QStateMachine)
     , m_stopped(new QState)
     , m_started(new QState)
-    , m_odaslive(new Model::OdasClient)
+    , m_stream(stream)
 {
+    if (m_stream == nullptr)
+    {
+        throw std::invalid_argument("Stream is null!");
+    }
+
     m_ui->setupUi(this);
 
     m_stopped->assignProperty(m_ui->startButton, "text", "Start virtual devices");
@@ -39,14 +45,12 @@ OnlineConferenceView::OnlineConferenceView(QWidget *parent)
 
 void OnlineConferenceView::onStoppedStateEntered()
 {
-    // TODO stop virtual devices
-    m_odaslive->stop();
+    m_stream->stop();
 }
 
 void OnlineConferenceView::onStartedStateEntered()
 {
-    // TODO start virtual devices
-    m_odaslive->start();
+    m_stream->start();
 }
 
 }    // namespace View

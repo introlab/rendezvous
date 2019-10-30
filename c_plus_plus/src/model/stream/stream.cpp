@@ -5,6 +5,9 @@
 #include <string>
 #include <vector>
 
+#include "model/stream/audio/odas/odas_audio_source.h"
+#include "model/stream/audio/odas/odas_position_source.h"
+#include "model/stream/audio/pulseaudio/pulseaudio_sink.h"
 #include "model/stream/utils/images/images.h"
 #include "model/stream/utils/math/angle_calculations.h"
 #include "model/stream/utils/models/spherical_angle_rect.h"
@@ -15,11 +18,15 @@
 
 namespace Model
 {
-Stream::Stream(const VideoConfig& inputConfig, const VideoConfig& outputConfig, const DewarpingConfig& dewarpingConfig)
-    : inputConfig_(inputConfig)
-    , outputConfig_(outputConfig)
+Stream::Stream(const VideoConfig& videoInputConfig, const VideoConfig& videoOutputConfig,
+               const AudioConfig& audioInputConfig, const AudioConfig& audioOutputConfig,
+               const DewarpingConfig& dewarpingConfig)
+    : videoInputConfig_(videoInputConfig)
+    , videoOutputConfig_(videoOutputConfig)
+    , audioInputConfig_(audioInputConfig)
+    , audioOutputConfig_(audioOutputConfig)
     , dewarpingConfig_(dewarpingConfig)
-    , videoThread_(nullptr)
+    , mediaThread_(nullptr)
     , detectionThread_(nullptr)
 {
     bool useZeroCopyIfSupported = false;
@@ -28,7 +35,7 @@ Stream::Stream(const VideoConfig& inputConfig, const VideoConfig& outputConfig, 
     float minElevation = math::deg2rad(0.f);
     float maxElevation = math::deg2rad(90.f);
 
-    imageBuffer_ = std::make_shared<LockTripleBuffer<Image>>(Image(inputConfig_.resolution, inputConfig.imageFormat));
+    imageBuffer_ = std::make_shared<LockTripleBuffer<Image>>(RGBImage(videoInputConfig_.resolution));
     std::shared_ptr<moodycamel::ReaderWriterQueue<std::vector<SphericalAngleRect>>> detectionQueue =
         std::make_shared<moodycamel::ReaderWriterQueue<std::vector<SphericalAngleRect>>>(1);
 
@@ -61,12 +68,14 @@ Stream::Stream(const VideoConfig& inputConfig, const VideoConfig& outputConfig, 
         implementationFactory.getDetectionObjectFactory(), implementationFactory.getDetectionSynchronizer(),
         dewarpingConfig_, detectionDewarpingCount);
 
-    videoThread_ = std::make_unique<VideoThread>(
-        implementationFactory.getCameraReader(inputConfig), implementationFactory.getFisheyeDewarper(),
-        implementationFactory.getObjectFactory(), std::make_unique<VirtualCameraOutput>(outputConfig_),
-        implementationFactory.getSynchronizer(),
+    mediaThread_ = std::make_unique<MediaThread>(
+        std::make_unique<OdasAudioSource>(10030), std::make_unique<PulseAudioSink>(audioOutputConfig_),
+        std::make_unique<OdasPositionSource>(10020), implementationFactory.getCameraReader(videoInputConfig_),
+        implementationFactory.getFisheyeDewarper(), implementationFactory.getObjectFactory(),
+        std::make_unique<VirtualCameraOutput>(videoOutputConfig_), implementationFactory.getSynchronizer(),
         std::make_unique<VirtualCameraManager>(aspectRatio, minElevation, maxElevation), detectionQueue, imageBuffer_,
-        implementationFactory.getImageConverter(), dewarpingConfig_, inputConfig_, outputConfig_);
+        implementationFactory.getImageConverter(), dewarpingConfig_, videoInputConfig_, videoOutputConfig_,
+        audioInputConfig_, audioOutputConfig_);
 }
 
 Stream::~Stream()
@@ -76,7 +85,7 @@ Stream::~Stream()
 
 void Stream::start()
 {
-    videoThread_->start();
+    mediaThread_->start();
     detectionThread_->start();
 }
 
@@ -84,8 +93,8 @@ void Stream::stop()
 {
     detectionThread_->stop();
     detectionThread_->join();
-    videoThread_->stop();
-    videoThread_->join();
+    mediaThread_->stop();
+    mediaThread_->join();
 }
 
 }    // namespace Model
