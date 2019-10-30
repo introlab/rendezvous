@@ -9,7 +9,8 @@ namespace Model
 {
 void OdasClient::run()
 {
-    m_isRunning = true;
+    m_state = OdasClientState::RUNNING;
+    notify();
 
     const QString& program = Model::ODAS_LIBRARY;
     QStringList arguments;
@@ -20,11 +21,12 @@ void OdasClient::run()
 
     bool returnValue = false;
     QByteArray output;
-    while (m_isRunning)
+    while (m_state != OdasClientState::STOPPED)
     {
         returnValue = process.waitForFinished(m_waitTime);
         if (returnValue)
         {
+            // Handle the process' crash.
             qCritical() << "Odaslive stopped working.";
             output.append(process.readAll());
 
@@ -32,11 +34,11 @@ void OdasClient::run()
             {
                 qWarning() << "Odas output:" << output;
             }
-            return;
+            m_state = OdasClientState::STOPPED;
         }
     }
 
-    // Ensure the process is closed.
+    // Ensure the process clean close.
     process.close();
     process.waitForFinished(m_joinTime);
     if (process.isOpen())
@@ -44,11 +46,34 @@ void OdasClient::run()
         qWarning() << "Odaslive were killed.";
         process.kill();
     }
+
+    notify();
 }
 
 void OdasClient::stop()
 {
-    m_isRunning = false;
+    m_state = OdasClientState::STOPPED;
     this->msleep(static_cast<ulong>(m_joinTime));
+}
+
+void OdasClient::attach(IObserver* observer)
+{
+    if (observer != nullptr)
+    {
+        m_subscribers.push_back(observer);
+    }
+}
+
+void OdasClient::notify()
+{
+    for (auto observer : m_subscribers)
+    {
+        observer->update();
+    }
+}
+
+OdasClientState OdasClient::getState()
+{
+    return m_state;
 }
 }

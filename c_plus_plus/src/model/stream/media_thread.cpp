@@ -49,6 +49,11 @@ MediaThread::MediaThread(std::unique_ptr<IAudioSource> audioSource, std::unique_
     {
         throw std::invalid_argument("Error in MediaThread - Null is not a valid argument");
     }
+
+    if (odasClient_ != nullptr)
+    {
+        odasClient_->attach(this);
+    }
 }
 
 void MediaThread::run()
@@ -65,10 +70,6 @@ void MediaThread::run()
         audioSink_->open();
         positionSource_->open();
         odasClient_->start();
-        if (!odasClient_->isRunning())
-        {
-            stop();
-        }
 
         HeapObjectFactory heapObjectFactory;
         DualBuffer<Image> displayBuffers(Image(videoOutputConfig_.resolution, videoOutputConfig_.imageFormat));
@@ -193,5 +194,14 @@ void MediaThread::run()
     delete[] audioBuffer;
 
     std::cout << "MediaThread loop finished" << std::endl;
+}
+
+void MediaThread::update()
+{
+    const OdasClientState& state = odasClient_->getState();
+    if (state == OdasClientState::STOPPED && !isAbortRequested())
+    {
+        stop();
+    }
 }
 }    // namespace Model

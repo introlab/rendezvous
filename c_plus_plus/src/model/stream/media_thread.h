@@ -18,10 +18,11 @@
 #include "model/stream/video/output/i_video_output.h"
 #include "model/stream/video/video_config.h"
 #include "model/stream/video/virtualcamera/virtual_camera_manager.h"
+#include "model/utils/observer/i_observer.h"
 
 namespace Model
 {
-class MediaThread : public Thread
+class MediaThread : public Thread, public IObserver
 {
    public:
     MediaThread(std::unique_ptr<IAudioSource> audioSource, std::unique_ptr<IAudioSink> audioSink,
@@ -33,6 +34,8 @@ class MediaThread : public Thread
                 std::shared_ptr<LockTripleBuffer<Image>> imageBuffer, std::unique_ptr<IImageConverter> imageConverter,
                 const DewarpingConfig& dewarpingConfig, const VideoConfig& inputConfig, const VideoConfig& outputConfig,
                 const AudioConfig& audioInputConfig, const AudioConfig& audioOutputConfig);
+
+    void update() override;
 
    protected:
     void run() override;

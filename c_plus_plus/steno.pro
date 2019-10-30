@@ -78,6 +78,8 @@ HEADERS += \
     src/model/recorder/recorder.h \
     src/model/settings/i_settings.h \
     src/model/settings/settings_constants.h \
+    src/model/utils/observer/i_observer.h \
+    src/model/utils/observer/i_subject.h \
     src/model/utils/time.h \
     src/model/settings/settings.h \
     src/model/stream/audio/i_audio_sink.h \
