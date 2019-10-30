@@ -1,6 +1,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QMutexLocker>
+#include <iostream>
 
 #include "odas_position_source.h"
 

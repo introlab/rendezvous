@@ -28,6 +28,7 @@ class Thread
     std::unique_ptr<std::thread> thread_;
     std::atomic<bool> isAbortRequested_;
     std::atomic<bool> isRunning_;
+    volatile bool isTerminated_ = false;
 };
 
 }    // namespace Model

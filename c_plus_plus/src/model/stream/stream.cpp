@@ -31,35 +31,39 @@ Stream::Stream(const VideoConfig& videoInputConfig, const VideoConfig& videoOutp
     , detectionThread_(nullptr)
     , implementationFactory_(false)
 {
+    imageBuffer_ = std::make_shared<LockTripleBuffer<Image>>(RGBImage(videoInputConfig_.resolution));
+
     int detectionDewarpingCount = 4;
     float aspectRatio = 3.f / 4.f;
     float minElevation = math::deg2rad(0.f);
     float maxElevation = math::deg2rad(90.f);
-
-    imageBuffer_ = std::make_shared<LockTripleBuffer<Image>>(RGBImage(videoInputConfig_.resolution));
-    std::shared_ptr<moodycamel::ReaderWriterQueue<std::vector<SphericalAngleRect>>> detectionQueue =
-        std::make_shared<moodycamel::ReaderWriterQueue<std::vector<SphericalAngleRect>>>(1);
 
     std::string root;
     std::string rendezvousStr = "rendezvous";
     std::string path = std::getenv("PWD");
     std::size_t index = path.find(rendezvousStr);
 
-    if (index != std::string::npos)
-    {
-        root = path.substr(0, index + rendezvousStr.size());
-    }
-    else
-    {
-        throw std::runtime_error("You must run the application from rendezvous repo");
-    }
+    //    if (index != std::string::npos)
+    //    {
+    //        root = path.substr(0, index + rendezvousStr.size());
+    //    }
+    //    else
+    //    {
+    //        throw std::runtime_error("You must run the application from rendezvous repo");
+    //    }
 
-    std::string configFile = root + "/config/yolo/cfg/yolov3-tiny.cfg";
-    std::string weightsFile = root + "/config/yolo/weights/yolov3-tiny.weights";
-    std::string metaFile = root + "/config/yolo/cfg/coco.data";
+    std::string configFile = "/home/morel/dev/workspace/rendezvous/config/yolo/cfg/yolov3-tiny.cfg";
+    std::string weightsFile = "/home/morel/dev/workspace/rendezvous/config/yolo/weights/yolov3-tiny.weights";
+    std::string metaFile = "/home/morel/dev/workspace/rendezvous/config/yolo/cfg/coco.data";
 
-    objectFactory_ = implementationFactory_.getDetectionObjectFactory();
+    bool useZeroCopyIfSupported = false;
+    ImplementationFactory implementationFactory(useZeroCopyIfSupported);
+
+    objectFactory_ = implementationFactory.getDetectionObjectFactory();
     objectFactory_->allocateObjectLockTripleBuffer(*imageBuffer_);
+
+    std::shared_ptr<moodycamel::ReaderWriterQueue<std::vector<SphericalAngleRect>>> detectionQueue =
+        std::make_shared<moodycamel::ReaderWriterQueue<std::vector<SphericalAngleRect>>>(1);
 
     detectionThread_ = std::make_unique<DetectionThread>(
         imageBuffer_, implementationFactory_.getDetector(configFile, weightsFile, metaFile), detectionQueue,
@@ -95,5 +99,4 @@ void Stream::stop()
     mediaThread_->stop();
     mediaThread_->join();
 }
-
 }    // namespace Model

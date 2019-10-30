@@ -1,4 +1,6 @@
 #include "local_socket_server.h"
+#include <QDebug>
+#include <iostream>
 
 namespace Model
 {
@@ -43,11 +45,13 @@ int LocalSocketServer::read(char* buffer, int bytesToRead)
         return -1;
     }
 
+    qInfo() << "source received!";
     return m_socket->read(buffer, bytesToRead);
 }
 
 void LocalSocketServer::onNewConnection()
 {
+    qInfo() << "new connection!";
     if (m_socket != nullptr && m_socket->state() == QAbstractSocket::ConnectedState)
     {
         return;
@@ -56,6 +60,7 @@ void LocalSocketServer::onNewConnection()
     m_socket = m_server->nextPendingConnection();
 
     connect(m_socket, &QTcpSocket::readyRead, this, [&] { emit dataReady(m_socket->bytesAvailable()); });
+    qInfo() << "new connection!";
 }
 
 }    // namespace Model

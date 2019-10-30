@@ -26,6 +26,8 @@ class Stream : public IStream
     void stop() override;
 
    private:
+    void initThreads();
+
     VideoConfig videoInputConfig_;
     VideoConfig videoOutputConfig_;
     AudioConfig audioInputConfig_;
