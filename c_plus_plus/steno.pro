@@ -10,6 +10,16 @@ UI_DIR = bin
 # If you want to compile without using CUDA (Everything will run on cpu)
 compilation = no_cuda
 
+DARKNET_HOME=$$(DARKNET_HOME)
+isEmpty(DARKNET_HOME) {
+    error("DARKNET_HOME is not set!")
+}
+
+LIBV4L2CPP_HOME=$$(LIBV4L2CPP_HOME)
+isEmpty(LIBV4L2CPP_HOME) {
+    error("LIBV4L2CPP_HOME is not set!")
+}
+
 INCLUDEPATH += src $(DARKNET_HOME)/include $(LIBV4L2CPP_HOME)/inc
 
 LIBS += -lpulse-simple -lpulse -lpthread -L$(DARKNET_HOME) -ldarknet -L$(LIBV4L2CPP_HOME) -lv4l2wrapper
@@ -193,7 +203,21 @@ contains(compilation, no_cuda) {
     DEFINES += NO_CUDA
 } else {
     INCLUDEPATH += $(CUDA_HOME)/include
-    LIBS += -L$(CUDA_HOME)/lib -lcuda -lcudart
+
+    CUDA_HOME=$$(CUDA_HOME)
+    !isEmpty(CUDA_HOME) {
+        exists($$(CUDA_HOME)/lib) {
+            LIBS += -L$(CUDA_HOME)/lib
+        } else {
+            exists($$(CUDA_HOME)/lib64) {
+                LIBS += -L$(CUDA_HOME)/lib64
+            }
+        }
+    } else {
+        message("CUDA_HOME is not set, will try to use PATH")
+    }
+    
+    LIBS += -lcuda -lcudart
 
     cuda.input = CUDA_SOURCES
     cuda.output = $$OBJECTS_DIR/${QMAKE_FILE_BASE}.o

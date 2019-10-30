@@ -20,6 +20,7 @@ class OnlineConferenceView : public AbstractView
 {
    public:
     explicit OnlineConferenceView(std::shared_ptr<Model::IStream> stream, QWidget *parent = nullptr);
+    virtual ~OnlineConferenceView();
 
    private slots:
     void onStoppedStateEntered();

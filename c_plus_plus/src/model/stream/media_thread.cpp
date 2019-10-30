@@ -1,11 +1,13 @@
 #include "media_thread.h"
 
+#include <cstring>
 #include <iostream>
 
 #include "model/audio_suppresser/audio_suppresser.h"
 #include "model/classifier/classifier.h"
 #include "model/stream/audio/odas/odas_client.h"
 #include "model/stream/utils/alloc/heap_object_factory.h"
+#include "model/stream/utils/models/circular_buffer.h"
 #include "model/stream/utils/models/point.h"
 #include "model/stream/video/dewarping/dewarping_helper.h"
 #include "model/stream/video/video_stabilizer.h"
@@ -58,6 +60,20 @@ MediaThread::MediaThread(std::unique_ptr<IAudioSource> audioSource, std::unique_
 
 void MediaThread::run()
 {
+    // Utilitary objects
+    HeapObjectFactory heapObjectFactory;
+    DisplayImageBuilder displayImageBuilder(videoOutputConfig_.resolution);
+    VideoStabilizer videoStabilizer(videoInputConfig_.fpsTarget);
+
+    // Display images
+    Image emptyDisplay(videoOutputConfig_.resolution, videoOutputConfig_.imageFormat);
+    CircularBuffer<Image> displayBuffers(2, Image(videoOutputConfig_.resolution, videoOutputConfig_.imageFormat));
+
+    // Virtual cameras images
+    const Dim2<int>& maxVcDim = displayImageBuilder.getMaxVirtualCameraDim();
+    std::vector<Image> vcImages(1, RGBImage(maxVcDim.width, maxVcDim.height));
+    std::vector<Image> vcOutputFormatImages(1, Image(maxVcDim.width, maxVcDim.height, videoOutputConfig_.imageFormat));
+
     // TODO: config?
     const int classifierRangeThreshold = 2;
 
@@ -66,94 +82,116 @@ void MediaThread::run()
 
     try
     {
+        // Allocate display images
+        heapObjectFactory.allocateObject(emptyDisplay);
+        heapObjectFactory.allocateObjectCircularBuffer(displayBuffers);
+
+        // Allocate virtual camera images
+        objectFactory_->allocateObjectVector(vcImages);
+        objectFactory_->allocateObjectVector(vcOutputFormatImages);
+
+        // Set background color of empty display
+        displayImageBuilder.setDisplayImageColor(emptyDisplay);
+
+        // Start audio resources
         audioSource_->open();
         audioSink_->open();
         positionSource_->open();
         odasClient_->start();
 
-        HeapObjectFactory heapObjectFactory;
-        DualBuffer<Image> displayBuffers(Image(videoOutputConfig_.resolution, videoOutputConfig_.imageFormat));
-        DisplayImageBuilder displayImageBuilder(videoOutputConfig_.resolution);
-
-        heapObjectFactory.allocateObjectDualBuffer(displayBuffers);
-        displayImageBuilder.setDisplayImageColor(displayBuffers.getCurrent());
-        displayImageBuilder.setDisplayImageColor(displayBuffers.getInUse());
-
-        Dim2<int> maxVcDim = displayImageBuilder.getMaxVirtualCameraDim();
-        std::vector<Image> vcImages(5, RGBImage(maxVcDim.width, maxVcDim.height));
-        objectFactory_->allocateObjectVector(vcImages);
-
         Point<float> fisheyeCenter(videoInputConfig_.resolution.width / 2.f, videoInputConfig_.resolution.height / 2.f);
         std::vector<SphericalAngleRect> detections;
 
-        VideoStabilizer videoStabilizer(videoInputConfig_.fpsTarget);
-
         // Media loop start
-
         std::cout << "MediaThread loop started" << std::endl;
 
         while (!isAbortRequested())
         {
             videoStabilizer.startFrame();
 
+            // Try to get queued detections
             if (detectionQueue_->try_dequeue(detections))
             {
                 virtualCameraManager_->updateVirtualCamerasGoal(detections);
             }
 
+            // Update the position and size of virtual cameras
             virtualCameraManager_->updateVirtualCameras(videoStabilizer.getLastFrameTimeMs());
 
+            // Read audio source and positions
             int audioBytesRead = audioSource_->read(audioBuffer, sizeof(audioBuffer));
             std::vector<SourcePosition> sourcePositions = positionSource_->getPositions();
 
+            // Read image from video input and convert it to rgb format for dewarping
             const Image& rawImage = videoInput_->readImage();
             const Image& rgbImage = imageBuffer_->getCurrent();
             imageConverter_->convert(rawImage, rgbImage);
             imageBuffer_->swap();
 
+            // Get the active virtual cameras
             const std::vector<VirtualCamera> virtualCameras = virtualCameraManager_->getVirtualCameras();
-            int vcCount = (int)virtualCameras.size();
+            int vcCount = static_cast<int>(virtualCameras.size());
 
+            // If there are active virtual cameras, dewarp images of each vc and combine them in an output image
             if (vcCount > 0)
             {
-                // This should not happend often in theory, it's only if a large amount of virtual camera are required
+                // Dynamically allocate more virtual camera images
                 for (int i = vcImages.size(); i < vcCount; ++i)
                 {
                     RGBImage vcImage(maxVcDim.width, maxVcDim.height);
                     objectFactory_->allocateObject(vcImage);
                     vcImages.push_back(vcImage);
+
+                    Image vcOutputFormatImage(maxVcDim.width, maxVcDim.height, videoOutputConfig_.imageFormat);
+                    objectFactory_->allocateObject(vcOutputFormatImage);
+                    vcOutputFormatImages.push_back(vcOutputFormatImage);
                 }
 
+                // Get the size of the virtual camera images to dewarp (this is to prevent resize in the output format)
                 Dim2<int> resizeDim(displayImageBuilder.getVirtualCameraDim(vcCount));
                 std::vector<Image> vcResizeImages(vcCount, RGBImage(resizeDim));
+                std::vector<Image> vcResizeOutputFormatImages(vcCount,
+                                                              Image(resizeDim, videoOutputConfig_.imageFormat));
 
+                // Virtual camera dewarping loop
                 for (int i = 0; i < vcCount; ++i)
                 {
-                    const VirtualCamera& virtualCamera = virtualCameras[i];
+                    // Use the same buffers as vcImages for the smaller dewarped images
                     Image& vcResizeImage = vcResizeImages[i];
                     vcResizeImage.hostData = vcImages[i].hostData;
                     vcResizeImage.deviceData = vcImages[i].deviceData;
 
+                    // Dewarping of virtual camera
+                    const VirtualCamera& virtualCamera = virtualCameras[i];
                     DewarpingParameters vcParams =
                         getDewarpingParametersFromAngleBoundingBox(virtualCamera, fisheyeCenter, dewarpingConfig_);
                     dewarper_->dewarpImageFiltered(rgbImage, vcResizeImage, vcParams);
 
-                    // Ok, this is a hack until we work with raw data for dewarping of virtual cameras (convert on
-                    // itself, only work from RGB)
-                    Image inImage = vcResizeImage;
-                    vcResizeImages[i] = Image(inImage.width, inImage.height, videoOutputConfig_.imageFormat);
-                    vcResizeImages[i].deviceData = inImage.deviceData;
-                    vcResizeImages[i].hostData = inImage.hostData;
-                    imageConverter_->convert(inImage, vcResizeImage);
+                    // Use the same buffers as vcOutputFormatImages for the smaller dewarped (and converted) images
+                    Image& vcResizeOutputFormatImage = vcResizeOutputFormatImages[i];
+                    vcResizeOutputFormatImage.hostData = vcOutputFormatImages[i].hostData;
+                    vcResizeOutputFormatImage.deviceData = vcOutputFormatImages[i].deviceData;
+
+                    // Conversion from rgb to output format
+                    imageConverter_->convert(vcResizeImage, vcResizeOutputFormatImage);
                 }
 
-                const Image& displayImage = displayBuffers.getCurrent();
-                displayImageBuilder.clearVirtualCamerasOnDisplayImage(displayImage);
+                // Clear the image before writting to it
+                const Image& displayImage = displayBuffers.current();
+                std::memcpy(displayImage.hostData, emptyDisplay.hostData, displayImage.size);
 
+                // Wait for dewarping to be completed
                 synchronizer_->sync();
-                displayImageBuilder.createDisplayImage(vcResizeImages, displayImage);
+
+                // Write to output image and send it to the video output
+                displayImageBuilder.createDisplayImage(vcResizeOutputFormatImages, displayImage);
                 videoOutput_->writeImage(displayImage);
-                displayBuffers.swap();
+                displayBuffers.next();
+            }
+            else
+            {
+                // If there are no active virtual cameras, just send an empty image
+                videoOutput_->writeImage(emptyDisplay);
             }
 
             if (audioBytesRead > 0)
@@ -175,23 +213,29 @@ void MediaThread::run()
 
             detections.clear();
 
+            // If the frame took less than 1/fps, this call will block to match frame time of 1/fps
             videoStabilizer.endFrame();
         }
-
-        heapObjectFactory.deallocateObjectDualBuffer(displayBuffers);
-        objectFactory_->deallocateObjectVector(vcImages);
     }
     catch (const std::exception& e)
     {
-        std::cout << e.what() << std::endl;
+        std::cout << "Error in video thread : " << e.what() << std::endl;
     }
 
+    // Clean audio resources
     odasClient_->stop();
     audioSource_->close();
     audioSink_->close();
     positionSource_->close();
-
     delete[] audioBuffer;
+
+    // Deallocate display images
+    heapObjectFactory.deallocateObject(emptyDisplay);
+    heapObjectFactory.deallocateObjectCircularBuffer(displayBuffers);
+
+    // Deallocate virtual camera images
+    objectFactory_->deallocateObjectVector(vcImages);
+    objectFactory_->deallocateObjectVector(vcOutputFormatImages);
 
     std::cout << "MediaThread loop finished" << std::endl;
 }

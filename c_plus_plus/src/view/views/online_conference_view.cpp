@@ -44,6 +44,11 @@ OnlineConferenceView::OnlineConferenceView(std::shared_ptr<Model::IStream> strea
     connect(m_started, &QState::entered, [=] { onStartedStateEntered(); });
 }
 
+OnlineConferenceView::~OnlineConferenceView()
+{
+    m_stream->stop();
+}
+
 void OnlineConferenceView::onStoppedStateEntered()
 {
     m_stream->stop();

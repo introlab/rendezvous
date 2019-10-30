@@ -1,7 +1,7 @@
 #ifndef CIRCULAR_BUFFER_H
 #define CIRCULAR_BUFFER_H
 
-#include <memory>
+#include <vector>
 
 namespace Model
 {
@@ -11,23 +11,14 @@ class CircularBuffer
    public:
     explicit CircularBuffer(std::size_t size, const T& value = T())
         : size_(size)
-        , buffers_(std::make_unique<T[]>(size))
+        , buffers_(size, value)
         , index_(0)
     {
-        for (std::size_t i = 0; i < size_; ++i)
-        {
-            buffers_[i] = value;
-        }
     }
 
     std::size_t size()
     {
         return size_;
-    }
-
-    const std::unique_ptr<T[]>& buffers()
-    {
-        return buffers_;
     }
 
     T& current()
@@ -42,7 +33,7 @@ class CircularBuffer
 
    private:
     std::size_t size_;
-    std::unique_ptr<T[]> buffers_;
+    std::vector<T> buffers_;
     int index_;
 };
 
