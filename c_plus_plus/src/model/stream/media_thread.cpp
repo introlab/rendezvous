@@ -62,7 +62,7 @@ void MediaThread::run()
     CircularBuffer<Image> displayBuffers(2, Image(videoOutputConfig_.resolution, videoOutputConfig_.imageFormat));
 
     // Virtual cameras images
-    Dim2<int> maxVcDim = displayImageBuilder.getMaxVirtualCameraDim();
+    const Dim2<int>& maxVcDim = displayImageBuilder.getMaxVirtualCameraDim();
     std::vector<Image> vcImages(1, RGBImage(maxVcDim.width, maxVcDim.height));
     std::vector<Image> vcOutputFormatImages(1, Image(maxVcDim.width, maxVcDim.height, videoOutputConfig_.imageFormat));
 
@@ -220,7 +220,7 @@ void MediaThread::run()
     delete[] audioBuffer;
 
     // Deallocate display images
-    heapObjectFactory.allocateObject(emptyDisplay);
+    heapObjectFactory.deallocateObject(emptyDisplay);
     heapObjectFactory.deallocateObjectCircularBuffer(displayBuffers);
 
     // Deallocate virtual camera images
