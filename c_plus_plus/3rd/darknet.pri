@@ -9,4 +9,12 @@ contains(architecture, aarch64) {
 
 contains(architecture, x86_64) {
     DARKNET_LIBS = -L$$DARKNET_DIR/lib/x86_64 -ldarknet
+
+    nvcc_path = $$system(which nvcc 2)
+    isEmpty(nvcc_path) {
+        DARKNET_LIBS = -L$$DARKNET_DIR/lib/x86_64 -ldarknet
+    }
+    else {
+        DARKNET_LIBS = -L$$DARKNET_DIR/lib/x86_64_cuda -ldarknet
+    }
 }
