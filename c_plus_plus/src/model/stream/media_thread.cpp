@@ -1,16 +1,16 @@
 #include "media_thread.h"
 
-#include <iostream>
 #include <cstring>
+#include <iostream>
 
 #include "model/audio_suppresser/audio_suppresser.h"
 #include "model/classifier/classifier.h"
 #include "model/stream/utils/alloc/heap_object_factory.h"
+#include "model/stream/utils/models/circular_buffer.h"
 #include "model/stream/utils/models/point.h"
 #include "model/stream/video/dewarping/dewarping_helper.h"
 #include "model/stream/video/video_stabilizer.h"
 #include "model/stream/video/virtualcamera/display_image_builder.h"
-#include "model/stream/utils/models/circular_buffer.h"
 
 namespace Model
 {
@@ -65,7 +65,7 @@ void MediaThread::run()
     Dim2<int> maxVcDim = displayImageBuilder.getMaxVirtualCameraDim();
     std::vector<Image> vcImages(1, RGBImage(maxVcDim.width, maxVcDim.height));
     std::vector<Image> vcOutputFormatImages(1, Image(maxVcDim.width, maxVcDim.height, videoOutputConfig_.imageFormat));
-    
+
     // TODO: config?
     const int classifierRangeThreshold = 2;
 
@@ -141,9 +141,10 @@ void MediaThread::run()
                 // Get the size of the virtual camera images to dewarp (this is to prevent resize in the output format)
                 Dim2<int> resizeDim(displayImageBuilder.getVirtualCameraDim(vcCount));
                 std::vector<Image> vcResizeImages(vcCount, RGBImage(resizeDim));
-                std::vector<Image> vcResizeOutputFormatImages(vcCount, Image(resizeDim, videoOutputConfig_.imageFormat));
+                std::vector<Image> vcResizeOutputFormatImages(vcCount,
+                                                              Image(resizeDim, videoOutputConfig_.imageFormat));
 
-                // Virtual camera dewarping loop 
+                // Virtual camera dewarping loop
                 for (int i = 0; i < vcCount; ++i)
                 {
                     // Use the same buffers as vcImages for the smaller dewarped images
@@ -158,7 +159,7 @@ void MediaThread::run()
                     dewarper_->dewarpImageFiltered(rgbImage, vcResizeImage, vcParams);
 
                     // Use the same buffers as vcOutputFormatImages for the smaller dewarped (and converted) images
-                    Image& vcResizeOutputFormatImage =  vcResizeOutputFormatImages[i];
+                    Image& vcResizeOutputFormatImage = vcResizeOutputFormatImages[i];
                     vcResizeOutputFormatImage.hostData = vcOutputFormatImages[i].hostData;
                     vcResizeOutputFormatImage.deviceData = vcOutputFormatImages[i].deviceData;
 
@@ -217,7 +218,7 @@ void MediaThread::run()
     audioSink_->close();
     positionSource_->close();
     delete[] audioBuffer;
-   
+
     // Deallocate display images
     heapObjectFactory.allocateObject(emptyDisplay);
     heapObjectFactory.deallocateObjectCircularBuffer(displayBuffers);

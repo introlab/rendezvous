@@ -4,8 +4,8 @@
 #include <vector>
 
 #include "model/stream/utils/images/images.h"
-#include "model/stream/utils/models/dual_buffer.h"
 #include "model/stream/utils/models/circular_buffer.h"
+#include "model/stream/utils/models/dual_buffer.h"
 #include "model/stream/utils/threads/lock_triple_buffer.h"
 #include "model/stream/video/dewarping/models/dewarping_mapping.h"
 

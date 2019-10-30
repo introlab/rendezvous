@@ -9,8 +9,8 @@
 #include "model/stream/utils/alloc/i_object_factory.h"
 #include "model/stream/video/detection/detection_thread.h"
 #include "model/stream/video/dewarping/models/dewarping_config.h"
-#include "model/stream/video/video_config.h"
 #include "model/stream/video/impl/implementation_factory.h"
+#include "model/stream/video/video_config.h"
 
 namespace Model
 {
