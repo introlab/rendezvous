@@ -5,6 +5,7 @@
 
 #include "model/stream/utils/images/images.h"
 #include "model/stream/utils/models/dual_buffer.h"
+#include "model/stream/utils/models/circular_buffer.h"
 #include "model/stream/utils/threads/lock_triple_buffer.h"
 #include "model/stream/video/dewarping/models/dewarping_mapping.h"
 
@@ -35,6 +36,26 @@ class IObjectFactory
     {
         deallocateObject(buffer.getCurrent());
         deallocateObject(buffer.getInUse());
+    }
+
+    template <typename T>
+    void allocateObjectCircularBuffer(CircularBuffer<T>& buffer) const
+    {
+        for (std::size_t i = 0; i < buffer.size(); ++i)
+        {
+            allocateObject(buffer.current());
+            buffer.next();
+        }
+    }
+
+    template <typename T>
+    void deallocateObjectCircularBuffer(CircularBuffer<T>& buffer) const
+    {
+        for (std::size_t i = 0; i < buffer.size(); ++i)
+        {
+            deallocateObject(buffer.current());
+            buffer.next();
+        }
     }
 
     template <typename T>

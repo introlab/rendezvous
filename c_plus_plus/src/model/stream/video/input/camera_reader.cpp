@@ -48,10 +48,10 @@ CameraReader::CameraReader(const VideoConfig& videoConfig, std::size_t bufferCou
 
 CameraReader::~CameraReader()
 {
-    const std::unique_ptr<IndexedImage[]>& buffers = images_.buffers();
     for (std::size_t i = 0; i < images_.size(); ++i)
     {
-        unmapBuffer(buffers[i]);
+        unmapBuffer(images_.current());
+        images_.next();
     }
 
     close(fd_);
@@ -124,10 +124,10 @@ void CameraReader::requestBuffers(std::size_t bufferCount)
         throw std::runtime_error("Failed to request buffers for camera " + videoConfig_.deviceName);
     }
 
-    const std::unique_ptr<IndexedImage[]>& buffers = images_.buffers();
     for (std::size_t i = 0; i < images_.size(); ++i)
     {
-        mapBuffer(buffers[i]);
+        mapBuffer(images_.current());
+        images_.next();
     }
 }
 

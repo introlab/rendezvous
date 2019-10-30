@@ -10,6 +10,7 @@
 #include "model/stream/video/detection/detection_thread.h"
 #include "model/stream/video/dewarping/models/dewarping_config.h"
 #include "model/stream/video/video_config.h"
+#include "model/stream/video/impl/implementation_factory.h"
 
 namespace Model
 {
@@ -35,6 +36,7 @@ class Stream : public IStream
     std::unique_ptr<DetectionThread> detectionThread_;
     std::unique_ptr<IObjectFactory> objectFactory_;
     std::shared_ptr<LockTripleBuffer<Image>> imageBuffer_;
+    ImplementationFactory implementationFactory_;
 };
 
 }    // namespace Model

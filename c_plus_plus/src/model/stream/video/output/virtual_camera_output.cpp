@@ -33,8 +33,9 @@ void VirtualCameraOutput::writeImage(const Image& image)
 {
     if (videoConfig_.imageFormat == image.format)
     {
-        timeval timeout;
-        if (videoOutput_->isWritable(&timeout) == 1)
+        // This check doesn't seen to work as intended, for now it seems to work without the check
+        // timeval timeout;
+        // if (videoOutput_->isWritable(&timeout) != -1)
         {
             videoOutput_->write((char*)image.hostData, image.size);
         }
