@@ -5,6 +5,7 @@
 #include "model/stream/audio/i_audio_sink.h"
 #include "model/stream/audio/i_audio_source.h"
 #include "model/stream/audio/i_position_source.h"
+#include "model/stream/audio/odas/odas_client.h"
 #include "model/stream/utils/alloc/i_object_factory.h"
 #include "model/stream/utils/images/i_image_converter.h"
 #include "model/stream/utils/threads/lock_triple_buffer.h"
@@ -24,10 +25,10 @@ class MediaThread : public Thread
 {
    public:
     MediaThread(std::unique_ptr<IAudioSource> audioSource, std::unique_ptr<IAudioSink> audioSink,
-                std::unique_ptr<IPositionSource> positionSource, std::unique_ptr<IVideoInput> videoInput,
-                std::unique_ptr<IFisheyeDewarper> dewarper, std::unique_ptr<IObjectFactory> objectFactory,
-                std::unique_ptr<IVideoOutput> videoOutput, std::unique_ptr<ISynchronizer> synchronizer,
-                std::unique_ptr<VirtualCameraManager> virtualCameraManager,
+                std::unique_ptr<IPositionSource> positionSource, std::unique_ptr<OdasClient> odasClient,
+                std::unique_ptr<IVideoInput> videoInput, std::unique_ptr<IFisheyeDewarper> dewarper,
+                std::unique_ptr<IObjectFactory> objectFactory, std::unique_ptr<IVideoOutput> videoOutput,
+                std::unique_ptr<ISynchronizer> synchronizer, std::unique_ptr<VirtualCameraManager> virtualCameraManager,
                 std::shared_ptr<moodycamel::ReaderWriterQueue<std::vector<SphericalAngleRect>>> detectionQueue,
                 std::shared_ptr<LockTripleBuffer<Image>> imageBuffer, std::unique_ptr<IImageConverter> imageConverter,
                 const DewarpingConfig& dewarpingConfig, const VideoConfig& inputConfig, const VideoConfig& outputConfig,
@@ -40,6 +41,7 @@ class MediaThread : public Thread
     std::unique_ptr<IAudioSource> audioSource_;
     std::unique_ptr<IAudioSink> audioSink_;
     std::unique_ptr<IPositionSource> positionSource_;
+    std::unique_ptr<OdasClient> odasClient_;
     std::unique_ptr<IVideoInput> videoInput_;
     std::unique_ptr<IFisheyeDewarper> dewarper_;
     std::unique_ptr<IObjectFactory> objectFactory_;

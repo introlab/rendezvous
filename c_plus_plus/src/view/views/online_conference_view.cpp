@@ -1,4 +1,5 @@
 #include "online_conference_view.h"
+#include "model/stream/i_stream.h"
 #include "ui_online_conference_view.h"
 
 #include <stdexcept>

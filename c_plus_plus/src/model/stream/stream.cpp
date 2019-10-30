@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "model/stream/audio/odas/odas_audio_source.h"
+#include "model/stream/audio/odas/odas_client.h"
 #include "model/stream/audio/odas/odas_position_source.h"
 #include "model/stream/audio/pulseaudio/pulseaudio_sink.h"
 #include "model/stream/utils/images/images.h"
@@ -70,9 +71,10 @@ Stream::Stream(const VideoConfig& videoInputConfig, const VideoConfig& videoOutp
 
     mediaThread_ = std::make_unique<MediaThread>(
         std::make_unique<OdasAudioSource>(10030), std::make_unique<PulseAudioSink>(audioOutputConfig_),
-        std::make_unique<OdasPositionSource>(10020), implementationFactory.getCameraReader(videoInputConfig_),
-        implementationFactory.getFisheyeDewarper(), implementationFactory.getObjectFactory(),
-        std::make_unique<VirtualCameraOutput>(videoOutputConfig_), implementationFactory.getSynchronizer(),
+        std::make_unique<OdasPositionSource>(10020), std::make_unique<OdasClient>(),
+        implementationFactory.getCameraReader(videoInputConfig_), implementationFactory.getFisheyeDewarper(),
+        implementationFactory.getObjectFactory(), std::make_unique<VirtualCameraOutput>(videoOutputConfig_),
+        implementationFactory.getSynchronizer(),
         std::make_unique<VirtualCameraManager>(aspectRatio, minElevation, maxElevation), detectionQueue, imageBuffer_,
         implementationFactory.getImageConverter(), dewarpingConfig_, videoInputConfig_, videoOutputConfig_,
         audioInputConfig_, audioOutputConfig_);

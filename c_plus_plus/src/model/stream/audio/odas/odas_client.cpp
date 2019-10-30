@@ -14,6 +14,7 @@ void OdasClient::run()
     const QString& program = Model::ODAS_LIBRARY;
     QStringList arguments;
     arguments << "-c" << Model::MICROPHONE_CONFIGURATION;
+
     QProcess process;
     process.start(program, arguments);
 
@@ -21,11 +22,12 @@ void OdasClient::run()
     QByteArray output;
     while (m_isRunning)
     {
-        returnValue = process.waitForFinished(1000);
+        returnValue = process.waitForFinished(m_waitTime);
         if (returnValue)
         {
             qCritical() << "Odaslive stopped working.";
             output.append(process.readAll());
+
             if (!output.isEmpty())
             {
                 qWarning() << "Odas output:" << output;
@@ -34,12 +36,19 @@ void OdasClient::run()
         }
     }
 
+    // Ensure the process is closed.
     process.close();
-    process.waitForFinished(500);
+    process.waitForFinished(m_joinTime);
     if (process.isOpen())
     {
         qWarning() << "Odaslive were killed.";
         process.kill();
     }
+}
+
+void OdasClient::stop()
+{
+    m_isRunning = false;
+    this->msleep(static_cast<ulong>(m_joinTime));
 }
 }

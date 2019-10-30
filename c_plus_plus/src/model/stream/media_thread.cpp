@@ -4,6 +4,7 @@
 
 #include "model/audio_suppresser/audio_suppresser.h"
 #include "model/classifier/classifier.h"
+#include "model/stream/audio/odas/odas_client.h"
 #include "model/stream/utils/alloc/heap_object_factory.h"
 #include "model/stream/utils/models/point.h"
 #include "model/stream/video/dewarping/dewarping_helper.h"
@@ -13,9 +14,10 @@
 namespace Model
 {
 MediaThread::MediaThread(std::unique_ptr<IAudioSource> audioSource, std::unique_ptr<IAudioSink> audioSink,
-                         std::unique_ptr<IPositionSource> positionSource, std::unique_ptr<IVideoInput> videoInput,
-                         std::unique_ptr<IFisheyeDewarper> dewarper, std::unique_ptr<IObjectFactory> objectFactory,
-                         std::unique_ptr<IVideoOutput> videoOutput, std::unique_ptr<ISynchronizer> synchronizer,
+                         std::unique_ptr<IPositionSource> positionSource, std::unique_ptr<OdasClient> odasClient,
+                         std::unique_ptr<IVideoInput> videoInput, std::unique_ptr<IFisheyeDewarper> dewarper,
+                         std::unique_ptr<IObjectFactory> objectFactory, std::unique_ptr<IVideoOutput> videoOutput,
+                         std::unique_ptr<ISynchronizer> synchronizer,
                          std::unique_ptr<VirtualCameraManager> virtualCameraManager,
                          std::shared_ptr<moodycamel::ReaderWriterQueue<std::vector<SphericalAngleRect>>> detectionQueue,
                          std::shared_ptr<LockTripleBuffer<Image>> imageBuffer,
@@ -25,6 +27,7 @@ MediaThread::MediaThread(std::unique_ptr<IAudioSource> audioSource, std::unique_
     : audioSource_(std::move(audioSource))
     , audioSink_(std::move(audioSink))
     , positionSource_(std::move(positionSource))
+    , odasClient_(std::move(odasClient))
     , videoInput_(std::move(videoInput))
     , dewarper_(std::move(dewarper))
     , objectFactory_(std::move(objectFactory))
@@ -40,9 +43,9 @@ MediaThread::MediaThread(std::unique_ptr<IAudioSource> audioSource, std::unique_
     , audioInputConfig_(audioInputConfig)
     , audioOutputConfig_(audioOutputConfig)
 {
-    if (!audioSource_ || !audioSink_ || !positionSource_ || !videoInput_ || !dewarper_ || !objectFactory_ ||
-        !videoOutput_ || !synchronizer_ || !virtualCameraManager_ || !detectionQueue_ || !imageBuffer_ ||
-        !imageConverter_)
+    if (!audioSource_ || !audioSink_ || !positionSource_ || !odasClient_ || !videoInput_ || !dewarper_ ||
+        !objectFactory_ || !videoOutput_ || !synchronizer_ || !virtualCameraManager_ || !detectionQueue_ ||
+        !imageBuffer_ || !imageConverter_)
     {
         throw std::invalid_argument("Error in MediaThread - Null is not a valid argument");
     }
@@ -61,6 +64,11 @@ void MediaThread::run()
         audioSource_->open();
         audioSink_->open();
         positionSource_->open();
+        odasClient_->start();
+        if (!odasClient_->isRunning())
+        {
+            stop();
+        }
 
         HeapObjectFactory heapObjectFactory;
         DualBuffer<Image> displayBuffers(Image(videoOutputConfig_.resolution, videoOutputConfig_.imageFormat));
@@ -177,6 +185,7 @@ void MediaThread::run()
         std::cout << e.what() << std::endl;
     }
 
+    odasClient_->stop();
     audioSource_->close();
     audioSink_->close();
     positionSource_->close();

@@ -10,10 +10,13 @@ class OdasClient : public QThread
     Q_OBJECT
 
    public:
-    void stop() { m_isRunning = false; }
+    void stop();
+
    private:
     void run() override;
     bool m_isRunning = false;
+    const int m_waitTime = 100;
+    const int m_joinTime = 500;
 };
 }
 
