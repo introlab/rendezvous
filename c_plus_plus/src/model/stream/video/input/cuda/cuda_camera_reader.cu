@@ -8,10 +8,10 @@ CudaCameraReader::CudaCameraReader(const VideoConfig& videoConfig)
     : CameraReader(videoConfig, 3)
     , nextImage_(nullptr)
 {
-    const std::unique_ptr<IndexedImage[]>& buffers = images_.buffers();
     for (std::size_t i = 0; i < images_.size(); ++i)
     {
-        deviceCudaObjectFactory_.allocateObject(buffers[i].image);
+        deviceCudaObjectFactory_.allocateObject(images_.current().image);
+        images_.next();
     }
 
     checkCuda(cudaStreamCreate(&stream_));
@@ -23,10 +23,10 @@ CudaCameraReader::CudaCameraReader(const VideoConfig& videoConfig)
 
 CudaCameraReader::~CudaCameraReader()
 {
-    const std::unique_ptr<IndexedImage[]>& buffers = images_.buffers();
     for (std::size_t i = 0; i < images_.size(); ++i)
     {
-        deviceCudaObjectFactory_.deallocateObject(buffers[i].image);
+        deviceCudaObjectFactory_.deallocateObject(images_.current().image);
+        images_.next();
     }
 
     cudaStreamDestroy(stream_);

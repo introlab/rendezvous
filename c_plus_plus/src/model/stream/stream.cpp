@@ -28,8 +28,8 @@ Stream::Stream(const VideoConfig& videoInputConfig, const VideoConfig& videoOutp
     , dewarpingConfig_(dewarpingConfig)
     , mediaThread_(nullptr)
     , detectionThread_(nullptr)
+    , implementationFactory_(false)
 {
-    bool useZeroCopyIfSupported = false;
     int detectionDewarpingCount = 4;
     float aspectRatio = 3.f / 4.f;
     float minElevation = math::deg2rad(0.f);
@@ -57,24 +57,22 @@ Stream::Stream(const VideoConfig& videoInputConfig, const VideoConfig& videoOutp
     std::string weightsFile = root + "/config/yolo/weights/yolov3-tiny.weights";
     std::string metaFile = root + "/config/yolo/cfg/coco.data";
 
-    ImplementationFactory implementationFactory(useZeroCopyIfSupported);
-
-    objectFactory_ = implementationFactory.getDetectionObjectFactory();
+    objectFactory_ = implementationFactory_.getDetectionObjectFactory();
     objectFactory_->allocateObjectLockTripleBuffer(*imageBuffer_);
 
     detectionThread_ = std::make_unique<DetectionThread>(
-        imageBuffer_, implementationFactory.getDetector(configFile, weightsFile, metaFile), detectionQueue,
-        implementationFactory.getDetectionFisheyeDewarper(aspectRatio),
-        implementationFactory.getDetectionObjectFactory(), implementationFactory.getDetectionSynchronizer(),
+        imageBuffer_, implementationFactory_.getDetector(configFile, weightsFile, metaFile), detectionQueue,
+        implementationFactory_.getDetectionFisheyeDewarper(aspectRatio),
+        implementationFactory_.getDetectionObjectFactory(), implementationFactory_.getDetectionSynchronizer(),
         dewarpingConfig_, detectionDewarpingCount);
 
     mediaThread_ = std::make_unique<MediaThread>(
         std::make_unique<OdasAudioSource>(10030), std::make_unique<PulseAudioSink>(audioOutputConfig_),
-        std::make_unique<OdasPositionSource>(10020), implementationFactory.getCameraReader(videoInputConfig_),
-        implementationFactory.getFisheyeDewarper(), implementationFactory.getObjectFactory(),
-        std::make_unique<VirtualCameraOutput>(videoOutputConfig_), implementationFactory.getSynchronizer(),
+        std::make_unique<OdasPositionSource>(10020), implementationFactory_.getCameraReader(videoInputConfig_),
+        implementationFactory_.getFisheyeDewarper(), implementationFactory_.getObjectFactory(),
+        std::make_unique<VirtualCameraOutput>(videoOutputConfig_), implementationFactory_.getSynchronizer(),
         std::make_unique<VirtualCameraManager>(aspectRatio, minElevation, maxElevation), detectionQueue, imageBuffer_,
-        implementationFactory.getImageConverter(), dewarpingConfig_, videoInputConfig_, videoOutputConfig_,
+        implementationFactory_.getImageConverter(), dewarpingConfig_, videoInputConfig_, videoOutputConfig_,
         audioInputConfig_, audioOutputConfig_);
 }
 
