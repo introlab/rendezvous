@@ -21,7 +21,7 @@ void OdasClient::run()
 
     bool returnValue = false;
     QByteArray output;
-    while (m_state != OdasClientState::STOPPED)
+    while (!isAbortRequested())
     {
         returnValue = process.waitForFinished(m_waitTime);
         if (returnValue)
@@ -35,6 +35,7 @@ void OdasClient::run()
                 qWarning() << "Odas output:" << output;
             }
             m_state = OdasClientState::STOPPED;
+            break;
         }
     }
 
@@ -46,14 +47,14 @@ void OdasClient::run()
         qWarning() << "Odaslive were killed.";
         process.kill();
     }
-
     notify();
+    qInfo() << "donezo";
 }
 
 void OdasClient::stop()
 {
+    Thread::stop();
     m_state = OdasClientState::STOPPED;
-    this->msleep(static_cast<ulong>(m_joinTime));
 }
 
 void OdasClient::attach(IObserver* observer)
@@ -68,7 +69,10 @@ void OdasClient::notify()
 {
     for (auto observer : m_subscribers)
     {
-        observer->update();
+        if (observer != nullptr)
+        {
+            observer->update();
+        }
     }
 }
 

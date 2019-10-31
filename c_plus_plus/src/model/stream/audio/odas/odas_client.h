@@ -1,9 +1,8 @@
 #ifndef ODAS_CLIENT_H
 #define ODAS_CLIENT_H
 
+#include "model/stream/utils/threads/thread.h"
 #include "model/utils/observer/i_subject.h"
-
-#include <QThread>
 
 #include <vector>
 
@@ -15,21 +14,18 @@ enum OdasClientState
     STOPPED
 };
 
-class OdasClient : public QThread, public ISubject
+class OdasClient : public Thread, public ISubject
 {
-    Q_OBJECT
-
    public:
     void stop();
     void notify() override;
     void attach(IObserver *observer) override;
     OdasClientState getState();
 
-   signals:
-    void stateChanged(const OdasClientState state);
+   protected:
+    void run() override;
 
    private:
-    void run() override;
     const int m_waitTime = 100;
     const int m_joinTime = 500;
     OdasClientState m_state = OdasClientState::STOPPED;

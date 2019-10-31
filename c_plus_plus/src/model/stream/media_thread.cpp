@@ -16,10 +16,9 @@
 namespace Model
 {
 MediaThread::MediaThread(std::unique_ptr<IAudioSource> audioSource, std::unique_ptr<IAudioSink> audioSink,
-                         std::unique_ptr<IPositionSource> positionSource, std::unique_ptr<OdasClient> odasClient,
-                         std::unique_ptr<IVideoInput> videoInput, std::unique_ptr<IFisheyeDewarper> dewarper,
-                         std::unique_ptr<IObjectFactory> objectFactory, std::unique_ptr<IVideoOutput> videoOutput,
-                         std::unique_ptr<ISynchronizer> synchronizer,
+                         std::unique_ptr<IPositionSource> positionSource, std::unique_ptr<IVideoInput> videoInput,
+                         std::unique_ptr<IFisheyeDewarper> dewarper, std::unique_ptr<IObjectFactory> objectFactory,
+                         std::unique_ptr<IVideoOutput> videoOutput, std::unique_ptr<ISynchronizer> synchronizer,
                          std::unique_ptr<VirtualCameraManager> virtualCameraManager,
                          std::shared_ptr<moodycamel::ReaderWriterQueue<std::vector<SphericalAngleRect>>> detectionQueue,
                          std::shared_ptr<LockTripleBuffer<Image>> imageBuffer,
@@ -29,7 +28,6 @@ MediaThread::MediaThread(std::unique_ptr<IAudioSource> audioSource, std::unique_
     : audioSource_(std::move(audioSource))
     , audioSink_(std::move(audioSink))
     , positionSource_(std::move(positionSource))
-    , odasClient_(std::move(odasClient))
     , videoInput_(std::move(videoInput))
     , dewarper_(std::move(dewarper))
     , objectFactory_(std::move(objectFactory))
@@ -45,16 +43,11 @@ MediaThread::MediaThread(std::unique_ptr<IAudioSource> audioSource, std::unique_
     , audioInputConfig_(audioInputConfig)
     , audioOutputConfig_(audioOutputConfig)
 {
-    if (!audioSource_ || !audioSink_ || !positionSource_ || !odasClient_ || !videoInput_ || !dewarper_ ||
-        !objectFactory_ || !videoOutput_ || !synchronizer_ || !virtualCameraManager_ || !detectionQueue_ ||
-        !imageBuffer_ || !imageConverter_)
+    if (!audioSource_ || !audioSink_ || !positionSource_ || !videoInput_ || !dewarper_ || !objectFactory_ ||
+        !videoOutput_ || !synchronizer_ || !virtualCameraManager_ || !detectionQueue_ || !imageBuffer_ ||
+        !imageConverter_)
     {
         throw std::invalid_argument("Error in MediaThread - Null is not a valid argument");
-    }
-
-    if (odasClient_ != nullptr)
-    {
-        odasClient_->attach(this);
     }
 }
 
@@ -79,6 +72,9 @@ void MediaThread::run()
 
     // TODO: will be managed by odas audio source
     uint8_t* audioBuffer = new uint8_t[audioInputConfig_.bufferSize];
+
+    odasClient_ = std::make_unique<OdasClient>();
+    odasClient_->attach(this);
 
     try
     {
@@ -223,7 +219,9 @@ void MediaThread::run()
     }
 
     // Clean audio resources
+    std::cout << "stop by media" << std::endl;
     odasClient_->stop();
+    odasClient_->join();
     audioSource_->close();
     audioSink_->close();
     positionSource_->close();
@@ -243,7 +241,7 @@ void MediaThread::run()
 void MediaThread::update()
 {
     const OdasClientState& state = odasClient_->getState();
-    if (state == OdasClientState::STOPPED && !isAbortRequested())
+    if (state == OdasClientState::STOPPED)
     {
         stop();
     }
