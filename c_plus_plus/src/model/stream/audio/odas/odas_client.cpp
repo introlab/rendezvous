@@ -40,11 +40,21 @@ void OdasClient::run()
             {
                 qWarning() << "Odas output:" << output;
             }
-            m_state = OdasClientState::STOPPED;
+
+            closeProcess(process);
+            m_state = OdasClientState::CRASHED;
+            notify();
             break;
         }
     }
 
+    closeProcess(process);
+    m_state = OdasClientState::STOPPED;
+    notify();
+}
+
+void OdasClient::closeProcess(QProcess& process)
+{
     // Ensure the process clean close.
     process.close();
     process.waitForFinished(m_joinTime);
@@ -53,14 +63,6 @@ void OdasClient::run()
         qWarning() << "Odaslive were killed.";
         process.kill();
     }
-    notify();
-    qInfo() << "donezo";
-}
-
-void OdasClient::stop()
-{
-    Thread::stop();
-    m_state = OdasClientState::STOPPED;
 }
 
 void OdasClient::attach(IObserver* observer)
@@ -77,7 +79,7 @@ void OdasClient::notify()
     {
         if (observer != nullptr)
         {
-            observer->update();
+            observer->updateObserver();
         }
     }
 }

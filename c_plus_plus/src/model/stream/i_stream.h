@@ -1,9 +1,11 @@
 #ifndef I_STREAM_H
 #define I_STREAM_H
 
+#include <QObject>
+
 namespace Model
 {
-class IStream
+class IStream : public QObject
 {
    public:
     virtual ~IStream() = default;

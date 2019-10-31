@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "model/stream/audio/odas/odas_audio_source.h"
+#include "model/stream/audio/odas/odas_client.h"
 #include "model/stream/audio/odas/odas_position_source.h"
 #include "model/stream/audio/pulseaudio/pulseaudio_sink.h"
 #include "model/stream/utils/images/images.h"
@@ -55,10 +56,7 @@ Stream::Stream(const VideoConfig& videoInputConfig, const VideoConfig& videoOutp
     std::string weightsFile = "/home/morel/dev/workspace/rendezvous/config/yolo/weights/yolov3-tiny.weights";
     std::string metaFile = "/home/morel/dev/workspace/rendezvous/config/yolo/cfg/coco.data";
 
-    bool useZeroCopyIfSupported = false;
-    ImplementationFactory implementationFactory(useZeroCopyIfSupported);
-
-    objectFactory_ = implementationFactory.getDetectionObjectFactory();
+    objectFactory_ = implementationFactory_.getDetectionObjectFactory();
     objectFactory_->allocateObjectLockTripleBuffer(*imageBuffer_);
 
     std::shared_ptr<moodycamel::ReaderWriterQueue<std::vector<SphericalAngleRect>>> detectionQueue =
@@ -78,6 +76,12 @@ Stream::Stream(const VideoConfig& videoInputConfig, const VideoConfig& videoOutp
         std::make_unique<VirtualCameraManager>(aspectRatio, minElevation, maxElevation), detectionQueue, imageBuffer_,
         implementationFactory_.getImageConverter(), dewarpingConfig_, videoInputConfig_, videoOutputConfig_,
         audioInputConfig_, audioOutputConfig_);
+
+    odasClient_ = std::make_unique<OdasClient>();
+    if (odasClient_ != nullptr)
+    {
+        odasClient_->attach(this);
+    }
 }
 
 Stream::~Stream()
@@ -89,13 +93,37 @@ void Stream::start()
 {
     mediaThread_->start();
     detectionThread_->start();
+    odasClient_->start();
+    status_ = StreamStatus::RUNNING;
 }
 
 void Stream::stop()
 {
-    detectionThread_->stop();
-    detectionThread_->join();
-    mediaThread_->stop();
-    mediaThread_->join();
+    if (odasClient_ != nullptr && odasClient_->getState() != OdasClientState::CRASHED)
+    {
+        odasClient_->stop();
+        odasClient_->join();
+    }
+    if (detectionThread_ != nullptr)
+    {
+        detectionThread_->stop();
+        detectionThread_->join();
+    }
+    if (mediaThread_ != nullptr)
+    {
+        mediaThread_->stop();
+        mediaThread_->join();
+    }
+    status_ = StreamStatus::STOPPED;
+}
+
+void Stream::updateObserver()
+{
+    if (odasClient_ == nullptr) return;
+    const OdasClientState& state = odasClient_->getState();
+    if (state == OdasClientState::CRASHED)
+    {
+        stop();
+    }
 }
 }    // namespace Model

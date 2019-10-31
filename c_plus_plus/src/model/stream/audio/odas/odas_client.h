@@ -4,20 +4,22 @@
 #include "model/stream/utils/threads/thread.h"
 #include "model/utils/observer/i_subject.h"
 
+#include <QProcess>
+
 #include <vector>
 
 namespace Model
 {
-enum OdasClientState
+enum class OdasClientState
 {
     RUNNING,
-    STOPPED
+    STOPPED,
+    CRASHED
 };
 
 class OdasClient : public Thread, public ISubject
 {
    public:
-    void stop();
     void notify() override;
     void attach(IObserver *observer) override;
     OdasClientState getState();
@@ -26,6 +28,8 @@ class OdasClient : public Thread, public ISubject
     void run() override;
 
    private:
+    void closeProcess(QProcess &process);
+
     const int m_waitTime = 100;
     const int m_joinTime = 500;
     OdasClientState m_state = OdasClientState::STOPPED;

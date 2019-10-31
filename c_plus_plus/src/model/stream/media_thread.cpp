@@ -5,7 +5,6 @@
 
 #include "model/audio_suppresser/audio_suppresser.h"
 #include "model/classifier/classifier.h"
-#include "model/stream/audio/odas/odas_client.h"
 #include "model/stream/utils/alloc/heap_object_factory.h"
 #include "model/stream/utils/models/circular_buffer.h"
 #include "model/stream/utils/models/point.h"
@@ -73,9 +72,6 @@ void MediaThread::run()
     // TODO: will be managed by odas audio source
     uint8_t* audioBuffer = new uint8_t[audioInputConfig_.bufferSize];
 
-    odasClient_ = std::make_unique<OdasClient>();
-    odasClient_->attach(this);
-
     try
     {
         // Allocate display images
@@ -93,7 +89,6 @@ void MediaThread::run()
         audioSource_->open();
         audioSink_->open();
         positionSource_->open();
-        odasClient_->start();
 
         Point<float> fisheyeCenter(videoInputConfig_.resolution.width / 2.f, videoInputConfig_.resolution.height / 2.f);
         std::vector<SphericalAngleRect> detections;
@@ -219,9 +214,6 @@ void MediaThread::run()
     }
 
     // Clean audio resources
-    std::cout << "stop by media" << std::endl;
-    odasClient_->stop();
-    odasClient_->join();
     audioSource_->close();
     audioSink_->close();
     positionSource_->close();
@@ -236,14 +228,5 @@ void MediaThread::run()
     objectFactory_->deallocateObjectVector(vcOutputFormatImages);
 
     std::cout << "MediaThread loop finished" << std::endl;
-}
-
-void MediaThread::update()
-{
-    const OdasClientState& state = odasClient_->getState();
-    if (state == OdasClientState::STOPPED)
-    {
-        stop();
-    }
 }
 }    // namespace Model
