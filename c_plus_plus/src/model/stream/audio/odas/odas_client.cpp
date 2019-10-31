@@ -2,6 +2,7 @@
 #include "model/settings/settings_constants.h"
 
 #include <QDebug>
+#include <QFile>
 #include <QProcess>
 #include <QThread>
 
@@ -15,6 +16,11 @@ void OdasClient::run()
     const QString& program = Model::ODAS_LIBRARY;
     QStringList arguments;
     arguments << "-c" << Model::MICROPHONE_CONFIGURATION;
+
+    if (!QFile::exists(program) || !QFile::exists(Model::MICROPHONE_CONFIGURATION))
+    {
+        stop();
+    }
 
     QProcess process;
     process.start(program, arguments);

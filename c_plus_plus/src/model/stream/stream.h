@@ -36,6 +36,7 @@ class Stream : public IStream
 
     std::unique_ptr<MediaThread> mediaThread_;
     std::unique_ptr<DetectionThread> detectionThread_;
+    std::unique_ptr<OdasClient> odasClient_;
     std::unique_ptr<IObjectFactory> objectFactory_;
     std::shared_ptr<LockTripleBuffer<Image>> imageBuffer_;
     ImplementationFactory implementationFactory_;
