@@ -32,9 +32,9 @@ int main(int argc, char *argv[])
 
     int fpsTarget = 20;
 
-    int inWidth = 640;
-    int inHeight = 480;
-    Model::VideoConfig videoInputConfig(inWidth, inHeight, fpsTarget, "/dev/video0", Model::ImageFormat::YUYV_FMT);
+    int inWidth = 2880;
+    int inHeight = 2160;
+    Model::VideoConfig videoInputConfig(inWidth, inHeight, fpsTarget, "/dev/video0", Model::ImageFormat::UYVY_FMT);
 
     int outWidth = 800;
     int outHeight = 600;
