@@ -104,7 +104,7 @@ void Stream::stop()
     status_ = StreamStatus::STOPPING;
     emit statusChanged();
 
-    if (odasClient_ != nullptr)
+    if (odasClient_ != nullptr && odasClient_->getState() != OdasClientState::CRASHED)
     {
         odasClient_->stop();
         odasClient_->join();

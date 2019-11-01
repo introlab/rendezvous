@@ -31,6 +31,7 @@ OnlineConferenceView::OnlineConferenceView(std::shared_ptr<Model::IStream> strea
 
     m_stopped->addTransition(m_ui->startButton, &QAbstractButton::clicked, m_started);
     m_started->addTransition(m_ui->startButton, &QAbstractButton::clicked, m_stopped);
+    m_started->addTransition(this, &OnlineConferenceView::streamCrashed, m_stopped);
 
     m_stateMachine->addState(m_stopped);
     m_stateMachine->addState(m_started);
@@ -53,6 +54,7 @@ OnlineConferenceView::~OnlineConferenceView()
 
 void OnlineConferenceView::onStoppedStateEntered()
 {
+    m_currentState = m_stopped;
     m_ui->startButton->setDisabled(true);
     repaint();
     m_stream->stop();
@@ -60,6 +62,7 @@ void OnlineConferenceView::onStoppedStateEntered()
 
 void OnlineConferenceView::onStartedStateEntered()
 {
+    m_currentState = m_started;
     m_ui->startButton->setDisabled(true);
     repaint();
     m_stream->start();
@@ -70,8 +73,14 @@ void OnlineConferenceView::onStreamStatusChanged()
     const Model::StreamStatus status = m_stream->getStatus();
     switch (status)
     {
-        case Model::StreamStatus::RUNNING:
         case Model::StreamStatus::STOPPED:
+            // there is a crash
+            if (m_currentState == m_started)
+            {
+                emit streamCrashed(QPrivateSignal());
+            }
+        // intentionnal fall-through because both STOPPED and RUNNING need to reactivate the start button.
+        case Model::StreamStatus::RUNNING:
             m_ui->startButton->setDisabled(false);
             repaint();
             break;
