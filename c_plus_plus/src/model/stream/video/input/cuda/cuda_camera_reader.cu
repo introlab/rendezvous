@@ -15,10 +15,6 @@ CudaCameraReader::CudaCameraReader(const VideoConfig& videoConfig)
     }
 
     checkCuda(cudaStreamCreate(&stream_));
-
-    // Read a frame to prepare the next read
-    nextImage_ = &CameraReader::readImage();
-    cudaMemcpyAsync(nextImage_->deviceData, nextImage_->hostData, nextImage_->size, cudaMemcpyHostToDevice, stream_);
 }
 
 CudaCameraReader::~CudaCameraReader()
@@ -30,6 +26,15 @@ CudaCameraReader::~CudaCameraReader()
     }
 
     cudaStreamDestroy(stream_);
+}
+
+void CudaCameraReader::open()
+{
+    CameraReader::open();
+
+    // Read a frame to prepare the next read
+    nextImage_ = &CameraReader::readImage();
+    cudaMemcpyAsync(nextImage_->deviceData, nextImage_->hostData, nextImage_->size, cudaMemcpyHostToDevice, stream_);
 }
 
 const Image& CudaCameraReader::readImage()

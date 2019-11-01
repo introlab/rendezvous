@@ -8,23 +8,28 @@ VirtualCameraOutput::VirtualCameraOutput(const VideoConfig& videoConfig)
     : videoConfig_(videoConfig)
     , videoOutput_(nullptr)
 {
-    unsigned int v4l2Format = getV4L2Format(videoConfig.imageFormat);
+}
+
+void VirtualCameraOutput::open()
+{
+    unsigned int v4l2Format = getV4L2Format(videoConfig_.imageFormat);
 
     V4L2DeviceParameters param(videoConfig_.deviceName.c_str(), v4l2Format, videoConfig_.resolution.width,
                                videoConfig_.resolution.height, videoConfig_.fpsTarget);
     videoOutput_ = V4l2Output::create(param, V4l2Access::IOTYPE_READWRITE);
 
-    if (!videoOutput_)
+    if (videoOutput_ == nullptr)
     {
         throw std::runtime_error("Could not open virtual camera " + videoConfig_.deviceName);
     }
 }
 
-VirtualCameraOutput::~VirtualCameraOutput()
+void VirtualCameraOutput::close()
 {
-    if (videoOutput_)
+    if (videoOutput_ != nullptr)
     {
         videoOutput_->stop();
+        delete videoOutput_;
         videoOutput_ = nullptr;
     }
 }

@@ -16,6 +16,8 @@ class ImageFileReader : public IVideoInput
    public:
     ImageFileReader(const std::string& imageFilePath, ImageFormat format);
 
+    void open() override;
+    void close() override;
     const Image& readImage() override;
 
    protected:

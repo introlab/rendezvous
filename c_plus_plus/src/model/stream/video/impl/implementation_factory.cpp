@@ -182,7 +182,7 @@ std::unique_ptr<IImageConverter> ImplementationFactory::getImageConverter()
     return imageConverter;
 }
 
-std::unique_ptr<IVideoInput> ImplementationFactory::getFileImageReader(const std::string& imageFilePath,
+std::unique_ptr<IVideoInput> ImplementationFactory::getImageFileReader(const std::string& imageFilePath,
                                                                        ImageFormat format)
 {
     std::unique_ptr<IVideoInput> fileImageReader = nullptr;
