@@ -26,6 +26,7 @@ void OdasClient::run()
 
     bool returnValue = false;
     QByteArray output;
+
     while (!isAbortRequested())
     {
         returnValue = process.waitForFinished(m_waitTime);

@@ -5,6 +5,7 @@
 #include <stdexcept>
 
 #include <QDesktopServices>
+#include <QSignalBlocker>
 #include <QState>
 #include <QStateMachine>
 #include <QUrl>
@@ -56,7 +57,10 @@ void OnlineConferenceView::onStoppedStateEntered()
 {
     m_currentState = m_stopped;
     m_ui->startButton->setDisabled(true);
-    repaint();
+    QApplication::processEvents();
+    // We use a signal blocker to avoid queued signals from clicks on the startButton when the UI is disabled
+    // The signals are reenable when the blocker is out of scope.
+    QSignalBlocker blocker(m_ui->startButton);
     m_stream->stop();
 }
 
@@ -64,7 +68,7 @@ void OnlineConferenceView::onStartedStateEntered()
 {
     m_currentState = m_started;
     m_ui->startButton->setDisabled(true);
-    repaint();
+    QApplication::processEvents();
     m_stream->start();
 }
 
@@ -82,11 +86,11 @@ void OnlineConferenceView::onStreamStatusChanged()
         // intentionnal fall-through because both STOPPED and RUNNING need to reactivate the start button.
         case Model::StreamStatus::RUNNING:
             m_ui->startButton->setDisabled(false);
-            repaint();
+            QApplication::processEvents();
             break;
         case Model::StreamStatus::STOPPING:
             m_ui->startButton->setDisabled(true);
-            repaint();
+            QApplication::processEvents();
             break;
         default:
             break;
