@@ -35,54 +35,72 @@ void DetectionThread::run()
     Dim2<int> detectionResolution(detector_->getInputImageDim());
     Point<float> fisheyeCenter(resolution.width / 2.f, resolution.height / 2.f);
 
-    std::vector<DewarpingParameters> dewarpingParams = getDetectionDewarpingParameters(resolution, dewarpCount_);
-    std::vector<ImageFloat> detectionImages = getDetectionImages(detectionResolution, dewarpCount_);
-    std::vector<DewarpingMapping> dewarpingMappings =
-        getDewarpingMappings(dewarpingParams, resolution, detectionResolution, dewarpCount_);
+    std::vector<DewarpingParameters> dewarpingParams;
+    std::vector<ImageFloat> detectionImages;
+    std::vector<DewarpingMapping> dewarpingMappings;
     std::vector<SphericalAngleRect> detections;
 
-    std::cout << "DetectionThread loop started" << std::endl;
-
-    while (!isAbortRequested())
+    try
     {
-        // Make sure a new image is actually in the buffer
-        while (!imageBuffer_->getAndClearSwapCount() && !isAbortRequested())
+        // Allocate and prepare objects for dewarping and detection
+        dewarpingParams = getDetectionDewarpingParameters(resolution, dewarpCount_);
+        detectionImages = getDetectionImages(detectionResolution, dewarpCount_);
+        dewarpingMappings = getDewarpingMappings(dewarpingParams, resolution, detectionResolution, dewarpCount_);
+
+        std::cout << "DetectionThread loop started" << std::endl;
+
+        while (!isAbortRequested())
         {
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        }
-
-        // We lock the image so we can use it without it being overwritten
-        imageBuffer_->lockInUse();
-        const Image& image = imageBuffer_->getLocked();
-
-        // Dewarp each view, detect on each view and concatenate the results
-        for (int i = 0; i < dewarpCount_; ++i)
-        {
-            dewarper_->dewarpImage(image, detectionImages[i], dewarpingMappings[i]);
-            synchronizer_->sync();
-            const std::vector<Rectangle> viewDetections = detector_->detectInImage(detectionImages[i]);
-
-            for (const Rectangle& detection : viewDetections)
-            {
-                detections.push_back(getAngleRectFromDewarpedImageRectangle(
-                    detection, dewarpingParams[i], detectionImages[i], fisheyeCenter, dewarpingConfig_.fisheyeAngle));
-            }
-        }
-
-        bool success = false;
-
-        // Output the detections, if queue is full keep trying...
-        while (!success && !isAbortRequested())
-        {
-            success = detectionQueue_->try_enqueue(std::move(detections));
-
-            if (!success)
+            // Make sure a new image is actually in the buffer
+            while (!imageBuffer_->getAndClearSwapCount() && !isAbortRequested())
             {
                 std::this_thread::sleep_for(std::chrono::milliseconds(1));
             }
-        }
 
-        detections.clear();    // Just making sure...
+            // No need to do a detection if thread is aborted
+            if (isAbortRequested())
+            {
+                break;
+            }
+
+            // We lock the image so we can use it without it being overwritten
+            imageBuffer_->lockInUse();
+            const Image& image = imageBuffer_->getLocked();
+
+            // Dewarp each view, detect on each view and concatenate the results
+            for (int i = 0; i < dewarpCount_; ++i)
+            {
+                dewarper_->dewarpImage(image, detectionImages[i], dewarpingMappings[i]);
+                synchronizer_->sync();
+                const std::vector<Rectangle> viewDetections = detector_->detectInImage(detectionImages[i]);
+
+                for (const Rectangle& detection : viewDetections)
+                {
+                    detections.push_back(getAngleRectFromDewarpedImageRectangle(detection, dewarpingParams[i],
+                                                                                detectionImages[i], fisheyeCenter,
+                                                                                dewarpingConfig_.fisheyeAngle));
+                }
+            }
+
+            bool success = false;
+
+            // Output the detections, if queue is full keep trying...
+            while (!success && !isAbortRequested())
+            {
+                success = detectionQueue_->try_enqueue(std::move(detections));
+
+                if (!success)
+                {
+                    std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                }
+            }
+
+            detections.clear();    // Just making sure... Should be empty because of the std::move
+        }
+    }
+    catch (const std::exception& e)
+    {
+        std::cout << "Error in detection thread : " << e.what() << std::endl;
     }
 
     objectFactory_->deallocateObjectVector(detectionImages);

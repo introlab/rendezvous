@@ -14,6 +14,7 @@ class CudaCameraReader : public CameraReader
     explicit CudaCameraReader(const VideoConfig& videoConfig);
     virtual ~CudaCameraReader();
 
+    void open() override;
     const Image& readImage() override;
 
    private:

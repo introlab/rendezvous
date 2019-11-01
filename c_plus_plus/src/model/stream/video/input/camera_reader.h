@@ -13,8 +13,9 @@ class CameraReader : public IVideoInput
 {
    public:
     CameraReader(const VideoConfig& cameraConfig, std::size_t bufferCount);
-    virtual ~CameraReader();
 
+    void open() override;
+    void close() override;
     const Image& readImage() override;
 
    protected:
