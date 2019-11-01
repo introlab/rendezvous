@@ -23,7 +23,6 @@ class LocalSocketServer : public ISocketServer
 
    private slots:
     void onNewConnection();
-    void onSocketStateChanged(QAbstractSocket::SocketState);
 
    private:
     QPointer<QTcpServer> m_server;

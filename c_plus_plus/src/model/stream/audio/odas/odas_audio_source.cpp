@@ -6,24 +6,30 @@ OdasAudioSource::OdasAudioSource(quint16 port)
     : m_socketServer(std::make_unique<LocalSocketServer>(port))
 {
 }
+
 OdasAudioSource::~OdasAudioSource()
 {
     close();
 }
 
-bool OdasAudioSource::open()
+void OdasAudioSource::open()
 {
-    return m_socketServer->start();
+    if (!m_socketServer->start())
+    {
+        throw std::runtime_error("cannot start socket server");
+    }
 }
 
-bool OdasAudioSource::close()
+void OdasAudioSource::close()
 {
-    return m_socketServer->stop();
+    m_socketServer->stop();
 }
 
-int OdasAudioSource::read(uint8_t* audioBuf, int bytesToRead)
+// TODO: broken because it is not possible to read from qt socket from
+// another thread, will be fixed
+int OdasAudioSource::read(uint8_t* /*audioBuf*/, int /*bytesToRead*/)
 {
-    qint64 bytesRead = m_socketServer->read(reinterpret_cast<char*>(audioBuf), bytesToRead);
-    return static_cast<int>(bytesRead);
+    return 0;
 }
+
 }    // namespace Model

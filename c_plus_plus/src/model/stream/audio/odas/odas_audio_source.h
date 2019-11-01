@@ -14,8 +14,8 @@ class OdasAudioSource : public IAudioSource
     OdasAudioSource(quint16 port);
     ~OdasAudioSource() override;
 
-    bool open() override;
-    bool close() override;
+    void open() override;
+    void close() override;
     int read(uint8_t* audioBuf, int bytesToRead) override;
 
    private:

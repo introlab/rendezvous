@@ -1,5 +1,6 @@
 #include "model/media_player/media_player.h"
 #include "model/settings/settings.h"
+#include "model/stream/audio/audio_config.h"
 #include "model/stream/stream.h"
 #include "model/stream/utils/math/angle_calculations.h"
 #include "view/mainwindow.h"
@@ -18,6 +19,8 @@ int main(int argc, char *argv[])
     Model::Settings settings;
     Model::MediaPlayer mediaPlayer;
 
+    // TODO : move these configurations in a file
+
     float inRadius = 400.f;
     float outRadius = 1400.f;
     float angleSpan = Model::math::deg2rad(90.f);
@@ -31,14 +34,32 @@ int main(int argc, char *argv[])
 
     int inWidth = 2880;
     int inHeight = 2160;
-    Model::VideoConfig inputConfig(inWidth, inHeight, fpsTarget, "/dev/video0", Model::ImageFormat::UYVY_FMT);
+    Model::VideoConfig videoInputConfig(inWidth, inHeight, fpsTarget, "/dev/video0", Model::ImageFormat::UYVY_FMT);
 
     int outWidth = 800;
     int outHeight = 600;
-    Model::VideoConfig outputConfig(outWidth, outHeight, fpsTarget, "/dev/video1", Model::ImageFormat::UYVY_FMT);
+    Model::VideoConfig videoOutputConfig(outWidth, outHeight, fpsTarget, "/dev/video1", Model::ImageFormat::UYVY_FMT);
 
-    std::shared_ptr<Model::IStream> stream =
-        std::make_shared<Model::Stream>(inputConfig, outputConfig, dewarpingConfig);
+    std::string inDeviceName = "odas";
+    int inChannels = 4;
+    int inRate = 44100;
+    int inFormatBytes = 16;
+    bool inIsLittleEndian = true;
+    int inBufferSize = 4096;
+    Model::AudioConfig audioInputConfig(inDeviceName, inChannels, inRate, inFormatBytes, inIsLittleEndian,
+                                        inBufferSize);
+
+    std::string outDeviceName = "";
+    int outChannels = 4;
+    int outRate = 44100;
+    int outFormatBytes = 16;
+    bool outIsLittleEndian = true;
+    int outBufferSize = 4096;
+    Model::AudioConfig audioOutputConfig(outDeviceName, outChannels, outRate, outFormatBytes, outIsLittleEndian,
+                                         outBufferSize);
+
+    std::shared_ptr<Model::IStream> stream = std::make_shared<Model::Stream>(
+        videoInputConfig, videoOutputConfig, audioInputConfig, audioOutputConfig, dewarpingConfig);
 
     View::MainWindow w(settings, mediaPlayer, stream);
     w.show();

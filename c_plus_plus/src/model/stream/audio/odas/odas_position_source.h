@@ -20,8 +20,8 @@ class OdasPositionSource : public QObject, public IPositionSource
     OdasPositionSource(quint16 port);
     ~OdasPositionSource() override;
 
-    bool open() override;
-    bool close() override;
+    void open() override;
+    void close() override;
     std::vector<SourcePosition> getPositions() override;
 
    private slots:

@@ -2,10 +2,8 @@
 *.slo
 *.lo
 *.o
-*.a
 *.la
 *.lai
-*.so
 *.dll
 *.dylib
 
