@@ -26,6 +26,8 @@ INCLUDEPATH *= src
 
 SOURCES += \
     src/main.cpp \
+    src/model/audio_suppresser/audio_suppresser.cpp \
+    src/model/classifier/classifier.cpp \
     src/model/media_player/media_player.cpp \
     src/model/media_player/subtitles/srt_file.cpp \
     src/model/media_player/subtitles/subtitles.cpp \
@@ -38,6 +40,7 @@ SOURCES += \
     src/model/stream/audio/odas/odas_position_source.cpp \
     src/model/stream/audio/pulseaudio/pulseaudio_sink.cpp \
     src/model/stream/audio/source_position.cpp \
+    src/model/stream/media_thread.cpp \
     src/model/stream/stream.cpp \
     src/model/stream/utils/alloc/heap_object_factory.cpp \
     src/model/stream/utils/images/image_converter.cpp \
@@ -61,7 +64,6 @@ SOURCES += \
     src/model/stream/video/output/image_file_writer.cpp \
     src/model/stream/video/output/virtual_camera_output.cpp \
     src/model/stream/video/video_stabilizer.cpp \
-    src/model/stream/video/video_thread.cpp \
     src/model/stream/video/virtualcamera/display_image_builder.cpp \
     src/model/stream/video/virtualcamera/virtual_camera_manager.cpp \
     src/view/components/sidebar.cpp \
@@ -72,6 +74,8 @@ SOURCES += \
     src/view/views/settings_view.cpp
 
 HEADERS += \
+    src/model/audio_suppresser/audio_suppresser.h \
+    src/model/classifier/classifier.h \
     src/model/media_player/i_media_player.h \
     src/model/media_player/media_player.h \
     src/model/media_player/subtitles/srt_file.h \
@@ -94,6 +98,7 @@ HEADERS += \
     src/model/stream/audio/pulseaudio/pulseaudio_sink.h \
     src/model/stream/audio/source_position.h \
     src/model/stream/i_stream.h \
+    src/model/stream/media_thread.h \
     src/model/stream/stream.h \
     src/model/stream/utils/alloc/cuda/device_cuda_object_factory.h \
     src/model/stream/utils/alloc/cuda/managed_memory_cuda_object_factory.h \
@@ -162,7 +167,6 @@ HEADERS += \
     src/model/stream/video/output/virtual_camera_output.h \
     src/model/stream/video/video_config.h \
     src/model/stream/video/video_stabilizer.h \
-    src/model/stream/video/video_thread.h \
     src/model/stream/video/virtualcamera/display_image_builder.h \
     src/model/stream/video/virtualcamera/virtual_camera.h \
     src/model/stream/video/virtualcamera/virtual_camera_manager.h \
@@ -195,7 +199,21 @@ contains(compilation, no_cuda) {
     DEFINES += NO_CUDA
 } else {
     INCLUDEPATH += $(CUDA_HOME)/include
-    LIBS += -L$(CUDA_HOME)/lib -lcuda -lcudart
+
+    CUDA_HOME=$$(CUDA_HOME)
+    !isEmpty(CUDA_HOME) {
+        exists($$(CUDA_HOME)/lib) {
+            LIBS += -L$(CUDA_HOME)/lib
+        } else {
+            exists($$(CUDA_HOME)/lib64) {
+                LIBS += -L$(CUDA_HOME)/lib64
+            }
+        }
+    } else {
+        message("CUDA_HOME is not set, will try to use PATH")
+    }
+    
+    LIBS += -lcuda -lcudart
 
     cuda.input = CUDA_SOURCES
     cuda.output = $$OBJECTS_DIR/${QMAKE_FILE_BASE}.o

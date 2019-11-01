@@ -13,8 +13,8 @@ class RawFileAudioSink : public IAudioSink
     RawFileAudioSink(std::string fileName);
     ~RawFileAudioSink() override;
 
-    bool open() override;
-    bool close() override;
+    void open() override;
+    void close() override;
     int write(uint8_t* buffer, int bytesToWrite) override;
 
    private:
@@ -22,6 +22,6 @@ class RawFileAudioSink : public IAudioSink
     std::string m_fileName;
 };
 
-}    // Model
+}    // namespace Model
 
 #endif    // RAW_FILE_AUDIO_SINK_H

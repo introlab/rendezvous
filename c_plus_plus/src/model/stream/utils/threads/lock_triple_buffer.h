@@ -19,6 +19,7 @@ class LockTripleBuffer
         , free_(&buf_[2])
         , locked_(&buf_[2])
         , swapCounter_(0)
+        , lock_(ATOMIC_FLAG_INIT)
     {
     }
 

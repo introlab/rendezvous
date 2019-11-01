@@ -1,5 +1,7 @@
 #include "raw_file_audio_sink.h"
 
+#include <iostream>
+
 namespace Model
 {
 RawFileAudioSink::RawFileAudioSink(std::string fileName)
@@ -13,19 +15,22 @@ RawFileAudioSink::~RawFileAudioSink()
     close();
 }
 
-bool RawFileAudioSink::open()
+void RawFileAudioSink::open()
 {
     m_file = fopen(m_fileName.c_str(), "ab");
-    return m_file != nullptr;
+    if (m_file == nullptr)
+    {
+        throw std::runtime_error("cannot open file");
+    }
 }
 
-bool RawFileAudioSink::close()
+void RawFileAudioSink::close()
 {
-    return fclose(m_file);
+    fclose(m_file);
 }
 
 int RawFileAudioSink::write(uint8_t* buffer, int bytesToWrite)
 {
     return fwrite(buffer, sizeof(buffer[0]), bytesToWrite, m_file);
 }
-}
+}    // namespace Model

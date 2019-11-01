@@ -10,6 +10,31 @@ namespace
 const int VIRTUAL_CAMERA_SPACING = 10;
 const int DISPLAY_HEIGHT_SPACING = 50;
 const int BACKGROUND_VALUE = 128;
+const RGB RGB_BACKGROUND = {220, 220, 220};
+const UYVY UYVY_BACKGROUND = {128, 220, 128, 220};
+const YUYV YUYV_BACKGROUND = {220, 128, 220, 128};
+
+template <typename T>
+void setColor(T* data, int size, T color)
+{
+    for (int i = 0; i < size; ++i)
+    {
+        data[i] = color;
+    }
+}
+
+template <typename T>
+void fillImage(int offset, const Dim2<int>& inputDim, const Dim2<int>& outputDim, const T* inputData, T* outputData)
+{
+    for (int i = 0; i < inputDim.width; ++i)
+    {
+        for (int j = 0; j < inputDim.height; ++j)
+        {
+            outputData[offset + i + j * outputDim.width] = inputData[i + j * inputDim.width];
+        }
+    }
+}
+
 }    // namespace
 
 DisplayImageBuilder::DisplayImageBuilder(const Dim2<int>& displayDimention)
@@ -45,7 +70,7 @@ Dim2<int> DisplayImageBuilder::getVirtualCameraDim(int virtualCameraCount)
     return Dim2<int>(vcWidth, vcHeight);
 }
 
-Dim2<int> DisplayImageBuilder::getMaxVirtualCameraDim()
+const Dim2<int>& DisplayImageBuilder::getMaxVirtualCameraDim()
 {
     return maxVirtualCameraDim_;
 }
@@ -68,21 +93,25 @@ void DisplayImageBuilder::createDisplayImage(const std::vector<Image>& vcImages,
 
             if (vcImage.format == ImageFormat::RGB_FMT && outDisplayImage.format == ImageFormat::RGB_FMT)
             {
-                const RGB* vcData = reinterpret_cast<const RGB*>(vcImage.hostData);
-                RGB* displayData = reinterpret_cast<RGB*>(outDisplayImage.hostData);
-                fillImage(offset, vcImage, outDisplayImage, vcData, displayData);
+                const RGB* inputData = reinterpret_cast<const RGB*>(vcImage.hostData);
+                RGB* outputData = reinterpret_cast<RGB*>(outDisplayImage.hostData);
+                fillImage(offset, vcImage, outDisplayImage, inputData, outputData);
             }
             else if (vcImage.format == ImageFormat::UYVY_FMT && outDisplayImage.format == ImageFormat::UYVY_FMT)
             {
-                const UYVY* vcData = reinterpret_cast<const UYVY*>(vcImage.hostData);
-                UYVY* displayData = reinterpret_cast<UYVY*>(outDisplayImage.hostData);
-                fillImage(offset, vcImage, outDisplayImage, vcData, displayData);
+                const UYVY* inputData = reinterpret_cast<const UYVY*>(vcImage.hostData);
+                UYVY* outputData = reinterpret_cast<UYVY*>(outDisplayImage.hostData);
+                Dim2<int> inputDim(vcImage.width / 2, vcImage.height);
+                Dim2<int> outputDim(outDisplayImage.width / 2, outDisplayImage.height);
+                fillImage(offset / 2, inputDim, outputDim, inputData, outputData);
             }
             else if (vcImage.format == ImageFormat::YUYV_FMT && outDisplayImage.format == ImageFormat::YUYV_FMT)
             {
-                const UYVY* vcData = reinterpret_cast<const UYVY*>(vcImage.hostData);
-                UYVY* displayData = reinterpret_cast<UYVY*>(outDisplayImage.hostData);
-                fillImage(offset, vcImage, outDisplayImage, vcData, displayData);
+                const UYVY* inputData = reinterpret_cast<const UYVY*>(vcImage.hostData);
+                UYVY* outputData = reinterpret_cast<UYVY*>(outDisplayImage.hostData);
+                Dim2<int> inputDim(vcImage.width / 2, vcImage.height);
+                Dim2<int> outputDim(outDisplayImage.width / 2, outDisplayImage.height);
+                fillImage(offset / 2, inputDim, outputDim, inputData, outputData);
             }
             else
             {
@@ -96,9 +125,23 @@ void DisplayImageBuilder::createDisplayImage(const std::vector<Image>& vcImages,
 
 void DisplayImageBuilder::setDisplayImageColor(const Image& displayImage)
 {
-    // This doesn't provide the color we want, but is much more efficient (darker gray)
-    // When we modify the code to dewarp directly into the display image, we'll fix the image color
-    std::memset(displayImage.hostData, BACKGROUND_VALUE, displayImage.size);
+    int size = displayImage.width * displayImage.height;
+
+    if (displayImage.format == ImageFormat::RGB_FMT)
+    {
+        RGB* data = reinterpret_cast<RGB*>(displayImage.hostData);
+        setColor(data, size, RGB_BACKGROUND);
+    }
+    else if (displayImage.format == ImageFormat::UYVY_FMT)
+    {
+        UYVY* data = reinterpret_cast<UYVY*>(displayImage.hostData);
+        setColor(data, size / 2, UYVY_BACKGROUND);
+    }
+    else if (displayImage.format == ImageFormat::YUYV_FMT)
+    {
+        YUYV* data = reinterpret_cast<YUYV*>(displayImage.hostData);
+        setColor(data, size / 2, YUYV_BACKGROUND);
+    }
 }
 
 void DisplayImageBuilder::clearVirtualCamerasOnDisplayImage(const Image& displayImage)
@@ -107,51 +150,5 @@ void DisplayImageBuilder::clearVirtualCamerasOnDisplayImage(const Image& display
     int memsetOffset =
         ((displayImage.height - maxVirtualCameraDim_.height) / 2) * (displayImage.width * displayImage.bytesPerPixel);
     std::memset(displayImage.hostData + memsetOffset, BACKGROUND_VALUE, memsetSize);
-}
-
-void DisplayImageBuilder::fillImage(int offset, const Dim2<int>& vcDim, const Dim2<int>& displayDim, const RGB* vcData,
-                                    RGB* displayData)
-{
-    for (int i = 0; i < vcDim.width; ++i)
-    {
-        for (int j = 0; j < vcDim.height; ++j)
-        {
-            displayData[offset + i + j * displayDim.width] = vcData[i + j * vcDim.width];
-        }
-    }
-}
-
-void DisplayImageBuilder::fillImage(int offset, Dim2<int> vcDim, Dim2<int> displayDim, const UYVY* vcData,
-                                    UYVY* displayData)
-{
-    // Each UYVY struct is 2 pixels so we need to divide by 2
-    offset /= 2;
-    vcDim.width /= 2;
-    displayDim.width /= 2;
-
-    for (int i = 0; i < vcDim.width; ++i)
-    {
-        for (int j = 0; j < vcDim.height; ++j)
-        {
-            displayData[offset + i + j * displayDim.width] = vcData[i + j * vcDim.width];
-        }
-    }
-}
-
-void DisplayImageBuilder::fillImage(int offset, Dim2<int> vcDim, Dim2<int> displayDim, const YUYV* vcData,
-                                    YUYV* displayData)
-{
-    // Each YUYV struct is 2 pixels so we need to divide by 2
-    offset /= 2;
-    vcDim.width /= 2;
-    displayDim.width /= 2;
-
-    for (int i = 0; i < vcDim.width; ++i)
-    {
-        for (int j = 0; j < vcDim.height; ++j)
-        {
-            displayData[offset + i + j * displayDim.width] = vcData[i + j * vcDim.width];
-        }
-    }
 }
 }    // namespace Model

@@ -10,8 +10,8 @@ class IAudioSource
    public:
     virtual ~IAudioSource() = default;
 
-    virtual bool open() = 0;
-    virtual bool close() = 0;
+    virtual void open() = 0;
+    virtual void close() = 0;
     virtual int read(uint8_t* audioBuf, int bytesToRead) = 0;
 };
 
