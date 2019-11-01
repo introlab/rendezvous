@@ -5,7 +5,6 @@
 #include "model/utils/observer/i_subject.h"
 
 #include <QProcess>
-
 #include <vector>
 
 namespace Model

@@ -11,7 +11,7 @@
 
 namespace View
 {
-OnlineConferenceView::OnlineConferenceView(std::shared_ptr<Model::IStream> stream, QWidget *parent)
+OnlineConferenceView::OnlineConferenceView(std::shared_ptr<Model::IStream> stream, QWidget* parent)
     : AbstractView("Online Conference", parent)
     , m_ui(new Ui::OnlineConferenceView)
     , m_stateMachine(new QStateMachine)
@@ -42,6 +42,8 @@ OnlineConferenceView::OnlineConferenceView(std::shared_ptr<Model::IStream> strea
             [] { QDesktopServices::openUrl(QUrl("https://rendezvous-meet.com/")); });
     connect(m_stopped, &QState::entered, [=] { onStoppedStateEntered(); });
     connect(m_started, &QState::entered, [=] { onStartedStateEntered(); });
+
+    connect(&*m_stream, &Model::IStream::statusChanged, this, [=] { onStreamStatusChanged(); });
 }
 
 OnlineConferenceView::~OnlineConferenceView()
@@ -51,12 +53,35 @@ OnlineConferenceView::~OnlineConferenceView()
 
 void OnlineConferenceView::onStoppedStateEntered()
 {
+    m_ui->startButton->setDisabled(true);
+    repaint();
     m_stream->stop();
 }
 
 void OnlineConferenceView::onStartedStateEntered()
 {
+    m_ui->startButton->setDisabled(true);
+    repaint();
     m_stream->start();
+}
+
+void OnlineConferenceView::onStreamStatusChanged()
+{
+    const Model::StreamStatus status = m_stream->getStatus();
+    switch (status)
+    {
+        case Model::StreamStatus::RUNNING:
+        case Model::StreamStatus::STOPPED:
+            m_ui->startButton->setDisabled(false);
+            repaint();
+            break;
+        case Model::StreamStatus::STOPPING:
+            m_ui->startButton->setDisabled(true);
+            repaint();
+            break;
+        default:
+            break;
+    }
 }
 
 }    // namespace View

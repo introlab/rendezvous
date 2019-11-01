@@ -16,14 +16,6 @@
 
 namespace Model
 {
-enum class StreamStatus
-{
-    RUNNING,
-    STOPPING,
-    STOPPED,
-    CRASHED
-};
-
 class Stream : public IStream, public IObserver
 {
     Q_OBJECT
@@ -37,6 +29,7 @@ class Stream : public IStream, public IObserver
     void stop() override;
 
     void updateObserver() override;
+    StreamStatus getStatus() const override;
 
    private:
     VideoConfig videoInputConfig_;

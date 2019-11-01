@@ -4,7 +4,6 @@
 #include <QDebug>
 #include <QFile>
 #include <QProcess>
-#include <QThread>
 
 namespace Model
 {
@@ -44,7 +43,7 @@ void OdasClient::run()
             closeProcess(process);
             m_state = OdasClientState::CRASHED;
             notify();
-            break;
+            return;
         }
     }
 

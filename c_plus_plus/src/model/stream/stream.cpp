@@ -94,16 +94,22 @@ void Stream::start()
     mediaThread_->start();
     detectionThread_->start();
     odasClient_->start();
+
     status_ = StreamStatus::RUNNING;
+    emit statusChanged();
 }
 
 void Stream::stop()
 {
-    if (odasClient_ != nullptr && odasClient_->getState() != OdasClientState::CRASHED)
+    status_ = StreamStatus::STOPPING;
+    emit statusChanged();
+
+    if (odasClient_ != nullptr)
     {
         odasClient_->stop();
         odasClient_->join();
     }
+
     if (detectionThread_ != nullptr)
     {
         detectionThread_->stop();
@@ -115,6 +121,7 @@ void Stream::stop()
         mediaThread_->join();
     }
     status_ = StreamStatus::STOPPED;
+    emit statusChanged();
 }
 
 void Stream::updateObserver()
@@ -125,5 +132,10 @@ void Stream::updateObserver()
     {
         stop();
     }
+}
+
+StreamStatus Stream::getStatus() const
+{
+    return status_;
 }
 }    // namespace Model

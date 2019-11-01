@@ -99,5 +99,4 @@ void LocalConferenceView::stopCamera()
         m_camera->stop();
     }
 }
-
 }    // namespace View
