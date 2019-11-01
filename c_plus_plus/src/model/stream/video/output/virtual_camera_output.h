@@ -13,8 +13,9 @@ class VirtualCameraOutput : public IVideoOutput
 {
    public:
     explicit VirtualCameraOutput(const VideoConfig& videoConfig);
-    virtual ~VirtualCameraOutput();
 
+    void open() override;
+    void close() override;
     void writeImage(const Image& image) override;
 
    private:

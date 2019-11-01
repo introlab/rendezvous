@@ -15,6 +15,8 @@ void Thread::start()
 {
     if (!isRunning_)
     {
+        join();    // Make sure the thread is truly finished
+
         thread_ = std::make_unique<std::thread>(&Thread::threadExecution, this);
         isRunning_ = true;
     }
@@ -30,7 +32,7 @@ void Thread::stop()
 
 void Thread::join()
 {
-    if (isRunning_)
+    if (thread_ != nullptr && thread_->joinable())
     {
         thread_->join();
     }
@@ -52,6 +54,10 @@ void Thread::threadExecution()
     {
         run();
     }
+    catch (const std::exception& e)
+    {
+        std::cout << "Exception during thread execution : " << e.what() << std::endl;
+    }
     catch (...)
     {
         std::cout << "Unknown exception during thread execution" << std::endl;
@@ -60,5 +66,4 @@ void Thread::threadExecution()
     isAbortRequested_ = false;
     isRunning_ = false;
 }
-
 }    // namespace Model

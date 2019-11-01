@@ -85,10 +85,12 @@ void MediaThread::run()
         // Set background color of empty display
         displayImageBuilder.setDisplayImageColor(emptyDisplay);
 
-        // Start audio resources
+        // Start audio and video resources
         audioSource_->open();
         audioSink_->open();
         positionSource_->open();
+        videoInput_->open();
+        videoOutput_->open();
 
         Point<float> fisheyeCenter(videoInputConfig_.resolution.width / 2.f, videoInputConfig_.resolution.height / 2.f);
         std::vector<SphericalAngleRect> detections;
@@ -213,10 +215,12 @@ void MediaThread::run()
         std::cout << "Error in video thread : " << e.what() << std::endl;
     }
 
-    // Clean audio resources
+    // Clean audio and video resources
     audioSource_->close();
     audioSink_->close();
     positionSource_->close();
+    videoInput_->close();
+    videoOutput_->close();
     delete[] audioBuffer;
 
     // Deallocate display images

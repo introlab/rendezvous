@@ -16,6 +16,16 @@ ImageFileWriter::~ImageFileWriter()
     objectFactory_.deallocateObject(image_);
 }
 
+void ImageFileWriter::open()
+{
+    // Nothing to be done
+}
+
+void ImageFileWriter::close()
+{
+    // Nothing to be done
+}
+
 void ImageFileWriter::writeImage(const Image& image)
 {
     Image outputImage;

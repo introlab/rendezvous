@@ -15,6 +15,8 @@ class ImageFileWriter : public IVideoOutput
     ImageFileWriter(const std::string& folder, const std::string& imageName);
     virtual ~ImageFileWriter();
 
+    void open() override;
+    void close() override;
     void writeImage(const Image& image) override;
 
    private:
