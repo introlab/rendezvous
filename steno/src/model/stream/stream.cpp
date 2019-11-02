@@ -1,6 +1,7 @@
 #include "stream.h"
 
 #include "model/stream/audio/odas/odas_audio_source.h"
+#include "model/stream/audio/odas/odas_client.h"
 #include "model/stream/audio/odas/odas_position_source.h"
 #include "model/stream/audio/pulseaudio/pulseaudio_sink.h"
 #include "model/stream/utils/images/images.h"
@@ -62,6 +63,9 @@ Stream::Stream(const VideoConfig& videoInputConfig, const VideoConfig& videoOutp
         std::make_unique<VirtualCameraManager>(aspectRatio, minElevation, maxElevation), detectionQueue, imageBuffer_,
         implementationFactory_.getImageConverter(), dewarpingConfig_, videoInputConfig_, videoOutputConfig_,
         audioInputConfig_, audioOutputConfig_);
+
+    odasClient_ = std::make_unique<OdasClient>();
+    odasClient_->attach(this);
 }
 
 Stream::~Stream()
@@ -73,14 +77,43 @@ void Stream::start()
 {
     mediaThread_->start();
     detectionThread_->start();
+    odasClient_->start();
+
+    status_ = StreamStatus::RUNNING;
+    emit statusChanged();
 }
 
 void Stream::stop()
 {
+    status_ = StreamStatus::STOPPING;
+    emit statusChanged();
+
+    if (odasClient_->getState() != OdasClientState::CRASHED)
+    {
+        odasClient_->stop();
+        odasClient_->join();
+    }
+
     detectionThread_->stop();
     detectionThread_->join();
     mediaThread_->stop();
     mediaThread_->join();
+
+    status_ = StreamStatus::STOPPED;
+    emit statusChanged();
 }
 
+void Stream::updateObserver()
+{
+    OdasClientState state = odasClient_->getState();
+    if (state == OdasClientState::CRASHED)
+    {
+        stop();
+    }
+}
+
+StreamStatus Stream::getStatus() const
+{
+    return status_;
+}
 }    // namespace Model
