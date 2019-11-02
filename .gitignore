@@ -1,6 +1,5 @@
 env/
 .vscode/
-__pycache__/
 test_separated.raw
 test_postfiltered.raw
 scripts/ConfigurationHelper/ODASOutput.json
@@ -18,12 +17,7 @@ config/service_account.json
 !c_plus_plus/3rd/darknet/lib/aarch64/*.so
 !c_plus_plus/3rd/v4l2/lib/x86_64/*.a
 !c_plus_plus/3rd/v4l2/lib/aarch64/*.a
-
 lib/*/build
 config/yolo/
-src/app/services/videoprocessing/dewarping/src/shaders/autogen
-src/app/services/videoprocessing/dewarping/interface/fisheye_dewarping.py
-src/app/services/videoprocessing/dewarping/interface/fisheye_dewarping_wrap.cpp
 .idea
 */bin/*
-src/app/services/virtualcameradevice/interface/virtual_camera_device.py
