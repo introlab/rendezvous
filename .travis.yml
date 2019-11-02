@@ -9,7 +9,7 @@ compiler:
 before_install:
   - sudo apt-get update
 install:
-  - sudo apt-get install -y libpulse-dev || travis_terminate 1
+  - sudo apt-get install -y libpulse-dev libglu1-mesa-dev || travis_terminate 1
   - sudo apt-get install qt512base qt512svg qt512charts-no-lgpl qt512xmlpatterns qt512multimedia || travis_terminate 1
   - source /opt/qt512/bin/qt512-env.sh || travis_terminate 1
   #- sudo apt-get install clang-format-3.8 || travis_terminate 1
