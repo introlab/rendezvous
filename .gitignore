@@ -1,23 +1,66 @@
-env/
+# C++ objects and libs
+*.slo
+*.lo
+*.o
+*.la
+*.lai
+*.dll
+*.dylib
+
+# Qt-es
+object_script.*.Release
+object_script.*.Debug
+*_plugin_import.cpp
+*.qmake.cache
+*.qmake.stash
+*.pro.user
+*.pro.user.*
+*.qbs.user
+*.qbs.user.*
+*.moc
+moc_*.cpp
+moc_*.h
+qrc_*.cpp
+ui_*.h
+*.qmlc
+*.jsc
+Makefile*
+*build-*
+*.qm
+
+# Qt unit tests
+target_wrapper.*
+
+# QtCreator
+*.autosave
+
+# QtCreator Qml
+*.qmlproject.user
+*.qmlproject.user.*
+
+# QtCreator CMake
+CMakeLists.txt.user*
+
+# QtCreator 4.8< compilation database 
+compile_commands.json
+
+# QtCreator local machine specific files for imported projects
+*creator.user*
+
+# Custom
 .vscode/
 test_separated.raw
 test_postfiltered.raw
-scripts/ConfigurationHelper/ODASOutput.json
-*.pyc
 .coverage
-src/app/gui/*.py
-config/maps/*.npy
-*_ui.py
-config/service_account.json
-*.o
 *.a
 *.so
+.idea
+*/bin/*
+steno/configs/yolo/
+
+# Our static libs
 !steno/3rd/darknet/lib/x86_64/*.so
 !steno/3rd/darknet/lib/x86_64_cuda/*.so
 !steno/3rd/darknet/lib/aarch64/*.so
 !steno/3rd/v4l2/lib/x86_64/*.a
 !steno/3rd/v4l2/lib/aarch64/*.a
-lib/*/build
-steno/configs/yolo/
-.idea
-*/bin/*
