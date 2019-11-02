@@ -1,22 +1,16 @@
 sudo: required
 dist: xenial
 language: 
-  - python
   - cpp
-python:
-  - "3.5.2"
 cache: 
-  - pip
   - ccache
 compiler: 
   - g++
 before_install:
   - sudo apt-get update
 install:
-  - pip install -r ./requirements.txt || travis_terminate 1
-  - sudo apt-get install -y xorg-dev libglu1-mesa-dev libpulse-dev || travis_terminate 1
-  - sudo apt-get install -y swig || travis_terminate 1
-  - sudo apt-get install qt512base qt512svg qt512charts-no-lgpl qt512xmlpatterns qt512multimedia qt512webengine || travis_terminate 1
+  - sudo apt-get install -y libpulse-dev libglu1-mesa-dev || travis_terminate 1
+  - sudo apt-get install qt512base qt512svg qt512charts-no-lgpl qt512xmlpatterns qt512multimedia || travis_terminate 1
   - source /opt/qt512/bin/qt512-env.sh || travis_terminate 1
   #- sudo apt-get install clang-format-3.8 || travis_terminate 1
 addons:
@@ -33,13 +27,7 @@ script:
   - sudo ln -s /usr/bin/g++-6 /usr/local/bin/g++
   - export CC=/usr/bin/gcc-6
   - export CXX=/usr/bin/g++-6
-  - ./scripts/libv4l2cpp_setup.sh ../../lib || travis_terminate 1
-  - pushd ../../lib/libv4l2cpp ; export LIBV4L2CPP_HOME=$PWD ; popd || travis_terminate 1
-  - ./scripts/darknet_setup.sh ../../lib -CPU || travis_terminate 1
-  - pushd ../../lib/darknet ; export DARKNET_HOME=$PWD ; popd || travis_terminate 1
-  - make || travis_terminate 1
-  - pytest -v --cov=./ tests/ || travis_terminate 1
-  - cd ./c_plus_plus/ || travis_terminate 1
+  - cd ./steno/ || travis_terminate 1
   - qmake steno.pro -spec linux-g++ CONFIG+=qtquickcompiler || travis_terminate 1
   - make clean || travis_terminate 1
   - make || travis_terminate 1
