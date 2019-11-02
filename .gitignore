@@ -51,7 +51,6 @@ compile_commands.json
 .vscode/
 test_separated.raw
 test_postfiltered.raw
-.coverage
 *.a
 *.so
 .idea
