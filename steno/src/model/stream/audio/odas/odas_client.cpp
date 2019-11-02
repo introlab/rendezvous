@@ -9,6 +9,7 @@ namespace Model
 {
 void OdasClient::run()
 {
+    qInfo() << "Odaslive thread started";
     m_state = OdasClientState::RUNNING;
     notify();
 
@@ -18,7 +19,12 @@ void OdasClient::run()
 
     if (!QFile::exists(program) || !QFile::exists(Model::MICROPHONE_CONFIGURATION))
     {
-        stop();
+        qCritical() << "Cannot find odaslive and/or microphones config file: " << program << " "
+                    << Model::MICROPHONE_CONFIGURATION;
+        m_state = OdasClientState::CRASHED;
+        notify();
+        qInfo() << "Odaslive thread finished";
+        return;
     }
 
     QProcess process;
@@ -44,6 +50,7 @@ void OdasClient::run()
             closeProcess(process);
             m_state = OdasClientState::CRASHED;
             notify();
+            qInfo() << "Odaslive thread finished";
             return;
         }
     }
@@ -51,6 +58,7 @@ void OdasClient::run()
     closeProcess(process);
     m_state = OdasClientState::STOPPED;
     notify();
+    qInfo() << "Odaslive thread finished";
 }
 
 void OdasClient::closeProcess(QProcess& process)

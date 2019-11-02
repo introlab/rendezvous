@@ -29,8 +29,8 @@ class OdasClient : public Thread, public ISubject
    private:
     void closeProcess(QProcess &process);
 
-    const int m_waitTime = 100;
-    const int m_joinTime = 500;
+    const int m_waitTime = 100;    // ms
+    const int m_joinTime = 500;    // ms
     OdasClientState m_state = OdasClientState::STOPPED;
     std::vector<IObserver *> m_subscribers;
 };
