@@ -18,19 +18,27 @@ namespace View
 {
 class OnlineConferenceView : public AbstractView
 {
+    Q_OBJECT
+
    public:
     explicit OnlineConferenceView(std::shared_ptr<Model::IStream> stream, QWidget *parent = nullptr);
     virtual ~OnlineConferenceView();
+
+   signals:
+    void streamCrashed(QPrivateSignal);
 
    private slots:
     void onStoppedStateEntered();
     void onStartedStateEntered();
 
    private:
+    void onStreamStatusChanged();
+
     Ui::OnlineConferenceView *m_ui;
     QStateMachine *m_stateMachine;
     QState *m_stopped;
     QState *m_started;
+    QState *m_currentState;
     std::shared_ptr<Model::IStream> m_stream;
 };
 

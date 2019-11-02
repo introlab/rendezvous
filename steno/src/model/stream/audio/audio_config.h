@@ -3,9 +3,6 @@
 
 #include <string>
 
-#include "model/stream/utils/images/image_format.h"
-#include "model/stream/utils/models/dim2.h"
-
 namespace Model
 {
 struct AudioConfig
