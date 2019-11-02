@@ -1,10 +1,5 @@
 #include "stream.h"
 
-#include <cstdlib>
-#include <iostream>
-#include <string>
-#include <vector>
-
 #include "model/stream/audio/odas/odas_audio_source.h"
 #include "model/stream/audio/odas/odas_position_source.h"
 #include "model/stream/audio/pulseaudio/pulseaudio_sink.h"
@@ -15,6 +10,11 @@
 #include "model/stream/utils/threads/readerwriterqueue.h"
 #include "model/stream/video/impl/implementation_factory.h"
 #include "model/stream/video/output/virtual_camera_output.h"
+
+#include <string>
+#include <vector>
+
+#include <QCoreApplication>
 
 namespace Model
 {
@@ -39,23 +39,11 @@ Stream::Stream(const VideoConfig& videoInputConfig, const VideoConfig& videoOutp
     std::shared_ptr<moodycamel::ReaderWriterQueue<std::vector<SphericalAngleRect>>> detectionQueue =
         std::make_shared<moodycamel::ReaderWriterQueue<std::vector<SphericalAngleRect>>>(1);
 
-    std::string root;
-    std::string rendezvousStr = "rendezvous";
-    std::string path = std::getenv("PWD");
-    std::size_t index = path.find(rendezvousStr);
-
-    if (index != std::string::npos)
-    {
-        root = path.substr(0, index + rendezvousStr.size());
-    }
-    else
-    {
-        throw std::runtime_error("You must run the application from rendezvous repo");
-    }
-
-    std::string configFile = root + "/config/yolo/cfg/yolov3-tiny.cfg";
-    std::string weightsFile = root + "/config/yolo/weights/yolov3-tiny.weights";
-    std::string metaFile = root + "/config/yolo/cfg/coco.data";
+    std::string configFile =
+        (QCoreApplication::applicationDirPath() + "/../configs/yolo/yolov3-tiny.cfg").toStdString();
+    std::string weightsFile =
+        (QCoreApplication::applicationDirPath() + "/../configs/yolo/yolov3-tiny.weights").toStdString();
+    std::string metaFile = (QCoreApplication::applicationDirPath() + +"/../configs/yolo/coco.data").toStdString();
 
     objectFactory_ = implementationFactory_.getDetectionObjectFactory();
     objectFactory_->allocateObjectLockTripleBuffer(*imageBuffer_);
