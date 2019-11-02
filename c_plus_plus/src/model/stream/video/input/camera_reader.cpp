@@ -25,20 +25,24 @@ CameraReader::CameraReader(const VideoConfig& videoConfig, std::size_t bufferCou
     : videoConfig_(videoConfig)
     , images_(bufferCount, Image(videoConfig.resolution.width, videoConfig.resolution.height, videoConfig.imageFormat))
     , buffer_({})
+    , fd_(-1)
 {
-    fd_ = open(videoConfig_.deviceName.c_str(), O_RDWR);
+    buffer_.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    buffer_.memory = V4L2_MEMORY_MMAP;
+}
+
+void CameraReader::open()
+{
+    fd_ = ::open(videoConfig_.deviceName.c_str(), O_RDWR);
 
     if (fd_ == ERROR_CODE)
     {
         throw std::runtime_error("Could not open camera " + videoConfig_.deviceName);
     }
 
-    buffer_.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-    buffer_.memory = V4L2_MEMORY_MMAP;
-
     checkCaps();
     setImageFormat();
-    requestBuffers(bufferCount);
+    requestBuffers(images_.size());
 
     // Queue a first capture for fast read
     v4l2_buffer buffer = buffer_;
@@ -46,7 +50,7 @@ CameraReader::CameraReader(const VideoConfig& videoConfig, std::size_t bufferCou
     queueCapture(buffer);
 }
 
-CameraReader::~CameraReader()
+void CameraReader::close()
 {
     for (std::size_t i = 0; i < images_.size(); ++i)
     {
@@ -54,7 +58,8 @@ CameraReader::~CameraReader()
         images_.next();
     }
 
-    close(fd_);
+    ::close(fd_);
+    fd_ = -1;
 }
 
 const Image& CameraReader::readImage()
@@ -81,12 +86,12 @@ void CameraReader::queueCapture(v4l2_buffer& buffer)
 {
     if (xioctl(VIDIOC_QBUF, &buffer) == ERROR_CODE)
     {
-        perror("Failed to querry buffer");
+        throw std::runtime_error("Failed to querry camera buffer");
     }
 
     if (xioctl(VIDIOC_STREAMON, &buffer.type) == ERROR_CODE)
     {
-        perror("Failed to capture image");
+        throw std::runtime_error("Failed to capture camera image");
     }
 }
 
@@ -103,12 +108,12 @@ void CameraReader::dequeueCapture(v4l2_buffer& buffer)
 
     if (result == ERROR_CODE)
     {
-        perror("Error waiting for Frame");
+        throw std::runtime_error("Error waiting for camera frame");
     }
 
     if (xioctl(VIDIOC_DQBUF, &buffer) == ERROR_CODE)
     {
-        perror("Failed to retrieve Frame");
+        throw std::runtime_error("Failed to retrieve camera frame");
     }
 }
 

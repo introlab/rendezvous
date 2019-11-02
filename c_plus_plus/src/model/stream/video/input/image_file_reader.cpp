@@ -36,6 +36,16 @@ ImageFileReader::ImageFileReader(const std::string& imageFilePath, ImageFormat f
     }
 }
 
+void ImageFileReader::open()
+{
+    // Nothing to be done
+}
+
+void ImageFileReader::close()
+{
+    // Nothing to be done
+}
+
 const Image& ImageFileReader::readImage()
 {
     return image_;
