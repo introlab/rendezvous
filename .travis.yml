@@ -28,7 +28,7 @@ script:
   - sudo ln -s /usr/bin/g++-6 /usr/local/bin/g++
   - export CC=/usr/bin/gcc-6
   - export CXX=/usr/bin/g++-6
-  - cd ./c_plus_plus/ || travis_terminate 1
+  - cd ./steno/ || travis_terminate 1
   - qmake steno.pro -spec linux-g++ CONFIG+=qtquickcompiler || travis_terminate 1
   - make clean || travis_terminate 1
   - make || travis_terminate 1
