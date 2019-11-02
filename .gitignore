@@ -18,6 +18,6 @@ config/service_account.json
 !c_plus_plus/3rd/v4l2/lib/x86_64/*.a
 !c_plus_plus/3rd/v4l2/lib/aarch64/*.a
 lib/*/build
-config/yolo/
+steno/configs/yolo/
 .idea
 */bin/*
