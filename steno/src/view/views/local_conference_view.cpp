@@ -1,103 +1,84 @@
 #include "local_conference_view.h"
-#include "model/recorder/recorder.h"
-#include "model/settings/i_settings.h"
-#include "model/settings/settings_constants.h"
 #include "ui_local_conference_view.h"
 
-#include <QCamera>
-#include <QCameraInfo>
 #include <QCameraViewfinder>
-#include <QState>
-#include <QStateMachine>
-#include <QUrl>
 
 namespace View
 {
-LocalConferenceView::LocalConferenceView(Model::ISettings &settings, QWidget *parent)
+LocalConferenceView::LocalConferenceView(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::IRecorder> recorder, QWidget *parent)
     : AbstractView("Local Conference", parent)
     , m_ui(new Ui::LocalConferenceView)
-    , m_settings(settings)
-    , m_camera(new QCamera(getCameraInfo(), this))
     , m_cameraViewfinder(new QCameraViewfinder(this))
-    , m_recorder(new Model::Recorder(m_camera, this))
-    , m_stateMachine(new QStateMachine)
-    , m_stopped(new QState)
-    , m_started(new QState)
+    , m_stream(stream)
+    , m_recorder(recorder)
 {
     m_ui->setupUi(this);
-    m_ui->virtualCameraLayout->addWidget(m_cameraViewfinder);
 
-    m_camera->setCaptureMode(QCamera::CaptureVideo);
-    m_camera->setViewfinder(m_cameraViewfinder);
+    m_ui->virtualCameraLayout->addWidget(m_cameraViewfinder.get());
     m_cameraViewfinder->show();
+    m_recorder->setCameraViewFinder(m_cameraViewfinder);
 
-    m_stopped->assignProperty(m_ui->btnStartStopRecord, "text", "Start recording");
-    m_started->assignProperty(m_ui->btnStartStopRecord, "text", "Stop recording");
+    connect(m_stream.get(), &Model::IStream::stateChanged, [=](const Model::IStream::State& state){ onStreamStateChanged(state); });
+    connect(m_ui->startVirtualDevicesButton, &QAbstractButton::clicked, [=] { onStartVirtualDevicesButtonClicked(); });
 
-    m_stopped->addTransition(m_ui->btnStartStopRecord, &QAbstractButton::clicked, m_started);
-    m_started->addTransition(m_ui->btnStartStopRecord, &QAbstractButton::clicked, m_stopped);
-
-    m_stateMachine->addState(m_stopped);
-    m_stateMachine->addState(m_started);
-
-    m_stateMachine->setInitialState(m_stopped);
-    m_stateMachine->start();
-
-    connect(m_started, &QState::entered, [=] { m_recorder->start(getOutputPath()); });
-    connect(m_stopped, &QState::entered, [=] { m_recorder->stop(); });
+    connect(m_recorder.get(), &Model::IRecorder::stateChanged, [=](const Model::IRecorder::State& state){ onRecorderStateChanged(state); });
+    connect(m_ui->startRecorderButton, &QAbstractButton::clicked, [=] { onStartRecorderButtonClicked(); });
 }
 
-LocalConferenceView::~LocalConferenceView()
+void LocalConferenceView::onStartVirtualDevicesButtonClicked()
 {
-    stopCamera();
-}
-
-void LocalConferenceView::showEvent(QShowEvent * /*event*/)
-{
-    startCamera();
-}
-
-void LocalConferenceView::hideEvent(QHideEvent * /*event*/)
-{
-    stopCamera();
-}
-
-QString LocalConferenceView::getOutputPath()
-{
-    return m_settings.get(Model::General::keyName(Model::General::Key::OUTPUT_FOLDER)).toString();
-}
-
-QCameraInfo LocalConferenceView::getCameraInfo()
-{
-    QCameraInfo defaultCameraInfo = QCameraInfo::defaultCamera();
-
-    if (!Model::VIRTUAL_CAMERA_DEVICE.isEmpty())
+    m_ui->startVirtualDevicesButton->setDisabled(true);
+    switch (m_stream->state())
     {
-        QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
-
-        foreach (const QCameraInfo &cameraInfo, cameras)
-        {
-            if (cameraInfo.deviceName() == Model::VIRTUAL_CAMERA_DEVICE) return cameraInfo;
-        }
-    }
-
-    return defaultCameraInfo;
-}
-
-void LocalConferenceView::startCamera()
-{
-    if (m_camera->state() != QCamera::State::ActiveState)
-    {
-        m_camera->start();
+        case Model::IStream::Started:
+            m_stream->stop();
+            break;
+        case Model::IStream::Stopped:
+            m_stream->start();
+            break;
     }
 }
 
-void LocalConferenceView::stopCamera()
+void LocalConferenceView::onStartRecorderButtonClicked()
 {
-    if (m_camera->state() == QCamera::State::ActiveState)
+    m_ui->startRecorderButton->setDisabled(true);
+    switch (m_recorder->state())
     {
-        m_camera->stop();
+        case Model::IRecorder::Started:
+            m_recorder->stop();
+            break;
+        case Model::IRecorder::Stopped:
+            m_recorder->start();
+            break;
     }
+}
+
+void LocalConferenceView::onStreamStateChanged(const Model::IStream::State& state)
+{
+    switch (state)
+    {
+        case Model::IStream::Started:
+            m_ui->startVirtualDevicesButton->setText("Stop virtual devices");
+            break;
+        case Model::IStream::Stopped:
+            m_ui->startVirtualDevicesButton->setText("Start virtual devices");
+            break;
+    }
+    m_ui->startVirtualDevicesButton->setDisabled(false);
+}
+
+void LocalConferenceView::onRecorderStateChanged(const Model::IRecorder::State& state)
+{
+    switch (state)
+    {
+        case Model::IRecorder::Started:
+            m_ui->startRecorderButton->setText("Stop recording");
+            break;
+        case Model::IRecorder::Stopped:
+            m_ui->startRecorderButton->setText("Start recording");
+            break;
+    }
+    m_ui->startRecorderButton->setDisabled(false);
 }
 
 }    // namespace View

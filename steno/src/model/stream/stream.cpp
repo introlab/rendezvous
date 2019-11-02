@@ -21,7 +21,8 @@ namespace Model
 Stream::Stream(const VideoConfig& videoInputConfig, const VideoConfig& videoOutputConfig,
                const AudioConfig& audioInputConfig, const AudioConfig& audioOutputConfig,
                const DewarpingConfig& dewarpingConfig)
-    : videoInputConfig_(videoInputConfig)
+    : m_state(IStream::State::Stopped)
+    , videoInputConfig_(videoInputConfig)
     , videoOutputConfig_(videoOutputConfig)
     , audioInputConfig_(audioInputConfig)
     , audioOutputConfig_(audioOutputConfig)
@@ -71,16 +72,30 @@ Stream::~Stream()
 
 void Stream::start()
 {
-    mediaThread_->start();
-    detectionThread_->start();
+    if (m_state != IStream::State::Started)
+    {
+        mediaThread_->start();
+        detectionThread_->start();
+        updateState(IStream::State::Started);
+    }
 }
 
 void Stream::stop()
 {
-    detectionThread_->stop();
-    detectionThread_->join();
-    mediaThread_->stop();
-    mediaThread_->join();
+    if (m_state != IStream::Stopped)
+    {
+        detectionThread_->stop();
+        detectionThread_->join();
+        mediaThread_->stop();
+        mediaThread_->join();
+        updateState(IStream::State::Stopped);
+    }
+}
+
+void Stream::updateState(const IStream::State& state)
+{
+    m_state = state;
+    emit stateChanged(m_state);
 }
 
 }    // namespace Model

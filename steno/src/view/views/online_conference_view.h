@@ -6,9 +6,6 @@
 #include "model/stream/i_stream.h"
 #include "view/views/abstract_view.h"
 
-class QStateMachine;
-class QState;
-
 namespace Ui
 {
 class OnlineConferenceView;
@@ -23,14 +20,11 @@ class OnlineConferenceView : public AbstractView
     virtual ~OnlineConferenceView();
 
    private slots:
-    void onStoppedStateEntered();
-    void onStartedStateEntered();
+    void onStartButtonClicked();
+    void onStreamStateChanged(const Model::IStream::State& state);
 
    private:
     Ui::OnlineConferenceView *m_ui;
-    QStateMachine *m_stateMachine;
-    QState *m_stopped;
-    QState *m_started;
     std::shared_ptr<Model::IStream> m_stream;
 };
 

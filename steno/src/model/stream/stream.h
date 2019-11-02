@@ -1,8 +1,6 @@
 #ifndef STREAM_H
 #define STREAM_H
 
-#include <memory>
-
 #include "model/stream/audio/audio_config.h"
 #include "model/stream/i_stream.h"
 #include "model/stream/media_thread.h"
@@ -11,6 +9,11 @@
 #include "model/stream/video/dewarping/models/dewarping_config.h"
 #include "model/stream/video/impl/implementation_factory.h"
 #include "model/stream/video/video_config.h"
+
+#include <memory>
+
+#include <QState>
+#include <QStateMachine>
 
 namespace Model
 {
@@ -24,8 +27,13 @@ class Stream : public IStream
 
     void start() override;
     void stop() override;
+    IStream::State state() const override { return m_state; }
 
    private:
+    void updateState(const IStream::State &state);
+
+    IStream::State m_state;
+
     VideoConfig videoInputConfig_;
     VideoConfig videoOutputConfig_;
     AudioConfig audioInputConfig_;

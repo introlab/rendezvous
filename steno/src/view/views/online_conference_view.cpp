@@ -4,8 +4,6 @@
 #include <stdexcept>
 
 #include <QDesktopServices>
-#include <QState>
-#include <QStateMachine>
 #include <QUrl>
 
 namespace View
@@ -13,9 +11,6 @@ namespace View
 OnlineConferenceView::OnlineConferenceView(std::shared_ptr<Model::IStream> stream, QWidget *parent)
     : AbstractView("Online Conference", parent)
     , m_ui(new Ui::OnlineConferenceView)
-    , m_stateMachine(new QStateMachine)
-    , m_stopped(new QState)
-    , m_started(new QState)
     , m_stream(stream)
 {
     if (m_stream == nullptr)
@@ -25,22 +20,11 @@ OnlineConferenceView::OnlineConferenceView(std::shared_ptr<Model::IStream> strea
 
     m_ui->setupUi(this);
 
-    m_stopped->assignProperty(m_ui->startButton, "text", "Start virtual devices");
-    m_started->assignProperty(m_ui->startButton, "text", "Stop virtual devices");
-
-    m_stopped->addTransition(m_ui->startButton, &QAbstractButton::clicked, m_started);
-    m_started->addTransition(m_ui->startButton, &QAbstractButton::clicked, m_stopped);
-
-    m_stateMachine->addState(m_stopped);
-    m_stateMachine->addState(m_started);
-
-    m_stateMachine->setInitialState(m_stopped);
-    m_stateMachine->start();
-
     connect(m_ui->websiteButton, &QAbstractButton::clicked,
             [] { QDesktopServices::openUrl(QUrl("https://rendezvous-meet.com/")); });
-    connect(m_stopped, &QState::entered, [=] { onStoppedStateEntered(); });
-    connect(m_started, &QState::entered, [=] { onStartedStateEntered(); });
+
+    connect(m_stream.get(), &Model::IStream::stateChanged, [=](const Model::IStream::State& state){ onStreamStateChanged(state); });
+    connect(m_ui->startButton, &QAbstractButton::clicked, [=] { onStartButtonClicked(); });
 }
 
 OnlineConferenceView::~OnlineConferenceView()
@@ -48,14 +32,32 @@ OnlineConferenceView::~OnlineConferenceView()
     m_stream->stop();
 }
 
-void OnlineConferenceView::onStoppedStateEntered()
-{
-    m_stream->stop();
+void OnlineConferenceView::onStartButtonClicked()
+{   
+    m_ui->startButton->setDisabled(true);
+    switch (m_stream->state())
+    {
+        case Model::IStream::Started:
+            m_stream->stop();
+            break;
+        case Model::IStream::Stopped:
+            m_stream->start();
+            break;
+    }
 }
 
-void OnlineConferenceView::onStartedStateEntered()
+void OnlineConferenceView::onStreamStateChanged(const Model::IStream::State& state)
 {
-    m_stream->start();
+    switch (state)
+    {
+        case Model::IStream::Started:
+            m_ui->startButton->setText("Stop virtual devices");
+            break;
+        case Model::IStream::Stopped:
+            m_ui->startButton->setText("Start virtual devices");
+            break;
+    }
+    m_ui->startButton->setDisabled(false);
 }
 
 }    // namespace View
