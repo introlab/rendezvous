@@ -68,10 +68,7 @@ void MediaThread::run()
 
     // TODO: config?
     const int classifierRangeThreshold = 2;
-
-    // TODO: will be managed by odas audio source
-    uint8_t* audioBuffer = new uint8_t[audioInputConfig_.bufferSize];
-
+    
     try
     {
         // Allocate display images
@@ -111,8 +108,8 @@ void MediaThread::run()
             // Update the position and size of virtual cameras
             virtualCameraManager_->updateVirtualCameras(videoStabilizer.getLastFrameTimeMs());
 
-            // Read audio source and positions
-            int audioBytesRead = audioSource_->read(audioBuffer, sizeof(audioBuffer));
+            AudioChunk audioChunk;
+            bool audioReadSuccess = audioSource_->readAudioChunk(audioChunk);
             std::vector<SourcePosition> sourcePositions = positionSource_->getPositions();
 
             // Read image from video input and convert it to rgb format for dewarping
@@ -187,7 +184,7 @@ void MediaThread::run()
                 videoOutput_->writeImage(emptyDisplay);
             }
 
-            if (audioBytesRead > 0)
+            if (audioReadSuccess)
             {
                 std::vector<SphericalAngleRect> imagePositions;
                 imagePositions.reserve(virtualCameras.size());
@@ -199,9 +196,9 @@ void MediaThread::run()
                 std::vector<int> sourcesToSuppress =
                     Classifier::classify(sourcePositions, imagePositions, classifierRangeThreshold);
 
-                AudioSuppresser::suppressSources(sourcesToSuppress, audioBuffer, audioBytesRead);
+                AudioSuppresser::suppressSources(sourcesToSuppress, audioChunk.audioData.get(), audioChunk.size);
 
-                audioSink_->write(audioBuffer, audioBytesRead);
+                audioSink_->write(audioChunk.audioData.get(), audioChunk.size);
             }
 
             detections.clear();
@@ -221,7 +218,6 @@ void MediaThread::run()
     positionSource_->close();
     videoInput_->close();
     videoOutput_->close();
-    delete[] audioBuffer;
 
     // Deallocate display images
     heapObjectFactory.deallocateObject(emptyDisplay);

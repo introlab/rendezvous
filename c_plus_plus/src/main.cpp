@@ -43,20 +43,22 @@ int main(int argc, char *argv[])
     std::string inDeviceName = "odas";
     int inChannels = 4;
     int inRate = 44100;
-    int inFormatBytes = 16;
+    int inFormatBytes = 2;
     bool inIsLittleEndian = true;
-    int inBufferSize = 4096;
+    int inPacketAudioSize = 4096;
+    int inPacketHeaderSize = 0;
     Model::AudioConfig audioInputConfig(inDeviceName, inChannels, inRate, inFormatBytes, inIsLittleEndian,
-                                        inBufferSize);
+                                        inPacketAudioSize, inPacketHeaderSize);
 
     std::string outDeviceName = "";
     int outChannels = 4;
     int outRate = 44100;
-    int outFormatBytes = 16;
+    int outFormatBytes = 2;
     bool outIsLittleEndian = true;
-    int outBufferSize = 4096;
+    int outPacketAudioSize = 4096;
+    int outPacketHeaderSize = 0;
     Model::AudioConfig audioOutputConfig(outDeviceName, outChannels, outRate, outFormatBytes, outIsLittleEndian,
-                                         outBufferSize);
+                                         outPacketAudioSize, outPacketHeaderSize);
 
     std::shared_ptr<Model::IStream> stream = std::make_shared<Model::Stream>(
         videoInputConfig, videoOutputConfig, audioInputConfig, audioOutputConfig, dewarpingConfig);
