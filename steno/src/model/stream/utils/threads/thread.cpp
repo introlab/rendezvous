@@ -11,6 +11,12 @@ Thread::Thread()
 {
 }
 
+Thread::~Thread()
+{
+    stop();
+    join();
+}
+
 void Thread::start()
 {
     if (!isRunning_)
