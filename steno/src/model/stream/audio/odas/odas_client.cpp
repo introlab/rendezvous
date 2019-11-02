@@ -30,13 +30,13 @@ void OdasClient::run()
     QProcess process;
     process.start(program, arguments);
 
-    bool returnValue = false;
+    bool isProcessFinished = false;
     QByteArray output;
 
     while (!isAbortRequested())
     {
-        returnValue = process.waitForFinished(m_waitTime);
-        if (returnValue)
+        isProcessFinished = process.waitForFinished(m_waitTime);
+        if (isProcessFinished)
         {
             // Handle the process' crash.
             qCritical() << "Odaslive stopped working.";
@@ -68,7 +68,7 @@ void OdasClient::closeProcess(QProcess& process)
     process.waitForFinished(m_joinTime);
     if (process.isOpen())
     {
-        qWarning() << "Odaslive were killed.";
+        qWarning() << "Odaslive was killed.";
         process.kill();
     }
 }
@@ -81,14 +81,22 @@ void OdasClient::attach(IObserver* observer)
     }
 }
 
+void OdasClient::detach(IObserver* observer)
+{
+    for (int index = 0; static_cast<size_t>(index) < m_subscribers.size(); ++index)
+    {
+        if (m_subscribers.at(static_cast<size_t>(index)) == observer)
+        {
+            m_subscribers.erase(m_subscribers.begin() + index);
+        }
+    }
+}
+
 void OdasClient::notify()
 {
     for (auto observer : m_subscribers)
     {
-        if (observer != nullptr)
-        {
-            observer->updateObserver();
-        }
+        observer->updateObserver();
     }
 }
 

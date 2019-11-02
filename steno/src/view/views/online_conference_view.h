@@ -14,11 +14,6 @@ namespace Ui
 class OnlineConferenceView;
 }
 
-namespace Model
-{
-enum class StreamStatus;
-}
-
 namespace View
 {
 class OnlineConferenceView : public AbstractView

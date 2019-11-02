@@ -65,10 +65,7 @@ Stream::Stream(const VideoConfig& videoInputConfig, const VideoConfig& videoOutp
         audioInputConfig_, audioOutputConfig_);
 
     odasClient_ = std::make_unique<OdasClient>();
-    if (odasClient_ != nullptr)
-    {
-        odasClient_->attach(this);
-    }
+    odasClient_->attach(this);
 }
 
 Stream::~Stream()
@@ -91,30 +88,24 @@ void Stream::stop()
     status_ = StreamStatus::STOPPING;
     emit statusChanged();
 
-    if (odasClient_ != nullptr && odasClient_->getState() != OdasClientState::CRASHED)
+    if (odasClient_->getState() != OdasClientState::CRASHED)
     {
         odasClient_->stop();
         odasClient_->join();
     }
 
-    if (detectionThread_ != nullptr)
-    {
-        detectionThread_->stop();
-        detectionThread_->join();
-    }
-    if (mediaThread_ != nullptr)
-    {
-        mediaThread_->stop();
-        mediaThread_->join();
-    }
+    detectionThread_->stop();
+    detectionThread_->join();
+    mediaThread_->stop();
+    mediaThread_->join();
+
     status_ = StreamStatus::STOPPED;
     emit statusChanged();
 }
 
 void Stream::updateObserver()
 {
-    if (odasClient_ == nullptr) return;
-    const OdasClientState& state = odasClient_->getState();
+    OdasClientState state = odasClient_->getState();
     if (state == OdasClientState::CRASHED)
     {
         stop();
