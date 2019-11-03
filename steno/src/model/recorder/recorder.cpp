@@ -27,7 +27,7 @@ Recorder::Recorder(std::shared_ptr<Model::ISettings> settings, QWidget *parent)
 
     m_mediaRecorder.setContainerFormat("video/webm");
 
-    connect(&m_camera, &QCamera::statusChanged, [=](QCamera::Status status){ onCameraStatusChanged(status); });
+    connect(&m_camera, &QCamera::statusChanged, [=](QCamera::Status status) { onCameraStatusChanged(status); });
 }
 
 Recorder::~Recorder()
@@ -63,7 +63,8 @@ void Recorder::onCameraStatusChanged(QCamera::Status status)
     switch (status)
     {
         case QCamera::Status::ActiveStatus:
-            m_mediaRecorder.setOutputLocation(m_settings->get(Model::General::keyName(Model::General::Key::OUTPUT_FOLDER)).toString());
+            m_mediaRecorder.setOutputLocation(
+                m_settings->get(Model::General::keyName(Model::General::Key::OUTPUT_FOLDER)).toString());
             m_mediaRecorder.record();
             updateState(IRecorder::State::Started);
             break;
@@ -72,7 +73,7 @@ void Recorder::onCameraStatusChanged(QCamera::Status status)
     }
 }
 
-void Recorder::updateState(const IRecorder::State& state)
+void Recorder::updateState(const IRecorder::State &state)
 {
     m_state = state;
     emit stateChanged(m_state);

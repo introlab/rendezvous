@@ -1,9 +1,9 @@
 #include "stream.h"
 
+#include "model/stream/audio/file/raw_file_audio_sink.h"
 #include "model/stream/audio/odas/odas_audio_source.h"
 #include "model/stream/audio/odas/odas_client.h"
 #include "model/stream/audio/odas/odas_position_source.h"
-#include "model/stream/audio/file/raw_file_audio_sink.h"
 #include "model/stream/audio/pulseaudio/pulseaudio_sink.h"
 #include "model/stream/utils/images/images.h"
 #include "model/stream/utils/math/angle_calculations.h"
@@ -58,10 +58,11 @@ Stream::Stream(const VideoConfig& videoInputConfig, const VideoConfig& videoOutp
         m_dewarpingConfig, detectionDewarpingCount);
 
     m_mediaThread = std::make_unique<MediaThread>(
-        std::make_unique<OdasAudioSource>(10030, 1000/m_videoOutputConfig.fpsTarget, 4, m_audioInputConfig), std::make_unique<RawFileAudioSink>("audio_output.raw"),
-        std::make_unique<OdasPositionSource>(10020), m_implementationFactory.getCameraReader(m_videoInputConfig),
-        m_implementationFactory.getFisheyeDewarper(), m_implementationFactory.getObjectFactory(),
-        std::make_unique<VirtualCameraOutput>(m_videoOutputConfig), m_implementationFactory.getSynchronizer(),
+        std::make_unique<OdasAudioSource>(10030, 1000 / m_videoOutputConfig.fpsTarget, 4, m_audioInputConfig),
+        std::make_unique<RawFileAudioSink>("audio_output.raw"), std::make_unique<OdasPositionSource>(10020),
+        m_implementationFactory.getCameraReader(m_videoInputConfig), m_implementationFactory.getFisheyeDewarper(),
+        m_implementationFactory.getObjectFactory(), std::make_unique<VirtualCameraOutput>(m_videoOutputConfig),
+        m_implementationFactory.getSynchronizer(),
         std::make_unique<VirtualCameraManager>(aspectRatio, minElevation, maxElevation), detectionQueue, m_imageBuffer,
         m_implementationFactory.getImageConverter(), m_dewarpingConfig, m_videoInputConfig, m_videoOutputConfig,
         m_audioInputConfig, m_audioOutputConfig);

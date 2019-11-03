@@ -23,11 +23,11 @@ class OnlineConferenceView : public AbstractView
 
    private slots:
     void onStartButtonClicked();
-    void onStreamStateChanged(const Model::IStream::State& state);
+    void onStreamStateChanged(const Model::IStream::State &state);
 
-    private:
-     Ui::OnlineConferenceView *m_ui;
-     std::shared_ptr<Model::IStream> m_stream;
+   private:
+    Ui::OnlineConferenceView *m_ui;
+    std::shared_ptr<Model::IStream> m_stream;
 };
 
 }    // namespace View

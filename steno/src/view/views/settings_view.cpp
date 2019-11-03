@@ -50,13 +50,13 @@ void SettingsView::onOutputFolderButtonClicked()
 void SettingsView::onLanguageComboboxCurrentIndexChanged(const int& index)
 {
     m_settings->set(Model::Transcription::keyName(Model::Transcription::Key::LANGUAGE),
-                   static_cast<Model::Transcription::Language>(index));
+                    static_cast<Model::Transcription::Language>(index));
 }
 
 void SettingsView::onAutoTranscriptionCheckBoxStateChanged(const int& state)
 {
     m_settings->set(Model::Transcription::keyName(Model::Transcription::Key::AUTOMATIC_TRANSCRIPTION),
-                   state == Qt::Checked);
+                    state == Qt::Checked);
 }
 
 }    // namespace View

@@ -30,12 +30,15 @@ class Stream : public IStream, public IObserver
 
     void start() override;
     void stop() override;
-    IStream::State state() const override { return m_state; }
+    IStream::State state() const override
+    {
+        return m_state;
+    }
 
     void updateObserver() override;
 
    private:
-    void updateState(const IStream::State &state);
+    void updateState(const IStream::State& state);
 
     IStream::State m_state;
 

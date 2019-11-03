@@ -1,12 +1,13 @@
 #include "local_conference_view.h"
 #include "ui_local_conference_view.h"
 
-#include <QSignalBlocker>
 #include <QCameraViewfinder>
+#include <QSignalBlocker>
 
 namespace View
 {
-LocalConferenceView::LocalConferenceView(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::IRecorder> recorder, QWidget *parent)
+LocalConferenceView::LocalConferenceView(std::shared_ptr<Model::IStream> stream,
+                                         std::shared_ptr<Model::IRecorder> recorder, QWidget* parent)
     : AbstractView("Local Conference", parent)
     , m_ui(new Ui::LocalConferenceView)
     , m_cameraViewfinder(new QCameraViewfinder(this))
@@ -19,10 +20,12 @@ LocalConferenceView::LocalConferenceView(std::shared_ptr<Model::IStream> stream,
     m_cameraViewfinder->show();
     m_recorder->setCameraViewFinder(m_cameraViewfinder);
 
-    connect(m_stream.get(), &Model::IStream::stateChanged, [=](const Model::IStream::State& state){ onStreamStateChanged(state); });
+    connect(m_stream.get(), &Model::IStream::stateChanged,
+            [=](const Model::IStream::State& state) { onStreamStateChanged(state); });
     connect(m_ui->startVirtualDevicesButton, &QAbstractButton::clicked, [=] { onStartVirtualDevicesButtonClicked(); });
 
-    connect(m_recorder.get(), &Model::IRecorder::stateChanged, [=](const Model::IRecorder::State& state){ onRecorderStateChanged(state); });
+    connect(m_recorder.get(), &Model::IRecorder::stateChanged,
+            [=](const Model::IRecorder::State& state) { onRecorderStateChanged(state); });
     connect(m_ui->startRecorderButton, &QAbstractButton::clicked, [=] { onStartRecorderButtonClicked(); });
 }
 

@@ -104,4 +104,4 @@ OdasClientState OdasClient::getState()
 {
     return m_state;
 }
-}
+}    // namespace Model

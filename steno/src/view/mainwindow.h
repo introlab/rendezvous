@@ -6,9 +6,9 @@
 #include <QMainWindow>
 
 #include "model/media_player/i_media_player.h"
+#include "model/recorder/i_recorder.h"
 #include "model/settings/i_settings.h"
 #include "model/stream/i_stream.h"
-#include "model/recorder/i_recorder.h"
 
 class QStackedWidget;
 
@@ -30,8 +30,9 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
    public:
-    MainWindow(std::shared_ptr<Model::ISettings> settings, std::shared_ptr<Model::IMediaPlayer> mediaPlayer, std::shared_ptr<Model::IStream> stream,
-               std::shared_ptr<Model::IRecorder> recorder, QWidget *parent = nullptr);
+    MainWindow(std::shared_ptr<Model::ISettings> settings, std::shared_ptr<Model::IMediaPlayer> mediaPlayer,
+               std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::IRecorder> recorder,
+               QWidget *parent = nullptr);
 
    private:
     void addView(View::AbstractView *view);

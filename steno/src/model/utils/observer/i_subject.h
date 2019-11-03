@@ -14,6 +14,6 @@ class ISubject
     virtual void notify() = 0;
     virtual void detach(IObserver* observer) = 0;
 };
-}
+}    // namespace Model
 
 #endif    // I_SUBJECT_H

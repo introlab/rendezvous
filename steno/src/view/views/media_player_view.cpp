@@ -36,7 +36,8 @@ MediaPlayerView::MediaPlayerView(std::shared_ptr<Model::IMediaPlayer> mediaPlaye
     connect(m_mediaPlayer.get(), &Model::IMediaPlayer::volumeChanged, [=](int volume) { setVolume(volume); });
     connect(m_mediaPlayer.get(), &Model::IMediaPlayer::subtitleChanged,
             [=](QString subtitle) { onSubtitleChanged(subtitle); });
-    connect(m_mediaPlayer.get(), &Model::IMediaPlayer::errorOccured, [=](const QString& error) { onErrorOccured(error); });
+    connect(m_mediaPlayer.get(), &Model::IMediaPlayer::errorOccured,
+            [=](const QString& error) { onErrorOccured(error); });
 }
 
 void MediaPlayerView::onMediaStateChanged(QMediaPlayer::State state)

@@ -7,7 +7,8 @@ namespace Model
 {
 struct AudioConfig
 {
-    AudioConfig(const std::string& deviceName, int channels, int rate, int formatBytes, bool isLittleEndian, int packetAudioSize, int packetHeaderSize)
+    AudioConfig(const std::string& deviceName, int channels, int rate, int formatBytes, bool isLittleEndian,
+                int packetAudioSize, int packetHeaderSize)
         : deviceName(std::move(deviceName))
         , channels(channels)
         , rate(rate)

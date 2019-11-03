@@ -22,11 +22,11 @@ OnlineConferenceView::OnlineConferenceView(std::shared_ptr<Model::IStream> strea
 
     m_ui->setupUi(this);
 
-
     connect(m_ui->websiteButton, &QAbstractButton::clicked,
             [] { QDesktopServices::openUrl(QUrl("https://rendezvous-meet.com/")); });
 
-    connect(m_stream.get(), &Model::IStream::stateChanged, [=](const Model::IStream::State& state){ onStreamStateChanged(state); });
+    connect(m_stream.get(), &Model::IStream::stateChanged,
+            [=](const Model::IStream::State& state) { onStreamStateChanged(state); });
     connect(m_ui->startButton, &QAbstractButton::clicked, [=] { onStartButtonClicked(); });
 }
 
@@ -35,7 +35,7 @@ OnlineConferenceView::~OnlineConferenceView()
     m_stream->stop();
 }
 void OnlineConferenceView::onStartButtonClicked()
-{   
+{
     m_ui->startButton->setDisabled(true);
     switch (m_stream->state())
     {

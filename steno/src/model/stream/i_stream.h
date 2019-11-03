@@ -5,13 +5,13 @@
 
 namespace Model
 {
-
 class IStream : public QObject
 {
     Q_OBJECT
 
    public:
-    enum State {
+    enum State
+    {
         Started,
         Stopping,
         Stopped

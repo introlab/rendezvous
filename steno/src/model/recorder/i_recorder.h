@@ -13,12 +13,13 @@ class IRecorder : public QWidget
     Q_OBJECT
 
    public:
-    enum State {
+    enum State
+    {
         Started,
         Stopped
     };
 
-    IRecorder(QWidget *parent = nullptr)
+    IRecorder(QWidget* parent = nullptr)
         : QWidget(parent)
     {
     }

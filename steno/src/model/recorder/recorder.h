@@ -20,7 +20,10 @@ class Recorder : public IRecorder
     void start() override;
     void stop() override;
     void setCameraViewFinder(std::shared_ptr<QCameraViewfinder> cameraViewFinder) override;
-    IRecorder::State state() const override { return m_state; }
+    IRecorder::State state() const override
+    {
+        return m_state;
+    }
 
    private slots:
     void onCameraStatusChanged(QCamera::Status status);
