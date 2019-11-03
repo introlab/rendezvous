@@ -1,4 +1,5 @@
 #include "model/media_player/media_player.h"
+#include "model/recorder/recorder.h"
 #include "model/settings/settings.h"
 #include "model/stream/audio/audio_config.h"
 #include "model/stream/stream.h"
@@ -15,9 +16,6 @@ int main(int argc, char *argv[])
     QFile file(":/stylesheets/globalStylesheet.qss");
     file.open(QFile::ReadOnly);
     a.setStyleSheet(QLatin1String(file.readAll()));
-
-    Model::Settings settings;
-    Model::MediaPlayer mediaPlayer;
 
     // TODO : move these configurations in a file
 
@@ -60,10 +58,16 @@ int main(int argc, char *argv[])
     Model::AudioConfig audioOutputConfig(outDeviceName, outChannels, outRate, outFormatBytes, outIsLittleEndian,
                                          outPacketAudioSize, outPacketHeaderSize);
 
+    std::shared_ptr<Model::ISettings> settings = std::make_shared<Model::Settings>();
+
+    std::shared_ptr<Model::IMediaPlayer> mediaPlayer = std::make_shared<Model::MediaPlayer>();
+
     std::shared_ptr<Model::IStream> stream = std::make_shared<Model::Stream>(
         videoInputConfig, videoOutputConfig, audioInputConfig, audioOutputConfig, dewarpingConfig);
 
-    View::MainWindow w(settings, mediaPlayer, stream);
+    std::shared_ptr<Model::IRecorder> recorder = std::make_shared<Model::Recorder>(settings);
+
+    View::MainWindow w(settings, mediaPlayer, stream, recorder);
     w.show();
 
     return QApplication::exec();

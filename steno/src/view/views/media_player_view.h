@@ -4,6 +4,8 @@
 #include "model/media_player/i_media_player.h"
 #include "view/views/abstract_view.h"
 
+#include <memory>
+
 #include <QMediaPlayer>
 
 namespace Ui
@@ -16,7 +18,7 @@ namespace View
 class MediaPlayerView : public AbstractView
 {
    public:
-    explicit MediaPlayerView(Model::IMediaPlayer &videoPlayer, QWidget *parent = nullptr);
+    explicit MediaPlayerView(std::shared_ptr<Model::IMediaPlayer> mediaPlayer, QWidget *parent = nullptr);
 
    private slots:
     void onMediaStateChanged(QMediaPlayer::State state);
@@ -31,7 +33,7 @@ class MediaPlayerView : public AbstractView
     int volume() const;
 
     Ui::MediaPlayerView *m_ui;
-    Model::IMediaPlayer &m_videoPlayer;
+    std::shared_ptr<Model::IMediaPlayer> m_mediaPlayer;
 
     const uint8_t m_maxVolume = 100;
 };

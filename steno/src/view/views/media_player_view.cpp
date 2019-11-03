@@ -9,34 +9,35 @@
 
 namespace View
 {
-MediaPlayerView::MediaPlayerView(Model::IMediaPlayer& videoPlayer, QWidget* parent)
+MediaPlayerView::MediaPlayerView(std::shared_ptr<Model::IMediaPlayer> mediaPlayer, QWidget* parent)
     : AbstractView("Media Player", parent)
     , m_ui(new Ui::MediaPlayerView)
-    , m_videoPlayer(videoPlayer)
+    , m_mediaPlayer(mediaPlayer)
 {
     m_ui->setupUi(this);
     m_ui->playButton->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
 
-    setVolume(m_videoPlayer.volume());
+    setVolume(m_mediaPlayer->volume());
 
-    m_videoPlayer.setVideoOutput(m_ui->videoWidget);
+    m_mediaPlayer->setVideoOutput(m_ui->videoWidget);
 
     connect(m_ui->openButton, &QAbstractButton::clicked, [=] { openFile(); });
-    connect(m_ui->playButton, &QAbstractButton::clicked, [=] { m_videoPlayer.play(); });
+    connect(m_ui->playButton, &QAbstractButton::clicked, [=] { m_mediaPlayer->play(); });
     connect(m_ui->positionSlider, &QAbstractSlider::sliderMoved,
-            [=](int position) { m_videoPlayer.setPosition(position); });
-    connect(m_ui->volumeSlider, &QSlider::valueChanged, [=] { m_videoPlayer.setVolume(volume()); });
+            [=](int position) { m_mediaPlayer->setPosition(position); });
+    connect(m_ui->volumeSlider, &QSlider::valueChanged, [=] { m_mediaPlayer->setVolume(volume()); });
 
-    connect(&m_videoPlayer, &Model::IMediaPlayer::stateChanged,
+    connect(m_mediaPlayer.get(), &Model::IMediaPlayer::stateChanged,
             [=](QMediaPlayer::State state) { onMediaStateChanged(state); });
-    connect(&m_videoPlayer, &Model::IMediaPlayer::positionChanged,
+    connect(m_mediaPlayer.get(), &Model::IMediaPlayer::positionChanged,
             [=](qint64 position) { onPositionChanged(position); });
-    connect(&m_videoPlayer, &Model::IMediaPlayer::durationChanged,
+    connect(m_mediaPlayer.get(), &Model::IMediaPlayer::durationChanged,
             [=](qint64 duration) { onDurationChanged(duration); });
-    connect(&m_videoPlayer, &Model::IMediaPlayer::volumeChanged, [=](int volume) { setVolume(volume); });
-    connect(&m_videoPlayer, &Model::IMediaPlayer::subtitleChanged,
+    connect(m_mediaPlayer.get(), &Model::IMediaPlayer::volumeChanged, [=](int volume) { setVolume(volume); });
+    connect(m_mediaPlayer.get(), &Model::IMediaPlayer::subtitleChanged,
             [=](QString subtitle) { onSubtitleChanged(subtitle); });
-    connect(&m_videoPlayer, &Model::IMediaPlayer::errorOccured, [=](const QString& error) { onErrorOccured(error); });
+    connect(m_mediaPlayer.get(), &Model::IMediaPlayer::errorOccured,
+            [=](const QString& error) { onErrorOccured(error); });
 }
 
 void MediaPlayerView::onMediaStateChanged(QMediaPlayer::State state)
@@ -83,7 +84,7 @@ void MediaPlayerView::openFile()
         QStandardPaths::standardLocations(QStandardPaths::MoviesLocation).value(0, QDir::homePath()));
     if (fileDialog.exec() == QDialog::Accepted)
     {
-        m_videoPlayer.setMedia(fileDialog.selectedUrls().constFirst());
+        m_mediaPlayer->setMedia(fileDialog.selectedUrls().constFirst());
         m_ui->statusLabel->setText(QString());
         m_ui->playButton->setEnabled(true);
     }

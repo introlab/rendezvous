@@ -91,15 +91,22 @@
         </spacer>
        </item>
        <item>
-        <widget class="QPushButton" name="btnStartStopRecord">
+        <widget class="QPushButton" name="startRecorderButton">
          <property name="text">
-          <string>Start Recording</string>
+          <string>Start recording</string>
          </property>
          <property name="checkable">
           <bool>false</bool>
          </property>
          <property name="checked">
           <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="startVirtualDevicesButton">
+         <property name="text">
+          <string>Start virutal devices</string>
          </property>
         </widget>
        </item>
