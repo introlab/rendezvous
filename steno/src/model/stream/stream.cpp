@@ -3,6 +3,7 @@
 #include "model/stream/audio/odas/odas_audio_source.h"
 #include "model/stream/audio/odas/odas_client.h"
 #include "model/stream/audio/odas/odas_position_source.h"
+#include "model/stream/audio/file/raw_file_audio_sink.h"
 #include "model/stream/audio/pulseaudio/pulseaudio_sink.h"
 #include "model/stream/utils/images/images.h"
 #include "model/stream/utils/math/angle_calculations.h"
@@ -56,7 +57,7 @@ Stream::Stream(const VideoConfig& videoInputConfig, const VideoConfig& videoOutp
         dewarpingConfig_, detectionDewarpingCount);
 
     mediaThread_ = std::make_unique<MediaThread>(
-        std::make_unique<OdasAudioSource>(10030), std::make_unique<PulseAudioSink>(audioOutputConfig_),
+        std::make_unique<OdasAudioSource>(10030, 1000/videoOutputConfig_.fpsTarget, 4, audioInputConfig_), std::make_unique<RawFileAudioSink>("audio_output.raw"),
         std::make_unique<OdasPositionSource>(10020), implementationFactory_.getCameraReader(videoInputConfig_),
         implementationFactory_.getFisheyeDewarper(), implementationFactory_.getObjectFactory(),
         std::make_unique<VirtualCameraOutput>(videoOutputConfig_), implementationFactory_.getSynchronizer(),

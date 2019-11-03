@@ -3,23 +3,36 @@
 
 #include <memory>
 
-#include "model/network/local_socket_server.h"
+#include <QThread>
+
 #include "model/stream/audio/i_audio_source.h"
+#include "model/stream/audio/audio_config.h"
+#include "model/stream/utils/models/circular_buffer.h"
+#include "model/stream/utils/threads/readerwriterqueue.h"
 
 namespace Model
 {
-class OdasAudioSource : public IAudioSource
+class OdasAudioSource : public QThread, public IAudioSource
 {
    public:
-    OdasAudioSource(quint16 port);
+    OdasAudioSource(int port,
+                    int desiredChunkDurationMs,
+                    int numberOfBuffers,
+                    const AudioConfig& audioConfig);
     ~OdasAudioSource() override;
 
     void open() override;
     void close() override;
-    int read(uint8_t* audioBuf, int bytesToRead) override;
+    bool readAudioChunk(AudioChunk& outAudioChunk) override;
 
    private:
-    std::unique_ptr<LocalSocketServer> m_socketServer;
+    void run() override;
+    unsigned long long calculateNewTimestamp(unsigned long long currentTimestamp, int bytesForward);
+
+    int port_;
+    AudioConfig audioConfig_;
+    CircularBuffer<AudioChunk> audioChunks_;
+    std::shared_ptr<moodycamel::BlockingReaderWriterQueue<AudioChunk>> audioQueue_;
 };
 
 }    // namespace Model
