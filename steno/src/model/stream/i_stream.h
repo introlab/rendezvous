@@ -1,27 +1,29 @@
 #ifndef I_STREAM_H
 #define I_STREAM_H
 
-#include <QWidget>
+#include <QObject>
 
 namespace Model
 {
-class IStream : public QWidget
+
+class IStream : public QObject
 {
-   Q_OBJECT
+    Q_OBJECT
 
    public:
     enum State {
         Started,
+        Stopping,
         Stopped
     };
 
     virtual ~IStream() = default;
     virtual void start() = 0;
     virtual void stop() = 0;
-    virtual IStream::State state() const = 0;
+    virtual State state() const = 0;
 
    signals:
-    void stateChanged(const IStream::State& state);
+    void stateChanged(const State& state);
 };
 
 }    // namespace Model

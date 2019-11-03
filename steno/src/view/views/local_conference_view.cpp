@@ -1,6 +1,7 @@
 #include "local_conference_view.h"
 #include "ui_local_conference_view.h"
 
+#include <QSignalBlocker>
 #include <QCameraViewfinder>
 
 namespace View
@@ -31,7 +32,15 @@ void LocalConferenceView::onStartVirtualDevicesButtonClicked()
     switch (m_stream->state())
     {
         case Model::IStream::Started:
+        {
+            QApplication::processEvents();
+            // We use a signal blocker to avoid queued signals from clicks on the startButton when the UI is disabled
+            // The signals are reenable when the blocker is out of scope.
+            QSignalBlocker blocker(m_ui->startVirtualDevicesButton);
             m_stream->stop();
+            break;
+        }
+        case Model::IStream::Stopping:
             break;
         case Model::IStream::Stopped:
             m_stream->start();
@@ -59,12 +68,17 @@ void LocalConferenceView::onStreamStateChanged(const Model::IStream::State& stat
     {
         case Model::IStream::Started:
             m_ui->startVirtualDevicesButton->setText("Stop virtual devices");
+            m_ui->startVirtualDevicesButton->setDisabled(false);
+            break;
+        case Model::IStream::Stopping:
+            m_ui->startVirtualDevicesButton->setText("Stopping virtual devices");
+            m_ui->startVirtualDevicesButton->setDisabled(true);
             break;
         case Model::IStream::Stopped:
             m_ui->startVirtualDevicesButton->setText("Start virtual devices");
+            m_ui->startVirtualDevicesButton->setDisabled(false);
             break;
     }
-    m_ui->startVirtualDevicesButton->setDisabled(false);
 }
 
 void LocalConferenceView::onRecorderStateChanged(const Model::IRecorder::State& state)
@@ -80,5 +94,4 @@ void LocalConferenceView::onRecorderStateChanged(const Model::IRecorder::State& 
     }
     m_ui->startRecorderButton->setDisabled(false);
 }
-
 }    // namespace View

@@ -1,7 +1,9 @@
 #include "stream.h"
 
 #include "model/stream/audio/odas/odas_audio_source.h"
+#include "model/stream/audio/odas/odas_client.h"
 #include "model/stream/audio/odas/odas_position_source.h"
+#include "model/stream/audio/file/raw_file_audio_sink.h"
 #include "model/stream/audio/pulseaudio/pulseaudio_sink.h"
 #include "model/stream/utils/images/images.h"
 #include "model/stream/utils/math/angle_calculations.h"
@@ -22,21 +24,21 @@ Stream::Stream(const VideoConfig& videoInputConfig, const VideoConfig& videoOutp
                const AudioConfig& audioInputConfig, const AudioConfig& audioOutputConfig,
                const DewarpingConfig& dewarpingConfig)
     : m_state(IStream::State::Stopped)
-    , videoInputConfig_(videoInputConfig)
-    , videoOutputConfig_(videoOutputConfig)
-    , audioInputConfig_(audioInputConfig)
-    , audioOutputConfig_(audioOutputConfig)
-    , dewarpingConfig_(dewarpingConfig)
-    , mediaThread_(nullptr)
-    , detectionThread_(nullptr)
-    , implementationFactory_(false)
+    , m_videoInputConfig(videoInputConfig)
+    , m_videoOutputConfig(videoOutputConfig)
+    , m_audioInputConfig(audioInputConfig)
+    , m_audioOutputConfig(audioOutputConfig)
+    , m_dewarpingConfig(dewarpingConfig)
+    , m_mediaThread(nullptr)
+    , m_detectionThread(nullptr)
+    , m_implementationFactory(false)
 {
     int detectionDewarpingCount = 4;
     float aspectRatio = 3.f / 4.f;
     float minElevation = math::deg2rad(0.f);
     float maxElevation = math::deg2rad(90.f);
 
-    imageBuffer_ = std::make_shared<LockTripleBuffer<Image>>(RGBImage(videoInputConfig_.resolution));
+    m_imageBuffer = std::make_shared<LockTripleBuffer<Image>>(RGBImage(m_videoInputConfig.resolution));
     std::shared_ptr<moodycamel::ReaderWriterQueue<std::vector<SphericalAngleRect>>> detectionQueue =
         std::make_shared<moodycamel::ReaderWriterQueue<std::vector<SphericalAngleRect>>>(1);
 
@@ -46,50 +48,60 @@ Stream::Stream(const VideoConfig& videoInputConfig, const VideoConfig& videoOutp
         (QCoreApplication::applicationDirPath() + "/../configs/yolo/weights/yolov3-tiny.weights").toStdString();
     std::string metaFile = (QCoreApplication::applicationDirPath() + "/../configs/yolo/cfg/coco.data").toStdString();
 
-    objectFactory_ = implementationFactory_.getDetectionObjectFactory();
-    objectFactory_->allocateObjectLockTripleBuffer(*imageBuffer_);
+    m_objectFactory = m_implementationFactory.getDetectionObjectFactory();
+    m_objectFactory->allocateObjectLockTripleBuffer(*m_imageBuffer);
 
-    detectionThread_ = std::make_unique<DetectionThread>(
-        imageBuffer_, implementationFactory_.getDetector(configFile, weightsFile, metaFile), detectionQueue,
-        implementationFactory_.getDetectionFisheyeDewarper(aspectRatio),
-        implementationFactory_.getDetectionObjectFactory(), implementationFactory_.getDetectionSynchronizer(),
-        dewarpingConfig_, detectionDewarpingCount);
+    m_detectionThread = std::make_unique<DetectionThread>(
+        m_imageBuffer, m_implementationFactory.getDetector(configFile, weightsFile, metaFile), detectionQueue,
+        m_implementationFactory.getDetectionFisheyeDewarper(aspectRatio),
+        m_implementationFactory.getDetectionObjectFactory(), m_implementationFactory.getDetectionSynchronizer(),
+        m_dewarpingConfig, detectionDewarpingCount);
 
-    mediaThread_ = std::make_unique<MediaThread>(
-        std::make_unique<OdasAudioSource>(10030), std::make_unique<PulseAudioSink>(audioOutputConfig_),
-        std::make_unique<OdasPositionSource>(10020), implementationFactory_.getCameraReader(videoInputConfig_),
-        implementationFactory_.getFisheyeDewarper(), implementationFactory_.getObjectFactory(),
-        std::make_unique<VirtualCameraOutput>(videoOutputConfig_), implementationFactory_.getSynchronizer(),
-        std::make_unique<VirtualCameraManager>(aspectRatio, minElevation, maxElevation), detectionQueue, imageBuffer_,
-        implementationFactory_.getImageConverter(), dewarpingConfig_, videoInputConfig_, videoOutputConfig_,
-        audioInputConfig_, audioOutputConfig_);
+    m_mediaThread = std::make_unique<MediaThread>(
+        std::make_unique<OdasAudioSource>(10030, 1000/m_videoOutputConfig.fpsTarget, 4, m_audioInputConfig), std::make_unique<RawFileAudioSink>("audio_output.raw"),
+        std::make_unique<OdasPositionSource>(10020), m_implementationFactory.getCameraReader(m_videoInputConfig),
+        m_implementationFactory.getFisheyeDewarper(), m_implementationFactory.getObjectFactory(),
+        std::make_unique<VirtualCameraOutput>(m_videoOutputConfig), m_implementationFactory.getSynchronizer(),
+        std::make_unique<VirtualCameraManager>(aspectRatio, minElevation, maxElevation), detectionQueue, m_imageBuffer,
+        m_implementationFactory.getImageConverter(), m_dewarpingConfig, m_videoInputConfig, m_videoOutputConfig,
+        m_audioInputConfig, m_audioOutputConfig);
+
+    m_odasClient = std::make_unique<OdasClient>();
+    m_odasClient->attach(this);
 }
 
 Stream::~Stream()
 {
-    objectFactory_->deallocateObjectLockTripleBuffer(*imageBuffer_);
+    m_objectFactory->deallocateObjectLockTripleBuffer(*m_imageBuffer);
 }
 
 void Stream::start()
 {
-    if (m_state != IStream::State::Started)
+    if (m_state == IStream::State::Stopped)
     {
-        mediaThread_->start();
-        detectionThread_->start();
+        m_mediaThread->start();
+        m_detectionThread->start();
+        m_odasClient->start();
         updateState(IStream::State::Started);
     }
 }
 
 void Stream::stop()
 {
-    if (m_state != IStream::Stopped)
+    updateState(IStream::State::Stopping);
+
+    if (m_odasClient->getState() != OdasClientState::CRASHED)
     {
-        detectionThread_->stop();
-        detectionThread_->join();
-        mediaThread_->stop();
-        mediaThread_->join();
-        updateState(IStream::State::Stopped);
+        m_odasClient->stop();
+        m_odasClient->join();
     }
+
+    m_detectionThread->stop();
+    m_detectionThread->join();
+    m_mediaThread->stop();
+    m_mediaThread->join();
+
+    updateState(IStream::State::Stopped);
 }
 
 void Stream::updateState(const IStream::State& state)
@@ -98,4 +110,12 @@ void Stream::updateState(const IStream::State& state)
     emit stateChanged(m_state);
 }
 
+void Stream::updateObserver()
+{
+    OdasClientState state = m_odasClient->getState();
+    if (state == OdasClientState::CRASHED)
+    {
+        stop();
+    }
+}
 }    // namespace Model

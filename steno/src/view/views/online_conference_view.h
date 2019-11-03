@@ -15,6 +15,8 @@ namespace View
 {
 class OnlineConferenceView : public AbstractView
 {
+    Q_OBJECT
+
    public:
     explicit OnlineConferenceView(std::shared_ptr<Model::IStream> stream, QWidget *parent = nullptr);
     virtual ~OnlineConferenceView();
@@ -23,9 +25,9 @@ class OnlineConferenceView : public AbstractView
     void onStartButtonClicked();
     void onStreamStateChanged(const Model::IStream::State& state);
 
-   private:
-    Ui::OnlineConferenceView *m_ui;
-    std::shared_ptr<Model::IStream> m_stream;
+    private:
+     Ui::OnlineConferenceView *m_ui;
+     std::shared_ptr<Model::IStream> m_stream;
 };
 
 }    // namespace View

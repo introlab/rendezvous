@@ -11,7 +11,7 @@ class Thread
 {
    public:
     Thread();
-    virtual ~Thread() = default;
+    virtual ~Thread();
 
     void start();
     void stop();
