@@ -143,6 +143,10 @@ To remove a v4l2loopback device:
     
     sudo rmmod v4l2loopback
 
+Automate v4l2loopback device creation:
+
+    sudo ./scripts/StenoCam/automation.sh
+
 ## libv4l2cpp
 
 Compile libv4l2cpp library:
