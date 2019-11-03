@@ -1,0 +1,9 @@
+[Unit]
+Description=StenoCam automation.
+
+[Service]
+Type=idle
+ExecStart=/bin/bash /usr/bin/stenocam-creation.sh
+
+[Install]
+WantedBy=default.target
