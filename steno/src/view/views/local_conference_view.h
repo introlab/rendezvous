@@ -1,19 +1,9 @@
 #ifndef RECORDING_VIEW_H
 #define RECORDING_VIEW_H
 
+#include "model/recorder/i_recorder.h"
+#include "model/stream/i_stream.h"
 #include "view/views/abstract_view.h"
-
-namespace Model
-{
-class IRecorder;
-class ISettings;
-}    // namespace Model
-
-class QCamera;
-class QCameraInfo;
-class QCameraViewfinder;
-class QStateMachine;
-class QState;
 
 namespace Ui
 {
@@ -25,28 +15,20 @@ namespace View
 class LocalConferenceView : public AbstractView
 {
    public:
-    explicit LocalConferenceView(Model::ISettings &settings, QWidget *parent = nullptr);
-    ~LocalConferenceView() override;
+    explicit LocalConferenceView(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::IRecorder> recorder,
+                                 QWidget* parent = nullptr);
 
-   protected:
-    void showEvent(QShowEvent *event) override;
-    void hideEvent(QHideEvent *event) override;
+   private slots:
+    void onStartVirtualDevicesButtonClicked();
+    void onStartRecorderButtonClicked();
+    void onStreamStateChanged(const Model::IStream::State& state);
+    void onRecorderStateChanged(const Model::IRecorder::State& state);
 
    private:
-    QString getCameraDevice();
-    QString getOutputPath();
-    QCameraInfo getCameraInfo();
-    void startCamera();
-    void stopCamera();
-
-    Ui::LocalConferenceView *m_ui;
-    Model::ISettings &m_settings;
-    QCamera *m_camera;
-    QCameraViewfinder *m_cameraViewfinder;
-    Model::IRecorder *m_recorder;
-    QStateMachine *m_stateMachine;
-    QState *m_stopped;
-    QState *m_started;
+    Ui::LocalConferenceView* m_ui;
+    std::shared_ptr<QCameraViewfinder> m_cameraViewfinder;
+    std::shared_ptr<Model::IStream> m_stream;
+    std::shared_ptr<Model::IRecorder> m_recorder;
 };
 
 }    // namespace View
