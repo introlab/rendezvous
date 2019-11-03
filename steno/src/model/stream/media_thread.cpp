@@ -68,7 +68,7 @@ void MediaThread::run()
 
     // TODO: config?
     const int classifierRangeThreshold = 2;
-    
+
     try
     {
         // Allocate display images

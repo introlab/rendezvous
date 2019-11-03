@@ -5,26 +5,25 @@
 
 namespace Model
 {
-enum class StreamStatus
-{
-    RUNNING,
-    STOPPING,
-    STOPPED,
-    CRASHED
-};
-
 class IStream : public QObject
 {
     Q_OBJECT
 
    public:
+    enum State
+    {
+        Started,
+        Stopping,
+        Stopped
+    };
+
     virtual ~IStream() = default;
     virtual void start() = 0;
     virtual void stop() = 0;
-    virtual StreamStatus getStatus() const = 0;
+    virtual State state() const = 0;
 
    signals:
-    void statusChanged();
+    void stateChanged(const State& state);
 };
 
 }    // namespace Model
