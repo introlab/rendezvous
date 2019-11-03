@@ -90,7 +90,11 @@ Create and install Qt (~2-3 hours)
 
 Install the following dependencies:
 
-    sudo apt-get install libpulse-dev   
+    sudo apt-get install libpulse-dev
+
+Automation of pulse audio mics creation:
+
+    sudo ./scripts/StenoMics/automation.sh
 
 ## ODAS
 

@@ -1,0 +1,9 @@
+[Unit]
+Description=StenoMics automation.
+
+[Service]
+Type=idle
+ExecStart=/bin/bash /usr/bin/stenomics-creation.sh
+
+[Install]
+WantedBy=default.target 
