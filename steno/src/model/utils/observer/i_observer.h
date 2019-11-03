@@ -10,6 +10,6 @@ class IObserver
 
     virtual void updateObserver() = 0;
 };
-}
+}    // namespace Model
 
 #endif    // I_OBSERVER_H

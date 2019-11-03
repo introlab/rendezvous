@@ -1,7 +1,6 @@
 #include "settings_view.h"
 #include "ui_settings_view.h"
 
-#include "model/settings/i_settings.h"
 #include "model/settings/settings_constants.h"
 
 #include <QComboBox>
@@ -9,7 +8,7 @@
 
 namespace View
 {
-SettingsView::SettingsView(Model::ISettings& settings, QWidget* parent)
+SettingsView::SettingsView(std::shared_ptr<Model::ISettings> settings, QWidget* parent)
     : AbstractView("Settings", parent)
     , m_ui(new Ui::SettingsView)
     , m_settings(settings)
@@ -23,11 +22,11 @@ SettingsView::SettingsView(Model::ISettings& settings, QWidget* parent)
     }
 
     m_ui->outputFolderLineEdit->setText(
-        m_settings.get(Model::General::keyName(Model::General::Key::OUTPUT_FOLDER)).toString());
+        m_settings->get(Model::General::keyName(Model::General::Key::OUTPUT_FOLDER)).toString());
     m_ui->languageComboBox->setCurrentIndex(
-        m_settings.get(Model::Transcription::keyName(Model::Transcription::Key::LANGUAGE)).toInt());
+        m_settings->get(Model::Transcription::keyName(Model::Transcription::Key::LANGUAGE)).toInt());
     m_ui->autoTranscriptionCheckBox->setChecked(
-        m_settings.get(Model::Transcription::keyName(Model::Transcription::Key::AUTOMATIC_TRANSCRIPTION)).toBool());
+        m_settings->get(Model::Transcription::keyName(Model::Transcription::Key::AUTOMATIC_TRANSCRIPTION)).toBool());
 
     connect(m_ui->outputFolderButton, &QAbstractButton::clicked, [=] { onOutputFolderButtonClicked(); });
     connect(m_ui->languageComboBox, qOverload<int>(&QComboBox::currentIndexChanged),
@@ -39,25 +38,25 @@ SettingsView::SettingsView(Model::ISettings& settings, QWidget* parent)
 void SettingsView::onOutputFolderButtonClicked()
 {
     QString outputFolder = QFileDialog::getExistingDirectory(
-        this, "Output Folder", m_settings.get(Model::General::keyName(Model::General::Key::OUTPUT_FOLDER)).toString(),
+        this, "Output Folder", m_settings->get(Model::General::keyName(Model::General::Key::OUTPUT_FOLDER)).toString(),
         QFileDialog::ShowDirsOnly);
     if (!outputFolder.isEmpty())
     {
-        m_settings.set(Model::General::keyName(Model::General::Key::OUTPUT_FOLDER), outputFolder);
+        m_settings->set(Model::General::keyName(Model::General::Key::OUTPUT_FOLDER), outputFolder);
         m_ui->outputFolderLineEdit->setText(outputFolder);
     }
 }
 
 void SettingsView::onLanguageComboboxCurrentIndexChanged(const int& index)
 {
-    m_settings.set(Model::Transcription::keyName(Model::Transcription::Key::LANGUAGE),
-                   static_cast<Model::Transcription::Language>(index));
+    m_settings->set(Model::Transcription::keyName(Model::Transcription::Key::LANGUAGE),
+                    static_cast<Model::Transcription::Language>(index));
 }
 
 void SettingsView::onAutoTranscriptionCheckBoxStateChanged(const int& state)
 {
-    m_settings.set(Model::Transcription::keyName(Model::Transcription::Key::AUTOMATIC_TRANSCRIPTION),
-                   state == Qt::Checked);
+    m_settings->set(Model::Transcription::keyName(Model::Transcription::Key::AUTOMATIC_TRANSCRIPTION),
+                    state == Qt::Checked);
 }
 
 }    // namespace View

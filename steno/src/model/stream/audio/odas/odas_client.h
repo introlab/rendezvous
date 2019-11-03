@@ -35,6 +35,6 @@ class OdasClient : public Thread, public ISubject
     OdasClientState m_state = OdasClientState::STOPPED;
     std::vector<IObserver *> m_subscribers;
 };
-}
+}    // namespace Model
 
 #endif    // ODAS_CLIENT_H
