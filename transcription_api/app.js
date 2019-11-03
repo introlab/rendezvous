@@ -1,20 +1,38 @@
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+let express = require('express');
+let cookieParser = require('cookie-parser');
+let logger = require('morgan');
+let errorHandler = require('errorhandler');
+let helmet = require('helmet');
+let cors = require('cors');
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+require('./env');
+let routes = require('./routes');
 
-var app = express();
+let app = express();
+app.disable('x-powered-by');
 
-app.use(logger('dev'));
+// Third-party modules for our server.
+if (process.env.NODE_ENV !== 'production') {
+    app.use(logger('dev'));
+    app.use(errorHandler({ dumpExceptions: true, showStack: true }));
+}
+
+app.use(helmet({
+    frameguard: {
+        action: 'deny'
+    }
+}));
+app.disable('X-Powered-By');
+
+app.use(cors({
+    origin: process.env.ORIGIN
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+//Connet all our routes to our application
+routes(app);
 
 module.exports = app;
