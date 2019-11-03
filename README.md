@@ -49,7 +49,7 @@ Steno film and record each person individually, then sends everything to the vid
 
 - WebRTC video-conference web server : [Jitsi Meet](https://github.com/jitsi/jitsi-meet)
 
-- Graphhical user interfaces : [Qt](https://www.qt.io/)
+- Graphical user interfaces : [Qt](https://www.qt.io/)
 
 ## The Prototype
 
