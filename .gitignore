@@ -70,3 +70,4 @@ transcription_api/node_modules
 *.key
 *.pem
 transcription_api/service_account.json
+transcription_api/config/development/.env
