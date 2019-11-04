@@ -44,6 +44,11 @@ void CameraReader::open()
     setImageFormat();
     requestBuffers(images_.size());
 
+    if (xioctl(VIDIOC_STREAMON, &buffer_.type) == ERROR_CODE)
+    {
+        throw std::runtime_error("Failed to start camera capture");
+    }
+
     // Queue a first capture for fast read
     v4l2_buffer buffer = buffer_;
     buffer.index = images_.current().index;
@@ -52,6 +57,11 @@ void CameraReader::open()
 
 void CameraReader::close()
 {
+    if (xioctl(VIDIOC_STREAMOFF, &buffer_.type) == ERROR_CODE)
+    {
+        throw std::runtime_error("Failed to stop camera capture");
+    }
+    
     for (std::size_t i = 0; i < images_.size(); ++i)
     {
         unmapBuffer(images_.current());
@@ -87,11 +97,6 @@ void CameraReader::queueCapture(v4l2_buffer& buffer)
     if (xioctl(VIDIOC_QBUF, &buffer) == ERROR_CODE)
     {
         throw std::runtime_error("Failed to querry camera buffer");
-    }
-
-    if (xioctl(VIDIOC_STREAMON, &buffer.type) == ERROR_CODE)
-    {
-        throw std::runtime_error("Failed to capture camera image");
     }
 }
 
