@@ -97,7 +97,7 @@ let SpeechToText = class {
      * * It returns an error in next parameter if there is a problem with your configuration.
      * @param {function} next - Callback function.
      */
-    requestTranscription(next) {
+    async requestTranscription(next) {
         let error = this._validateInput();
         if (error) {
             next(error);
