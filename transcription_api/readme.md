@@ -1,6 +1,6 @@
 # Transcription API
 
-this is the transcription api for the steno project. It communicates with googles servers to achieve speech-to-text transcription.
+this is the transcription api for the steno project. It communicates with Google's servers to achieve speech-to-text transcription.
 
 ## Installation:
 
