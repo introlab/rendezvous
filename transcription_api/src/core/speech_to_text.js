@@ -132,7 +132,6 @@ let SpeechToText = class {
             .map(result => result.alternatives[0].transcript)
             .join('\n');
 
-        console.log(transcription);
         next(null, transcription);
     }
 
@@ -160,7 +159,15 @@ let SpeechToText = class {
             return new Error(`Audio channel count value ${this._config.audioChannelCount} is not in valid range.`);
         }
 
-        if (!Models[this._config.model]) {
+        let isModelOK = false;
+        let that = this;
+        Object.keys(Models).forEach(function(key) {
+            if (Models[key] === that._config.model) {
+                isModelOK = true;
+            }
+        });
+
+        if (!isModelOK) {
             return new Error(`Model ${this._config.model} is not supported.`);
         }
 

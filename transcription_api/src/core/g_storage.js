@@ -13,8 +13,10 @@ let GStorage = class {
      * Creates a bucket on google cloud storage.
      * @param {string} bucketName 
      */
-    createBucket(bucketName) {
-        this._storageClient.createBucket(bucketName);
+    createBucket(bucketName, next) {
+        this._storageClient.createBucket(bucketName, function(err) {
+            next(err);
+        });
     }
 
     /**
@@ -34,25 +36,30 @@ let GStorage = class {
             next(new Error('cannot create bucket'));
             return;
         }
-        const blob = bucket.file(file.originalname);
+
+        const blob = bucket.file(`${file.originalname}`);
         if (!blob) {
             next(new Error('cannot create blob'));
             return;
         }
 
-        const blobStream = blob.createWriteStream();
+        const type = file.mimetype;
+        const blobStream = blob.createWriteStream({
+            contentType: type,
+            resumable: false
+        });
         if (!blobStream) {
             next(new Error('unable to establish an upload stream'));
             return;
         }
 
         blobStream.on('error', function(err) {
+            console.log(err.message);
             next(err);
         });
 
         blobStream.on('finish', function() {
-            const fileUrl = format(`https://storage/googleapis.com/${bucketName}/${blob.name}`);
-            next(null, fileUrl);
+            next(null);
         });
 
         blobStream.end(file.buffer);

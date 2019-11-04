@@ -5,17 +5,18 @@ let async = require('async');
 
 let httpErrors = require('../utils/HttpError');
 let {SpeechToText} = require('../core/speech_to_text');
+let speechToText = new SpeechToText();
 let GStorage = require('../core/g_storage');
 
 router.get('/transcription', multer().single('audio'), function(req, res, next) {
     // Request validation
-    let uploadToGStorage = req.query.storage;
+    let uploadToGStorage = req.query.storage == 'true';
     let encoding = req.query.encoding;
     let enhanced = req.query.enhanced;
     let language = req.query.language;
-    let model = req.query.model;
     let sampleRate = req.query.sampleRate;
     let audioChanels = req.query.audioChanels;
+    let model = req.query.model;
     let audio = req.file;
 
     if (!audio) {
@@ -24,19 +25,17 @@ router.get('/transcription', multer().single('audio'), function(req, res, next) 
     }
 
     // Request processing
-    let uploadedFileUrl = '';
-
     async.waterfall([
         function(callback) {
             if (uploadToGStorage) {
                 uploadAudioFile(audio, callback);
                 return;
             }
-            callback(null, null);
+            callback(null);
         },
-        function(fileUrl, callback) {
-            uploadedFileUrl = fileUrl;
-            
+        function(callback) {
+            let defaultConfig = speechToText.getConfig();
+
             let config = {
                 audio: audio,
                 encoding: encoding ? encoding : defaultConfig.encoding,
@@ -59,7 +58,6 @@ router.get('/transcription', multer().single('audio'), function(req, res, next) 
 
         res.status(httpErrors.OK).json({
             transcription: transcription,
-            fileUrl: uploadedFileUrl,
             error: err
         });
         return next();
@@ -69,21 +67,25 @@ router.get('/transcription', multer().single('audio'), function(req, res, next) 
 let uploadAudioFile = function(audio, next) {
     let gstorage = new GStorage();
     let date = new Date();
-    let st = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}:${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+    let st = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}-${date.getHours()}-${date.getMinutes()}-${date.getSeconds()}`;
     let bucketName = `rdv-steno-${st}`;
-    gstorage.uploadFile(bucketName, audio, function(err, fileUrl) {
+    gstorage.createBucket(bucketName, function(err) {
         if (err) {
             next(err);
             return;
         }
-        next(null, fileUrl);
+        gstorage.uploadFile(bucketName, audio, function(err) {
+            if (err) {
+                next(err);
+                return;
+            }
+            process.stdout.write(`upload done!\n`);
+            next(null);
+        });
     });
 };
 
 let transcribe = function(config, next) {
-    let speechToText = new SpeechToText();
-    let defaultConfig = speechToText.getConfig();
-
     speechToText.setConfig(config);
     speechToText.requestTranscription(next);
 };
