@@ -7,18 +7,17 @@
 
 namespace Model
 {
-OdasAudioSource::OdasAudioSource(int port,
-                                 int desiredChunkDurationMs,
-                                 int numberOfBuffers,
+OdasAudioSource::OdasAudioSource(int port, int desiredChunkDurationMs, int numberOfBuffers,
                                  const AudioConfig& audioConfig)
     : port_(port)
     , audioConfig_(audioConfig)
-    , audioChunks_(numberOfBuffers, AudioChunk(desiredChunkDurationMs/1000.f * audioConfig_.rate * audioConfig_.channels * audioConfig_.formatBytes))
+    , audioChunks_(numberOfBuffers, AudioChunk(desiredChunkDurationMs / 1000.f * audioConfig_.rate *
+                                               audioConfig_.channels * audioConfig_.formatBytes))
     , audioQueue_(std::make_shared<moodycamel::BlockingReaderWriterQueue<AudioChunk>>(1))
 {
     for (int i = 0; i < numberOfBuffers; i++)
     {
-        audioChunks_.current().audioData = 
+        audioChunks_.current().audioData =
             std::shared_ptr<uint8_t>(new uint8_t[audioChunks_.current().size], std::default_delete<uint8_t[]>());
         audioChunks_.next();
     }
@@ -74,9 +73,11 @@ void OdasAudioSource::run()
                     }
 
                     int remainingChunkSpace = audioChunk.size - readIndex;
-                    int bytesToRead = remainingChunkSpace < audioConfig_.packetAudioSize ? remainingChunkSpace : audioConfig_.packetAudioSize;
+                    int bytesToRead = remainingChunkSpace < audioConfig_.packetAudioSize ? remainingChunkSpace
+                                                                                         : audioConfig_.packetAudioSize;
 
-                    int firstBytesRead = socket->read(reinterpret_cast<char*>(audioChunk.audioData.get()) + readIndex, bytesToRead);
+                    int firstBytesRead =
+                        socket->read(reinterpret_cast<char*>(audioChunk.audioData.get()) + readIndex, bytesToRead);
                     readIndex += firstBytesRead;
 
                     // There is still data to be read if the chunk didn't have enough space
@@ -97,10 +98,12 @@ void OdasAudioSource::run()
                             newAudioChunk.timestamp = newTimeStamp;
 
                             // Read remaining packet data in the new chunk
-                            int secondBytesRead = socket->read(reinterpret_cast<char*>(newAudioChunk.audioData.get()) + readIndex, remainingBytesToRead);
+                            int secondBytesRead =
+                                socket->read(reinterpret_cast<char*>(newAudioChunk.audioData.get()) + readIndex,
+                                             remainingBytesToRead);
                             readIndex += secondBytesRead;
                         }
-                        
+
                         // Output audio chunk, if queue is full keep trying...
                         bool success = false;
                         while (!success && !isInterruptionRequested())
@@ -139,7 +142,7 @@ unsigned long long OdasAudioSource::calculateNewTimestamp(unsigned long long cur
 {
     int numberOfSamples = bytesForward / audioConfig_.formatBytes / audioConfig_.channels;
     unsigned long long microseconds = numberOfSamples * std::pow(10, 6) / audioConfig_.rate;
-    return currentTimestamp + microseconds; 
+    return currentTimestamp + microseconds;
 }
 
 }    // namespace Model

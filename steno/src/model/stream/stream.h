@@ -1,8 +1,6 @@
 #ifndef STREAM_H
 #define STREAM_H
 
-#include <memory>
-
 #include "model/stream/audio/audio_config.h"
 #include "model/stream/audio/odas/odas_client.h"
 #include "model/stream/i_stream.h"
@@ -13,6 +11,11 @@
 #include "model/stream/video/impl/implementation_factory.h"
 #include "model/stream/video/video_config.h"
 #include "model/utils/observer/i_observer.h"
+
+#include <memory>
+
+#include <QState>
+#include <QStateMachine>
 
 namespace Model
 {
@@ -27,25 +30,30 @@ class Stream : public IStream, public IObserver
 
     void start() override;
     void stop() override;
+    IStream::State state() const override
+    {
+        return m_state;
+    }
 
     void updateObserver() override;
-    StreamStatus getStatus() const override;
 
    private:
-    VideoConfig videoInputConfig_;
-    VideoConfig videoOutputConfig_;
-    AudioConfig audioInputConfig_;
-    AudioConfig audioOutputConfig_;
-    DewarpingConfig dewarpingConfig_;
+    void updateState(const IStream::State& state);
 
-    std::unique_ptr<MediaThread> mediaThread_;
-    std::unique_ptr<DetectionThread> detectionThread_;
-    std::unique_ptr<OdasClient> odasClient_;
-    std::unique_ptr<IObjectFactory> objectFactory_;
-    std::shared_ptr<LockTripleBuffer<Image>> imageBuffer_;
-    ImplementationFactory implementationFactory_;
+    IStream::State m_state;
 
-    StreamStatus status_ = StreamStatus::STOPPED;
+    VideoConfig m_videoInputConfig;
+    VideoConfig m_videoOutputConfig;
+    AudioConfig m_audioInputConfig;
+    AudioConfig m_audioOutputConfig;
+    DewarpingConfig m_dewarpingConfig;
+
+    std::unique_ptr<MediaThread> m_mediaThread;
+    std::unique_ptr<DetectionThread> m_detectionThread;
+    std::unique_ptr<OdasClient> m_odasClient;
+    std::unique_ptr<IObjectFactory> m_objectFactory;
+    std::shared_ptr<LockTripleBuffer<Image>> m_imageBuffer;
+    ImplementationFactory m_implementationFactory;
 };
 
 }    // namespace Model
