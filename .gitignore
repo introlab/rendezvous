@@ -69,3 +69,4 @@ steno/configs/yolo/
 transcription_api/node_modules
 *.key
 *.pem
+transcription_api/service_account.json
