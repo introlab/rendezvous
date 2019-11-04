@@ -64,6 +64,10 @@ let SpeechToText = class {
         this._config = config;
     }
 
+    getConfig() {
+        return this._config;
+    }
+
     /**
      * Minimal sample rate accepted by Speech API.
      */
@@ -105,7 +109,7 @@ let SpeechToText = class {
         }
 
         const audio = {
-            content: this._config.audio
+            content: this._config.audio.buffer
         };
 
         const config = {
@@ -140,7 +144,7 @@ let SpeechToText = class {
             return new Error('Invalid audio');
         }
 
-        if (this._config.audio.length < 100) {
+        if (this._config.audio.buffer.length < 100) {
             return new Error('Audio file empty');
         }
 

@@ -4,10 +4,8 @@ let GStorage = class {
 
     /**
      * Construct a GStorage, that allows you to play with buckets and blobs.
-     * @param {string} serviceAccountPath 
      */
-    constructor(serviceAccountPath) {
-        this.serviceAccountPath = serviceAccountPath;
+    constructor() {
         this._storageClient = new Storage();
     }
 
