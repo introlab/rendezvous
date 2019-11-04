@@ -8,9 +8,7 @@ let GStorage = class {
      */
     constructor(serviceAccountPath) {
         this.serviceAccountPath = serviceAccountPath;
-        this._storageClient = new Storage({
-            keyFilename: "service_account.json"
-        });
+        this._storageClient = new Storage();
     }
 
     /**
