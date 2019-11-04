@@ -164,4 +164,9 @@ let SpeechToText = class {
     }
 }
 
-module.exports = SpeechToText;
+module.exports = {
+    SpeechToText: SpeechToText,
+    Models: Models,
+    LanguageCodes: LanguageCodes,
+    EncodingTypes: EncodingTypes
+};
