@@ -28,6 +28,10 @@ const Models = {
     VIDEO : 'video'
 };
 
+/**
+ * * Allows you to make request to Google's speech-to-text API.
+ * * You can set different parameters, send pass your audio buffer and it returns a transcription.
+ */
 let SpeechToText = class {
 
     constructor() {
@@ -60,22 +64,39 @@ let SpeechToText = class {
         this._config = config;
     }
 
+    /**
+     * Minimal sample rate accepted by Speech API.
+     */
     getMinSampleRate() {
         return this._minSampleRate;
     }
 
+    /**
+     * Maximal sample rate accepted by Speech API.
+     */
     getMaxSampleRate() {
         return this._maxSampleRate;
     }
 
+    /**
+     * Minimal number of channels in the audio accepted by Speech API.
+     */
     getMinChannelCount() {
         return this._minChannelCount;
     }
 
+    /**
+     * Maximal number of channels in the audio accepted by Speech API.
+     */
     getMaxChannelCount() {
         return this._maxChannelCount;
     }
 
+    /**
+     * * Once the configuration is done, call this function to execute a transcription.
+     * * It returns an error in next parameter if there is a problem with your configuration.
+     * @param {function} next - Callback function.
+     */
     requestTranscription(next) {
         let error = this._validateInput();
         if (error) {
@@ -111,6 +132,9 @@ let SpeechToText = class {
         next(null, transcription);
     }
 
+    /**
+     * Validates the configuration and returns an error if there is a problem.
+     */
     _validateInput() {
         if (!this._config.audio) {
             return new Error('Invalid audio');
