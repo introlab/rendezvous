@@ -15,12 +15,16 @@ class CudaCameraReader : public CameraReader
     virtual ~CudaCameraReader();
 
     void open() override;
+    void close() override;
     const Image& readImage() override;
 
    private:
+    void copyImageToDevice(const Image& image);
+
     DeviceCudaObjectFactory deviceCudaObjectFactory_;
     const Image* nextImage_;
     cudaStream_t stream_;
+    Image pageLockedImage_;
 };
 
 }    // namespace Model
