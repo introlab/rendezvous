@@ -34,6 +34,7 @@ SOURCES += \
     src/model/network/local_socket_server.cpp \
     src/model/recorder/recorder.cpp \
     src/model/settings/settings.cpp \
+    src/model/stream/video/output/default_virtual_camera_output.cpp \
     src/model/utils/time.cpp \
     src/model/stream/audio/file/raw_file_audio_sink.cpp \
     src/model/stream/audio/odas/odas_audio_source.cpp \
@@ -88,6 +89,7 @@ HEADERS += \
     src/model/recorder/recorder.h \
     src/model/settings/i_settings.h \
     src/model/settings/settings_constants.h \
+    src/model/stream/video/output/default_virtual_camera_output.h \
     src/model/utils/observer/i_observer.h \
     src/model/utils/observer/i_subject.h \
     src/model/utils/time.h \
