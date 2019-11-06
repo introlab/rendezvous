@@ -64,10 +64,12 @@ steno/configs/yolo/
 !steno/3rd/v4l2/lib/x86_64/*.a
 !steno/3rd/v4l2/lib/aarch64/*.a
 
-
 # Transcription API
 transcription_api/node_modules
 *.key
 *.pem
 transcription_api/service_account.json
 transcription_api/config/development/.env
+
+# Odas
+odas/
