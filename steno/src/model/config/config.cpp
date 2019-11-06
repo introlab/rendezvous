@@ -9,7 +9,7 @@ namespace Model
 {
 Config::Config(std::shared_ptr<QSettings> settings)
     : BaseConfig(settings)
-    , m_appConfig(std::make_shared<Model::AppConfig>(QVariant::fromValue(GENERAL).toString(), settings))
+    , m_appConfig(std::make_shared<Model::AppConfig>(QVariant::fromValue(APP).toString(), settings))
     , m_dewarpingConfig(std::make_shared<Model::DewarpingConfig>(QVariant::fromValue(DEWARPING).toString(), settings))
     , m_videoInputConfig(std::make_shared<Model::VideoConfig>(QVariant::fromValue(VIDEO_INPUT).toString(), settings))
     , m_videoOutputConfig(std::make_shared<Model::VideoConfig>(QVariant::fromValue(VIDEO_OUTPUT).toString(), settings))

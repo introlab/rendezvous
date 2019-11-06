@@ -24,7 +24,7 @@ class Config : public BaseConfig
    public:
     enum Group
     {
-        GENERAL,
+        APP,
         TRANSCRIPTION,
         DEWARPING,
         VIDEO_INPUT,

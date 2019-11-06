@@ -65,7 +65,7 @@ void Recorder::onCameraStatusChanged(QCamera::Status status)
     {
         case QCamera::Status::ActiveStatus:
             m_mediaRecorder.setOutputLocation(
-                m_settings->subConfig(Model::Config::GENERAL)->value(Model::AppConfig::OUTPUT_FOLDER).toString());
+                m_settings->subConfig(Model::Config::APP)->value(Model::AppConfig::OUTPUT_FOLDER).toString());
             m_mediaRecorder.record();
             updateState(IRecorder::State::Started);
             break;

@@ -24,7 +24,7 @@ SettingsView::SettingsView(std::shared_ptr<Model::Config> settings, QWidget* par
     }
 
     m_ui->outputFolderLineEdit->setText(
-        m_settings->subConfig(Model::Config::GENERAL)->value(Model::AppConfig::OUTPUT_FOLDER).toString());
+        m_settings->subConfig(Model::Config::APP)->value(Model::AppConfig::OUTPUT_FOLDER).toString());
     m_ui->languageComboBox->setCurrentIndex(
         m_settings->subConfig(Model::Config::TRANSCRIPTION)->value(Model::TranscriptionConfig::LANGUAGE).toInt());
     m_ui->autoTranscriptionCheckBox->setChecked(m_settings->subConfig(Model::Config::TRANSCRIPTION)
@@ -42,11 +42,11 @@ void SettingsView::onOutputFolderButtonClicked()
 {
     QString outputFolder = QFileDialog::getExistingDirectory(
         this, "Output Folder",
-        m_settings->subConfig(Model::Config::GENERAL)->value(Model::AppConfig::OUTPUT_FOLDER).toString(),
+        m_settings->subConfig(Model::Config::APP)->value(Model::AppConfig::OUTPUT_FOLDER).toString(),
         QFileDialog::ShowDirsOnly);
     if (!outputFolder.isEmpty())
     {
-        m_settings->subConfig(Model::Config::GENERAL)->setValue(Model::AppConfig::OUTPUT_FOLDER, outputFolder);
+        m_settings->subConfig(Model::Config::APP)->setValue(Model::AppConfig::OUTPUT_FOLDER, outputFolder);
         m_ui->outputFolderLineEdit->setText(outputFolder);
     }
 }
