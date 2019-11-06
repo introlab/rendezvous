@@ -11,7 +11,9 @@ class AppConfig : public BaseConfig
    public:
     enum Key
     {
-        OUTPUT_FOLDER
+        OUTPUT_FOLDER,
+        MICROPHONE_CONFIGURATION,
+        ODAS_LIBRARY
     };
     Q_ENUM(Key)
 

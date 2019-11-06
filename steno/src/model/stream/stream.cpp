@@ -21,7 +21,7 @@ namespace Model
 {
 Stream::Stream(const VideoConfig& videoInputConfig, const VideoConfig& videoOutputConfig,
                const AudioConfig& audioInputConfig, const AudioConfig& audioOutputConfig,
-               const DewarpingConfig& dewarpingConfig, const StreamConfig& streamConfig)
+               const DewarpingConfig& dewarpingConfig, const StreamConfig& streamConfig, const AppConfig& appConfig)
     : m_state(IStream::State::Stopped)
     , m_mediaThread(nullptr)
     , m_detectionThread(nullptr)
@@ -58,7 +58,7 @@ Stream::Stream(const VideoConfig& videoInputConfig, const VideoConfig& videoOutp
         detectionQueue, m_imageBuffer, m_implementationFactory.getImageConverter(), dewarpingConfig, videoInputConfig,
         videoOutputConfig, audioInputConfig, audioOutputConfig);
 
-    m_odasClient = std::make_unique<OdasClient>();
+    m_odasClient = std::make_unique<OdasClient>(appConfig);
     m_odasClient->attach(this);
 }
 

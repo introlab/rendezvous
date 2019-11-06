@@ -1,18 +1,15 @@
 #include "recorder.h"
 
-#include "model/app_config.h"
-#include "model/app_constants.h"
-
 #include <QUrl>
 
 namespace Model
 {
 Recorder::Recorder(std::shared_ptr<Config> config, QWidget *parent)
     : IRecorder(parent)
+    , m_config(config)
     , m_state(IRecorder::State::Stopped)
     , m_camera(cameraInfo(), this)
     , m_mediaRecorder(&m_camera)
-    , m_config(config)
 {
     m_camera.setCaptureMode(QCamera::CaptureVideo);
 
@@ -84,13 +81,14 @@ QCameraInfo Recorder::cameraInfo()
 {
     QCameraInfo defaultCameraInfo = QCameraInfo::defaultCamera();
 
-    if (!Model::VIRTUAL_CAMERA_DEVICE.isEmpty())
+    auto deviceName = m_config->subConfig(Model::Config::Group::VIDEO_OUTPUT)->value(Model::VideoConfig::Key::DEVICE_NAME).toString();
+    if (!deviceName.isEmpty())
     {
         QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
 
         foreach (const QCameraInfo &cameraInfo, cameras)
         {
-            if (cameraInfo.deviceName() == Model::VIRTUAL_CAMERA_DEVICE) return cameraInfo;
+            if (cameraInfo.deviceName() == deviceName) return cameraInfo;
         }
     }
 

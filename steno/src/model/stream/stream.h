@@ -1,6 +1,7 @@
 #ifndef STREAM_H
 #define STREAM_H
 
+#include "model/app_config.h"
 #include "model/stream/audio/audio_config.h"
 #include "model/stream/audio/odas/odas_client.h"
 #include "model/stream/i_stream.h"
@@ -26,7 +27,7 @@ class Stream : public IStream, public IObserver
    public:
     Stream(const VideoConfig& videoInputConfig, const VideoConfig& videoOutputConfig,
            const AudioConfig& audioInputConfig, const AudioConfig& audioOutputConfig,
-           const DewarpingConfig& dewarpingConfig, const StreamConfig& streamConfig);
+           const DewarpingConfig& dewarpingConfig, const StreamConfig& streamConfig, const AppConfig& appConfig);
     ~Stream() override;
 
     void start() override;
