@@ -5,7 +5,7 @@
 ### [optional] CPU: Compile without GPU acceleration ###
 
 # Default values
-INSTALL_PATH=~/dev/lib
+INSTALL_PATH=$PWD
 USE_GPU=1
 
 params=($1 $2)
@@ -29,14 +29,3 @@ cd darknet
 git checkout origin/predict-gpu-device-image
 make GPU=$USE_GPU ARCH="-gencode arch=compute_50,code=[sm_50,compute_50] -gencode arch=compute_53,code=[sm_53,compute_53] -gencode arch=compute_62,code=[sm_62,compute_62]"
 
-# Setup darknet environement paths in ~/.bashrc
-if grep -qF "export DARKNET_HOME" ~/.bashrc;then
-    sed -i 's@export DARKNET_HOME=.*@export DARKNET_HOME='"$INSTALL_PATH"'/darknet@g' ~/.bashrc
-else
-    echo "" >> ~/.bashrc
-    echo "export DARKNET_HOME=$INSTALL_PATH/darknet" >> ~/.bashrc
-fi
-
-if ! grep -qF "export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\$DARKNET_HOME" ~/.bashrc;then
-    echo "export LD_LIBRARY_PATH=\$LD_LIBRARY_PATH:\$DARKNET_HOME" >> ~/.bashrc
-fi
