@@ -8,8 +8,8 @@ namespace Model
 {
 class StreamConfig : public BaseConfig
 {
-Q_OBJECT
-public:
+    Q_OBJECT
+   public:
     enum Key
     {
         DETECTION_DEWARPING_COUNT,
@@ -17,7 +17,8 @@ public:
         ASPECT_RATIO_HEIGHT,
         MIN_ELEVATION,
         MAX_ELEVATION
-    }; Q_ENUM(Key)
+    };
+    Q_ENUM(Key)
 
     StreamConfig(const QString &group, std::shared_ptr<QSettings> settings)
         : BaseConfig(group, settings)
@@ -40,6 +41,6 @@ public:
     float minElevation;
     float maxElevation;
 };
-}
+}    // namespace Model
 
-#endif // STREAM_CONFIG_H
+#endif    // STREAM_CONFIG_H

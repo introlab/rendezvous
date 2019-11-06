@@ -7,12 +7,13 @@ namespace Model
 {
 class AppConfig : public BaseConfig
 {
-Q_OBJECT
-public:
+    Q_OBJECT
+   public:
     enum Key
     {
         OUTPUT_FOLDER
-    }; Q_ENUM(Key)
+    };
+    Q_ENUM(Key)
 
     AppConfig(const QString &group, std::shared_ptr<QSettings> settings)
         : BaseConfig(group, settings)
@@ -22,4 +23,4 @@ public:
 
 }    // namespace Model
 
-#endif // APP_CONFIG_H
+#endif    // APP_CONFIG_H

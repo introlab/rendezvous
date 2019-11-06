@@ -5,7 +5,6 @@ namespace Model
 {
 namespace Transcription
 {
-
 enum Encoding
 {
     ENCODING_UNSPECIFIED,
@@ -84,7 +83,7 @@ inline const char* modelName(Transcription::Model model)
     }
 }
 
-}
-}
+}    // namespace Transcription
+}    // namespace Model
 
-#endif // TRANSCRIPTION_CONSTANTS_H
+#endif    // TRANSCRIPTION_CONSTANTS_H

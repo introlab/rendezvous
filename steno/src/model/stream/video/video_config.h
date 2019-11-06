@@ -9,11 +9,10 @@
 
 namespace Model
 {
-
 class VideoConfig : public BaseConfig
 {
-Q_OBJECT
-public:
+    Q_OBJECT
+   public:
     enum Key
     {
         FPS,
@@ -21,7 +20,8 @@ public:
         HEIGHT,
         DEVICE_NAME,
         IMAGE_FORMAT
-    }; Q_ENUM(Key)
+    };
+    Q_ENUM(Key)
 
     VideoConfig(const QString &group, std::shared_ptr<QSettings> settings)
         : BaseConfig(group, settings)

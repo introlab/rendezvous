@@ -1,10 +1,10 @@
 #include "model/media_player/media_player.h"
 #include "model/recorder/recorder.h"
 #include "model/settings/settings.h"
+#include "model/settings/settings_constants.h"
 #include "model/stream/stream.h"
 #include "model/stream/video/output/default_virtual_camera_output.h"
 #include "view/mainwindow.h"
-#include "model/settings/settings_constants.h"
 
 #include <memory>
 
@@ -26,12 +26,9 @@ int main(int argc, char *argv[])
 
     std::shared_ptr<Model::Settings> settings = std::make_shared<Model::Settings>(qSettings);
 
-    std::shared_ptr<Model::IStream> stream = std::make_shared<Model::Stream>(settings->videoInputConfig(),
-                                                                             settings->videoOutputConfig(),
-                                                                             settings->audioInputConfig(),
-                                                                             settings->audioOutputConfig(),
-                                                                             settings->dewarpingConfig(),
-                                                                             settings->streamConfig());
+    std::shared_ptr<Model::IStream> stream = std::make_shared<Model::Stream>(
+        settings->videoInputConfig(), settings->videoOutputConfig(), settings->audioInputConfig(),
+        settings->audioOutputConfig(), settings->dewarpingConfig(), settings->streamConfig());
 
     std::shared_ptr<Model::IRecorder> recorder = std::make_shared<Model::Recorder>(settings);
 

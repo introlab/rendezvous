@@ -5,16 +5,16 @@
 
 namespace Model
 {
-
 class TranscriptionConfig : public BaseConfig
 {
-Q_OBJECT
-public:
+    Q_OBJECT
+   public:
     enum Key
     {
         LANGUAGE,
         AUTOMATIC_TRANSCRIPTION
-    }; Q_ENUM(Key)
+    };
+    Q_ENUM(Key)
 
     TranscriptionConfig(const QString &group, std::shared_ptr<QSettings> settings)
         : BaseConfig(group, settings)
@@ -22,6 +22,6 @@ public:
     }
 };
 
-}
+}    // namespace Model
 
-#endif // TRANSCRIPTION_CONFIG_H
+#endif    // TRANSCRIPTION_CONFIG_H

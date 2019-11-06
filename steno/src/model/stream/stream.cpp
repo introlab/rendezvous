@@ -54,9 +54,9 @@ Stream::Stream(const VideoConfig& videoInputConfig, const VideoConfig& videoOutp
         m_implementationFactory.getCameraReader(videoInputConfig), m_implementationFactory.getFisheyeDewarper(),
         m_implementationFactory.getObjectFactory(), std::make_unique<VirtualCameraOutput>(videoOutputConfig),
         m_implementationFactory.getSynchronizer(),
-        std::make_unique<VirtualCameraManager>(aspectRatio, streamConfig.minElevation, streamConfig.maxElevation), detectionQueue, m_imageBuffer,
-        m_implementationFactory.getImageConverter(), dewarpingConfig, videoInputConfig, videoOutputConfig,
-        audioInputConfig, audioOutputConfig);
+        std::make_unique<VirtualCameraManager>(aspectRatio, streamConfig.minElevation, streamConfig.maxElevation),
+        detectionQueue, m_imageBuffer, m_implementationFactory.getImageConverter(), dewarpingConfig, videoInputConfig,
+        videoOutputConfig, audioInputConfig, audioOutputConfig);
 
     m_odasClient = std::make_unique<OdasClient>();
     m_odasClient->attach(this);

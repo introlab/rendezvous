@@ -9,8 +9,8 @@ namespace Model
 {
 class AudioConfig : public BaseConfig
 {
-Q_OBJECT
-public:
+    Q_OBJECT
+   public:
     enum Key
     {
         DEVICE_NAME,
@@ -20,7 +20,8 @@ public:
         IS_LITTLE_ENDIAN,
         PACKET_AUDIO_SIZE,
         PACKET_HEADER_SIZE
-    }; Q_ENUM(Key)
+    };
+    Q_ENUM(Key)
 
     AudioConfig(const QString &group, std::shared_ptr<QSettings> settings)
         : BaseConfig(group, settings)

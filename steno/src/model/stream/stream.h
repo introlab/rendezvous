@@ -1,11 +1,11 @@
 #ifndef STREAM_H
 #define STREAM_H
 
-#include "model/stream/stream_config.h"
 #include "model/stream/audio/audio_config.h"
 #include "model/stream/audio/odas/odas_client.h"
 #include "model/stream/i_stream.h"
 #include "model/stream/media_thread.h"
+#include "model/stream/stream_config.h"
 #include "model/stream/utils/alloc/i_object_factory.h"
 #include "model/stream/video/detection/detection_thread.h"
 #include "model/stream/video/dewarping/models/dewarping_config.h"
@@ -20,7 +20,6 @@
 
 namespace Model
 {
-
 class Stream : public IStream, public IObserver
 {
     Q_OBJECT

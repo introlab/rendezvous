@@ -2,7 +2,6 @@
 
 namespace Model
 {
-
 BaseConfig::BaseConfig(std::shared_ptr<QSettings> settings)
     : m_settings(settings)
 {
@@ -23,4 +22,4 @@ void BaseConfig::addSubConfig(std::shared_ptr<BaseConfig> cfg)
     }
 }
 
-}
+}    // namespace Model

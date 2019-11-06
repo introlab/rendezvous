@@ -1,7 +1,7 @@
 #include "settings.h"
 
-#include "model/transcription/transcription_constants.h"
 #include "model/stream/utils/images/image_format.h"
+#include "model/transcription/transcription_constants.h"
 
 #include <QFileInfo>
 
@@ -9,14 +9,15 @@ namespace Model
 {
 Settings::Settings(std::shared_ptr<QSettings> settings)
     : BaseConfig(settings)
-    , m_appConfig(std::make_shared<Model::AppConfig>(QVariant::fromValue(Group::GENERAL).toString(), settings))
-    , m_dewarpingConfig(std::make_shared<Model::DewarpingConfig>(QVariant::fromValue(Group::DEWARPING).toString(), settings))
-    , m_videoInputConfig(std::make_shared<Model::VideoConfig>(QVariant::fromValue(Group::VIDEO_INPUT).toString(), settings))
-    , m_videoOutputConfig(std::make_shared<Model::VideoConfig>(QVariant::fromValue(Group::VIDEO_OUTPUT).toString(), settings))
-    , m_audioInputConfig(std::make_shared<Model::AudioConfig>(QVariant::fromValue(Group::AUDIO_INPUT).toString(), settings))
-    , m_audioOutputConfig(std::make_shared<Model::AudioConfig>(QVariant::fromValue(Group::AUDIO_OUTPUT).toString(), settings))
-    , m_streamConfig(std::make_shared<Model::StreamConfig>(QVariant::fromValue(Group::STREAM).toString(), settings))
-    , m_transcriptionConfig(std::make_shared<Model::TranscriptionConfig>(QVariant::fromValue(Group::TRANSCRIPTION).toString(), settings))
+    , m_appConfig(std::make_shared<Model::AppConfig>(QVariant::fromValue(GENERAL).toString(), settings))
+    , m_dewarpingConfig(std::make_shared<Model::DewarpingConfig>(QVariant::fromValue(DEWARPING).toString(), settings))
+    , m_videoInputConfig(std::make_shared<Model::VideoConfig>(QVariant::fromValue(VIDEO_INPUT).toString(), settings))
+    , m_videoOutputConfig(std::make_shared<Model::VideoConfig>(QVariant::fromValue(VIDEO_OUTPUT).toString(), settings))
+    , m_audioInputConfig(std::make_shared<Model::AudioConfig>(QVariant::fromValue(AUDIO_INPUT).toString(), settings))
+    , m_audioOutputConfig(std::make_shared<Model::AudioConfig>(QVariant::fromValue(AUDIO_OUTPUT).toString(), settings))
+    , m_streamConfig(std::make_shared<Model::StreamConfig>(QVariant::fromValue(STREAM).toString(), settings))
+    , m_transcriptionConfig(
+          std::make_shared<Model::TranscriptionConfig>(QVariant::fromValue(TRANSCRIPTION).toString(), settings))
 {
     addSubConfig(m_appConfig);
     addSubConfig(m_dewarpingConfig);

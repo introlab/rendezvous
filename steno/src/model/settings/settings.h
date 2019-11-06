@@ -1,29 +1,27 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
-#include "model/stream/audio/audio_config.h"
-#include "model/stream/video/dewarping/models/dewarping_config.h"
-#include "model/stream/video/video_config.h"
-#include "model/stream/stream_config.h"
-#include "model/transcription/transcription_config.h"
 #include "model/app_config.h"
 #include "model/settings/base_config.h"
+#include "model/stream/audio/audio_config.h"
+#include "model/stream/stream_config.h"
+#include "model/stream/video/dewarping/models/dewarping_config.h"
+#include "model/stream/video/video_config.h"
+#include "model/transcription/transcription_config.h"
 #include "settings_constants.h"
 
 #include <memory>
 
 #include <QSettings>
 #include <QString>
-#include <QSettings>
 #include <QVariant>
 
 namespace Model
 {
-
 class Settings : public BaseConfig
 {
-Q_OBJECT
-public:
+    Q_OBJECT
+   public:
     enum Group
     {
         GENERAL,
@@ -34,26 +32,27 @@ public:
         AUDIO_INPUT,
         AUDIO_OUTPUT,
         STREAM
-    }; Q_ENUM(Group)
+    };
+    Q_ENUM(Group)
 
     Settings(std::shared_ptr<QSettings> settings);
 
     const AppConfig& appConfig() const;
-          AppConfig& appConfig();
+    AppConfig& appConfig();
     const DewarpingConfig& dewarpingConfig() const;
-          DewarpingConfig& dewarpingConfig();
+    DewarpingConfig& dewarpingConfig();
     const VideoConfig& videoInputConfig() const;
-          VideoConfig& videoInputConfig();
+    VideoConfig& videoInputConfig();
     const VideoConfig& videoOutputConfig() const;
-          VideoConfig& videoOutputConfig();
+    VideoConfig& videoOutputConfig();
     const AudioConfig& audioInputConfig() const;
-          AudioConfig& audioInputConfig();
+    AudioConfig& audioInputConfig();
     const AudioConfig& audioOutputConfig() const;
-          AudioConfig& audioOutputConfig();
+    AudioConfig& audioOutputConfig();
     const StreamConfig& streamConfig() const;
-          StreamConfig& streamConfig();
+    StreamConfig& streamConfig();
     const TranscriptionConfig& transcriptionConfig() const;
-          TranscriptionConfig& transcriptionConfig();
+    TranscriptionConfig& transcriptionConfig();
 
    private:
     void loadDefault();

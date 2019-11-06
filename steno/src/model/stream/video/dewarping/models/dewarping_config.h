@@ -8,8 +8,8 @@ namespace Model
 {
 class DewarpingConfig : public BaseConfig
 {
-Q_OBJECT
-public:
+    Q_OBJECT
+   public:
     enum Key
     {
         IN_RADIUS,
