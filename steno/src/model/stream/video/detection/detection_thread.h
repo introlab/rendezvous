@@ -38,7 +38,7 @@ class DetectionThread : public Thread
     std::unique_ptr<ISynchronizer> synchronizer_;
     std::shared_ptr<moodycamel::ReaderWriterQueue<std::vector<SphericalAngleRect>>> detectionQueue_;
 
-    DewarpingConfig dewarpingConfig_;
+    const DewarpingConfig& dewarpingConfig_;
     int dewarpCount_;
 };
 

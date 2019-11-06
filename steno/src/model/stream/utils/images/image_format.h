@@ -7,7 +7,7 @@
 
 namespace Model
 {
-enum class ImageFormat
+enum ImageFormat
 {
     RGB_FMT,
     UYVY_FMT,

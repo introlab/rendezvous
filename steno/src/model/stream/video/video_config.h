@@ -3,28 +3,38 @@
 
 #include <string>
 
+#include "model/settings/base_config.h"
 #include "model/stream/utils/images/image_format.h"
 #include "model/stream/utils/models/dim2.h"
 
 namespace Model
 {
-struct VideoConfig
+
+class VideoConfig : public BaseConfig
 {
-    VideoConfig() = default;
-    VideoConfig(int width, int height, int fpsTarget, const std::string& deviceName, ImageFormat imageFormat)
-        : resolution(width, height)
-        , fpsTarget(fpsTarget)
-        , deviceName(deviceName)
-        , imageFormat(imageFormat)
+Q_OBJECT
+public:
+    enum Key
     {
+        FPS,
+        WIDTH,
+        HEIGHT,
+        DEVICE_NAME,
+        IMAGE_FORMAT
+    }; Q_ENUM(Key)
+
+    VideoConfig(const QString &group, std::shared_ptr<QSettings> settings)
+        : BaseConfig(group, settings)
+    {
+        update();
     }
 
-    VideoConfig(const Dim2<int>& resolution, int fpsTarget, const std::string& deviceName, ImageFormat imageFormat)
-        : resolution(resolution)
-        , fpsTarget(fpsTarget)
-        , deviceName(deviceName)
-        , imageFormat(imageFormat)
+    void update()
     {
+        resolution = Dim2<int>(value(Key::WIDTH).toInt(), value(Key::HEIGHT).toInt());
+        fpsTarget = value(Key::FPS).toInt();
+        deviceName = value(Key::DEVICE_NAME).toString().toStdString();
+        imageFormat = static_cast<ImageFormat>(value(Key::IMAGE_FORMAT).toInt());
     }
 
     Dim2<int> resolution;
