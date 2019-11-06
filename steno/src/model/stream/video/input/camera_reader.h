@@ -30,7 +30,7 @@ class CameraReader : public IVideoInput
         Image image;
     };
 
-    VideoConfig videoConfig_;
+    const VideoConfig& videoConfig_;
     CircularBuffer<IndexedImage> images_;
 
    private:

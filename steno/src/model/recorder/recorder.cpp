@@ -1,17 +1,18 @@
 #include "recorder.h"
 
-#include "model/settings/settings_constants.h"
+#include "model/app_config.h"
+#include "model/app_constants.h"
 
 #include <QUrl>
 
 namespace Model
 {
-Recorder::Recorder(std::shared_ptr<Model::ISettings> settings, QWidget *parent)
+Recorder::Recorder(std::shared_ptr<Config> config, QWidget *parent)
     : IRecorder(parent)
     , m_state(IRecorder::State::Stopped)
     , m_camera(cameraInfo(), this)
     , m_mediaRecorder(&m_camera)
-    , m_settings(settings)
+    , m_config(config)
 {
     m_camera.setCaptureMode(QCamera::CaptureVideo);
 
@@ -64,7 +65,7 @@ void Recorder::onCameraStatusChanged(QCamera::Status status)
     {
         case QCamera::Status::ActiveStatus:
             m_mediaRecorder.setOutputLocation(
-                m_settings->get(Model::General::keyName(Model::General::Key::OUTPUT_FOLDER)).toString());
+                m_config->subConfig(Model::Config::APP)->value(Model::AppConfig::OUTPUT_FOLDER).toString());
             m_mediaRecorder.record();
             updateState(IRecorder::State::Started);
             break;

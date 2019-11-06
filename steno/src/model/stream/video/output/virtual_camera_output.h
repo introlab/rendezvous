@@ -19,7 +19,7 @@ class VirtualCameraOutput : public IVideoOutput
     void writeImage(const Image& image) override;
 
    private:
-    VideoConfig videoConfig_;
+    const VideoConfig& videoConfig_;
     V4l2Output* videoOutput_;
 };
 

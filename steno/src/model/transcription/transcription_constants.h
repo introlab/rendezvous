@@ -1,54 +1,10 @@
-#ifndef KEYS_H
-#define KEYS_H
-
-#include <QCoreApplication>
-#include <QDir>
-#include <QString>
+#ifndef TRANSCRIPTION_CONSTANTS_H
+#define TRANSCRIPTION_CONSTANTS_H
 
 namespace Model
 {
-const QString MICROPHONE_CONFIGURATION = QCoreApplication::applicationDirPath() + "/../configs/odas/odas_16_mic.cfg";
-const QString ODAS_LIBRARY = QCoreApplication::applicationDirPath() + "/../../odas/bin/odaslive";
-const QString VIRTUAL_CAMERA_DEVICE = "/dev/video1";
-
-namespace General
-{
-enum Key
-{
-    OUTPUT_FOLDER
-};
-
-inline const char* keyName(General::Key key)
-{
-    switch (key)
-    {
-        case General::Key::OUTPUT_FOLDER:
-            return "outputFolder";
-    }
-    return nullptr;
-}
-}    // namespace General
-
 namespace Transcription
 {
-enum Key
-{
-    LANGUAGE,
-    AUTOMATIC_TRANSCRIPTION
-};
-
-inline const char* keyName(Transcription::Key key)
-{
-    switch (key)
-    {
-        case Transcription::Key::LANGUAGE:
-            return "language";
-        case Transcription::Key::AUTOMATIC_TRANSCRIPTION:
-            return "automaticTranscription";
-    }
-    return nullptr;
-}
-
 enum Encoding
 {
     ENCODING_UNSPECIFIED,
@@ -126,7 +82,8 @@ inline const char* modelName(Transcription::Model model)
             return "Video";
     }
 }
+
 }    // namespace Transcription
 }    // namespace Model
 
-#endif    // KEYS_H
+#endif    // TRANSCRIPTION_CONSTANTS_H
