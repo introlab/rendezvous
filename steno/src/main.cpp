@@ -24,15 +24,15 @@ int main(int argc, char *argv[])
 
     std::shared_ptr<QSettings> qSettings = std::make_shared<QSettings>(Model::APP_CONFIG_FILE, QSettings::IniFormat);
 
-    std::shared_ptr<Model::Config> settings = std::make_shared<Model::Config>(qSettings);
+    std::shared_ptr<Model::Config> config = std::make_shared<Model::Config>(qSettings);
 
     std::shared_ptr<Model::IStream> stream = std::make_shared<Model::Stream>(
-        settings->videoInputConfig(), settings->videoOutputConfig(), settings->audioInputConfig(),
-        settings->audioOutputConfig(), settings->dewarpingConfig(), settings->streamConfig());
+        config->videoInputConfig(), config->videoOutputConfig(), config->audioInputConfig(),
+        config->audioOutputConfig(), config->dewarpingConfig(), config->streamConfig());
 
-    std::shared_ptr<Model::IRecorder> recorder = std::make_shared<Model::Recorder>(settings);
+    std::shared_ptr<Model::IRecorder> recorder = std::make_shared<Model::Recorder>(config);
 
-    View::MainWindow w(settings, mediaPlayer, stream, recorder);
+    View::MainWindow w(config, mediaPlayer, stream, recorder);
     w.show();
 
     Model::DefaultVirtualCameraOutput::writeDefaultImage();

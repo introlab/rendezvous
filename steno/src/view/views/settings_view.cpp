@@ -10,10 +10,10 @@
 
 namespace View
 {
-SettingsView::SettingsView(std::shared_ptr<Model::Config> settings, QWidget* parent)
+SettingsView::SettingsView(std::shared_ptr<Model::Config> config, QWidget* parent)
     : AbstractView("Settings", parent)
     , m_ui(new Ui::SettingsView)
-    , m_settings(settings)
+    , m_config(config)
 {
     m_ui->setupUi(this);
 
@@ -24,10 +24,10 @@ SettingsView::SettingsView(std::shared_ptr<Model::Config> settings, QWidget* par
     }
 
     m_ui->outputFolderLineEdit->setText(
-        m_settings->subConfig(Model::Config::APP)->value(Model::AppConfig::OUTPUT_FOLDER).toString());
+        m_config->subConfig(Model::Config::APP)->value(Model::AppConfig::OUTPUT_FOLDER).toString());
     m_ui->languageComboBox->setCurrentIndex(
-        m_settings->subConfig(Model::Config::TRANSCRIPTION)->value(Model::TranscriptionConfig::LANGUAGE).toInt());
-    m_ui->autoTranscriptionCheckBox->setChecked(m_settings->subConfig(Model::Config::TRANSCRIPTION)
+        m_config->subConfig(Model::Config::TRANSCRIPTION)->value(Model::TranscriptionConfig::LANGUAGE).toInt());
+    m_ui->autoTranscriptionCheckBox->setChecked(m_config->subConfig(Model::Config::TRANSCRIPTION)
                                                     ->value(Model::TranscriptionConfig::AUTOMATIC_TRANSCRIPTION)
                                                     .toBool());
 
@@ -42,24 +42,24 @@ void SettingsView::onOutputFolderButtonClicked()
 {
     QString outputFolder = QFileDialog::getExistingDirectory(
         this, "Output Folder",
-        m_settings->subConfig(Model::Config::APP)->value(Model::AppConfig::OUTPUT_FOLDER).toString(),
+        m_config->subConfig(Model::Config::APP)->value(Model::AppConfig::OUTPUT_FOLDER).toString(),
         QFileDialog::ShowDirsOnly);
     if (!outputFolder.isEmpty())
     {
-        m_settings->subConfig(Model::Config::APP)->setValue(Model::AppConfig::OUTPUT_FOLDER, outputFolder);
+        m_config->subConfig(Model::Config::APP)->setValue(Model::AppConfig::OUTPUT_FOLDER, outputFolder);
         m_ui->outputFolderLineEdit->setText(outputFolder);
     }
 }
 
 void SettingsView::onLanguageComboboxCurrentIndexChanged(const int& index)
 {
-    m_settings->subConfig(Model::Config::TRANSCRIPTION)
+    m_config->subConfig(Model::Config::TRANSCRIPTION)
         ->setValue(Model::TranscriptionConfig::LANGUAGE, static_cast<Model::Transcription::Language>(index));
 }
 
 void SettingsView::onAutoTranscriptionCheckBoxStateChanged(const int& state)
 {
-    m_settings->subConfig(Model::Config::TRANSCRIPTION)
+    m_config->subConfig(Model::Config::TRANSCRIPTION)
         ->setValue(Model::TranscriptionConfig::AUTOMATIC_TRANSCRIPTION, state == Qt::Checked);
 }
 
