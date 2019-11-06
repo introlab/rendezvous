@@ -1,7 +1,7 @@
 #ifndef STREAM_CONFIG_H
 #define STREAM_CONFIG_H
 
-#include "model/settings/base_config.h"
+#include "model/config/base_config.h"
 #include "model/stream/utils/math/angle_calculations.h"
 
 namespace Model

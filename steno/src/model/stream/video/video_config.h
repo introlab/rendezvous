@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "model/settings/base_config.h"
+#include "model/config/base_config.h"
 #include "model/stream/utils/images/image_format.h"
 #include "model/stream/utils/models/dim2.h"
 

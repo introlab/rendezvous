@@ -2,13 +2,13 @@
 #define SETTINGS_H
 
 #include "model/app_config.h"
-#include "model/settings/base_config.h"
+#include "base_config.h"
 #include "model/stream/audio/audio_config.h"
 #include "model/stream/stream_config.h"
 #include "model/stream/video/dewarping/models/dewarping_config.h"
 #include "model/stream/video/video_config.h"
 #include "model/transcription/transcription_config.h"
-#include "settings_constants.h"
+#include "model/app_constants.h"
 
 #include <memory>
 
@@ -18,7 +18,7 @@
 
 namespace Model
 {
-class Settings : public BaseConfig
+class Config : public BaseConfig
 {
     Q_OBJECT
    public:
@@ -35,7 +35,7 @@ class Settings : public BaseConfig
     };
     Q_ENUM(Group)
 
-    Settings(std::shared_ptr<QSettings> settings);
+    Config(std::shared_ptr<QSettings> settings);
 
     const AppConfig& appConfig() const;
     AppConfig& appConfig();

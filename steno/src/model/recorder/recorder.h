@@ -2,7 +2,7 @@
 #define RECORDER_H
 
 #include "i_recorder.h"
-#include "model/settings/settings.h"
+#include "model/config/config.h"
 
 #include <memory>
 
@@ -15,7 +15,7 @@ namespace Model
 class Recorder : public IRecorder
 {
    public:
-    explicit Recorder(std::shared_ptr<Model::Settings> settings, QWidget *parent = nullptr);
+    explicit Recorder(std::shared_ptr<Model::Config> settings, QWidget *parent = nullptr);
     ~Recorder() override;
     void start() override;
     void stop() override;
@@ -37,7 +37,7 @@ class Recorder : public IRecorder
     IRecorder::State m_state;
     QCamera m_camera;
     QMediaRecorder m_mediaRecorder;
-    std::shared_ptr<Settings> m_settings;
+    std::shared_ptr<Config> m_settings;
 };
 
 }    // namespace Model

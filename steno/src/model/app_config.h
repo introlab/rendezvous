@@ -1,7 +1,7 @@
 #ifndef APP_CONFIG_H
 #define APP_CONFIG_H
 
-#include "model/settings/base_config.h"
+#include "config/base_config.h"
 
 namespace Model
 {

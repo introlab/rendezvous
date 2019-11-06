@@ -1,7 +1,7 @@
 #ifndef DEWAPING_CONFIG_H
 #define DEWAPING_CONFIG_H
 
-#include "model/settings/base_config.h"
+#include "model/config/base_config.h"
 #include "model/stream/utils/math/angle_calculations.h"
 
 namespace Model

@@ -1,5 +1,5 @@
 #include "default_virtual_camera_output.h"
-#include "model/settings/settings_constants.h"
+#include "model/app_constants.h"
 
 #include <QProcess>
 

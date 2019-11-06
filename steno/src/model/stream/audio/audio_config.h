@@ -1,7 +1,7 @@
 #ifndef AUDIO_CONFIG_H
 #define AUDIO_CONFIG_H
 
-#include "model/settings/base_config.h"
+#include "model/config/base_config.h"
 
 #include <string>
 

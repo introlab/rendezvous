@@ -1,7 +1,7 @@
 #include "model/media_player/media_player.h"
 #include "model/recorder/recorder.h"
-#include "model/settings/settings.h"
-#include "model/settings/settings_constants.h"
+#include "model/config/config.h"
+#include "model/app_constants.h"
 #include "model/stream/stream.h"
 #include "model/stream/video/output/default_virtual_camera_output.h"
 #include "view/mainwindow.h"
@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
 
     std::shared_ptr<QSettings> qSettings = std::make_shared<QSettings>(Model::APP_CONFIG_FILE, QSettings::IniFormat);
 
-    std::shared_ptr<Model::Settings> settings = std::make_shared<Model::Settings>(qSettings);
+    std::shared_ptr<Model::Config> settings = std::make_shared<Model::Config>(qSettings);
 
     std::shared_ptr<Model::IStream> stream = std::make_shared<Model::Stream>(
         settings->videoInputConfig(), settings->videoOutputConfig(), settings->audioInputConfig(),

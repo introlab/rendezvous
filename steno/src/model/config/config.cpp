@@ -1,4 +1,4 @@
-#include "settings.h"
+#include "config.h"
 
 #include "model/stream/utils/images/image_format.h"
 #include "model/transcription/transcription_constants.h"
@@ -7,7 +7,7 @@
 
 namespace Model
 {
-Settings::Settings(std::shared_ptr<QSettings> settings)
+Config::Config(std::shared_ptr<QSettings> settings)
     : BaseConfig(settings)
     , m_appConfig(std::make_shared<Model::AppConfig>(QVariant::fromValue(GENERAL).toString(), settings))
     , m_dewarpingConfig(std::make_shared<Model::DewarpingConfig>(QVariant::fromValue(DEWARPING).toString(), settings))
@@ -36,87 +36,87 @@ Settings::Settings(std::shared_ptr<QSettings> settings)
     }
 }
 
-const AppConfig& Settings::appConfig() const
+const AppConfig& Config::appConfig() const
 {
     return *m_appConfig;
 }
 
-AppConfig& Settings::appConfig()
+AppConfig& Config::appConfig()
 {
     return *m_appConfig;
 }
 
-const DewarpingConfig& Settings::dewarpingConfig() const
+const DewarpingConfig& Config::dewarpingConfig() const
 {
     return *m_dewarpingConfig;
 }
 
-DewarpingConfig& Settings::dewarpingConfig()
+DewarpingConfig& Config::dewarpingConfig()
 {
     return *m_dewarpingConfig;
 }
 
-const VideoConfig& Settings::videoInputConfig() const
+const VideoConfig& Config::videoInputConfig() const
 {
     return *m_videoInputConfig;
 }
 
-VideoConfig& Settings::videoInputConfig()
+VideoConfig& Config::videoInputConfig()
 {
     return *m_videoInputConfig;
 }
 
-const VideoConfig& Settings::videoOutputConfig() const
+const VideoConfig& Config::videoOutputConfig() const
 {
     return *m_videoOutputConfig;
 }
 
-VideoConfig& Settings::videoOutputConfig()
+VideoConfig& Config::videoOutputConfig()
 {
     return *m_videoOutputConfig;
 }
 
-const AudioConfig& Settings::audioInputConfig() const
+const AudioConfig& Config::audioInputConfig() const
 {
     return *m_audioInputConfig;
 }
 
-AudioConfig& Settings::audioInputConfig()
+AudioConfig& Config::audioInputConfig()
 {
     return *m_audioInputConfig;
 }
 
-const AudioConfig& Settings::audioOutputConfig() const
+const AudioConfig& Config::audioOutputConfig() const
 {
     return *m_audioOutputConfig;
 }
 
-AudioConfig& Settings::audioOutputConfig()
+AudioConfig& Config::audioOutputConfig()
 {
     return *m_audioOutputConfig;
 }
 
-const StreamConfig& Settings::streamConfig() const
+const StreamConfig& Config::streamConfig() const
 {
     return *m_streamConfig;
 }
 
-StreamConfig& Settings::streamConfig()
+StreamConfig& Config::streamConfig()
 {
     return *m_streamConfig;
 }
 
-const TranscriptionConfig& Settings::transcriptionConfig() const
+const TranscriptionConfig& Config::transcriptionConfig() const
 {
     return *m_transcriptionConfig;
 }
 
-TranscriptionConfig& Settings::transcriptionConfig()
+TranscriptionConfig& Config::transcriptionConfig()
 {
     return *m_transcriptionConfig;
 }
 
-void Settings::loadDefault()
+void Config::loadDefault()
 {
     m_appConfig->setValue(AppConfig::Key::OUTPUT_FOLDER, QDir::homePath());
 
