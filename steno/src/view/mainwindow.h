@@ -30,7 +30,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
    public:
-    MainWindow(std::shared_ptr<Model::Config> settings, std::shared_ptr<Model::IMediaPlayer> mediaPlayer,
+    MainWindow(std::shared_ptr<Model::Config> config, std::shared_ptr<Model::IMediaPlayer> mediaPlayer,
                std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::IRecorder> recorder,
                QWidget *parent = nullptr);
 

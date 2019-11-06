@@ -13,6 +13,14 @@ BaseConfig::BaseConfig(const QString &group, std::shared_ptr<QSettings> settings
 {
 }
 
+void BaseConfig::updateSubconfigs()
+{
+    for (auto config : m_subConfigs)
+    {
+        config->update();
+    }
+}
+
 void BaseConfig::addSubConfig(std::shared_ptr<BaseConfig> cfg)
 {
     if (!cfg->group().isEmpty() && !m_mapConfig.contains(cfg->group()))

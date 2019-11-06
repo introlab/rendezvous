@@ -29,7 +29,7 @@ Config::Config(std::shared_ptr<QSettings> settings)
     addSubConfig(m_transcriptionConfig);
 
     // Do not override an existing file.
-    // Maybe the user created a custom config file.
+    // Maybe the user wants to use a custom config file.
     if (!QFileInfo::exists(APP_CONFIG_FILE))
     {
         loadDefault();
@@ -129,21 +129,18 @@ void Config::loadDefault()
     m_dewarpingConfig->setValue(DewarpingConfig::Key::TOP_DISTORSION_FACTOR, 0.08);
     m_dewarpingConfig->setValue(DewarpingConfig::Key::BOTTOM_DISTORSION_FACTOR, 0);
     m_dewarpingConfig->setValue(DewarpingConfig::Key::FISH_EYE_ANGLE, 220);
-    m_dewarpingConfig->update();
 
     m_videoInputConfig->setValue(VideoConfig::Key::FPS, 20);
     m_videoInputConfig->setValue(VideoConfig::Key::WIDTH, 2880);
     m_videoInputConfig->setValue(VideoConfig::Key::HEIGHT, 2160);
     m_videoInputConfig->setValue(VideoConfig::Key::DEVICE_NAME, "/dev/video0");
     m_videoInputConfig->setValue(VideoConfig::Key::IMAGE_FORMAT, ImageFormat::UYVY_FMT);
-    m_videoInputConfig->update();
 
     m_videoOutputConfig->setValue(VideoConfig::Key::FPS, 20);
     m_videoOutputConfig->setValue(VideoConfig::Key::WIDTH, 800);
     m_videoOutputConfig->setValue(VideoConfig::Key::HEIGHT, 600);
     m_videoOutputConfig->setValue(VideoConfig::Key::DEVICE_NAME, "/dev/video0");
     m_videoOutputConfig->setValue(VideoConfig::Key::IMAGE_FORMAT, ImageFormat::UYVY_FMT);
-    m_videoOutputConfig->update();
 
     m_audioInputConfig->setValue(AudioConfig::Key::DEVICE_NAME, "odas");
     m_audioInputConfig->setValue(AudioConfig::Key::CHANNELS, 4);
@@ -152,7 +149,6 @@ void Config::loadDefault()
     m_audioInputConfig->setValue(AudioConfig::Key::IS_LITTLE_ENDIAN, true);
     m_audioInputConfig->setValue(AudioConfig::Key::PACKET_AUDIO_SIZE, 4096);
     m_audioInputConfig->setValue(AudioConfig::Key::PACKET_HEADER_SIZE, 0);
-    m_audioInputConfig->update();
 
     m_audioOutputConfig->setValue(AudioConfig::Key::DEVICE_NAME, "");
     m_audioOutputConfig->setValue(AudioConfig::Key::CHANNELS, 4);
@@ -161,14 +157,14 @@ void Config::loadDefault()
     m_audioOutputConfig->setValue(AudioConfig::Key::IS_LITTLE_ENDIAN, true);
     m_audioOutputConfig->setValue(AudioConfig::Key::PACKET_AUDIO_SIZE, 4096);
     m_audioOutputConfig->setValue(AudioConfig::Key::PACKET_HEADER_SIZE, 0);
-    m_audioOutputConfig->update();
 
     m_streamConfig->setValue(StreamConfig::Key::DETECTION_DEWARPING_COUNT, 4);
     m_streamConfig->setValue(StreamConfig::Key::ASPECT_RATIO_WIDTH, 3);
     m_streamConfig->setValue(StreamConfig::Key::ASPECT_RATIO_HEIGHT, 4);
     m_streamConfig->setValue(StreamConfig::Key::MIN_ELEVATION, 0);
     m_streamConfig->setValue(StreamConfig::Key::MAX_ELEVATION, 90);
-    m_streamConfig->update();
+
+    updateSubconfigs();
 }
 
 }    // namespace Model

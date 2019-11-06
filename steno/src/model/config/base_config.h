@@ -36,10 +36,11 @@ class BaseConfig : public QObject
 
    protected:
     void addSubConfig(std::shared_ptr<BaseConfig> cfg);
-
-    QString m_group;
+    void updateSubconfigs();
+    virtual void update() {}
 
    private:
+    QString m_group;
     QMap<QString, std::shared_ptr<BaseConfig>> m_mapConfig;
     QList<std::shared_ptr<BaseConfig>> m_subConfigs;
     std::shared_ptr<QSettings> m_settings;
