@@ -2,6 +2,7 @@
 #include "model/recorder/recorder.h"
 #include "model/settings/settings.h"
 #include "model/stream/stream.h"
+#include "model/stream/video/output/default_virtual_camera_output.h"
 #include "view/mainwindow.h"
 #include "model/settings/settings_constants.h"
 
@@ -36,6 +37,8 @@ int main(int argc, char *argv[])
 
     View::MainWindow w(settings, mediaPlayer, stream, recorder);
     w.show();
+
+    Model::DefaultVirtualCameraOutput::writeDefaultImage();
 
     return QApplication::exec();
 }
