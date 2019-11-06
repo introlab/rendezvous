@@ -49,11 +49,12 @@ class MediaThread : public Thread
     std::shared_ptr<moodycamel::ReaderWriterQueue<std::vector<SphericalAngleRect>>> detectionQueue_;
     std::shared_ptr<LockTripleBuffer<Image>> imageBuffer_;
     std::unique_ptr<IImageConverter> imageConverter_;
-    DewarpingConfig dewarpingConfig_;
-    VideoConfig videoInputConfig_;
-    VideoConfig videoOutputConfig_;
-    AudioConfig audioInputConfig_;
-    AudioConfig audioOutputConfig_;
+
+    const DewarpingConfig& dewarpingConfig_;
+    const VideoConfig& videoInputConfig_;
+    const VideoConfig& videoOutputConfig_;
+    const AudioConfig& audioInputConfig_;
+    const AudioConfig& audioOutputConfig_;
 };
 
 }    // namespace Model

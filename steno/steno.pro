@@ -28,12 +28,13 @@ SOURCES += \
     src/main.cpp \
     src/model/audio_suppresser/audio_suppresser.cpp \
     src/model/classifier/classifier.cpp \
+    src/model/config/base_config.cpp \
+    src/model/config/config.cpp \
     src/model/media_player/media_player.cpp \
     src/model/media_player/subtitles/srt_file.cpp \
     src/model/media_player/subtitles/subtitles.cpp \
     src/model/network/local_socket_server.cpp \
     src/model/recorder/recorder.cpp \
-    src/model/settings/settings.cpp \
     src/model/stream/video/output/default_virtual_camera_output.cpp \
     src/model/utils/time.cpp \
     src/model/stream/audio/file/raw_file_audio_sink.cpp \
@@ -76,8 +77,12 @@ SOURCES += \
     src/view/views/settings_view.cpp
 
 HEADERS += \
+    src/model/app_config.h \
+    src/model/app_constants.h \
     src/model/audio_suppresser/audio_suppresser.h \
     src/model/classifier/classifier.h \
+    src/model/config/base_config.h \
+    src/model/config/config.h \
     src/model/media_player/i_media_player.h \
     src/model/media_player/media_player.h \
     src/model/media_player/subtitles/srt_file.h \
@@ -87,13 +92,14 @@ HEADERS += \
     src/model/network/local_socket_server.h \
     src/model/recorder/i_recorder.h \
     src/model/recorder/recorder.h \
-    src/model/settings/i_settings.h \
-    src/model/settings/settings_constants.h \
+    src/model/stream/audio/audio_config.h \
+    src/model/stream/stream_config.h \
+    src/model/transcription/transcription_config.h \
+    src/model/transcription/transcription_constants.h \
     src/model/stream/video/output/default_virtual_camera_output.h \
     src/model/utils/observer/i_observer.h \
     src/model/utils/observer/i_subject.h \
     src/model/utils/time.h \
-    src/model/settings/settings.h \
     src/model/stream/audio/i_audio_sink.h \
     src/model/stream/audio/i_audio_source.h \
     src/model/stream/audio/i_position_source.h \
@@ -218,7 +224,7 @@ contains(compilation, no_cuda) {
     } else {
         message("CUDA_HOME is not set, will try to use PATH")
     }
-    
+
     LIBS += -lcuda -lcudart
 
     cuda.input = CUDA_SOURCES

@@ -1,5 +1,5 @@
 #include "odas_client.h"
-#include "model/settings/settings_constants.h"
+#include "model/app_constants.h"
 
 #include <QDebug>
 #include <QFile>
