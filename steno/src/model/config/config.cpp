@@ -7,8 +7,6 @@
 #include <QDir>
 #include <QFileInfo>
 
-#include <QDebug>
-
 namespace Model
 {
 Config::Config(std::shared_ptr<QSettings> settings, const QString &configPath)
@@ -37,11 +35,7 @@ Config::Config(std::shared_ptr<QSettings> settings, const QString &configPath)
     if (!QFileInfo::exists(configPath))
     {
         loadDefault();
-        qDebug() << configPath;
     }
-
-    qDebug() << "test";
-
 }
 
 const AppConfig& Config::appConfig() const
