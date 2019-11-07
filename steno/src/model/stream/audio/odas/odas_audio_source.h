@@ -15,7 +15,8 @@ namespace Model
 class OdasAudioSource : public QThread, public IAudioSource
 {
    public:
-    OdasAudioSource(int port, int desiredChunkDurationMs, int numberOfBuffers, const AudioConfig& audioConfig);
+    OdasAudioSource(int port, int desiredChunkDurationMs, int numberOfBuffers,
+                    std::shared_ptr<AudioConfig> audioConfig);
     ~OdasAudioSource() override;
 
     void open() override;
@@ -27,7 +28,7 @@ class OdasAudioSource : public QThread, public IAudioSource
     unsigned long long calculateNewTimestamp(unsigned long long currentTimestamp, int bytesForward);
 
     int port_;
-    const AudioConfig& audioConfig_;
+    std::shared_ptr<AudioConfig> audioConfig_;
     CircularBuffer<AudioChunk> audioChunks_;
     std::shared_ptr<moodycamel::BlockingReaderWriterQueue<AudioChunk>> audioQueue_;
 };

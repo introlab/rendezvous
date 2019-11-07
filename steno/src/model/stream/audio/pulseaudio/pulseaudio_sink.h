@@ -13,7 +13,7 @@ namespace Model
 class PulseAudioSink : public IAudioSink
 {
    public:
-    PulseAudioSink(const AudioConfig& audioConfig);
+    PulseAudioSink(std::shared_ptr<AudioConfig> audioConfig);
     ~PulseAudioSink() override;
 
     void open() override;

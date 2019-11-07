@@ -5,12 +5,11 @@
 
 namespace Model
 {
-
 class DefaultVirtualCameraOutput
 {
-public:
+   public:
     static void writeDefaultImage(const QString &deviceName);
 };
 
-} // Model
-#endif // DEFAULT_VIRTUAL_CAMERA_OUTPUT_H
+}    // namespace Model
+#endif    // DEFAULT_VIRTUAL_CAMERA_OUTPUT_H

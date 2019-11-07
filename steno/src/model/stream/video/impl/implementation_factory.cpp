@@ -196,7 +196,7 @@ std::unique_ptr<IVideoInput> ImplementationFactory::getImageFileReader(const std
     return fileImageReader;
 }
 
-std::unique_ptr<IVideoInput> ImplementationFactory::getCameraReader(const VideoConfig& videoConfig)
+std::unique_ptr<IVideoInput> ImplementationFactory::getCameraReader(std::shared_ptr<VideoConfig> videoConfig)
 {
     std::unique_ptr<IVideoInput> cameraReader = nullptr;
 

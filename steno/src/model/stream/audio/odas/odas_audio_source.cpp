@@ -8,11 +8,11 @@
 namespace Model
 {
 OdasAudioSource::OdasAudioSource(int port, int desiredChunkDurationMs, int numberOfBuffers,
-                                 const AudioConfig& audioConfig)
+                                 std::shared_ptr<AudioConfig> audioConfig)
     : port_(port)
     , audioConfig_(audioConfig)
-    , audioChunks_(numberOfBuffers, AudioChunk(desiredChunkDurationMs / 1000.f * audioConfig_.rate *
-                                               audioConfig_.channels * audioConfig_.formatBytes))
+    , audioChunks_(numberOfBuffers, AudioChunk(desiredChunkDurationMs / 1000.f * audioConfig_->rate *
+                                               audioConfig_->channels * audioConfig_->formatBytes))
     , audioQueue_(std::make_shared<moodycamel::BlockingReaderWriterQueue<AudioChunk>>(1))
 {
     for (int i = 0; i < numberOfBuffers; i++)
@@ -60,12 +60,12 @@ void OdasAudioSource::run()
         {
             if (socket->state() == QAbstractSocket::ConnectedState)
             {
-                if (socket->bytesAvailable() >= audioConfig_.packetAudioSize)
+                if (socket->bytesAvailable() >= audioConfig_->packetAudioSize)
                 {
                     AudioChunk& audioChunk = audioChunks_.current();
 
                     unsigned long long currentTimeStamp = 0;
-                    socket->read(reinterpret_cast<char*>(&currentTimeStamp), audioConfig_.packetHeaderSize);
+                    socket->read(reinterpret_cast<char*>(&currentTimeStamp), audioConfig_->packetHeaderSize);
 
                     if (readIndex == 0)
                     {
@@ -73,15 +73,16 @@ void OdasAudioSource::run()
                     }
 
                     int remainingChunkSpace = audioChunk.size - readIndex;
-                    int bytesToRead = remainingChunkSpace < audioConfig_.packetAudioSize ? remainingChunkSpace
-                                                                                         : audioConfig_.packetAudioSize;
+                    int bytesToRead = remainingChunkSpace < audioConfig_->packetAudioSize
+                                          ? remainingChunkSpace
+                                          : audioConfig_->packetAudioSize;
 
                     int firstBytesRead =
                         socket->read(reinterpret_cast<char*>(audioChunk.audioData.get()) + readIndex, bytesToRead);
                     readIndex += firstBytesRead;
 
                     // There is still data to be read if the chunk didn't have enough space
-                    int remainingBytesToRead = audioConfig_.packetAudioSize - firstBytesRead;
+                    int remainingBytesToRead = audioConfig_->packetAudioSize - firstBytesRead;
 
                     // Current chunk is full
                     if (readIndex == audioChunk.size)
@@ -140,8 +141,8 @@ bool OdasAudioSource::readAudioChunk(AudioChunk& outAudioChunk)
 
 unsigned long long OdasAudioSource::calculateNewTimestamp(unsigned long long currentTimestamp, int bytesForward)
 {
-    int numberOfSamples = bytesForward / audioConfig_.formatBytes / audioConfig_.channels;
-    unsigned long long microseconds = numberOfSamples * std::pow(10, 6) / audioConfig_.rate;
+    int numberOfSamples = bytesForward / audioConfig_->formatBytes / audioConfig_->channels;
+    unsigned long long microseconds = numberOfSamples * std::pow(10, 6) / audioConfig_->rate;
     return currentTimestamp + microseconds;
 }
 

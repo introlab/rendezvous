@@ -17,7 +17,8 @@ class DewarpingConfig : public BaseConfig
         ANGLE_SPAN,
         TOP_DISTORSION_FACTOR,
         BOTTOM_DISTORSION_FACTOR,
-        FISH_EYE_ANGLE
+        FISH_EYE_ANGLE,
+        DETECTION_DEWARPING_COUNT
     };
     Q_ENUM(Key)
 
@@ -35,6 +36,7 @@ class DewarpingConfig : public BaseConfig
         topDistorsionFactor = value(Key::TOP_DISTORSION_FACTOR).toFloat();
         bottomDistorsionFactor = value(Key::BOTTOM_DISTORSION_FACTOR).toFloat();
         fisheyeAngle = math::deg2rad(value(Key::FISH_EYE_ANGLE).toFloat());
+        detectionDewarpingCount = value(Key::DETECTION_DEWARPING_COUNT).toInt();
     }
 
     float inRadius;
@@ -43,6 +45,7 @@ class DewarpingConfig : public BaseConfig
     float topDistorsionFactor;
     float bottomDistorsionFactor;
     float fisheyeAngle;
+    int detectionDewarpingCount;
 };
 
 }    // namespace Model

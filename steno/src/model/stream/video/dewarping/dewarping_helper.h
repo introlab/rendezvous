@@ -16,7 +16,7 @@
 namespace Model
 {
 DonutSlice createDewarpingDonutSlice(DonutSlice& baseDonutSlice, float centersDistance);
-DewarpingParameters getDewarpingParameters(const Dim2<int>& imageSize, const DewarpingConfig& dewarpingConfig,
+DewarpingParameters getDewarpingParameters(const Dim2<int>& imageSize, std::shared_ptr<DewarpingConfig> dewarpingConfig,
                                            float middleAngle);
 DewarpingParameters getDewarpingParameters(DonutSlice& baseDonutSlice, float topDistorsionFactor,
                                            float bottomDistorsionFactor);
@@ -24,7 +24,7 @@ DewarpingParameters getDewarpingParametersFromNewDonutSlice(DonutSlice& baseDonu
                                                             float centersDistance, float bottomDistorsionFactor);
 DewarpingParameters getDewarpingParametersFromAngleBoundingBox(const SphericalAngleRect& angleRect,
                                                                const Point<float>& fisheyeCenter,
-                                                               const DewarpingConfig& dewarpingConfig);
+                                                               std::shared_ptr<DewarpingConfig> dewarpingConfig);
 Point<float> getSourcePixelFromDewarpedImage(const Point<float>& pixel, const DewarpingParameters& dewarpingParameters);
 SphericalAngleRect getAngleRectFromDewarpedImageRectangle(const Rectangle& rectangle,
                                                           const DewarpingParameters& dewarpingParameters,
