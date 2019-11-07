@@ -16,6 +16,7 @@ class VirtualCameraManager
 
     void updateVirtualCameras(int elapsedTimeMs);
     void updateVirtualCamerasGoal(const std::vector<SphericalAngleRect>& goals);
+    void clearVirtualCameras();
     const std::vector<VirtualCamera>& getVirtualCameras();
 
    private:
