@@ -38,7 +38,8 @@ DewarpingParameters getDewarpingParameters(const Dim2<int>& imageSize, std::shar
                                            float middleAngle)
 {
     DonutSlice donutSlice(static_cast<float>(imageSize.width) / 2.f, static_cast<float>(imageSize.height) / 2.f,
-                          dewarpingConfig->inRadius, dewarpingConfig->outRadius, middleAngle, dewarpingConfig->angleSpan);
+                          dewarpingConfig->inRadius, dewarpingConfig->outRadius, middleAngle,
+                          dewarpingConfig->angleSpan);
 
     return getDewarpingParameters(donutSlice, dewarpingConfig->topDistorsionFactor,
                                   dewarpingConfig->bottomDistorsionFactor);
@@ -84,8 +85,8 @@ DewarpingParameters getDewarpingParametersFromAngleBoundingBox(const SphericalAn
     SphericalAngleBox angleBox = math::convertToAngleBox(angleRect);
     DonutSlice donutSlice(fisheyeCenter.x, fisheyeCenter.y, dewarpingConfig->inRadius, dewarpingConfig->outRadius,
                           angleRect.azimuth, angleRect.azimuthSpan);
-    DewarpingParameters dewarpingParameters =
-        getDewarpingParameters(donutSlice, dewarpingConfig->topDistorsionFactor, dewarpingConfig->bottomDistorsionFactor);
+    DewarpingParameters dewarpingParameters = getDewarpingParameters(donutSlice, dewarpingConfig->topDistorsionFactor,
+                                                                     dewarpingConfig->bottomDistorsionFactor);
 
     float maxElevation = math::getElevationFromImage(Point<float>(dewarpingParameters.dewarpWidth / 2.f, 0),
                                                      dewarpingConfig->fisheyeAngle, fisheyeCenter, dewarpingParameters);

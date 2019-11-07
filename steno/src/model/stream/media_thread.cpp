@@ -5,15 +5,15 @@
 
 #include "model/audio_suppresser/audio_suppresser.h"
 #include "model/classifier/classifier.h"
+#include "model/stream/audio/audio_config.h"
 #include "model/stream/utils/alloc/heap_object_factory.h"
 #include "model/stream/utils/models/circular_buffer.h"
 #include "model/stream/utils/models/point.h"
 #include "model/stream/video/dewarping/dewarping_helper.h"
-#include "model/stream/video/video_stabilizer.h"
-#include "model/stream/video/virtualcamera/display_image_builder.h"
-#include "model/stream/audio/audio_config.h"
 #include "model/stream/video/dewarping/models/dewarping_config.h"
 #include "model/stream/video/video_config.h"
+#include "model/stream/video/video_stabilizer.h"
+#include "model/stream/video/virtualcamera/display_image_builder.h"
 
 namespace Model
 {
@@ -90,7 +90,8 @@ void MediaThread::run()
         videoInput_->open();
         videoOutput_->open();
 
-        Point<float> fisheyeCenter(videoInputConfig_->resolution.width / 2.f, videoInputConfig_->resolution.height / 2.f);
+        Point<float> fisheyeCenter(videoInputConfig_->resolution.width / 2.f,
+                                   videoInputConfig_->resolution.height / 2.f);
         std::vector<SphericalAngleRect> detections;
 
         // Media loop start

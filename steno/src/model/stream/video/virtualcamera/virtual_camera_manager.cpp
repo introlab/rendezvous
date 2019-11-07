@@ -67,8 +67,8 @@ void VirtualCameraManager::updateVirtualCameras(int elapsedTimeMs)
         {
             float resizeFactor = 1 + (((vc.goal.elevationSpan / vc.elevationSpan) - 1) * updateRatio);
             // Some issues still with this
-            //vc.elevationSpan *= resizeFactor;
-            //vc.azimuthSpan *= resizeFactor;
+            // vc.elevationSpan *= resizeFactor;
+            // vc.azimuthSpan *= resizeFactor;
         }
     }
 }

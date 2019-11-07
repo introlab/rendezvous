@@ -3,10 +3,10 @@
 #include "model/app_config.h"
 #include "model/stream/audio/audio_config.h"
 #include "model/stream/stream_config.h"
+#include "model/stream/utils/images/image_format.h"
 #include "model/stream/video/dewarping/models/dewarping_config.h"
 #include "model/stream/video/video_config.h"
 #include "model/transcription/transcription_config.h"
-#include "model/stream/utils/images/image_format.h"
 #include "model/transcription/transcription_constants.h"
 
 #include <QCoreApplication>
@@ -87,8 +87,10 @@ std::shared_ptr<TranscriptionConfig> Config::transcriptionConfig() const
 void Config::loadDefault()
 {
     m_appConfig->setValue(AppConfig::Key::OUTPUT_FOLDER, QDir::homePath());
-    m_appConfig->setValue(AppConfig::Key::MICROPHONE_CONFIGURATION, QCoreApplication::applicationDirPath() + "/../configs/odas/odas_16_mic.cfg");
-    m_appConfig->setValue(AppConfig::Key::ODAS_LIBRARY, QCoreApplication::applicationDirPath() + "/../../odas/bin/odaslive");
+    m_appConfig->setValue(AppConfig::Key::MICROPHONE_CONFIGURATION,
+                          QCoreApplication::applicationDirPath() + "/../configs/odas/odas_16_mic.cfg");
+    m_appConfig->setValue(AppConfig::Key::ODAS_LIBRARY,
+                          QCoreApplication::applicationDirPath() + "/../../odas/bin/odaslive");
 
     m_transcriptionConfig->setValue(TranscriptionConfig::Key::LANGUAGE, Transcription::Language::FR_CA);
     m_transcriptionConfig->setValue(TranscriptionConfig::Key::AUTOMATIC_TRANSCRIPTION, false);

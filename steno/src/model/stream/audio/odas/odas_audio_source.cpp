@@ -73,8 +73,9 @@ void OdasAudioSource::run()
                     }
 
                     int remainingChunkSpace = audioChunk.size - readIndex;
-                    int bytesToRead = remainingChunkSpace < audioConfig_->packetAudioSize ? remainingChunkSpace
-                                                                                         : audioConfig_->packetAudioSize;
+                    int bytesToRead = remainingChunkSpace < audioConfig_->packetAudioSize
+                                          ? remainingChunkSpace
+                                          : audioConfig_->packetAudioSize;
 
                     int firstBytesRead =
                         socket->read(reinterpret_cast<char*>(audioChunk.audioData.get()) + readIndex, bytesToRead);

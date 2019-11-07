@@ -25,8 +25,7 @@ void OdasClient::run()
 
     if (!QFile::exists(program) || !QFile::exists(micPath))
     {
-        qCritical() << "Cannot find odaslive and/or microphones config file: " << program << " "
-                    << micPath;
+        qCritical() << "Cannot find odaslive and/or microphones config file: " << program << " " << micPath;
         m_state = OdasClientState::CRASHED;
         notify();
         qInfo() << "Odaslive thread finished";

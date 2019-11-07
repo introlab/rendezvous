@@ -1,6 +1,7 @@
 #ifndef MEDIA_THREAD_H
 #define MEDIA_THREAD_H
 
+#include "model/config/config.h"
 #include "model/stream/audio/audio_config.h"
 #include "model/stream/audio/i_audio_sink.h"
 #include "model/stream/audio/i_audio_source.h"
@@ -17,7 +18,6 @@
 #include "model/stream/video/output/i_video_output.h"
 #include "model/stream/video/video_config.h"
 #include "model/stream/video/virtualcamera/virtual_camera_manager.h"
-#include "model/config/config.h"
 
 namespace Model
 {

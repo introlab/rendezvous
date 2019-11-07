@@ -5,9 +5,9 @@
 
 #include <QMainWindow>
 
+#include "model/config/config.h"
 #include "model/media_player/i_media_player.h"
 #include "model/recorder/i_recorder.h"
-#include "model/config/config.h"
 #include "model/stream/i_stream.h"
 
 class QStackedWidget;

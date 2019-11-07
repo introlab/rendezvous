@@ -15,7 +15,8 @@ namespace Model
 class OdasAudioSource : public QThread, public IAudioSource
 {
    public:
-    OdasAudioSource(int port, int desiredChunkDurationMs, int numberOfBuffers, std::shared_ptr<AudioConfig> audioConfig);
+    OdasAudioSource(int port, int desiredChunkDurationMs, int numberOfBuffers,
+                    std::shared_ptr<AudioConfig> audioConfig);
     ~OdasAudioSource() override;
 
     void open() override;

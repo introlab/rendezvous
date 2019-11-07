@@ -47,8 +47,9 @@ void VirtualCameraOutput::writeImage(const Image& image)
     }
     else
     {
-        throw std::invalid_argument("Virtual camera expected format " + getImageFormatString(videoConfig_->imageFormat) +
-                                    " but received format " + getImageFormatString(image.format));
+        throw std::invalid_argument("Virtual camera expected format " +
+                                    getImageFormatString(videoConfig_->imageFormat) + " but received format " +
+                                    getImageFormatString(image.format));
     }
 }
 }    // namespace Model

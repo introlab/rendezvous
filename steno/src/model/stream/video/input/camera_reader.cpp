@@ -23,7 +23,8 @@ CameraReader::IndexedImage::IndexedImage(const Image& image)
 
 CameraReader::CameraReader(std::shared_ptr<VideoConfig> videoConfig, std::size_t bufferCount)
     : videoConfig_(videoConfig)
-    , images_(bufferCount, Image(videoConfig->resolution.width, videoConfig->resolution.height, videoConfig->imageFormat))
+    , images_(bufferCount,
+              Image(videoConfig->resolution.width, videoConfig->resolution.height, videoConfig->imageFormat))
     , buffer_({})
     , fd_(-1)
 {
@@ -61,7 +62,7 @@ void CameraReader::close()
     {
         throw std::runtime_error("Failed to stop camera capture");
     }
-    
+
     for (std::size_t i = 0; i < images_.size(); ++i)
     {
         unmapBuffer(images_.current());
