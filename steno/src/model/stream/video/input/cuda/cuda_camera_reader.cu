@@ -6,7 +6,6 @@
 
 namespace Model
 {
-
 CudaCameraReader::CudaCameraReader(const VideoConfig& videoConfig)
     : CameraReader(videoConfig, 3)
     , nextImage_(nullptr)
