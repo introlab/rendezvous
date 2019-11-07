@@ -34,10 +34,10 @@ class Recorder : public IRecorder
     void startCamera();
     void stopCamera();
 
+    std::shared_ptr<Config> m_config;
     IRecorder::State m_state;
     QCamera m_camera;
     QMediaRecorder m_mediaRecorder;
-    std::shared_ptr<Config> m_config;
 };
 
 }    // namespace Model

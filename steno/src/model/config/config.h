@@ -8,7 +8,6 @@
 #include "model/stream/video/dewarping/models/dewarping_config.h"
 #include "model/stream/video/video_config.h"
 #include "model/transcription/transcription_config.h"
-#include "model/app_constants.h"
 
 #include <memory>
 
@@ -35,7 +34,7 @@ class Config : public BaseConfig
     };
     Q_ENUM(Group)
 
-    Config(std::shared_ptr<QSettings> settings);
+    Config(std::shared_ptr<QSettings> settings, const QString& configPath);
 
     const AppConfig& appConfig() const;
     AppConfig& appConfig();

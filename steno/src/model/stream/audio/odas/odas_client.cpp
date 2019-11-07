@@ -1,5 +1,4 @@
 #include "odas_client.h"
-#include "model/app_constants.h"
 
 #include <QDebug>
 #include <QFile>
@@ -7,20 +6,27 @@
 
 namespace Model
 {
+OdasClient::OdasClient(const AppConfig& appConfig)
+    : Thread()
+    , m_appConfig(appConfig)
+{
+}
+
 void OdasClient::run()
 {
     qInfo() << "Odaslive thread started";
     m_state = OdasClientState::RUNNING;
     notify();
 
-    const QString& program = Model::ODAS_LIBRARY;
+    const QString& micPath = m_appConfig.value(AppConfig::MICROPHONE_CONFIGURATION).toString();
+    const QString& program = m_appConfig.value(AppConfig::ODAS_LIBRARY).toString();
     QStringList arguments;
-    arguments << "-c" << Model::MICROPHONE_CONFIGURATION;
+    arguments << "-c" << micPath;
 
-    if (!QFile::exists(program) || !QFile::exists(Model::MICROPHONE_CONFIGURATION))
+    if (!QFile::exists(program) || !QFile::exists(micPath))
     {
         qCritical() << "Cannot find odaslive and/or microphones config file: " << program << " "
-                    << Model::MICROPHONE_CONFIGURATION;
+                    << micPath;
         m_state = OdasClientState::CRASHED;
         notify();
         qInfo() << "Odaslive thread finished";

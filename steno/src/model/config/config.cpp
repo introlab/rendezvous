@@ -3,11 +3,13 @@
 #include "model/stream/utils/images/image_format.h"
 #include "model/transcription/transcription_constants.h"
 
+#include <QCoreApplication>
+#include <QDir>
 #include <QFileInfo>
 
 namespace Model
 {
-Config::Config(std::shared_ptr<QSettings> settings)
+Config::Config(std::shared_ptr<QSettings> settings, const QString &configPath)
     : BaseConfig(settings)
     , m_appConfig(std::make_shared<Model::AppConfig>(QVariant::fromValue(APP).toString(), settings))
     , m_dewarpingConfig(std::make_shared<Model::DewarpingConfig>(QVariant::fromValue(DEWARPING).toString(), settings))
@@ -30,7 +32,7 @@ Config::Config(std::shared_ptr<QSettings> settings)
 
     // Do not override an existing file.
     // Maybe the user wants to use a custom config file.
-    if (!QFileInfo::exists(APP_CONFIG_FILE))
+    if (!QFileInfo::exists(configPath))
     {
         loadDefault();
     }
@@ -119,6 +121,8 @@ TranscriptionConfig& Config::transcriptionConfig()
 void Config::loadDefault()
 {
     m_appConfig->setValue(AppConfig::Key::OUTPUT_FOLDER, QDir::homePath());
+    m_appConfig->setValue(AppConfig::Key::MICROPHONE_CONFIGURATION, QCoreApplication::applicationDirPath() + "/../configs/odas/odas_16_mic.cfg");
+    m_appConfig->setValue(AppConfig::Key::ODAS_LIBRARY, QCoreApplication::applicationDirPath() + "/../../odas/bin/odaslive");
 
     m_transcriptionConfig->setValue(TranscriptionConfig::Key::LANGUAGE, Transcription::Language::FR_CA);
     m_transcriptionConfig->setValue(TranscriptionConfig::Key::AUTOMATIC_TRANSCRIPTION, false);
@@ -139,7 +143,7 @@ void Config::loadDefault()
     m_videoOutputConfig->setValue(VideoConfig::Key::FPS, 20);
     m_videoOutputConfig->setValue(VideoConfig::Key::WIDTH, 800);
     m_videoOutputConfig->setValue(VideoConfig::Key::HEIGHT, 600);
-    m_videoOutputConfig->setValue(VideoConfig::Key::DEVICE_NAME, "/dev/video0");
+    m_videoOutputConfig->setValue(VideoConfig::Key::DEVICE_NAME, "/dev/video1");
     m_videoOutputConfig->setValue(VideoConfig::Key::IMAGE_FORMAT, ImageFormat::UYVY_FMT);
 
     m_audioInputConfig->setValue(AudioConfig::Key::DEVICE_NAME, "odas");

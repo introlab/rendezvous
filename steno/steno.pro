@@ -78,7 +78,6 @@ SOURCES += \
 
 HEADERS += \
     src/model/app_config.h \
-    src/model/app_constants.h \
     src/model/audio_suppresser/audio_suppresser.h \
     src/model/classifier/classifier.h \
     src/model/config/base_config.h \
