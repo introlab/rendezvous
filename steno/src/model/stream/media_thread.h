@@ -17,6 +17,7 @@
 #include "model/stream/video/output/i_video_output.h"
 #include "model/stream/video/video_config.h"
 #include "model/stream/video/virtualcamera/virtual_camera_manager.h"
+#include "model/config/config.h"
 
 namespace Model
 {
@@ -30,8 +31,7 @@ class MediaThread : public Thread
                 std::unique_ptr<VirtualCameraManager> virtualCameraManager,
                 std::shared_ptr<moodycamel::ReaderWriterQueue<std::vector<SphericalAngleRect>>> detectionQueue,
                 std::shared_ptr<LockTripleBuffer<Image>> imageBuffer, std::unique_ptr<IImageConverter> imageConverter,
-                const DewarpingConfig& dewarpingConfig, const VideoConfig& inputConfig, const VideoConfig& outputConfig,
-                const AudioConfig& audioInputConfig, const AudioConfig& audioOutputConfig);
+                std::shared_ptr<Config> config);
 
    protected:
     void run() override;
@@ -50,11 +50,11 @@ class MediaThread : public Thread
     std::shared_ptr<LockTripleBuffer<Image>> imageBuffer_;
     std::unique_ptr<IImageConverter> imageConverter_;
 
-    const DewarpingConfig& dewarpingConfig_;
-    const VideoConfig& videoInputConfig_;
-    const VideoConfig& videoOutputConfig_;
-    const AudioConfig& audioInputConfig_;
-    const AudioConfig& audioOutputConfig_;
+    std::shared_ptr<DewarpingConfig> dewarpingConfig_;
+    std::shared_ptr<VideoConfig> videoInputConfig_;
+    std::shared_ptr<VideoConfig> videoOutputConfig_;
+    std::shared_ptr<AudioConfig> audioInputConfig_;
+    std::shared_ptr<AudioConfig> audioOutputConfig_;
 };
 
 }    // namespace Model

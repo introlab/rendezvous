@@ -20,7 +20,7 @@ enum class OdasClientState
 class OdasClient : public Thread, public ISubject
 {
    public:
-    OdasClient(const AppConfig& appConfig);
+    OdasClient(std::shared_ptr<AppConfig> appConfig);
     void notify() override;
     void attach(IObserver *observer) override;
     void detach(IObserver *observer) override;
@@ -34,7 +34,7 @@ class OdasClient : public Thread, public ISubject
 
     const int m_waitTime = 100;    // ms
     const int m_joinTime = 500;    // ms
-    const AppConfig& m_appConfig;
+    std::shared_ptr<AppConfig> m_appConfig;
     OdasClientState m_state = OdasClientState::STOPPED;
     std::vector<IObserver *> m_subscribers;
 };

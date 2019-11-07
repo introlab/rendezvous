@@ -4,7 +4,7 @@
 
 namespace Model
 {
-VirtualCameraOutput::VirtualCameraOutput(const VideoConfig& videoConfig)
+VirtualCameraOutput::VirtualCameraOutput(std::shared_ptr<VideoConfig> videoConfig)
     : videoConfig_(videoConfig)
     , videoOutput_(nullptr)
 {
@@ -12,15 +12,15 @@ VirtualCameraOutput::VirtualCameraOutput(const VideoConfig& videoConfig)
 
 void VirtualCameraOutput::open()
 {
-    unsigned int v4l2Format = getV4L2Format(videoConfig_.imageFormat);
+    unsigned int v4l2Format = getV4L2Format(videoConfig_->imageFormat);
 
-    V4L2DeviceParameters param(videoConfig_.deviceName.c_str(), v4l2Format, videoConfig_.resolution.width,
-                               videoConfig_.resolution.height, videoConfig_.fpsTarget);
+    V4L2DeviceParameters param(videoConfig_->deviceName.c_str(), v4l2Format, videoConfig_->resolution.width,
+                               videoConfig_->resolution.height, videoConfig_->fpsTarget);
     videoOutput_ = V4l2Output::create(param, V4l2Access::IOTYPE_READWRITE);
 
     if (videoOutput_ == nullptr)
     {
-        throw std::runtime_error("Could not open virtual camera " + videoConfig_.deviceName);
+        throw std::runtime_error("Could not open virtual camera " + videoConfig_->deviceName);
     }
 }
 
@@ -36,7 +36,7 @@ void VirtualCameraOutput::close()
 
 void VirtualCameraOutput::writeImage(const Image& image)
 {
-    if (videoConfig_.imageFormat == image.format)
+    if (videoConfig_->imageFormat == image.format)
     {
         // This check doesn't seen to work as intended, for now it seems to work without the check
         // timeval timeout;
@@ -47,7 +47,7 @@ void VirtualCameraOutput::writeImage(const Image& image)
     }
     else
     {
-        throw std::invalid_argument("Virtual camera expected format " + getImageFormatString(videoConfig_.imageFormat) +
+        throw std::invalid_argument("Virtual camera expected format " + getImageFormatString(videoConfig_->imageFormat) +
                                     " but received format " + getImageFormatString(image.format));
     }
 }

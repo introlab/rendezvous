@@ -30,7 +30,7 @@ class ImplementationFactory
     std::unique_ptr<ISynchronizer> getDetectionSynchronizer();
     std::unique_ptr<IImageConverter> getImageConverter();
     std::unique_ptr<IVideoInput> getImageFileReader(const std::string& imageFilePath, ImageFormat format);
-    std::unique_ptr<IVideoInput> getCameraReader(const VideoConfig& cameraConfig);
+    std::unique_ptr<IVideoInput> getCameraReader(std::shared_ptr<VideoConfig> cameraConfig);
 
    private:
     bool useZeroCopyIfSupported_;

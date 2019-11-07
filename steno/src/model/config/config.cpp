@@ -1,5 +1,11 @@
 #include "config.h"
 
+#include "model/app_config.h"
+#include "model/stream/audio/audio_config.h"
+#include "model/stream/stream_config.h"
+#include "model/stream/video/dewarping/models/dewarping_config.h"
+#include "model/stream/video/video_config.h"
+#include "model/transcription/transcription_config.h"
 #include "model/stream/utils/images/image_format.h"
 #include "model/transcription/transcription_constants.h"
 
@@ -38,84 +44,44 @@ Config::Config(std::shared_ptr<QSettings> settings, const QString &configPath)
     }
 }
 
-const AppConfig& Config::appConfig() const
+std::shared_ptr<AppConfig> Config::appConfig() const
 {
-    return *m_appConfig;
+    return m_appConfig;
 }
 
-AppConfig& Config::appConfig()
+std::shared_ptr<DewarpingConfig> Config::dewarpingConfig() const
 {
-    return *m_appConfig;
+    return m_dewarpingConfig;
 }
 
-const DewarpingConfig& Config::dewarpingConfig() const
+std::shared_ptr<VideoConfig> Config::videoInputConfig() const
 {
-    return *m_dewarpingConfig;
+    return m_videoInputConfig;
 }
 
-DewarpingConfig& Config::dewarpingConfig()
+std::shared_ptr<VideoConfig> Config::videoOutputConfig() const
 {
-    return *m_dewarpingConfig;
+    return m_videoOutputConfig;
 }
 
-const VideoConfig& Config::videoInputConfig() const
+std::shared_ptr<AudioConfig> Config::audioInputConfig() const
 {
-    return *m_videoInputConfig;
+    return m_audioInputConfig;
 }
 
-VideoConfig& Config::videoInputConfig()
+std::shared_ptr<AudioConfig> Config::audioOutputConfig() const
 {
-    return *m_videoInputConfig;
+    return m_audioOutputConfig;
 }
 
-const VideoConfig& Config::videoOutputConfig() const
+std::shared_ptr<StreamConfig> Config::streamConfig() const
 {
-    return *m_videoOutputConfig;
+    return m_streamConfig;
 }
 
-VideoConfig& Config::videoOutputConfig()
+std::shared_ptr<TranscriptionConfig> Config::transcriptionConfig() const
 {
-    return *m_videoOutputConfig;
-}
-
-const AudioConfig& Config::audioInputConfig() const
-{
-    return *m_audioInputConfig;
-}
-
-AudioConfig& Config::audioInputConfig()
-{
-    return *m_audioInputConfig;
-}
-
-const AudioConfig& Config::audioOutputConfig() const
-{
-    return *m_audioOutputConfig;
-}
-
-AudioConfig& Config::audioOutputConfig()
-{
-    return *m_audioOutputConfig;
-}
-
-const StreamConfig& Config::streamConfig() const
-{
-    return *m_streamConfig;
-}
-
-StreamConfig& Config::streamConfig()
-{
-    return *m_streamConfig;
-}
-
-const TranscriptionConfig& Config::transcriptionConfig() const
-{
-    return *m_transcriptionConfig;
-}
-
-TranscriptionConfig& Config::transcriptionConfig()
-{
-    return *m_transcriptionConfig;
+    return m_transcriptionConfig;
 }
 
 void Config::loadDefault()
@@ -133,6 +99,7 @@ void Config::loadDefault()
     m_dewarpingConfig->setValue(DewarpingConfig::Key::TOP_DISTORSION_FACTOR, 0.08);
     m_dewarpingConfig->setValue(DewarpingConfig::Key::BOTTOM_DISTORSION_FACTOR, 0);
     m_dewarpingConfig->setValue(DewarpingConfig::Key::FISH_EYE_ANGLE, 220);
+    m_dewarpingConfig->setValue(DewarpingConfig::Key::DETECTION_DEWARPING_COUNT, 4);
 
     m_videoInputConfig->setValue(VideoConfig::Key::FPS, 20);
     m_videoInputConfig->setValue(VideoConfig::Key::WIDTH, 2880);
@@ -162,7 +129,6 @@ void Config::loadDefault()
     m_audioOutputConfig->setValue(AudioConfig::Key::PACKET_AUDIO_SIZE, 4096);
     m_audioOutputConfig->setValue(AudioConfig::Key::PACKET_HEADER_SIZE, 0);
 
-    m_streamConfig->setValue(StreamConfig::Key::DETECTION_DEWARPING_COUNT, 4);
     m_streamConfig->setValue(StreamConfig::Key::ASPECT_RATIO_WIDTH, 3);
     m_streamConfig->setValue(StreamConfig::Key::ASPECT_RATIO_HEIGHT, 4);
     m_streamConfig->setValue(StreamConfig::Key::MIN_ELEVATION, 0);

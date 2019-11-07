@@ -11,6 +11,9 @@
 #include "model/stream/video/dewarping/dewarping_helper.h"
 #include "model/stream/video/video_stabilizer.h"
 #include "model/stream/video/virtualcamera/display_image_builder.h"
+#include "model/stream/audio/audio_config.h"
+#include "model/stream/video/dewarping/models/dewarping_config.h"
+#include "model/stream/video/video_config.h"
 
 namespace Model
 {
@@ -21,9 +24,7 @@ MediaThread::MediaThread(std::unique_ptr<IAudioSource> audioSource, std::unique_
                          std::unique_ptr<VirtualCameraManager> virtualCameraManager,
                          std::shared_ptr<moodycamel::ReaderWriterQueue<std::vector<SphericalAngleRect>>> detectionQueue,
                          std::shared_ptr<LockTripleBuffer<Image>> imageBuffer,
-                         std::unique_ptr<IImageConverter> imageConverter, const DewarpingConfig& dewarpingConfig,
-                         const VideoConfig& videoInputConfig, const VideoConfig& videoOutputConfig,
-                         const AudioConfig& audioInputConfig, const AudioConfig& audioOutputConfig)
+                         std::unique_ptr<IImageConverter> imageConverter, std::shared_ptr<Config> config)
     : audioSource_(std::move(audioSource))
     , audioSink_(std::move(audioSink))
     , positionSource_(std::move(positionSource))
@@ -36,11 +37,11 @@ MediaThread::MediaThread(std::unique_ptr<IAudioSource> audioSource, std::unique_
     , detectionQueue_(detectionQueue)
     , imageBuffer_(imageBuffer)
     , imageConverter_(std::move(imageConverter))
-    , dewarpingConfig_(dewarpingConfig)
-    , videoInputConfig_(videoInputConfig)
-    , videoOutputConfig_(videoOutputConfig)
-    , audioInputConfig_(audioInputConfig)
-    , audioOutputConfig_(audioOutputConfig)
+    , dewarpingConfig_(config->dewarpingConfig())
+    , videoInputConfig_(config->videoInputConfig())
+    , videoOutputConfig_(config->videoOutputConfig())
+    , audioInputConfig_(config->audioInputConfig())
+    , audioOutputConfig_(config->audioOutputConfig())
 {
     if (!audioSource_ || !audioSink_ || !positionSource_ || !videoInput_ || !dewarper_ || !objectFactory_ ||
         !videoOutput_ || !synchronizer_ || !virtualCameraManager_ || !detectionQueue_ || !imageBuffer_ ||
@@ -54,17 +55,17 @@ void MediaThread::run()
 {
     // Utilitary objects
     HeapObjectFactory heapObjectFactory;
-    DisplayImageBuilder displayImageBuilder(videoOutputConfig_.resolution);
-    VideoStabilizer videoStabilizer(videoInputConfig_.fpsTarget);
+    DisplayImageBuilder displayImageBuilder(videoOutputConfig_->resolution);
+    VideoStabilizer videoStabilizer(videoInputConfig_->fpsTarget);
 
     // Display images
-    Image emptyDisplay(videoOutputConfig_.resolution, videoOutputConfig_.imageFormat);
-    CircularBuffer<Image> displayBuffers(2, Image(videoOutputConfig_.resolution, videoOutputConfig_.imageFormat));
+    Image emptyDisplay(videoOutputConfig_->resolution, videoOutputConfig_->imageFormat);
+    CircularBuffer<Image> displayBuffers(2, Image(videoOutputConfig_->resolution, videoOutputConfig_->imageFormat));
 
     // Virtual cameras images
     const Dim2<int>& maxVcDim = displayImageBuilder.getMaxVirtualCameraDim();
     std::vector<Image> vcImages(1, RGBImage(maxVcDim.width, maxVcDim.height));
-    std::vector<Image> vcOutputFormatImages(1, Image(maxVcDim.width, maxVcDim.height, videoOutputConfig_.imageFormat));
+    std::vector<Image> vcOutputFormatImages(1, Image(maxVcDim.width, maxVcDim.height, videoOutputConfig_->imageFormat));
 
     // TODO: config?
     const int classifierRangeThreshold = 2;
@@ -89,7 +90,7 @@ void MediaThread::run()
         videoInput_->open();
         videoOutput_->open();
 
-        Point<float> fisheyeCenter(videoInputConfig_.resolution.width / 2.f, videoInputConfig_.resolution.height / 2.f);
+        Point<float> fisheyeCenter(videoInputConfig_->resolution.width / 2.f, videoInputConfig_->resolution.height / 2.f);
         std::vector<SphericalAngleRect> detections;
 
         // Media loop start
@@ -132,7 +133,7 @@ void MediaThread::run()
                     objectFactory_->allocateObject(vcImage);
                     vcImages.push_back(vcImage);
 
-                    Image vcOutputFormatImage(maxVcDim.width, maxVcDim.height, videoOutputConfig_.imageFormat);
+                    Image vcOutputFormatImage(maxVcDim.width, maxVcDim.height, videoOutputConfig_->imageFormat);
                     objectFactory_->allocateObject(vcOutputFormatImage);
                     vcOutputFormatImages.push_back(vcOutputFormatImage);
                 }
@@ -141,7 +142,7 @@ void MediaThread::run()
                 Dim2<int> resizeDim(displayImageBuilder.getVirtualCameraDim(vcCount));
                 std::vector<Image> vcResizeImages(vcCount, RGBImage(resizeDim));
                 std::vector<Image> vcResizeOutputFormatImages(vcCount,
-                                                              Image(resizeDim, videoOutputConfig_.imageFormat));
+                                                              Image(resizeDim, videoOutputConfig_->imageFormat));
 
                 // Virtual camera dewarping loop
                 for (int i = 0; i < vcCount; ++i)

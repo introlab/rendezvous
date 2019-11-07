@@ -11,7 +11,7 @@ namespace Model
 class CudaCameraReader : public CameraReader
 {
    public:
-    explicit CudaCameraReader(const VideoConfig& videoConfig);
+    explicit CudaCameraReader(std::shared_ptr<VideoConfig> videoConfig);
     virtual ~CudaCameraReader();
 
     void open() override;

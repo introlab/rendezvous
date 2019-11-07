@@ -8,11 +8,10 @@
 
 namespace Model
 {
-DetectionThread::DetectionThread(
-    std::shared_ptr<LockTripleBuffer<Image>> imageBuffer, std::unique_ptr<IDetector> detector,
+DetectionThread::DetectionThread(std::shared_ptr<LockTripleBuffer<Image>> imageBuffer, std::unique_ptr<IDetector> detector,
     std::shared_ptr<moodycamel::ReaderWriterQueue<std::vector<SphericalAngleRect>>> detectionQueue,
     std::unique_ptr<IDetectionFisheyeDewarper> dewarper, std::unique_ptr<IObjectFactory> objectFactory,
-    std::unique_ptr<ISynchronizer> synchronizer, const DewarpingConfig& dewarpingConfig, int dewarpCount)
+    std::unique_ptr<ISynchronizer> synchronizer, std::shared_ptr<DewarpingConfig> dewarpingConfig)
     : Thread()
     , imageBuffer_(imageBuffer)
     , detector_(std::move(detector))
@@ -21,7 +20,7 @@ DetectionThread::DetectionThread(
     , synchronizer_(std::move(synchronizer))
     , detectionQueue_(detectionQueue)
     , dewarpingConfig_(dewarpingConfig)
-    , dewarpCount_(dewarpCount)
+    , dewarpCount_(dewarpingConfig->value(DewarpingConfig::DETECTION_DEWARPING_COUNT).toInt())
 {
     if (!imageBuffer_ || !detector_ || !dewarper_ || !objectFactory_ || !synchronizer_ || !detectionQueue_)
     {
@@ -78,7 +77,7 @@ void DetectionThread::run()
                 {
                     detections.push_back(getAngleRectFromDewarpedImageRectangle(detection, dewarpingParams[i],
                                                                                 detectionImages[i], fisheyeCenter,
-                                                                                dewarpingConfig_.fisheyeAngle));
+                                                                                dewarpingConfig_->fisheyeAngle));
                 }
             }
 
