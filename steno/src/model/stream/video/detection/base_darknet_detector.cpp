@@ -43,7 +43,7 @@ std::vector<Rectangle> BaseDarknetDetector::detect(const image& img, float thres
             if (detections[j].prob[i] > 0)
             {
                 const box& bbox = detections[j].bbox;
-                rects.emplace_back(bbox.x, bbox.y, bbox.w, bbox.y);
+                rects.emplace_back(bbox.x, bbox.y, bbox.w, bbox.h);
             }
         }
     }

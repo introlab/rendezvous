@@ -57,7 +57,7 @@ void VirtualCameraManager::updateVirtualCameras(int elapsedTimeMs)
         // Update position if required
         if (distance > POSITION_CHANGED_THRESHOLD)
         {
-            vc.azimuth += azimuthDifference * updateRatio;
+            vc.azimuth = std::fmod(vc.azimuth + azimuthDifference * updateRatio, 2 * math::PI);
             vc.elevation += elevationDifference * updateRatio;
         }
 
@@ -65,9 +65,10 @@ void VirtualCameraManager::updateVirtualCameras(int elapsedTimeMs)
         if (std::abs(vc.goal.azimuthSpan - vc.azimuthSpan) > DIMENTION_CHANGED_THRESHOLD &&
             std::abs(vc.goal.elevationSpan - vc.elevationSpan) > DIMENTION_CHANGED_THRESHOLD)
         {
-            float resizeFactor = (vc.goal.elevationSpan * updateRatio) / vc.elevationSpan;
-            vc.elevationSpan *= resizeFactor;
-            vc.azimuthSpan *= resizeFactor;
+            float resizeFactor = 1 + (((vc.goal.elevationSpan / vc.elevationSpan) - 1) * updateRatio);
+            // Some issues still with this
+            //vc.elevationSpan *= resizeFactor;
+            //vc.azimuthSpan *= resizeFactor;
         }
     }
 }
@@ -131,6 +132,11 @@ void VirtualCameraManager::updateVirtualCamerasGoal(const std::vector<SphericalA
             }
         }
     }
+}
+
+void VirtualCameraManager::clearVirtualCameras()
+{
+    virtualCameras_.clear();
 }
 
 const std::vector<VirtualCamera>& VirtualCameraManager::getVirtualCameras()
