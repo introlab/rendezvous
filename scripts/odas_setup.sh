@@ -8,11 +8,13 @@ if ! [ -z "$1" ]; then
     INSTALL_PATH=$1
 fi
 
-# Clone libv4l2cpp and compile the lib
+# Clone ODAS and compile
 mkdir -p $INSTALL_PATH
 cd $INSTALL_PATH
 INSTALL_PATH=$PWD
-git clone https://github.com/mpromonet/libv4l2cpp
-cd libv4l2cpp
-make EXTRA_CXXFLAGS='-fPIC'
-
+git clone https://github.com/introlab/odas.git
+cd odas
+mkdir build
+cd build
+cmake ../
+make

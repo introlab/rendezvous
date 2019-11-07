@@ -2,7 +2,7 @@
 #define SETTINGS_VIEW_H
 
 #include "abstract_view.h"
-#include "model/settings/i_settings.h"
+#include "model/config/config.h"
 
 #include <memory>
 
@@ -16,7 +16,7 @@ namespace View
 class SettingsView : public AbstractView
 {
    public:
-    explicit SettingsView(std::shared_ptr<Model::ISettings> settings, QWidget* parent = nullptr);
+    explicit SettingsView(std::shared_ptr<Model::Config> config, QWidget* parent = nullptr);
 
    public slots:
     void onLanguageComboboxCurrentIndexChanged(const int& index);
@@ -25,7 +25,7 @@ class SettingsView : public AbstractView
 
    private:
     Ui::SettingsView* m_ui;
-    std::shared_ptr<Model::ISettings> m_settings;
+    std::shared_ptr<Model::Config> m_config;
 };
 
 }    // namespace View

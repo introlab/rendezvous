@@ -1,6 +1,7 @@
 #ifndef ODAS_CLIENT_H
 #define ODAS_CLIENT_H
 
+#include "model/app_config.h"
 #include "model/stream/utils/threads/thread.h"
 #include "model/utils/observer/i_subject.h"
 
@@ -19,6 +20,7 @@ enum class OdasClientState
 class OdasClient : public Thread, public ISubject
 {
    public:
+    OdasClient(const AppConfig& appConfig);
     void notify() override;
     void attach(IObserver *observer) override;
     void detach(IObserver *observer) override;
@@ -32,6 +34,7 @@ class OdasClient : public Thread, public ISubject
 
     const int m_waitTime = 100;    // ms
     const int m_joinTime = 500;    // ms
+    const AppConfig& m_appConfig;
     OdasClientState m_state = OdasClientState::STOPPED;
     std::vector<IObserver *> m_subscribers;
 };

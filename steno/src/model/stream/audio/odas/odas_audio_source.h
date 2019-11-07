@@ -27,7 +27,7 @@ class OdasAudioSource : public QThread, public IAudioSource
     unsigned long long calculateNewTimestamp(unsigned long long currentTimestamp, int bytesForward);
 
     int port_;
-    AudioConfig audioConfig_;
+    const AudioConfig& audioConfig_;
     CircularBuffer<AudioChunk> audioChunks_;
     std::shared_ptr<moodycamel::BlockingReaderWriterQueue<AudioChunk>> audioQueue_;
 };

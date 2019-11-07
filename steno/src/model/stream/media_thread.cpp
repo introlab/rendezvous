@@ -218,6 +218,7 @@ void MediaThread::run()
     positionSource_->close();
     videoInput_->close();
     videoOutput_->close();
+    virtualCameraManager_->clearVirtualCameras();
 
     // Deallocate display images
     heapObjectFactory.deallocateObject(emptyDisplay);
