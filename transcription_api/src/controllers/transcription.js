@@ -15,7 +15,7 @@ router.get('/transcription', multer().single('audio'), function(req, res, next) 
     let enhanced = req.query.enhanced;
     let language = req.query.language;
     let sampleRate = req.query.sampleRate;
-    let audioChanels = req.query.audioChanels;
+    let audioChannels = req.query.audioChannels;
     let model = req.query.model;
     let audio = req.file;
 
@@ -43,12 +43,12 @@ router.get('/transcription', multer().single('audio'), function(req, res, next) 
                 languageCode: language ? language : defaultConfig.languageCode,
                 model: model ? model : defaultConfig.model,
                 sampleRate: sampleRate ? sampleRate : defaultConfig.sampleRate,
-                audioChannelCount: audioChanels? audioChanels : defaultConfig.audioChannelCount
+                audioChannelCount: audioChannels? audioChannels : defaultConfig.audioChannelCount
             };
 
             transcribe(config, callback);
         }
-    ], function(err, transcription) {
+    ], function(err, transcription, words) {
         if (err) {
             res.status(httpErrors.INTERNAL_SERVER_ERROR).json({
                 error: err.message
@@ -58,6 +58,7 @@ router.get('/transcription', multer().single('audio'), function(req, res, next) 
 
         res.status(httpErrors.OK).json({
             transcription: transcription,
+            words: words,
             error: err
         });
         return next();

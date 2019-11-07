@@ -128,11 +128,15 @@ let SpeechToText = class {
         };
 
         const [response] = await this._client.recognize(request);
+        
         const transcription = response.results
             .map(result => result.alternatives[0].transcript)
             .join('\n');
 
-        next(null, transcription);
+        const words = response.results
+            .map(result => result.alternatives[0].words)
+
+        next(null, transcription, words);
     }
 
     /**
