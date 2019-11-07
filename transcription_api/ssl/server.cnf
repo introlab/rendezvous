@@ -1,0 +1,26 @@
+[ req ]
+default_bits           = 4096
+days                   = 365
+distinguished_name     = req_distinguished_name
+attributes             = req_attributes
+prompt                 = no
+x509_extensions        = v3_ca
+
+[ req_distinguished_name ]
+C                      = CA
+ST                     = QC
+L                      = Montreal
+O                      = Rendezvous
+OU                     = Rendezvous
+CN                     = localhost
+emailAddress           = certs@example.com
+
+[ req_attributes ]
+challengePassword      = password
+
+[ v3_ca ]
+authorityInfoAccess = @issuer_info
+
+[ issuer_info ]
+OCSP;URI.0 = http://ocsp.example.com/
+caIssuers;URI.0 = http://example.com/ca.cert
