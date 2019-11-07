@@ -11,9 +11,13 @@ namespace Model
 {
 DonutSlice createDewarpingDonutSlice(DonutSlice& baseDonutSlice, float centersDistance)
 {
-    if (baseDonutSlice.middleAngle > 2 * math::PI || baseDonutSlice.angleSpan > 2 * math::PI)
+    if (baseDonutSlice.middleAngle > 2 * math::PI)
     {
-        throw std::invalid_argument("Donut slice angles must be in radian!");
+        throw std::invalid_argument("Donut slice middle angle must be between 0 and 2*PI rad!");
+    }
+    else if (baseDonutSlice.angleSpan > 2 * math::PI)
+    {
+        throw std::invalid_argument("Donut slice angle span must be between 0 and 2*PI rad!");
     }
 
     float xNewCenter = baseDonutSlice.xCenter - sin(baseDonutSlice.middleAngle) * centersDistance;
