@@ -1,5 +1,8 @@
 #include "recorder.h"
 
+#include "model/app_config.h"
+#include "model/stream/video/video_config.h"
+
 #include <QUrl>
 
 namespace Model
@@ -62,7 +65,7 @@ void Recorder::onCameraStatusChanged(QCamera::Status status)
     {
         case QCamera::Status::ActiveStatus:
             m_mediaRecorder.setOutputLocation(
-                m_config->subConfig(Model::Config::APP)->value(Model::AppConfig::OUTPUT_FOLDER).toString());
+                m_config->subConfig(Config::APP)->value(AppConfig::OUTPUT_FOLDER).toString());
             m_mediaRecorder.record();
             updateState(IRecorder::State::Started);
             break;
@@ -81,7 +84,7 @@ QCameraInfo Recorder::cameraInfo()
 {
     QCameraInfo defaultCameraInfo = QCameraInfo::defaultCamera();
 
-    auto deviceName = m_config->subConfig(Model::Config::Group::VIDEO_OUTPUT)->value(Model::VideoConfig::Key::DEVICE_NAME).toString();
+    auto deviceName = m_config->subConfig(Config::Group::VIDEO_OUTPUT)->value(VideoConfig::Key::DEVICE_NAME).toString();
     if (!deviceName.isEmpty())
     {
         QList<QCameraInfo> cameras = QCameraInfo::availableCameras();

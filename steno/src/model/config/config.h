@@ -1,22 +1,22 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
-#include "model/app_config.h"
 #include "base_config.h"
-#include "model/stream/audio/audio_config.h"
-#include "model/stream/stream_config.h"
-#include "model/stream/video/dewarping/models/dewarping_config.h"
-#include "model/stream/video/video_config.h"
-#include "model/transcription/transcription_config.h"
 
 #include <memory>
 
 #include <QSettings>
 #include <QString>
-#include <QVariant>
 
 namespace Model
 {
+class AppConfig;
+class AudioConfig;
+class StreamConfig;
+class DewarpingConfig;
+class VideoConfig;
+class TranscriptionConfig;
+
 class Config : public BaseConfig
 {
     Q_OBJECT
@@ -36,22 +36,14 @@ class Config : public BaseConfig
 
     Config(std::shared_ptr<QSettings> settings, const QString& configPath);
 
-    const AppConfig& appConfig() const;
-    AppConfig& appConfig();
-    const DewarpingConfig& dewarpingConfig() const;
-    DewarpingConfig& dewarpingConfig();
-    const VideoConfig& videoInputConfig() const;
-    VideoConfig& videoInputConfig();
-    const VideoConfig& videoOutputConfig() const;
-    VideoConfig& videoOutputConfig();
-    const AudioConfig& audioInputConfig() const;
-    AudioConfig& audioInputConfig();
-    const AudioConfig& audioOutputConfig() const;
-    AudioConfig& audioOutputConfig();
-    const StreamConfig& streamConfig() const;
-    StreamConfig& streamConfig();
-    const TranscriptionConfig& transcriptionConfig() const;
-    TranscriptionConfig& transcriptionConfig();
+    std::shared_ptr<AppConfig> appConfig() const;
+    std::shared_ptr<DewarpingConfig> dewarpingConfig() const;
+    std::shared_ptr<VideoConfig> videoInputConfig() const;
+    std::shared_ptr<VideoConfig> videoOutputConfig() const;
+    std::shared_ptr<AudioConfig> audioInputConfig() const;
+    std::shared_ptr<AudioConfig> audioOutputConfig() const;
+    std::shared_ptr<StreamConfig> streamConfig() const;
+    std::shared_ptr<TranscriptionConfig> transcriptionConfig() const;
 
    private:
     void loadDefault();

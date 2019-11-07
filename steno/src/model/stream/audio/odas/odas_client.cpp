@@ -6,7 +6,7 @@
 
 namespace Model
 {
-OdasClient::OdasClient(const AppConfig& appConfig)
+OdasClient::OdasClient(std::shared_ptr<AppConfig> appConfig)
     : Thread()
     , m_appConfig(appConfig)
 {
@@ -18,15 +18,14 @@ void OdasClient::run()
     m_state = OdasClientState::RUNNING;
     notify();
 
-    const QString& micPath = m_appConfig.value(AppConfig::MICROPHONE_CONFIGURATION).toString();
-    const QString& program = m_appConfig.value(AppConfig::ODAS_LIBRARY).toString();
+    const QString& micPath = m_appConfig->value(AppConfig::MICROPHONE_CONFIGURATION).toString();
+    const QString& program = m_appConfig->value(AppConfig::ODAS_LIBRARY).toString();
     QStringList arguments;
     arguments << "-c" << micPath;
 
     if (!QFile::exists(program) || !QFile::exists(micPath))
     {
-        qCritical() << "Cannot find odaslive and/or microphones config file: " << program << " "
-                    << micPath;
+        qCritical() << "Cannot find odaslive and/or microphones config file: " << program << " " << micPath;
         m_state = OdasClientState::CRASHED;
         notify();
         qInfo() << "Odaslive thread finished";

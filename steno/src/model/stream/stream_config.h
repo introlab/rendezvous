@@ -12,7 +12,6 @@ class StreamConfig : public BaseConfig
    public:
     enum Key
     {
-        DETECTION_DEWARPING_COUNT,
         ASPECT_RATIO_WIDTH,
         ASPECT_RATIO_HEIGHT,
         MIN_ELEVATION,
@@ -28,14 +27,12 @@ class StreamConfig : public BaseConfig
 
     void update()
     {
-        detectionDewarpingCount = value(Key::DETECTION_DEWARPING_COUNT).toInt();
         aspectRatioWidth = value(Key::ASPECT_RATIO_WIDTH).toFloat();
         aspectRatioHeight = value(Key::ASPECT_RATIO_HEIGHT).toFloat();
         minElevation = math::deg2rad(value(Key::MIN_ELEVATION).toFloat());
         maxElevation = math::deg2rad(value(Key::MAX_ELEVATION).toFloat());
     }
 
-    int detectionDewarpingCount;
     float aspectRatioWidth;
     float aspectRatioHeight;
     float minElevation;

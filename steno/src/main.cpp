@@ -1,6 +1,6 @@
+#include "model/config/config.h"
 #include "model/media_player/media_player.h"
 #include "model/recorder/recorder.h"
-#include "model/config/config.h"
 #include "model/stream/stream.h"
 #include "model/stream/video/output/default_virtual_camera_output.h"
 #include "view/mainwindow.h"
@@ -27,16 +27,15 @@ int main(int argc, char *argv[])
 
     std::shared_ptr<Model::Config> config = std::make_shared<Model::Config>(qSettings, configFile);
 
-    std::shared_ptr<Model::IStream> stream = std::make_shared<Model::Stream>(
-        config->videoInputConfig(), config->videoOutputConfig(), config->audioInputConfig(),
-        config->audioOutputConfig(), config->dewarpingConfig(), config->streamConfig(), config->appConfig());
+    std::shared_ptr<Model::IStream> stream = std::make_shared<Model::Stream>(config);
 
     std::shared_ptr<Model::IRecorder> recorder = std::make_shared<Model::Recorder>(config);
 
     View::MainWindow w(config, mediaPlayer, stream, recorder);
     w.show();
 
-    Model::DefaultVirtualCameraOutput::writeDefaultImage(config->videoOutputConfig().value(Model::VideoConfig::DEVICE_NAME).toString());
+    Model::DefaultVirtualCameraOutput::writeDefaultImage(
+        config->videoOutputConfig()->value(Model::VideoConfig::DEVICE_NAME).toString());
 
     return QApplication::exec();
 }

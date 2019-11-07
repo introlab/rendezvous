@@ -6,28 +6,28 @@
 
 namespace Model
 {
-PulseAudioSink::PulseAudioSink(const AudioConfig& audioConfig)
-    : m_deviceName(audioConfig.deviceName)
+PulseAudioSink::PulseAudioSink(std::shared_ptr<AudioConfig> audioConfig)
+    : m_deviceName(audioConfig->deviceName)
     , m_stream(nullptr)
 {
     // default format is 16 bits little endian
     pa_sample_format sampleFormat = PA_SAMPLE_S16LE;
-    switch (audioConfig.formatBytes)
+    switch (audioConfig->formatBytes)
     {
         case 8:
             sampleFormat = PA_SAMPLE_U8;
             break;
         case 16:
-            sampleFormat = audioConfig.isLittleEndian ? PA_SAMPLE_S16LE : PA_SAMPLE_S16BE;
+            sampleFormat = audioConfig->isLittleEndian ? PA_SAMPLE_S16LE : PA_SAMPLE_S16BE;
             break;
         case 32:
-            sampleFormat = audioConfig.isLittleEndian ? PA_SAMPLE_S32LE : PA_SAMPLE_S32BE;
+            sampleFormat = audioConfig->isLittleEndian ? PA_SAMPLE_S32LE : PA_SAMPLE_S32BE;
             break;
         default:
             break;
     }
 
-    m_ss = {sampleFormat, static_cast<unsigned int>(audioConfig.rate), static_cast<uint8_t>(audioConfig.channels)};
+    m_ss = {sampleFormat, static_cast<unsigned int>(audioConfig->rate), static_cast<uint8_t>(audioConfig->channels)};
 }
 
 PulseAudioSink::~PulseAudioSink()
