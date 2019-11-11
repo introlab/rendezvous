@@ -11,7 +11,7 @@ Recorder::Recorder(std::shared_ptr<Config> config, QWidget *parent)
     : IRecorder(parent)
     , m_config(config)
     , m_state(IRecorder::State::Stopped)
-    , m_camera(cameraInfo(), this)
+    , m_camera(getCameraDeviceName(), this)
     , m_mediaRecorder(&m_camera)
 {
     m_camera.setCaptureMode(QCamera::CaptureVideo);
@@ -80,22 +80,11 @@ void Recorder::updateState(const IRecorder::State &state)
     emit stateChanged(m_state);
 }
 
-QCameraInfo Recorder::cameraInfo()
+QByteArray Recorder::getCameraDeviceName()
 {
-    QCameraInfo defaultCameraInfo = QCameraInfo::defaultCamera();
-
-    auto deviceName = m_config->subConfig(Config::Group::VIDEO_OUTPUT)->value(VideoConfig::Key::DEVICE_NAME).toString();
-    if (!deviceName.isEmpty())
-    {
-        QList<QCameraInfo> cameras = QCameraInfo::availableCameras();
-
-        foreach (const QCameraInfo &cameraInfo, cameras)
-        {
-            if (cameraInfo.deviceName() == deviceName) return cameraInfo;
-        }
-    }
-
-    return defaultCameraInfo;
+    QString deviceName =
+        m_config->subConfig(Config::Group::VIDEO_OUTPUT)->value(VideoConfig::Key::DEVICE_NAME).toString();
+    return deviceName.toUtf8();
 }
 
 void Recorder::startCamera()
