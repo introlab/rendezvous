@@ -152,6 +152,7 @@ HEADERS += \
     src/model/stream/video/detection/darknet_detector.h \
     src/model/stream/video/detection/detection_thread.h \
     src/model/stream/video/detection/detector_mock.h \
+    src/model/stream/video/detection/darknet_config.h \
     src/model/stream/video/detection/i_detector.h \
     src/model/stream/video/dewarping/cpu_darknet_fisheye_dewarper.h \
     src/model/stream/video/dewarping/cpu_dewarping_mapping_filler.h \
