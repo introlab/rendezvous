@@ -16,6 +16,7 @@ class StreamConfig;
 class DewarpingConfig;
 class VideoConfig;
 class TranscriptionConfig;
+class DarknetConfig;
 
 class Config : public BaseConfig
 {
@@ -30,7 +31,8 @@ class Config : public BaseConfig
         VIDEO_OUTPUT,
         AUDIO_INPUT,
         AUDIO_OUTPUT,
-        STREAM
+        STREAM,
+        DARKNET
     };
     Q_ENUM(Group)
 
@@ -44,6 +46,7 @@ class Config : public BaseConfig
     std::shared_ptr<AudioConfig> audioOutputConfig() const;
     std::shared_ptr<StreamConfig> streamConfig() const;
     std::shared_ptr<TranscriptionConfig> transcriptionConfig() const;
+    std::shared_ptr<DarknetConfig> darknetConfig() const;
 
    private:
     void loadDefault();
@@ -56,6 +59,7 @@ class Config : public BaseConfig
     std::shared_ptr<AudioConfig> m_audioOutputConfig;
     std::shared_ptr<StreamConfig> m_streamConfig;
     std::shared_ptr<TranscriptionConfig> m_transcriptionConfig;
+    std::shared_ptr<DarknetConfig> m_darknetConfig;
 };
 
 }    // namespace Model
