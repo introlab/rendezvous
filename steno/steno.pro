@@ -70,6 +70,7 @@ SOURCES += \
     src/model/stream/video/virtualcamera/display_image_builder.cpp \
     src/model/stream/video/virtualcamera/virtual_camera_manager.cpp \
     src/view/components/sidebar.cpp \
+    src/view/components/top_bar.cpp \
     src/view/mainwindow.cpp \
     src/view/views/local_conference_view.cpp \
     src/view/views/media_player_view.cpp \
@@ -181,7 +182,9 @@ HEADERS += \
     src/model/stream/video/virtualcamera/display_image_builder.h \
     src/model/stream/video/virtualcamera/virtual_camera.h \
     src/model/stream/video/virtualcamera/virtual_camera_manager.h \
+    src/view/components/colors.h \
     src/view/components/sidebar.h \
+    src/view/components/top_bar.h \
     src/view/mainwindow.h \
     src/view/views/abstract_view.h \
     src/view/views/local_conference_view.h \
@@ -238,7 +241,8 @@ FORMS += \
     src/view/gui/mainwindow.ui \
     src/view/gui/media_player_view.ui \
     src/view/gui/online_conference_view.ui \
-    src/view/gui/settings_view.ui
+    src/view/gui/settings_view.ui \
+    src/view/gui/top_bar.ui
 
 RESOURCES += \
     resources/resources.qrc

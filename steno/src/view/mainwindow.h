@@ -15,6 +15,7 @@ class QStackedWidget;
 namespace View
 {
 class SideBar;
+class TopBar;
 class AbstractView;
 }    // namespace View
 
@@ -39,6 +40,7 @@ class MainWindow : public QMainWindow
 
     Ui::MainWindow *m_ui;
     View::SideBar *m_sideBar;
+    View::TopBar *m_topBar;
     QStackedWidget *m_views;
 };
 

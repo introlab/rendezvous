@@ -16,6 +16,7 @@ class AbstractView : public QWidget
         : QWidget(parent)
         , name(std::move(name))
     {
+        setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
     }
     const QString& getName()
     {
