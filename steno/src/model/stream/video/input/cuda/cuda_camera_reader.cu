@@ -6,10 +6,10 @@
 
 namespace Model
 {
-CudaCameraReader::CudaCameraReader(const VideoConfig& videoConfig)
+CudaCameraReader::CudaCameraReader(std::shared_ptr<VideoConfig> videoConfig)
     : CameraReader(videoConfig, 3)
     , nextImage_(nullptr)
-    , pageLockedImage_(videoConfig.resolution.width, videoConfig.resolution.height, videoConfig.imageFormat)
+    , pageLockedImage_(videoConfig->resolution.width, videoConfig->resolution.height, videoConfig->imageFormat)
 {
     checkCuda(cudaMallocHost(&pageLockedImage_.hostData, pageLockedImage_.size, 0));
 
