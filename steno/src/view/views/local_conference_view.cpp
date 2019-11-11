@@ -28,7 +28,7 @@ LocalConferenceView::LocalConferenceView(std::shared_ptr<Model::IStream> stream,
             [=](const Model::IRecorder::State& state) { onRecorderStateChanged(state); });
     connect(m_ui->startRecorderButton, &QAbstractButton::clicked, [=] { onStartRecorderButtonClicked(); });
 
-    m_ui->startRecorderButton->setEnabled(false);
+    m_ui->startRecorderButton->setDisabled(true);
 }
 
 void LocalConferenceView::onStartVirtualDevicesButtonClicked()
