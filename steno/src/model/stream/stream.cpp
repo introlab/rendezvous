@@ -17,6 +17,7 @@
 #include "model/stream/video/impl/implementation_factory.h"
 #include "model/stream/video/output/virtual_camera_output.h"
 #include "model/stream/video/video_config.h"
+#include "model/stream/video/detection/darknet_config.h"
 
 #include <string>
 #include <vector>
@@ -35,6 +36,7 @@ Stream::Stream(std::shared_ptr<Config> config)
     std::shared_ptr<VideoConfig> videoOutputConfig = config->videoOutputConfig();
     std::shared_ptr<VideoConfig> videoInputConfig = config->videoInputConfig();
     std::shared_ptr<StreamConfig> streamConfig = config->streamConfig();
+    std::shared_ptr<DarknetConfig> darknetConfig = config->darknetConfig();
 
     float aspectRatio = streamConfig->value(StreamConfig::ASPECT_RATIO_WIDTH).toFloat() /
                         streamConfig->value(StreamConfig::ASPECT_RATIO_HEIGHT).toFloat();
@@ -47,6 +49,7 @@ Stream::Stream(std::shared_ptr<Config> config)
     std::shared_ptr<moodycamel::ReaderWriterQueue<std::vector<SphericalAngleRect>>> detectionQueue =
         std::make_shared<moodycamel::ReaderWriterQueue<std::vector<SphericalAngleRect>>>(1);
 
+    int sleepBetweenLayersForwardUs = darknetConfig->value(DarknetConfig::SLEEP_BETWEEN_LAYERS_FORWARD_US).toInt();
     std::string configFile =
         (QCoreApplication::applicationDirPath() + "/../configs/yolo/cfg/yolov3-tiny.cfg").toStdString();
     std::string weightsFile =
@@ -59,7 +62,7 @@ Stream::Stream(std::shared_ptr<Config> config)
     m_objectFactory->allocateObjectLockTripleBuffer(*m_imageBuffer);
 
     m_detectionThread = std::make_unique<DetectionThread>(
-        m_imageBuffer, m_implementationFactory.getDetector(configFile, weightsFile, metaFile), detectionQueue,
+        m_imageBuffer, m_implementationFactory.getDetector(configFile, weightsFile, metaFile, sleepBetweenLayersForwardUs), detectionQueue,
         m_implementationFactory.getDetectionFisheyeDewarper(aspectRatio),
         m_implementationFactory.getDetectionObjectFactory(), m_implementationFactory.getDetectionSynchronizer(),
         config->dewarpingConfig());

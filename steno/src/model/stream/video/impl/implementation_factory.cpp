@@ -64,14 +64,15 @@ ImplementationFactory::~ImplementationFactory()
 
 std::unique_ptr<IDetector> ImplementationFactory::getDetector(const std::string& configFile,
                                                               const std::string& weightsFile,
-                                                              const std::string& metaFile)
+                                                              const std::string& metaFile,
+                                                              int sleepBetweenLayersForwardUs)
 {
     std::unique_ptr<IDetector> detector = nullptr;
 
 #ifdef NO_CUDA
-    detector = std::make_unique<DarknetDetector>(configFile, weightsFile, metaFile);
+    detector = std::make_unique<DarknetDetector>(configFile, weightsFile, metaFile, sleepBetweenLayersForwardUs);
 #else
-    detector = std::make_unique<CudaDarknetDetector>(configFile, weightsFile, metaFile);
+    detector = std::make_unique<CudaDarknetDetector>(configFile, weightsFile, metaFile, sleepBetweenLayersForwardUs);
 #endif
 
     return detector;

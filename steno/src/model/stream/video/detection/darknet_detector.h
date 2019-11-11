@@ -8,7 +8,7 @@ namespace Model
 class DarknetDetector : public BaseDarknetDetector
 {
    public:
-    DarknetDetector(const std::string& configFile, const std::string& weightsFile, const std::string& metaFile);
+    DarknetDetector(const std::string& configFile, const std::string& weightsFile, const std::string& metaFile, int sleepBetweenLayersForwardUs);
 
    protected:
     image convertToDarknetImage(const ImageFloat& img) override;

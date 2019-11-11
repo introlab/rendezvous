@@ -6,6 +6,7 @@
 #include "model/stream/utils/images/image_format.h"
 #include "model/stream/video/dewarping/models/dewarping_config.h"
 #include "model/stream/video/video_config.h"
+#include "model/stream/video/detection/darknet_config.h"
 #include "model/transcription/transcription_config.h"
 #include "model/transcription/transcription_constants.h"
 
@@ -26,6 +27,7 @@ Config::Config(std::shared_ptr<QSettings> settings, const QString &configPath)
     , m_streamConfig(std::make_shared<Model::StreamConfig>(QVariant::fromValue(STREAM).toString(), settings))
     , m_transcriptionConfig(
           std::make_shared<Model::TranscriptionConfig>(QVariant::fromValue(TRANSCRIPTION).toString(), settings))
+    , m_darknetConfig(std::make_shared<Model::DarknetConfig>(QVariant::fromValue(DARKNET).toString(), settings))
 {
     addSubConfig(m_appConfig);
     addSubConfig(m_dewarpingConfig);
@@ -35,6 +37,7 @@ Config::Config(std::shared_ptr<QSettings> settings, const QString &configPath)
     addSubConfig(m_audioOutputConfig);
     addSubConfig(m_streamConfig);
     addSubConfig(m_transcriptionConfig);
+    addSubConfig(m_darknetConfig);
 
     // Do not override an existing file.
     // Maybe the user wants to use a custom config file.
@@ -82,6 +85,11 @@ std::shared_ptr<StreamConfig> Config::streamConfig() const
 std::shared_ptr<TranscriptionConfig> Config::transcriptionConfig() const
 {
     return m_transcriptionConfig;
+}
+
+std::shared_ptr<DarknetConfig> Config::darknetConfig() const
+{
+    return m_darknetConfig;
 }
 
 void Config::loadDefault()
@@ -135,6 +143,8 @@ void Config::loadDefault()
     m_streamConfig->setValue(StreamConfig::Key::ASPECT_RATIO_HEIGHT, 4);
     m_streamConfig->setValue(StreamConfig::Key::MIN_ELEVATION, 0);
     m_streamConfig->setValue(StreamConfig::Key::MAX_ELEVATION, 90);
+
+    m_darknetConfig->setValue(DarknetConfig::Key::SLEEP_BETWEEN_LAYERS_FORWARD_US, 2000);
 
     updateSubconfigs();
 }

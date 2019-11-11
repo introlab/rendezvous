@@ -16,7 +16,7 @@ namespace Model
 class BaseDarknetDetector : public IDetector
 {
    public:
-    BaseDarknetDetector(const std::string& configFile, const std::string& weightsFile, const std::string& metaFile);
+    BaseDarknetDetector(const std::string& configFile, const std::string& weightsFile, const std::string& metaFile, int sleepBetweenLayersForwardUs);
     virtual ~BaseDarknetDetector();
 
     std::vector<Rectangle> detectInImage(const ImageFloat& img) override;
