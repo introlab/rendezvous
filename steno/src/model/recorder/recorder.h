@@ -6,8 +6,8 @@
 
 #include <memory>
 
+#include <QByteArray>
 #include <QCamera>
-#include <QCameraInfo>
 #include <QMediaRecorder>
 
 namespace Model
@@ -30,12 +30,12 @@ class Recorder : public IRecorder
 
    private:
     void updateState(const IRecorder::State &state);
-    QCameraInfo cameraInfo();
     void startCamera();
     void stopCamera();
 
     std::shared_ptr<Config> m_config;
     IRecorder::State m_state;
+    QByteArray getCameraDeviceName();
     QCamera m_camera;
     QMediaRecorder m_mediaRecorder;
 };
