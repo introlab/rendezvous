@@ -11,6 +11,7 @@ let GStorage = require('../core/g_storage');
 router.get('/transcription', multer().single('audio'), function(req, res, next) {
     // Request validation
     let uploadToGStorage = req.query.storage == 'true';
+    let bucketID = req.query.bucketID;
     let encoding = req.query.encoding;
     let enhanced = req.query.enhanced;
     let language = req.query.language;
@@ -19,7 +20,7 @@ router.get('/transcription', multer().single('audio'), function(req, res, next) 
     let model = req.query.model;
     let audio = req.file;
 
-    if (!audio) {
+    if (!audio || !bucketID) {
         res.sendStatus(httpErrors.BAD_REQUEST);
         return;
     }
@@ -28,7 +29,7 @@ router.get('/transcription', multer().single('audio'), function(req, res, next) 
     async.waterfall([
         function(callback) {
             if (uploadToGStorage) {
-                uploadAudioFile(audio, callback);
+                uploadAudioFile(bucketID, audio, callback);
                 return;
             }
             callback(null);
@@ -65,24 +66,39 @@ router.get('/transcription', multer().single('audio'), function(req, res, next) 
     });
 });
 
-let uploadAudioFile = function(audio, next) {
+let uploadAudioFile = function(bucketName, audio, next) {
     let gstorage = new GStorage();
-    let date = new Date();
-    let st = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}-${date.getHours()}-${date.getMinutes()}-${date.getSeconds()}`;
-    let bucketName = `rdv-steno-${st}`;
-    gstorage.createBucket(bucketName, function(err) {
-        if (err) {
-            next(err);
-            return;
-        }
-        gstorage.uploadFile(bucketName, audio, function(err) {
-            if (err) {
-                next(err);
-                return;
+
+    async.waterfall([
+        function(callback) {
+            gstorage.bucketExist(bucketName, function(err, exists) {
+                if (err) {
+                    return callback(err);
+                }
+                callback(null, exists);
+            });
+        },
+        function(exists, callback) {
+            if (exists) {
+                return callback();
             }
-            process.stdout.write(`upload done!\n`);
-            next(null);
-        });
+
+            gstorage.createBucket(bucketName, function(err) {
+                console.log('create bucket');
+                return callback(err);
+            });
+        },
+        function(callback) {
+            gstorage.uploadFile(bucketName, audio, function(err) {
+                if (err) {
+                    return callback(err);
+                }
+                process.stdout.write(`upload done!\n`);
+                callback(null);
+            });
+        }
+    ], function(err) {
+        next(err);
     });
 };
 

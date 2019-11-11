@@ -1,4 +1,4 @@
-let {Storage} = require('@google-cloud/storage');
+let {Storage, GetBucketOptions} = require('@google-cloud/storage');
 
 let GStorage = class {
 
@@ -16,6 +16,18 @@ let GStorage = class {
     createBucket(bucketName, next) {
         this._storageClient.createBucket(bucketName, function(err) {
             next(err);
+        });
+    }
+
+    /**
+     * Verify that a specific bucket exist in Google cloud
+     * @param {string} bucketName 
+     * @param {function} next
+     */
+    bucketExist(bucketName, next) {
+        const bucket = this._storageClient.bucket(bucketName);
+        bucket.exists(function(err, exists) {
+            return next(err, exists);
         });
     }
 
