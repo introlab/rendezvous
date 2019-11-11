@@ -13,6 +13,7 @@
 #include "model/stream/utils/models/spherical_angle_rect.h"
 #include "model/stream/utils/threads/lock_triple_buffer.h"
 #include "model/stream/utils/threads/readerwriterqueue.h"
+#include "model/stream/video/detection/darknet_config.h"
 #include "model/stream/video/dewarping/models/dewarping_config.h"
 #include "model/stream/video/impl/implementation_factory.h"
 #include "model/stream/video/output/virtual_camera_output.h"
@@ -62,8 +63,9 @@ Stream::Stream(std::shared_ptr<Config> config)
     m_objectFactory->allocateObjectLockTripleBuffer(*m_imageBuffer);
 
     m_detectionThread = std::make_unique<DetectionThread>(
-        m_imageBuffer, m_implementationFactory.getDetector(configFile, weightsFile, metaFile, sleepBetweenLayersForwardUs), detectionQueue,
-        m_implementationFactory.getDetectionFisheyeDewarper(aspectRatio),
+        m_imageBuffer,
+        m_implementationFactory.getDetector(configFile, weightsFile, metaFile, sleepBetweenLayersForwardUs),
+        detectionQueue, m_implementationFactory.getDetectionFisheyeDewarper(aspectRatio),
         m_implementationFactory.getDetectionObjectFactory(), m_implementationFactory.getDetectionSynchronizer(),
         config->dewarpingConfig());
 

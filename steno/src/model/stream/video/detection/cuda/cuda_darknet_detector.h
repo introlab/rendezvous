@@ -8,7 +8,8 @@ namespace Model
 class CudaDarknetDetector : public BaseDarknetDetector
 {
    public:
-    CudaDarknetDetector(const std::string& configFile, const std::string& weightsFile, const std::string& metaFile, int sleepBetweenLayersForwardUs);
+    CudaDarknetDetector(const std::string& configFile, const std::string& weightsFile, const std::string& metaFile,
+                        int sleepBetweenLayersForwardUs);
 
    protected:
     image convertToDarknetImage(const ImageFloat& img) override;
