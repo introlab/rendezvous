@@ -73,9 +73,8 @@ SOURCES += \
     src/view/components/side_bar_item.cpp \
     src/view/components/top_bar.cpp \
     src/view/mainwindow.cpp \
-    src/view/views/local_conference_view.cpp \
+    src/view/views/conference_view.cpp \
     src/view/views/media_player_view.cpp \
-    src/view/views/online_conference_view.cpp \
     src/view/views/settings_view.cpp
 
 HEADERS += \
@@ -190,9 +189,8 @@ HEADERS += \
     src/view/components/top_bar.h \
     src/view/mainwindow.h \
     src/view/views/abstract_view.h \
-    src/view/views/local_conference_view.h \
+    src/view/views/conference_view.h \
     src/view/views/media_player_view.h \
-    src/view/views/online_conference_view.h \
     src/view/views/settings_view.h \
     src/model/stream/utils/cuda_utils.cuh \
     src/model/stream/utils/math/cuda_helpers.cuh \
@@ -240,10 +238,9 @@ contains(compilation, no_cuda) {
 }
 
 FORMS += \
-    src/view/gui/local_conference_view.ui \
+    src/view/gui/conference_view.ui \
     src/view/gui/mainwindow.ui \
     src/view/gui/media_player_view.ui \
-    src/view/gui/online_conference_view.ui \
     src/view/gui/settings_view.ui \
     src/view/gui/side_bar.ui \
     src/view/gui/side_bar_item.ui \
