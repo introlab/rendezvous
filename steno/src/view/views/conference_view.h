@@ -15,16 +15,16 @@ class ConferenceView;
 
 namespace View
 {
-
 class ConferenceView : public AbstractView
 {
    public:
     explicit ConferenceView(std::shared_ptr<Model::IRecorder> recorder, QWidget* parent = nullptr);
+
    private:
     Ui::ConferenceView* m_ui;
     std::shared_ptr<QCameraViewfinder> m_cameraViewfinder;
 };
 
-}
+}    // namespace View
 
-#endif // CONFERENCEVIEW_H
+#endif    // CONFERENCEVIEW_H

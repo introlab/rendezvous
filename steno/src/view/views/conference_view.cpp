@@ -3,7 +3,6 @@
 
 namespace View
 {
-
 ConferenceView::ConferenceView(std::shared_ptr<Model::IRecorder> recorder, QWidget* parent)
     : AbstractView("Conference", parent)
     , m_ui(new Ui::ConferenceView)
@@ -15,4 +14,4 @@ ConferenceView::ConferenceView(std::shared_ptr<Model::IRecorder> recorder, QWidg
     recorder->setCameraViewFinder(m_cameraViewfinder);
 }
 
-}
+}    // namespace View

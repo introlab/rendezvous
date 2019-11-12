@@ -5,12 +5,12 @@
 
 #include <QDesktopServices>
 #include <QSignalBlocker>
-#include <QUrl>
 #include <QStyle>
+#include <QUrl>
 
 namespace View
 {
-TopBar::TopBar(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::IRecorder> recorder, QWidget *parent)
+TopBar::TopBar(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::IRecorder> recorder, QWidget* parent)
     : QWidget(parent)
     , m_ui(new Ui::TopBar)
     , m_stream(stream)
@@ -38,7 +38,6 @@ TopBar::TopBar(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::IR
 
     connect(m_ui->meetButton, &QAbstractButton::clicked,
             [] { QDesktopServices::openUrl(QUrl("https://rendezvous-meet.com/")); });
-
 }
 
 void TopBar::onStreamStateChanged(const Model::IStream::State& state)

@@ -1,8 +1,8 @@
 #ifndef TOPBAR_H
 #define TOPBAR_H
 
-#include "model/stream/i_stream.h"
 #include "model/recorder/i_recorder.h"
+#include "model/stream/i_stream.h"
 
 #include <memory>
 
@@ -20,7 +20,8 @@ class TopBar : public QWidget
     Q_OBJECT
 
    public:
-    TopBar(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::IRecorder> recorder, QWidget* parent = nullptr);
+    TopBar(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::IRecorder> recorder,
+           QWidget* parent = nullptr);
 
    private slots:
     void onStreamStateChanged(const Model::IStream::State& state);
