@@ -59,6 +59,13 @@
      </property>
     </widget>
    </item>
+   <item>
+    <widget class="QPushButton" name="meetButton">
+     <property name="text">
+      <string>Meet Online</string>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <resources/>

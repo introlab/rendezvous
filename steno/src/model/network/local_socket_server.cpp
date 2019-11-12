@@ -33,9 +33,13 @@ bool LocalSocketServer::stop()
         m_socket = nullptr;
     }
 
-    m_server->close();
+    if (m_server != nullptr)
+    {
+        m_server->close();
+        return m_server->isListening();
+    }
 
-    return !m_server->isListening();
+    return true;
 }
 
 int LocalSocketServer::read(char* buffer, int bytesToRead)

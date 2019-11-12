@@ -6,9 +6,8 @@
 #include "components/top_bar.h"
 #include "model/media_player/i_media_player.h"
 #include "views/abstract_view.h"
-#include "views/local_conference_view.h"
+#include "views/conference_view.h"
 #include "views/media_player_view.h"
-#include "views/online_conference_view.h"
 #include "views/settings_view.h"
 
 #include <QStackedWidget>
@@ -20,9 +19,9 @@ MainWindow::MainWindow(std::shared_ptr<Model::Config> config, std::shared_ptr<Mo
                        QWidget *parent)
     : QMainWindow(parent)
     , m_ui(new Ui::MainWindow)
-    , m_sideBar(new View::SideBar)
-    , m_topBar(new View::TopBar)
-    , m_views(new QStackedWidget)
+    , m_sideBar(new View::SideBar(this))
+    , m_topBar(new View::TopBar(stream, recorder, this))
+    , m_views(new QStackedWidget(this))
 {
     m_ui->setupUi(this);
 
@@ -30,13 +29,11 @@ MainWindow::MainWindow(std::shared_ptr<Model::Config> config, std::shared_ptr<Mo
     m_ui->rightLayout->addWidget(m_topBar);
     m_ui->rightLayout->addWidget(m_views);
 
-    View::AbstractView *onlineConferenceView = new View::OnlineConferenceView(stream);
-    View::AbstractView *localConferenceView = new View::LocalConferenceView(stream, recorder);
-    View::AbstractView *mediaPlayerView = new View::MediaPlayerView(mediaPlayer);
-    View::AbstractView *settingsView = new View::SettingsView(config);
+    View::AbstractView *conferenceView = new View::ConferenceView(recorder, this);
+    View::AbstractView *mediaPlayerView = new View::MediaPlayerView(mediaPlayer, this);
+    View::AbstractView *settingsView = new View::SettingsView(config, this);
 
-    addView(onlineConferenceView, QIcon(":/icons/meeting.svg"));
-    addView(localConferenceView, QIcon(":/icons/meeting.svg"));
+    addView(conferenceView, QIcon(":/icons/meeting.svg"));
     addView(mediaPlayerView, QIcon(":/icons/player.svg"));
     addView(settingsView, QIcon(":/icons/settings.svg"));
 
