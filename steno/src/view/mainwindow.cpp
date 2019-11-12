@@ -35,21 +35,22 @@ MainWindow::MainWindow(std::shared_ptr<Model::Config> config, std::shared_ptr<Mo
     View::AbstractView *mediaPlayerView = new View::MediaPlayerView(mediaPlayer);
     View::AbstractView *settingsView = new View::SettingsView(config);
 
-    addView(onlineConferenceView);
-    addView(localConferenceView);
-    addView(mediaPlayerView);
-    addView(settingsView);
+    addView(onlineConferenceView, QIcon(":/icons/meeting.svg"));
+    addView(localConferenceView, QIcon(":/icons/meeting.svg"));
+    addView(mediaPlayerView, QIcon(":/icons/player.svg"));
+    addView(settingsView, QIcon(":/icons/settings.svg"));
 
     m_sideBar->setCurrentRow(0);
+
+    setWindowIcon(QIcon(":/icons/app_icon.svg"));
 
     connect(m_sideBar, &View::SideBar::currentRowChanged, [=](const int &index) { m_views->setCurrentIndex(index); });
 }
 
-void MainWindow::addView(View::AbstractView *view)
+void MainWindow::addView(View::AbstractView *view, const QIcon &icon)
 {
-    m_sideBar->add(view->getName());
+    m_sideBar->add(view->getName(), icon);
     m_views->addWidget(view);
-    //m_topBar->add(view->getName());
 }
 
 }    // namespace View

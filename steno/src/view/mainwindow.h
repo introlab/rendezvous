@@ -36,7 +36,7 @@ class MainWindow : public QMainWindow
                QWidget *parent = nullptr);
 
    private:
-    void addView(View::AbstractView *view);
+    void addView(View::AbstractView *view, const QIcon& icon);
 
     Ui::MainWindow *m_ui;
     View::SideBar *m_sideBar;

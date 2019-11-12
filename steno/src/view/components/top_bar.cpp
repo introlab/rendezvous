@@ -3,6 +3,8 @@
 
 #include "colors.h"
 
+#include <QStyle>
+
 namespace View
 {
 

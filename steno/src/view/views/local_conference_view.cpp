@@ -8,7 +8,7 @@ namespace View
 {
 LocalConferenceView::LocalConferenceView(std::shared_ptr<Model::IStream> stream,
                                          std::shared_ptr<Model::IRecorder> recorder, QWidget* parent)
-    : AbstractView("Local Conference", parent)
+    : AbstractView("Local\n Conference", parent)
     , m_ui(new Ui::LocalConferenceView)
     , m_cameraViewfinder(new QCameraViewfinder(this))
     , m_stream(stream)

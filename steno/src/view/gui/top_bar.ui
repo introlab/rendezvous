@@ -42,7 +42,7 @@
       </sizepolicy>
      </property>
      <property name="text">
-      <string>Start</string>
+      <string>Record</string>
      </property>
     </widget>
    </item>
@@ -55,7 +55,7 @@
       </sizepolicy>
      </property>
      <property name="text">
-      <string>Status : no status</string>
+      <string/>
      </property>
     </widget>
    </item>

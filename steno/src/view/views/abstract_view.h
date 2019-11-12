@@ -5,6 +5,7 @@
 
 #include <QWidget>
 
+
 namespace View
 {
 class AbstractView : public QWidget

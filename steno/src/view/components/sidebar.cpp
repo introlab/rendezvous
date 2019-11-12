@@ -1,16 +1,22 @@
 #include "sidebar.h"
+#include "ui_side_bar.h"
+
+#include "side_bar_item.h"
+#include <QListWidgetItem>
 
 namespace View
 {
 SideBar::SideBar(QWidget* parent)
-    : QListWidget(parent)
-    , m_itemSize(0, m_itemHeight)
+    : QWidget(parent)
+    , m_ui(new Ui::SideBar)
+    , m_itemSize(m_itemWidth, m_itemHeight)
 {
-    setFixedWidth(m_itemWidth);
+    m_ui->setupUi(this);
 
     setStyleSheet(
     "QListWidget"
     "{"
+    "border: none;"
     "    background-color: #4a4a4a;"
     "    color: #ffffff;"
     "    selection-background-color: #00a559;"
@@ -22,16 +28,21 @@ SideBar::SideBar(QWidget* parent)
     "  color: #ffffff;"
     "  background-color: #00a559;"
     "}");
-}
-void SideBar::add(const QString& name)
-{
-    addItem(name);
 
-    for (int i = 0; i < count(); i++)
-    {
-        item(i)->setSizeHint(m_itemSize);
-        item(i)->setTextAlignment(Qt::AlignCenter);
-    }
+    connect(m_ui->list, &QListWidget::currentRowChanged, [=](int index) { emit currentRowChanged(index); });
+}
+void SideBar::add(const QString& name, const QIcon& icon)
+{
+    auto sideBarItem = new SideBarItem(name, icon, this);
+    auto listWidgetItem = new QListWidgetItem(m_ui->list);
+    m_ui->list->addItem(listWidgetItem);
+    m_ui->list->setItemWidget(listWidgetItem, sideBarItem);
+    listWidgetItem->setSizeHint(m_itemSize);
+}
+
+void SideBar::setCurrentRow(int row)
+{
+    m_ui->list->setCurrentRow(row);
 }
 
 }    // namespace View
