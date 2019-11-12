@@ -71,6 +71,8 @@ steno/configs/yolo/
 transcription_api/node_modules
 *.key
 *.pem
+*.srl
+*.crt
 transcription_api/service_account.json
 transcription_api/config/development/.env
 !transcription_api/bin/www.js

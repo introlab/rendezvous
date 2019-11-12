@@ -18,8 +18,11 @@ let port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
 
 let credentials = {
-    key: fs.readFileSync('ssl/cert.key'),
-    cert: fs.readFileSync('ssl/cert.pem')
+    key: fs.readFileSync('ssl/server-key.pem'),
+    cert: fs.readFileSync('ssl/server-crt.pem'),
+    ca: fs.readFileSync('ssl/ca-crt.pem'),
+    requestCert: true,
+    rejectUnauthorized: true
 };
 
 
