@@ -1,4 +1,4 @@
-let {Storage, GetBucketOptions} = require('@google-cloud/storage');
+let {Storage} = require('@google-cloud/storage');
 
 let GStorage = class {
 
