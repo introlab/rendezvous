@@ -18,7 +18,7 @@ class SideBar : public QWidget
    public:
     SideBar(QWidget* parent = nullptr);
 
-    void add(const QString& name, const QIcon &icon);
+    void add(const QString& name, const QIcon& icon);
     void setCurrentRow(int row);
 
    signals:

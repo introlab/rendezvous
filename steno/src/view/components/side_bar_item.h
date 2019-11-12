@@ -11,18 +11,17 @@ class SideBarItem;
 
 namespace View
 {
-
 class SideBarItem : public QWidget
 {
     Q_OBJECT
 
-    public:
-        SideBarItem(const QString& name, const QIcon &icon, QWidget* parent = nullptr);
+   public:
+    SideBarItem(const QString& name, const QIcon& icon, QWidget* parent = nullptr);
 
-private:
+   private:
     Ui::SideBarItem* m_ui;
 };
 
-}
+}    // namespace View
 
-#endif // SIDEBARITEM_H
+#endif    // SIDEBARITEM_H

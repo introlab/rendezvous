@@ -1,8 +1,8 @@
-#include "sidebar.h"
+#include "side_bar.h"
 #include "ui_side_bar.h"
 
-#include "side_bar_item.h"
 #include <QListWidgetItem>
+#include "side_bar_item.h"
 
 namespace View
 {
@@ -14,20 +14,20 @@ SideBar::SideBar(QWidget* parent)
     m_ui->setupUi(this);
 
     setStyleSheet(
-    "QListWidget"
-    "{"
-    "border: none;"
-    "    background-color: #4a4a4a;"
-    "    color: #ffffff;"
-    "    selection-background-color: #00a559;"
-    "    selection-color: #ffffff;"
-    "}"
-    ""
-    "QListWidget::item:hover"
-    "{"
-    "  color: #ffffff;"
-    "  background-color: #00a559;"
-    "}");
+        "QListWidget"
+        "{"
+        "border: none;"
+        "    background-color: #4a4a4a;"
+        "    color: #ffffff;"
+        "    selection-background-color: #00a559;"
+        "    selection-color: #ffffff;"
+        "}"
+        ""
+        "QListWidget::item:hover"
+        "{"
+        "  color: #ffffff;"
+        "  background-color: #00a559;"
+        "}");
 
     connect(m_ui->list, &QListWidget::currentRowChanged, [=](int index) { emit currentRowChanged(index); });
 }

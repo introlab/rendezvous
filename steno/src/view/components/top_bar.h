@@ -10,18 +10,17 @@ class TopBar;
 
 namespace View
 {
-
 class TopBar : public QWidget
 {
-Q_OBJECT
+    Q_OBJECT
 
-public:
+   public:
     TopBar(QWidget* parent = nullptr);
 
-private:
+   private:
     Ui::TopBar* m_ui;
 };
 
-}
+}    // namespace View
 
-#endif // TOPBAR_H
+#endif    // TOPBAR_H

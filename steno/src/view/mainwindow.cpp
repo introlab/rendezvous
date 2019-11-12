@@ -2,8 +2,8 @@
 
 #include "ui_mainwindow.h"
 
+#include "components/side_bar.h"
 #include "components/top_bar.h"
-#include "components/sidebar.h"
 #include "model/media_player/i_media_player.h"
 #include "views/abstract_view.h"
 #include "views/local_conference_view.h"
