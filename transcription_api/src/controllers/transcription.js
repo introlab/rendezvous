@@ -84,7 +84,7 @@ let uploadAudioFile = function(bucketName, audio, next) {
             }
 
             gstorage.createBucket(bucketName, function(err) {
-                console.log('create bucket');
+                process.stdout.write('create bucket\n');
                 return callback(err);
             });
         },
