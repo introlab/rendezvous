@@ -21,7 +21,7 @@ class ImplementationFactory
     virtual ~ImplementationFactory();
 
     std::unique_ptr<IDetector> getDetector(const std::string& configFile, const std::string& weightsFile,
-                                           const std::string& metaFile);
+                                           const std::string& metaFile, int sleepBetweenLayersForwardUs);
     std::unique_ptr<IObjectFactory> getObjectFactory();
     std::unique_ptr<IObjectFactory> getDetectionObjectFactory();
     std::unique_ptr<IFisheyeDewarper> getFisheyeDewarper();

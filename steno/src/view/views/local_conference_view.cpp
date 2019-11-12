@@ -27,6 +27,8 @@ LocalConferenceView::LocalConferenceView(std::shared_ptr<Model::IStream> stream,
     connect(m_recorder.get(), &Model::IRecorder::stateChanged,
             [=](const Model::IRecorder::State& state) { onRecorderStateChanged(state); });
     connect(m_ui->startRecorderButton, &QAbstractButton::clicked, [=] { onStartRecorderButtonClicked(); });
+
+    m_ui->startRecorderButton->setDisabled(true);
 }
 
 void LocalConferenceView::onStartVirtualDevicesButtonClicked()
@@ -72,14 +74,17 @@ void LocalConferenceView::onStreamStateChanged(const Model::IStream::State& stat
         case Model::IStream::Started:
             m_ui->startVirtualDevicesButton->setText("Stop virtual devices");
             m_ui->startVirtualDevicesButton->setDisabled(false);
+            m_ui->startRecorderButton->setDisabled(false);
             break;
         case Model::IStream::Stopping:
             m_ui->startVirtualDevicesButton->setText("Stopping virtual devices");
             m_ui->startVirtualDevicesButton->setDisabled(true);
+            m_ui->startRecorderButton->setDisabled(true);
             break;
         case Model::IStream::Stopped:
             m_ui->startVirtualDevicesButton->setText("Start virtual devices");
             m_ui->startVirtualDevicesButton->setDisabled(false);
+            m_ui->startRecorderButton->setDisabled(true);
             break;
     }
 }
