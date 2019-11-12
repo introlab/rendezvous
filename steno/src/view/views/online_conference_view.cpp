@@ -11,7 +11,7 @@
 namespace View
 {
 OnlineConferenceView::OnlineConferenceView(std::shared_ptr<Model::IStream> stream, QWidget* parent)
-    : AbstractView("Online Conference", parent)
+    : AbstractView("Online\n Conference", parent)
     , m_ui(new Ui::OnlineConferenceView)
     , m_stream(stream)
 {

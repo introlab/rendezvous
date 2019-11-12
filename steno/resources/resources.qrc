@@ -2,7 +2,10 @@
     <qresource prefix="/images">
         <file>logo.svg</file>
     </qresource>
-    <qresource prefix="/stylesheets">
-        <file>globalStylesheet.qss</file>
+    <qresource prefix="/icons">
+        <file>settings.svg</file>
+        <file>meeting.svg</file>
+        <file>player.svg</file>
+        <file>app_icon.svg</file>
     </qresource>
 </RCC>

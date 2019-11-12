@@ -15,6 +15,7 @@ class QStackedWidget;
 namespace View
 {
 class SideBar;
+class TopBar;
 class AbstractView;
 }    // namespace View
 
@@ -35,10 +36,11 @@ class MainWindow : public QMainWindow
                QWidget *parent = nullptr);
 
    private:
-    void addView(View::AbstractView *view);
+    void addView(View::AbstractView *view, const QIcon &icon);
 
     Ui::MainWindow *m_ui;
     View::SideBar *m_sideBar;
+    View::TopBar *m_topBar;
     QStackedWidget *m_views;
 };
 
