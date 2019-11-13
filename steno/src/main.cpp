@@ -1,7 +1,7 @@
 #include "model/config/config.h"
 #include "model/media_player/media_player.h"
-#include "model/recorder/recorder.h"
 #include "model/stream/stream.h"
+#include "model/media/media.h"
 #include "model/stream/video/output/default_virtual_camera_output.h"
 #include "view/mainwindow.h"
 
@@ -24,9 +24,9 @@ int main(int argc, char *argv[])
 
     std::shared_ptr<Model::IStream> stream = std::make_shared<Model::Stream>(config);
 
-    std::shared_ptr<Model::IRecorder> recorder = std::make_shared<Model::Recorder>(config);
+    std::shared_ptr<Model::Media> media = std::make_shared<Model::Media>(config);
 
-    View::MainWindow w(config, mediaPlayer, stream, recorder);
+    View::MainWindow w(config, mediaPlayer, stream, media);
     w.show();
 
     Model::DefaultVirtualCameraOutput::writeDefaultImage(

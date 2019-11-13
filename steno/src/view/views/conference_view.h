@@ -1,12 +1,13 @@
 #ifndef CONFERENCEVIEW_H
 #define CONFERENCEVIEW_H
 
-#include "model/recorder/i_recorder.h"
+#include "model/media/media.h"
 #include "view/views/abstract_view.h"
 
 #include <memory>
 
-#include <QCameraViewfinder>
+#include <QCamera>
+#include <QCameraInfo>
 
 namespace Ui
 {
@@ -18,11 +19,10 @@ namespace View
 class ConferenceView : public AbstractView
 {
    public:
-    explicit ConferenceView(std::shared_ptr<Model::IRecorder> recorder, QWidget* parent = nullptr);
+    explicit ConferenceView(std::shared_ptr<Model::Media> media, QWidget* parent = nullptr);
 
    private:
     Ui::ConferenceView* m_ui;
-    std::shared_ptr<QCameraViewfinder> m_cameraViewfinder;
 };
 
 }    // namespace View
