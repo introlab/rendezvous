@@ -30,11 +30,11 @@ SOURCES += \
     src/model/classifier/classifier.cpp \
     src/model/config/base_config.cpp \
     src/model/config/config.cpp \
+    src/model/media/media.cpp \
     src/model/media_player/media_player.cpp \
     src/model/media_player/subtitles/srt_file.cpp \
     src/model/media_player/subtitles/subtitles.cpp \
     src/model/network/local_socket_server.cpp \
-    src/model/recorder/recorder.cpp \
     src/model/stream/video/output/default_virtual_camera_output.cpp \
     src/model/utils/time.cpp \
     src/model/stream/audio/file/raw_file_audio_sink.cpp \
@@ -83,6 +83,7 @@ HEADERS += \
     src/model/classifier/classifier.h \
     src/model/config/base_config.h \
     src/model/config/config.h \
+    src/model/media/media.h \
     src/model/media_player/i_media_player.h \
     src/model/media_player/media_player.h \
     src/model/media_player/subtitles/srt_file.h \
@@ -91,7 +92,6 @@ HEADERS += \
     src/model/network/i_socket_server.h \
     src/model/network/local_socket_server.h \
     src/model/recorder/i_recorder.h \
-    src/model/recorder/recorder.h \
     src/model/stream/audio/audio_config.h \
     src/model/stream/stream_config.h \
     src/model/transcription/transcription_config.h \

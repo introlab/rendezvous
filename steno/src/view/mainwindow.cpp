@@ -15,12 +15,11 @@
 namespace View
 {
 MainWindow::MainWindow(std::shared_ptr<Model::Config> config, std::shared_ptr<Model::IMediaPlayer> mediaPlayer,
-                       std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::IRecorder> recorder,
-                       QWidget *parent)
+                       std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::Media> media, QWidget *parent)
     : QMainWindow(parent)
     , m_ui(new Ui::MainWindow)
     , m_sideBar(new View::SideBar(this))
-    , m_topBar(new View::TopBar(stream, recorder, this))
+    , m_topBar(new View::TopBar(stream, media, this))
     , m_views(new QStackedWidget(this))
 {
     m_ui->setupUi(this);
@@ -29,7 +28,7 @@ MainWindow::MainWindow(std::shared_ptr<Model::Config> config, std::shared_ptr<Mo
     m_ui->rightLayout->addWidget(m_topBar);
     m_ui->rightLayout->addWidget(m_views);
 
-    View::AbstractView *conferenceView = new View::ConferenceView(recorder, this);
+    View::AbstractView *conferenceView = new View::ConferenceView(media, this);
     View::AbstractView *mediaPlayerView = new View::MediaPlayerView(mediaPlayer, this);
     View::AbstractView *settingsView = new View::SettingsView(config, this);
 
