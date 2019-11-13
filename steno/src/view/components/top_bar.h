@@ -32,7 +32,6 @@ class TopBar : public QWidget
    private:
     Ui::TopBar* m_ui;
     std::shared_ptr<Model::IStream> m_stream;
-    std::shared_ptr<Model::IRecorder> m_recorder;
     QNetworkAccessManager* m_manager;
     std::shared_ptr<Model::Media> m_media;
 };
