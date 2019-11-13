@@ -20,7 +20,12 @@ router.get('/transcription', multer().single('audio'), function(req, res, next) 
     let model = req.query.model;
     let audio = req.file;
 
-    if (!audio || !bucketID) {
+    if (!audio) {
+        res.sendStatus(httpErrors.BAD_REQUEST);
+        return;
+    }
+
+    if (uploadToGStorage && !bucketID) {
         res.sendStatus(httpErrors.BAD_REQUEST);
         return;
     }
