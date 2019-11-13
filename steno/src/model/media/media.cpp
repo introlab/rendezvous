@@ -46,14 +46,6 @@ void Media::initCamera()
         if (cameraInfo.deviceName() == deviceName)
         {
             m_camera.reset(new QCamera(cameraInfo));
-
-            auto imageProcessing = m_camera->imageProcessing();
-
-            if (imageProcessing->isAvailable())
-            {
-                imageProcessing->setContrast(1);
-            }
-
             break;
         }
     }
