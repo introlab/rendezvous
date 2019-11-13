@@ -7,6 +7,13 @@
 #include <QSignalBlocker>
 #include <QStyle>
 #include <QUrl>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
+#include <QSslConfiguration>
+#include <QSslCertificate>
+#include <QFile>
+#include <QSslKey>
 
 namespace View
 {
@@ -38,6 +45,14 @@ TopBar::TopBar(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::IR
 
     connect(m_ui->meetButton, &QAbstractButton::clicked,
             [] { QDesktopServices::openUrl(QUrl("https://rendezvous-meet.com/")); });
+
+    m_manager = new QNetworkAccessManager();
+    connect(m_manager, &QNetworkAccessManager::finished, [=](QNetworkReply* reply)
+    {
+        qDebug() << reply->readAll();
+        qDebug() << reply->error();
+        qDebug() << reply->errorString();
+    });
 }
 
 void TopBar::onStreamStateChanged(const Model::IStream::State& state)
@@ -64,24 +79,47 @@ void TopBar::onStreamStateChanged(const Model::IStream::State& state)
 
 void TopBar::onStartButtonClicked()
 {
-    m_ui->startButton->setDisabled(true);
-    switch (m_stream->state())
-    {
-        case Model::IStream::Started:
-        {
-            QApplication::processEvents();
-            // We use a signal blocker to avoid queued signals from clicks on the startButton when the UI is disabled
-            // The signals are reenable when the blocker is out of scope.
-            QSignalBlocker blocker(m_ui->startButton);
-            m_stream->stop();
-            break;
-        }
-        case Model::IStream::Stopping:
-            break;
-        case Model::IStream::Stopped:
-            m_stream->start();
-            break;
-    }
+//    m_ui->startButton->setDisabled(true);
+//    switch (m_stream->state())
+//    {
+//        case Model::IStream::Started:
+//        {
+//            QApplication::processEvents();
+//            // We use a signal blocker to avoid queued signals from clicks on the startButton when the UI is disabled
+//            // The signals are reenable when the blocker is out of scope.
+//            QSignalBlocker blocker(m_ui->startButton);
+//            m_stream->stop();
+//            break;
+//        }
+//        case Model::IStream::Stopping:
+//            break;
+//        case Model::IStream::Stopped:
+//            m_stream->start();
+//            break;
+//    }
+    QNetworkRequest request;
+    QSslConfiguration config = QSslConfiguration::defaultConfiguration();
+    config.setProtocol(QSsl::TlsV1_2);
+
+    QFile certFile("/home/morel/development/rendezvous/transcription_api/ssl/client.crt");
+    certFile.open(QFile::ReadOnly);
+    QSslCertificate certificate(&certFile);
+    certFile.close();
+
+    QFile keyFile("/home/morel/development/rendezvous/transcription_api/ssl/client.key");
+    keyFile.open(QFile::ReadOnly);
+    QSslKey key(&keyFile, QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey, "password");
+    keyFile.close();
+
+    config.setPrivateKey(key);
+    config.setLocalCertificate(certificate);
+
+    // TODO: remove this when deployed
+    config.setPeerVerifyMode(QSslSocket::VerifyNone);
+
+    request.setSslConfiguration(config);
+    request.setUrl(QUrl("https://localhost:3000/"));
+    m_manager->get(request);
 }
 
 void TopBar::onRecorderStateChanged(const Model::IRecorder::State& state)

@@ -7,6 +7,7 @@
 #include <memory>
 
 #include <QWidget>
+#include <QNetworkAccessManager>
 
 namespace Ui
 {
@@ -33,6 +34,7 @@ class TopBar : public QWidget
     Ui::TopBar* m_ui;
     std::shared_ptr<Model::IStream> m_stream;
     std::shared_ptr<Model::IRecorder> m_recorder;
+    QNetworkAccessManager* m_manager;
 };
 
 }    // namespace View
