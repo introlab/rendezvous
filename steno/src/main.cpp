@@ -1,7 +1,7 @@
 #include "model/config/config.h"
+#include "model/media/media.h"
 #include "model/media_player/media_player.h"
 #include "model/stream/stream.h"
-#include "model/media/media.h"
 #include "model/stream/video/output/default_virtual_camera_output.h"
 #include "view/mainwindow.h"
 

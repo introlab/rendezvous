@@ -15,8 +15,7 @@
 namespace View
 {
 MainWindow::MainWindow(std::shared_ptr<Model::Config> config, std::shared_ptr<Model::IMediaPlayer> mediaPlayer,
-                       std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::Media> media,
-                       QWidget *parent)
+                       std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::Media> media, QWidget *parent)
     : QMainWindow(parent)
     , m_ui(new Ui::MainWindow)
     , m_sideBar(new View::SideBar(this))

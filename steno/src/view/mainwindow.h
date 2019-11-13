@@ -6,8 +6,8 @@
 #include <QMainWindow>
 
 #include "model/config/config.h"
-#include "model/media_player/i_media_player.h"
 #include "model/media/media.h"
+#include "model/media_player/i_media_player.h"
 #include "model/stream/i_stream.h"
 
 class QStackedWidget;
@@ -32,8 +32,7 @@ class MainWindow : public QMainWindow
 
    public:
     MainWindow(std::shared_ptr<Model::Config> config, std::shared_ptr<Model::IMediaPlayer> mediaPlayer,
-               std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::Media> media,
-               QWidget *parent = nullptr);
+               std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::Media> media, QWidget *parent = nullptr);
 
    private:
     void addView(View::AbstractView *view, const QIcon &icon);

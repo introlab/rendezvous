@@ -1,7 +1,7 @@
 #include "media.h"
 
-#include "model/stream/video/video_config.h"
 #include "model/app_config.h"
+#include "model/stream/video/video_config.h"
 
 #include <QCameraInfo>
 #include <QUrl>
@@ -49,7 +49,8 @@ void Media::initCamera()
 
             auto imageProcessing = m_camera->imageProcessing();
 
-            if (imageProcessing->isAvailable()) {
+            if (imageProcessing->isAvailable())
+            {
                 imageProcessing->setContrast(1);
             }
 
@@ -60,22 +61,23 @@ void Media::initCamera()
 
 void Media::initRecorder()
 {
-   m_mediaRecorder.reset(new QMediaRecorder(m_camera.get()));
+    m_mediaRecorder.reset(new QMediaRecorder(m_camera.get()));
 
-   QVideoEncoderSettings videoSettings;
-   videoSettings.setQuality(QMultimedia::VeryHighQuality);
-   videoSettings.setCodec("video/x-vp8");
-   m_mediaRecorder->setVideoSettings(videoSettings);
+    QVideoEncoderSettings videoSettings;
+    videoSettings.setQuality(QMultimedia::VeryHighQuality);
+    videoSettings.setCodec("video/x-vp8");
+    m_mediaRecorder->setVideoSettings(videoSettings);
 
-   QAudioEncoderSettings audioSettings;
-   audioSettings.setQuality(QMultimedia::VeryHighQuality);
-   audioSettings.setCodec("audio/x-vorbis");
-   m_mediaRecorder->setAudioSettings(audioSettings);
+    QAudioEncoderSettings audioSettings;
+    audioSettings.setQuality(QMultimedia::VeryHighQuality);
+    audioSettings.setCodec("audio/x-vorbis");
+    m_mediaRecorder->setAudioSettings(audioSettings);
 
-   m_mediaRecorder->setContainerFormat("video/webm");
+    m_mediaRecorder->setContainerFormat("video/webm");
 
-   m_mediaRecorder->setOutputLocation(m_appConfig->value(AppConfig::OUTPUT_FOLDER).toString());
-   connect(m_mediaRecorder.get(), &QMediaRecorder::stateChanged, [=](QMediaRecorder::State state){ emit recorderStateChanged(state); });
+    m_mediaRecorder->setOutputLocation(m_appConfig->value(AppConfig::OUTPUT_FOLDER).toString());
+    connect(m_mediaRecorder.get(), &QMediaRecorder::stateChanged,
+            [=](QMediaRecorder::State state) { emit recorderStateChanged(state); });
 }
 
-}
+}    // namespace Model

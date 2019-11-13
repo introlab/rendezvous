@@ -12,11 +12,10 @@
 
 namespace Model
 {
-
 class Media : public QObject
 {
     Q_OBJECT
-public:
+   public:
     explicit Media(std::shared_ptr<Config> config);
 
     void setViewFinder(QCameraViewfinder *view);
@@ -38,5 +37,5 @@ public:
     QScopedPointer<QMediaRecorder> m_mediaRecorder;
 };
 
-}
-#endif // MEDIA_
+}    // namespace Model
+#endif    // MEDIA_

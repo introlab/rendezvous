@@ -20,8 +20,7 @@ class TopBar : public QWidget
     Q_OBJECT
 
    public:
-    TopBar(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::Media> media,
-           QWidget* parent = nullptr);
+    TopBar(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::Media> media, QWidget* parent = nullptr);
 
    private slots:
     void onStreamStateChanged(const Model::IStream::State& state);

@@ -84,7 +84,7 @@ void TopBar::onStartButtonClicked()
     }
 }
 
-void TopBar::onRecorderStateChanged(const QMediaRecorder::State &state)
+void TopBar::onRecorderStateChanged(const QMediaRecorder::State& state)
 {
     switch (state)
     {
