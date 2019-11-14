@@ -89,7 +89,7 @@ void TopBar::onStartButtonClicked()
             m_stream->start();
             if (m_transcription->configureRequest())
             {
-                m_transcription->requestTranscription();
+                m_transcription->requestTranscription("");
             }
             break;
     }

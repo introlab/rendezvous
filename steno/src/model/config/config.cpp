@@ -7,8 +7,8 @@
 #include "model/stream/video/detection/darknet_config.h"
 #include "model/stream/video/dewarping/models/dewarping_config.h"
 #include "model/stream/video/video_config.h"
+#include "model/transcription/transcription.h"
 #include "model/transcription/transcription_config.h"
-#include "model/transcription/transcription_constants.h"
 
 #include <QCoreApplication>
 #include <QDir>

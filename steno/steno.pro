@@ -97,7 +97,6 @@ HEADERS += \
     src/model/stream/stream_config.h \
     src/model/transcription/transcription.h \
     src/model/transcription/transcription_config.h \
-    src/model/transcription/transcription_constants.h \
     src/model/stream/video/output/default_virtual_camera_output.h \
     src/model/utils/observer/i_observer.h \
     src/model/utils/observer/i_subject.h \

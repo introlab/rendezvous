@@ -2,8 +2,8 @@
 #include "ui_settings_view.h"
 
 #include "model/app_config.h"
+#include "model/transcription/transcription.h"
 #include "model/transcription/transcription_config.h"
-#include "model/transcription/transcription_constants.h"
 
 #include <QComboBox>
 #include <QFileDialog>
