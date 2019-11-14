@@ -1,6 +1,8 @@
 #ifndef TRANSCRIPTION_H
 #define TRANSCRIPTION_H
 
+#include "model/config/config.h"
+
 #include <memory>
 
 #include <QNetworkAccessManager>
@@ -15,7 +17,7 @@ class Transcription : public QObject
     Q_OBJECT
 
    public:
-    explicit Transcription(QObject* parent = nullptr);
+    explicit Transcription(std::shared_ptr<Config> config, QObject* parent = nullptr);
 
     bool configureRequest();
     bool requestTranscription(QString audioFilePath);
@@ -67,9 +69,9 @@ class Transcription : public QObject
         switch (language)
         {
             case Language::FR_CA:
-                return "FR CA";
+                return "fr-CA";
             case Language::EN_CA:
-                return "EN CA";
+                return "en-CA";
             default:
                 return nullptr;
         }
@@ -104,7 +106,8 @@ class Transcription : public QObject
    private:
     QSslConfiguration m_sslConfig;
     std::unique_ptr<QNetworkAccessManager> m_manager;
-    QUrl m_url = QUrl("https://localhost:3000/");
+    QUrl m_url = QUrl("https://localhost:3000/transcription");
+    std::shared_ptr<TranscriptionConfig> m_config;
 };
 }    // namespace Model
 

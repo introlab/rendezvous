@@ -8,7 +8,7 @@ let {SpeechToText} = require('../core/speech_to_text');
 let speechToText = new SpeechToText();
 let GStorage = require('../core/g_storage');
 
-router.get('/transcription', multer().single('audio'), function(req, res, next) {
+router.post('/transcription', multer().single('audio'), function(req, res, next) {
     // Request validation
     let uploadToGStorage = req.query.storage == 'true';
     let bucketID = req.query.bucketID;

@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
 
     std::shared_ptr<Model::Media> media = std::make_shared<Model::Media>(config);
 
-    std::shared_ptr<Model::Transcription> transcription = std::make_shared<Model::Transcription>();
+    std::shared_ptr<Model::Transcription> transcription = std::make_shared<Model::Transcription>(config);
 
     View::MainWindow w(config, mediaPlayer, stream, media, transcription);
     w.show();

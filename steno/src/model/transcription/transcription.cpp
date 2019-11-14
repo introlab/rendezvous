@@ -1,9 +1,12 @@
 #include "transcription.h"
+#include "model/config/config.h"
 #include "transcription_config.h"
 
 #include <memory>
 
 #include <QFile>
+#include <QHttpMultiPart>
+#include <QJsonObject>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
@@ -15,8 +18,9 @@
 
 namespace Model
 {
-Transcription::Transcription(QObject* parent)
+Transcription::Transcription(std::shared_ptr<Config> config, QObject* parent)
     : QObject(parent)
+    , m_config(config->transcriptionConfig())
 {
     m_manager = std::make_unique<QNetworkAccessManager>();
 
@@ -61,14 +65,25 @@ bool Transcription::configureRequest()
  */
 bool Transcription::requestTranscription(QString audioFilePath)
 {
-    QFile audioFile(audioFilePath);
-    if (!audioFile.exists()) return false;
+    QFile* audioFile = new QFile(audioFilePath);
+    if (!audioFile->exists()) return false;
+    audioFile->open(QIODevice::ReadOnly);
+
+    QHttpMultiPart* multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
+
+    QHttpPart audioPart;
+    audioPart.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("audio/wav"));
+    audioPart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data"));
+    audioPart.setBodyDevice(audioFile);
+    audioFile->setParent(multiPart);
+    multiPart->append(audioPart);
 
     QUrlQuery query;
     query.addQueryItem("encoding", encodingName(Encoding::LINEAR16));
     query.addQueryItem("enhanced", "true");
     // TODO: get the language from the config.
-    query.addQueryItem("language", "");
+    const Language lang = static_cast<Language>(m_config->value(TranscriptionConfig::LANGUAGE).toInt());
+    query.addQueryItem("language", languageName(lang));
     query.addQueryItem("sampleRate", "44100");
     query.addQueryItem("audioChannels", "2");
     query.addQueryItem("model", modelName(Model::DEFAULT));
@@ -81,7 +96,8 @@ bool Transcription::requestTranscription(QString audioFilePath)
     QNetworkRequest request;
     request.setSslConfiguration(m_sslConfig);
     request.setUrl(m_url);
-    m_manager->get(request);
+
+    m_manager->post(request, multiPart);
     return true;
 }
 }    // namespace Model
