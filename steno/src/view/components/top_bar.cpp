@@ -4,24 +4,19 @@
 #include "colors.h"
 
 #include <QDesktopServices>
-#include <QSignalBlocker>
+#include <QNetworkReply>
 #include <QStyle>
 #include <QUrl>
-#include <QNetworkAccessManager>
-#include <QNetworkRequest>
-#include <QNetworkReply>
-#include <QSslConfiguration>
-#include <QSslCertificate>
-#include <QFile>
-#include <QSslKey>
 
 namespace View
 {
-TopBar::TopBar(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::Media> media, QWidget* parent)
+TopBar::TopBar(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::Media> media,
+               std::shared_ptr<Model::Transcription> transcription, QWidget* parent)
     : QWidget(parent)
     , m_ui(new Ui::TopBar)
     , m_stream(stream)
     , m_media(media)
+    , m_transcription(transcription)
 {
     m_ui->setupUi(this);
 
@@ -43,15 +38,12 @@ TopBar::TopBar(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::Me
             [=](const QMediaRecorder::State& state) { onRecorderStateChanged(state); });
     connect(m_ui->recordButton, &QAbstractButton::clicked, [=] { onRecordButtonClicked(); });
 
-    connect(m_ui->meetButton, &QAbstractButton::clicked,
-            [] { QDesktopServices::openUrl(QUrl("https://rendezvous-meet.com/")); });
+    connect(m_ui->meetButton, &QAbstractButton::clicked, [=] { QDesktopServices::openUrl(m_rendezvousMeetUrl); });
 
-    m_manager = new QNetworkAccessManager();
-    connect(m_manager, &QNetworkAccessManager::finished, [=](QNetworkReply* reply)
-    {
+    connect(m_transcription.get(), &Model::Transcription::finished, [=](QNetworkReply* reply) {
         qDebug() << reply->readAll();
-        qDebug() << reply->error();
         qDebug() << reply->errorString();
+        qDebug() << "request done fuck yeah";
     });
 }
 
@@ -79,47 +71,28 @@ void TopBar::onStreamStateChanged(const Model::IStream::State& state)
 
 void TopBar::onStartButtonClicked()
 {
-//    m_ui->startButton->setDisabled(true);
-//    switch (m_stream->state())
-//    {
-//        case Model::IStream::Started:
-//        {
-//            QApplication::processEvents();
-//            // We use a signal blocker to avoid queued signals from clicks on the startButton when the UI is disabled
-//            // The signals are reenable when the blocker is out of scope.
-//            QSignalBlocker blocker(m_ui->startButton);
-//            m_stream->stop();
-//            break;
-//        }
-//        case Model::IStream::Stopping:
-//            break;
-//        case Model::IStream::Stopped:
-//            m_stream->start();
-//            break;
-//    }
-    QNetworkRequest request;
-    QSslConfiguration config = QSslConfiguration::defaultConfiguration();
-    config.setProtocol(QSsl::TlsV1_2);
-
-    QFile certFile("/home/morel/development/rendezvous/transcription_api/ssl/client.crt");
-    certFile.open(QFile::ReadOnly);
-    QSslCertificate certificate(&certFile);
-    certFile.close();
-
-    QFile keyFile("/home/morel/development/rendezvous/transcription_api/ssl/client.key");
-    keyFile.open(QFile::ReadOnly);
-    QSslKey key(&keyFile, QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey, "password");
-    keyFile.close();
-
-    config.setPrivateKey(key);
-    config.setLocalCertificate(certificate);
-
-    // TODO: remove this when deployed
-    config.setPeerVerifyMode(QSslSocket::VerifyNone);
-
-    request.setSslConfiguration(config);
-    request.setUrl(QUrl("https://localhost:3000/"));
-    m_manager->get(request);
+    m_ui->startButton->setDisabled(true);
+    switch (m_stream->state())
+    {
+        case Model::IStream::Started:
+        {
+            QApplication::processEvents();
+            // We use a signal blocker to avoid queued signals from clicks on the startButton when the UI is disabled
+            // The signals are reenable when the blocker is out of scope.
+            QSignalBlocker blocker(m_ui->startButton);
+            m_stream->stop();
+            break;
+        }
+        case Model::IStream::Stopping:
+            break;
+        case Model::IStream::Stopped:
+            m_stream->start();
+            if (m_transcription->configureRequest())
+            {
+                m_transcription->requestTranscription();
+            }
+            break;
+    }
 }
 
 void TopBar::onRecorderStateChanged(const QMediaRecorder::State& state)

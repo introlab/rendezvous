@@ -3,11 +3,11 @@
 
 #include "model/media/media.h"
 #include "model/stream/i_stream.h"
+#include "model/transcription/transcription.h"
 
 #include <memory>
 
 #include <QWidget>
-#include <QNetworkAccessManager>
 
 namespace Ui
 {
@@ -21,7 +21,8 @@ class TopBar : public QWidget
     Q_OBJECT
 
    public:
-    TopBar(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::Media> media, QWidget* parent = nullptr);
+    TopBar(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::Media> media,
+           std::shared_ptr<Model::Transcription> transcription, QWidget* parent = nullptr);
 
    private slots:
     void onStreamStateChanged(const Model::IStream::State& state);
@@ -32,8 +33,9 @@ class TopBar : public QWidget
    private:
     Ui::TopBar* m_ui;
     std::shared_ptr<Model::IStream> m_stream;
-    QNetworkAccessManager* m_manager;
     std::shared_ptr<Model::Media> m_media;
+    std::shared_ptr<Model::Transcription> m_transcription;
+    const QUrl m_rendezvousMeetUrl = QUrl("https://rendezvous-meet.com/");
 };
 
 }    // namespace View
