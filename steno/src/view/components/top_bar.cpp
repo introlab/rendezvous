@@ -112,7 +112,8 @@ void TopBar::onRecorderStateChanged(const QMediaRecorder::State& state)
                 transcriptionConfig->value(Model::TranscriptionConfig::AUTOMATIC_TRANSCRIPTION).toBool();
             if (isTranscriptionEnabled)
             {
-                m_transcription->transcribe("/home/morel/Desktop/audio.wav");
+                m_transcription->transcribe(QCoreApplication::applicationDirPath() +
+                                            "/../resources/test-transcription.wav");
             }
             break;
         }
