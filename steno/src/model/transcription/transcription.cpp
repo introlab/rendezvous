@@ -65,12 +65,12 @@ bool Transcription::configureRequest()
  */
 bool Transcription::requestTranscription(QString audioFilePath)
 {
+    // body construction (put the audio file in the request)
     QFile* audioFile = new QFile(audioFilePath);
     if (!audioFile->exists()) return false;
     audioFile->open(QIODevice::ReadOnly);
 
     QHttpMultiPart* multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
-
     QHttpPart textPart;
     textPart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"name\""));
     textPart.setBody("audio");    // audio is the name given to the uploaded file in the server.
@@ -81,9 +81,11 @@ bool Transcription::requestTranscription(QString audioFilePath)
     audioPart.setHeader(QNetworkRequest::ContentDispositionHeader,
                         QVariant("form-data; name=\"audio\"; filename=\"audio.wav\""));
     audioPart.setBodyDevice(audioFile);
-    audioFile->setParent(multiPart);
+    audioFile->setParent(multiPart);    // we can't delete the audioFile pointer, so we set the multiPart has the
+                                        // parent. This way Qt will destroy audioFile pointer with the MultiPart.
     multiPart->append(audioPart);
 
+    // Query parameters construction.
     QUrlQuery query;
     query.addQueryItem("encoding", encodingName(Encoding::LINEAR16));
     query.addQueryItem("enhanced", "true");
@@ -104,7 +106,8 @@ bool Transcription::requestTranscription(QString audioFilePath)
     request.setUrl(m_url);
 
     QNetworkReply* reply = m_manager->post(request, multiPart);
-    multiPart->setParent(reply);
+    multiPart->setParent(reply);    // We set the parent of the multiPart to the reply. This way when the reply is done,
+                                    // Qt will delete the multiPart and the audioFile pointers.
 
     return true;
 }
