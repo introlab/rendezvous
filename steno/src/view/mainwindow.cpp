@@ -21,7 +21,7 @@ MainWindow::MainWindow(std::shared_ptr<Model::Config> config, std::shared_ptr<Mo
     : QMainWindow(parent)
     , m_ui(new Ui::MainWindow)
     , m_sideBar(new View::SideBar(this))
-    , m_topBar(new View::TopBar(stream, media, transcription, this))
+    , m_topBar(new View::TopBar(stream, media, transcription, config, this))
     , m_views(new QStackedWidget(this))
 {
     m_ui->setupUi(this);

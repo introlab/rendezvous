@@ -28,6 +28,38 @@ Transcription::Transcription(std::shared_ptr<Config> config, QObject* parent)
 }
 
 /**
+ * Transcribe a video file.
+ * @param [IN] videoFilePath - video filepath to transcrive the audio.
+ * @return true/false if success
+ */
+bool Transcription::transcribe(const QString& videoFilePath)
+{
+    QString wavFilePath;
+    bool isOK = prepareTranscription(videoFilePath, wavFilePath);
+    if (!isOK) return isOK;
+
+    isOK = requestTranscription(wavFilePath);
+    if (!isOK) return isOK;
+
+    isOK = postTranscription(wavFilePath);
+    return isOK;
+}
+
+/**
+ * @brief Prepare the ssl configuration and generate the audio file from the video file in input.
+ * @param [IN] videoFilePath - video filepath to transcribe the audio.
+ * @param [OUT] wavFilePath - filepath of the generated audio file.
+ * @return true/false if success
+ */
+bool Transcription::prepareTranscription(const QString& videoFilePath, QString& wavFilePath)
+{
+    // TODO: take the videoFilePath file and create a temp wav file.
+    wavFilePath = videoFilePath;
+    bool isOK = configureRequest();
+    return isOK;
+}
+
+/**
  * @brief Configure the ssl parameters.
  * @return true/false if the configuration worked
  */
@@ -59,14 +91,14 @@ bool Transcription::configureRequest()
 }
 
 /**
- * @brief Send the transcription request and the signal finished is emit when the
- * response is received.
- * @return true/false if the request was send correctly.
+ * @brief Ask the transcription server for a transcript of a wav file in input.
+ * @param [IN] wavFilePath - audio filepath to transcribe.
+ * @return true/false if success
  */
-bool Transcription::requestTranscription(QString audioFilePath)
+bool Transcription::requestTranscription(const QString& wavFilePath)
 {
     // body construction (put the audio file in the request)
-    QFile* audioFile = new QFile(audioFilePath);
+    QFile* audioFile = new QFile(wavFilePath);
     if (!audioFile->exists()) return false;
     audioFile->open(QIODevice::ReadOnly);
 
@@ -89,7 +121,6 @@ bool Transcription::requestTranscription(QString audioFilePath)
     QUrlQuery query;
     query.addQueryItem("encoding", encodingName(Encoding::LINEAR16));
     query.addQueryItem("enhanced", "true");
-    // TODO: get the language from the config.
     const Language lang = static_cast<Language>(m_config->value(TranscriptionConfig::LANGUAGE).toInt());
     query.addQueryItem("language", languageName(lang));
     query.addQueryItem("sampleRate", "44100");
@@ -109,6 +140,18 @@ bool Transcription::requestTranscription(QString audioFilePath)
     multiPart->setParent(reply);    // We set the parent of the multiPart to the reply. This way when the reply is done,
                                     // Qt will delete the multiPart and the audioFile pointers.
 
+    return true;
+}
+
+/**
+ * @brief Delete the temporary audio file generated and generate the srt file.
+ * @param [IN] wavFilePath - audio filepath to delete.
+ * @return true/false if success
+ */
+bool Transcription::postTranscription(const QString& wavFilePath)
+{
+    // TODO: delete the temp wav file generated.
+    // TODO: ask srt file generation.
     return true;
 }
 }    // namespace Model

@@ -1,4 +1,6 @@
 #include "top_bar.h"
+#include "model/config/config.h"
+#include "model/transcription/transcription_config.h"
 #include "ui_top_bar.h"
 
 #include "colors.h"
@@ -11,12 +13,14 @@
 namespace View
 {
 TopBar::TopBar(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::Media> media,
-               std::shared_ptr<Model::Transcription> transcription, QWidget* parent)
+               std::shared_ptr<Model::Transcription> transcription, std::shared_ptr<Model::Config> config,
+               QWidget* parent)
     : QWidget(parent)
     , m_ui(new Ui::TopBar)
     , m_stream(stream)
     , m_media(media)
     , m_transcription(transcription)
+    , m_config(config)
 {
     m_ui->setupUi(this);
 
@@ -42,7 +46,10 @@ TopBar::TopBar(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::Me
 
     connect(m_transcription.get(), &Model::Transcription::finished, [=](QNetworkReply* reply) {
         qDebug() << reply->readAll();
-        qDebug() << reply->errorString();
+        if (reply->error() != QNetworkReply::NoError)
+        {
+            qDebug() << reply->errorString();
+        }
     });
 }
 
@@ -98,12 +105,17 @@ void TopBar::onRecorderStateChanged(const QMediaRecorder::State& state)
             m_ui->recordButton->setText("Stop recording");
             break;
         case QMediaRecorder::State::StoppedState:
+        {
             m_ui->recordButton->setText("Start recording");
-            if (m_transcription->configureRequest())
+            const auto transcriptionConfig = m_config->transcriptionConfig();
+            const bool isTranscriptionEnabled =
+                transcriptionConfig->value(Model::TranscriptionConfig::AUTOMATIC_TRANSCRIPTION).toBool();
+            if (isTranscriptionEnabled)
             {
-                m_transcription->requestTranscription("/home/morel/Desktop/audio.wav");
+                m_transcription->transcribe("/home/morel/Desktop/audio.wav");
             }
             break;
+        }
         case QMediaRecorder::State::PausedState:
             break;
     }

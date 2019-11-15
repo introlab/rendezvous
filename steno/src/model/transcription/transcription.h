@@ -19,8 +19,7 @@ class Transcription : public QObject
    public:
     explicit Transcription(std::shared_ptr<Config> config, QObject* parent = nullptr);
 
-    bool configureRequest();
-    bool requestTranscription(QString audioFilePath);
+    bool transcribe(const QString& videoFilePath);
 
     enum Encoding
     {
@@ -104,6 +103,11 @@ class Transcription : public QObject
     void finished(QNetworkReply* reply);
 
    private:
+    bool prepareTranscription(const QString& videoFilePath, QString& wavFilePath);
+    bool requestTranscription(const QString& wavFilePath);
+    bool postTranscription(const QString& wavFilePath);
+    bool configureRequest();
+
     QSslConfiguration m_sslConfig;
     std::unique_ptr<QNetworkAccessManager> m_manager;
     QUrl m_url = QUrl("https://localhost:3000/transcription");
