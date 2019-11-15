@@ -82,7 +82,6 @@ let uploadAudioFile = function(bucketName, audio, next) {
 
     async.waterfall([
         function(callback) {
-            console.log("allo");
             gstorage.bucketExist(bucketName, function(err, exists) {
                 if (err) {
                     return callback(err);
