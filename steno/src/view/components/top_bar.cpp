@@ -43,7 +43,6 @@ TopBar::TopBar(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::Me
     connect(m_transcription.get(), &Model::Transcription::finished, [=](QNetworkReply* reply) {
         qDebug() << reply->readAll();
         qDebug() << reply->errorString();
-        qDebug() << "request done fuck yeah";
     });
 }
 
@@ -87,10 +86,6 @@ void TopBar::onStartButtonClicked()
             break;
         case Model::IStream::Stopped:
             m_stream->start();
-            if (m_transcription->configureRequest())
-            {
-                m_transcription->requestTranscription("/home/morel/Desktop/audio.wav");
-            }
             break;
     }
 }
@@ -104,6 +99,10 @@ void TopBar::onRecorderStateChanged(const QMediaRecorder::State& state)
             break;
         case QMediaRecorder::State::StoppedState:
             m_ui->recordButton->setText("Start recording");
+            if (m_transcription->configureRequest())
+            {
+                m_transcription->requestTranscription("/home/morel/Desktop/audio.wav");
+            }
             break;
         case QMediaRecorder::State::PausedState:
             break;

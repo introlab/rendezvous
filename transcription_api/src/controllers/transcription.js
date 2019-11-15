@@ -8,7 +8,13 @@ let {SpeechToText} = require('../core/speech_to_text');
 let speechToText = new SpeechToText();
 let GStorage = require('../core/g_storage');
 
-router.post('/transcription', multer().single('audio'), function(req, res, next) {
+let multerMiddleware = multer({
+    limits: {
+        fieldSize: 25 * 1024 * 1024
+    }
+});
+
+router.post('/transcription', multerMiddleware.single('audio'), function(req, res, next) {
     // Request validation
     let uploadToGStorage = req.query.storage == 'true';
     let bucketID = req.query.bucketID;
@@ -76,6 +82,7 @@ let uploadAudioFile = function(bucketName, audio, next) {
 
     async.waterfall([
         function(callback) {
+            console.log("allo");
             gstorage.bucketExist(bucketName, function(err, exists) {
                 if (err) {
                     return callback(err);

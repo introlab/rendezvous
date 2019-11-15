@@ -90,13 +90,13 @@ class Transcription : public QObject
         switch (model)
         {
             case Model::DEFAULT:
-                return "Default";
+                return "default";
             case Model::COMMAND_AND_SEARCH:
-                return "Command and search";
+                return "command_and_search";
             case Model::PHONE_CALL:
-                return "Phone call";
+                return "phone_call";
             case Model::VIDEO:
-                return "Video";
+                return "video";
         }
     }
 

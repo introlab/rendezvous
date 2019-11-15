@@ -28,7 +28,7 @@ Transcription::Transcription(std::shared_ptr<Config> config, QObject* parent)
 }
 
 /**
- * @brief Transcription::configureRequest configure the ssl parameters.
+ * @brief Configure the ssl parameters.
  * @return true/false if the configuration worked
  */
 bool Transcription::configureRequest()
@@ -59,7 +59,7 @@ bool Transcription::configureRequest()
 }
 
 /**
- * @brief Transcription::requestTranscription send the transcription request and the signal finished is emit when the
+ * @brief Send the transcription request and the signal finished is emit when the
  * response is received.
  * @return true/false if the request was send correctly.
  */
@@ -71,9 +71,15 @@ bool Transcription::requestTranscription(QString audioFilePath)
 
     QHttpMultiPart* multiPart = new QHttpMultiPart(QHttpMultiPart::FormDataType);
 
+    QHttpPart textPart;
+    textPart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data; name=\"name\""));
+    textPart.setBody("audio");    // audio is the name given to the uploaded file in the server.
+    multiPart->append(textPart);
+
     QHttpPart audioPart;
     audioPart.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("audio/wav"));
-    audioPart.setHeader(QNetworkRequest::ContentDispositionHeader, QVariant("form-data"));
+    audioPart.setHeader(QNetworkRequest::ContentDispositionHeader,
+                        QVariant("form-data; name=\"audio\"; filename=\"audio.wav\""));
     audioPart.setBodyDevice(audioFile);
     audioFile->setParent(multiPart);
     multiPart->append(audioPart);
@@ -89,7 +95,7 @@ bool Transcription::requestTranscription(QString audioFilePath)
     query.addQueryItem("model", modelName(Model::DEFAULT));
     query.addQueryItem("storage", "true");
     // TODO: Make a UID generator that each Jetson will use to acquire a unique ID and use it as bucketID.
-    query.addQueryItem("bucketID", "Steno1");
+    query.addQueryItem("bucketID", "steno1");
 
     m_url.setQuery(query);
 
@@ -97,7 +103,9 @@ bool Transcription::requestTranscription(QString audioFilePath)
     request.setSslConfiguration(m_sslConfig);
     request.setUrl(m_url);
 
-    m_manager->post(request, multiPart);
+    QNetworkReply* reply = m_manager->post(request, multiPart);
+    multiPart->setParent(reply);
+
     return true;
 }
 }    // namespace Model
