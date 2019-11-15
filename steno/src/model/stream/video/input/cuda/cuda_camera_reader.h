@@ -11,16 +11,20 @@ namespace Model
 class CudaCameraReader : public CameraReader
 {
    public:
-    explicit CudaCameraReader(const VideoConfig& videoConfig);
+    explicit CudaCameraReader(std::shared_ptr<VideoConfig> videoConfig);
     virtual ~CudaCameraReader();
 
     void open() override;
+    void close() override;
     const Image& readImage() override;
 
    private:
+    void copyImageToDevice(const Image& image);
+
     DeviceCudaObjectFactory deviceCudaObjectFactory_;
     const Image* nextImage_;
     cudaStream_t stream_;
+    Image pageLockedImage_;
 };
 
 }    // namespace Model

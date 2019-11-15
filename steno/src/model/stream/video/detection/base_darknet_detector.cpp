@@ -3,9 +3,10 @@
 namespace Model
 {
 BaseDarknetDetector::BaseDarknetDetector(const std::string& configFile, const std::string& weightsFile,
-                                         const std::string& metadataFile)
+                                         const std::string& metadataFile, int sleepBetweenLayersForwardUs)
 {
     network_ = load_network(const_cast<char*>(configFile.c_str()), const_cast<char*>(weightsFile.c_str()), 0);
+    network_->sleep_between_layers_forward_us = sleepBetweenLayersForwardUs;
     metadata_ = get_metadata(const_cast<char*>(metadataFile.c_str()));
 }
 
@@ -43,7 +44,7 @@ std::vector<Rectangle> BaseDarknetDetector::detect(const image& img, float thres
             if (detections[j].prob[i] > 0)
             {
                 const box& bbox = detections[j].bbox;
-                rects.emplace_back(bbox.x, bbox.y, bbox.w, bbox.y);
+                rects.emplace_back(bbox.x, bbox.y, bbox.w, bbox.h);
             }
         }
     }

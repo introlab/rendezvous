@@ -21,9 +21,10 @@ CameraReader::IndexedImage::IndexedImage(const Image& image)
 {
 }
 
-CameraReader::CameraReader(const VideoConfig& videoConfig, std::size_t bufferCount)
+CameraReader::CameraReader(std::shared_ptr<VideoConfig> videoConfig, std::size_t bufferCount)
     : videoConfig_(videoConfig)
-    , images_(bufferCount, Image(videoConfig.resolution.width, videoConfig.resolution.height, videoConfig.imageFormat))
+    , images_(bufferCount,
+              Image(videoConfig->resolution.width, videoConfig->resolution.height, videoConfig->imageFormat))
     , buffer_({})
     , fd_(-1)
 {
@@ -33,16 +34,21 @@ CameraReader::CameraReader(const VideoConfig& videoConfig, std::size_t bufferCou
 
 void CameraReader::open()
 {
-    fd_ = ::open(videoConfig_.deviceName.c_str(), O_RDWR);
+    fd_ = ::open(videoConfig_->deviceName.c_str(), O_RDWR);
 
     if (fd_ == ERROR_CODE)
     {
-        throw std::runtime_error("Could not open camera " + videoConfig_.deviceName);
+        throw std::runtime_error("Could not open camera " + videoConfig_->deviceName);
     }
 
     checkCaps();
     setImageFormat();
     requestBuffers(images_.size());
+
+    if (xioctl(VIDIOC_STREAMON, &buffer_.type) == ERROR_CODE)
+    {
+        throw std::runtime_error("Failed to start camera capture");
+    }
 
     // Queue a first capture for fast read
     v4l2_buffer buffer = buffer_;
@@ -52,6 +58,11 @@ void CameraReader::open()
 
 void CameraReader::close()
 {
+    if (xioctl(VIDIOC_STREAMOFF, &buffer_.type) == ERROR_CODE)
+    {
+        throw std::runtime_error("Failed to stop camera capture");
+    }
+
     for (std::size_t i = 0; i < images_.size(); ++i)
     {
         unmapBuffer(images_.current());
@@ -88,11 +99,6 @@ void CameraReader::queueCapture(v4l2_buffer& buffer)
     {
         throw std::runtime_error("Failed to querry camera buffer");
     }
-
-    if (xioctl(VIDIOC_STREAMON, &buffer.type) == ERROR_CODE)
-    {
-        throw std::runtime_error("Failed to capture camera image");
-    }
 }
 
 void CameraReader::dequeueCapture(v4l2_buffer& buffer)
@@ -126,7 +132,7 @@ void CameraReader::requestBuffers(std::size_t bufferCount)
 
     if (xioctl(VIDIOC_REQBUFS, &req) == ERROR_CODE || req.count != bufferCount)
     {
-        throw std::runtime_error("Failed to request buffers for camera " + videoConfig_.deviceName);
+        throw std::runtime_error("Failed to request buffers for camera " + videoConfig_->deviceName);
     }
 
     for (std::size_t i = 0; i < images_.size(); ++i)
@@ -145,7 +151,7 @@ void CameraReader::mapBuffer(IndexedImage& indexedImage)
 
     if (xioctl(VIDIOC_QUERYBUF, &buffer) == ERROR_CODE)
     {
-        throw std::runtime_error("Failed to query buffers of camera " + videoConfig_.deviceName);
+        throw std::runtime_error("Failed to query buffers of camera " + videoConfig_->deviceName);
     }
 
     indexedImage.image.hostData =
@@ -200,9 +206,9 @@ void CameraReader::setImageFormat()
 {
     v4l2_format fmt = {};
     fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-    fmt.fmt.pix.width = videoConfig_.resolution.width;
-    fmt.fmt.pix.height = videoConfig_.resolution.height;
-    fmt.fmt.pix.pixelformat = getV4L2Format(videoConfig_.imageFormat);
+    fmt.fmt.pix.width = videoConfig_->resolution.width;
+    fmt.fmt.pix.height = videoConfig_->resolution.height;
+    fmt.fmt.pix.pixelformat = getV4L2Format(videoConfig_->imageFormat);
     fmt.fmt.pix.field = V4L2_FIELD_NONE;
 
     if (xioctl(VIDIOC_S_FMT, &fmt) == ERROR_CODE)
@@ -210,17 +216,17 @@ void CameraReader::setImageFormat()
         throw std::runtime_error("Unable to set camera image format");
     }
 
-    if (fmt.fmt.pix.pixelformat != getV4L2Format(videoConfig_.imageFormat))
+    if (fmt.fmt.pix.pixelformat != getV4L2Format(videoConfig_->imageFormat))
     {
         throw std::runtime_error("Camera does not support specified image format : " +
-                                 getImageFormatString(videoConfig_.imageFormat));
+                                 getImageFormatString(videoConfig_->imageFormat));
     }
-    else if (fmt.fmt.pix.width != (unsigned int)videoConfig_.resolution.width ||
-             fmt.fmt.pix.height != (unsigned int)videoConfig_.resolution.height)
+    else if (fmt.fmt.pix.width != (unsigned int)videoConfig_->resolution.width ||
+             fmt.fmt.pix.height != (unsigned int)videoConfig_->resolution.height)
     {
         throw std::runtime_error(
-            "Camera does not support specified image size : " + std::to_string(videoConfig_.resolution.width) + " x " +
-            std::to_string(videoConfig_.resolution.height));
+            "Camera does not support specified image size : " + std::to_string(videoConfig_->resolution.width) + " x " +
+            std::to_string(videoConfig_->resolution.height));
     }
     else
     {

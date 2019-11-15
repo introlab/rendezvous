@@ -12,7 +12,7 @@ namespace Model
 class CameraReader : public IVideoInput
 {
    public:
-    CameraReader(const VideoConfig& cameraConfig, std::size_t bufferCount);
+    CameraReader(std::shared_ptr<VideoConfig> cameraConfig, std::size_t bufferCount);
 
     void open() override;
     void close() override;
@@ -30,7 +30,7 @@ class CameraReader : public IVideoInput
         Image image;
     };
 
-    VideoConfig videoConfig_;
+    std::shared_ptr<VideoConfig> videoConfig_;
     CircularBuffer<IndexedImage> images_;
 
    private:

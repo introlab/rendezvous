@@ -11,9 +11,13 @@ namespace Model
 {
 DonutSlice createDewarpingDonutSlice(DonutSlice& baseDonutSlice, float centersDistance)
 {
-    if (baseDonutSlice.middleAngle > 2 * math::PI || baseDonutSlice.angleSpan > 2 * math::PI)
+    if (baseDonutSlice.middleAngle > 2 * math::PI)
     {
-        throw std::invalid_argument("Donut slice angles must be in radian!");
+        throw std::invalid_argument("Donut slice middle angle must be between 0 and 2*PI rad!");
+    }
+    else if (baseDonutSlice.angleSpan > 2 * math::PI)
+    {
+        throw std::invalid_argument("Donut slice angle span must be between 0 and 2*PI rad!");
     }
 
     float xNewCenter = baseDonutSlice.xCenter - sin(baseDonutSlice.middleAngle) * centersDistance;
@@ -30,14 +34,15 @@ DonutSlice createDewarpingDonutSlice(DonutSlice& baseDonutSlice, float centersDi
     return DonutSlice(xNewCenter, yNewCenter, newInRadius, newOutRadius, baseDonutSlice.middleAngle, newAngleSpan);
 }
 
-DewarpingParameters getDewarpingParameters(const Dim2<int>& imageSize, const DewarpingConfig& dewarpingConfig,
+DewarpingParameters getDewarpingParameters(const Dim2<int>& imageSize, std::shared_ptr<DewarpingConfig> dewarpingConfig,
                                            float middleAngle)
 {
     DonutSlice donutSlice(static_cast<float>(imageSize.width) / 2.f, static_cast<float>(imageSize.height) / 2.f,
-                          dewarpingConfig.inRadius, dewarpingConfig.outRadius, middleAngle, dewarpingConfig.angleSpan);
+                          dewarpingConfig->inRadius, dewarpingConfig->outRadius, middleAngle,
+                          dewarpingConfig->angleSpan);
 
-    return getDewarpingParameters(donutSlice, dewarpingConfig.topDistorsionFactor,
-                                  dewarpingConfig.bottomDistorsionFactor);
+    return getDewarpingParameters(donutSlice, dewarpingConfig->topDistorsionFactor,
+                                  dewarpingConfig->bottomDistorsionFactor);
 }
 
 DewarpingParameters getDewarpingParameters(DonutSlice& baseDonutSlice, float topDistorsionFactor,
@@ -75,19 +80,19 @@ DewarpingParameters getDewarpingParametersFromNewDonutSlice(DonutSlice& baseDonu
 
 DewarpingParameters getDewarpingParametersFromAngleBoundingBox(const SphericalAngleRect& angleRect,
                                                                const Point<float>& fisheyeCenter,
-                                                               const DewarpingConfig& dewarpingConfig)
+                                                               std::shared_ptr<DewarpingConfig> dewarpingConfig)
 {
     SphericalAngleBox angleBox = math::convertToAngleBox(angleRect);
-    DonutSlice donutSlice(fisheyeCenter.x, fisheyeCenter.y, dewarpingConfig.inRadius, dewarpingConfig.outRadius,
+    DonutSlice donutSlice(fisheyeCenter.x, fisheyeCenter.y, dewarpingConfig->inRadius, dewarpingConfig->outRadius,
                           angleRect.azimuth, angleRect.azimuthSpan);
-    DewarpingParameters dewarpingParameters =
-        getDewarpingParameters(donutSlice, dewarpingConfig.topDistorsionFactor, dewarpingConfig.bottomDistorsionFactor);
+    DewarpingParameters dewarpingParameters = getDewarpingParameters(donutSlice, dewarpingConfig->topDistorsionFactor,
+                                                                     dewarpingConfig->bottomDistorsionFactor);
 
     float maxElevation = math::getElevationFromImage(Point<float>(dewarpingParameters.dewarpWidth / 2.f, 0),
-                                                     dewarpingConfig.fisheyeAngle, fisheyeCenter, dewarpingParameters);
+                                                     dewarpingConfig->fisheyeAngle, fisheyeCenter, dewarpingParameters);
     float minElevation = math::getElevationFromImage(
         Point<float>(dewarpingParameters.dewarpWidth / 2.f, dewarpingParameters.dewarpHeight),
-        dewarpingConfig.fisheyeAngle, fisheyeCenter, dewarpingParameters);
+        dewarpingConfig->fisheyeAngle, fisheyeCenter, dewarpingParameters);
 
     float deltaElevation = maxElevation - minElevation;
     float deltaElevationTop = maxElevation - angleBox.topElevation;

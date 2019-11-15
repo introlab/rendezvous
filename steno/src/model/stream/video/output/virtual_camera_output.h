@@ -12,14 +12,14 @@ namespace Model
 class VirtualCameraOutput : public IVideoOutput
 {
    public:
-    explicit VirtualCameraOutput(const VideoConfig& videoConfig);
+    explicit VirtualCameraOutput(std::shared_ptr<VideoConfig> videoConfig);
 
     void open() override;
     void close() override;
     void writeImage(const Image& image) override;
 
    private:
-    VideoConfig videoConfig_;
+    std::shared_ptr<VideoConfig> videoConfig_;
     V4l2Output* videoOutput_;
 };
 

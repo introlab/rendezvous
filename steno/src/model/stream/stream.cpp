@@ -1,17 +1,23 @@
 #include "stream.h"
 
+#include "model/app_config.h"
+#include "model/stream/audio/audio_config.h"
 #include "model/stream/audio/file/raw_file_audio_sink.h"
 #include "model/stream/audio/odas/odas_audio_source.h"
 #include "model/stream/audio/odas/odas_client.h"
 #include "model/stream/audio/odas/odas_position_source.h"
 #include "model/stream/audio/pulseaudio/pulseaudio_sink.h"
+#include "model/stream/stream_config.h"
 #include "model/stream/utils/images/images.h"
-#include "model/stream/utils/math/angle_calculations.h"
+#include "model/stream/utils/models/dim2.h"
 #include "model/stream/utils/models/spherical_angle_rect.h"
 #include "model/stream/utils/threads/lock_triple_buffer.h"
 #include "model/stream/utils/threads/readerwriterqueue.h"
+#include "model/stream/video/detection/darknet_config.h"
+#include "model/stream/video/dewarping/models/dewarping_config.h"
 #include "model/stream/video/impl/implementation_factory.h"
 #include "model/stream/video/output/virtual_camera_output.h"
+#include "model/stream/video/video_config.h"
 
 #include <string>
 #include <vector>
@@ -20,54 +26,58 @@
 
 namespace Model
 {
-Stream::Stream(const VideoConfig& videoInputConfig, const VideoConfig& videoOutputConfig,
-               const AudioConfig& audioInputConfig, const AudioConfig& audioOutputConfig,
-               const DewarpingConfig& dewarpingConfig)
+Stream::Stream(std::shared_ptr<Config> config)
     : m_state(IStream::State::Stopped)
-    , m_videoInputConfig(videoInputConfig)
-    , m_videoOutputConfig(videoOutputConfig)
-    , m_audioInputConfig(audioInputConfig)
-    , m_audioOutputConfig(audioOutputConfig)
-    , m_dewarpingConfig(dewarpingConfig)
     , m_mediaThread(nullptr)
     , m_detectionThread(nullptr)
     , m_implementationFactory(false)
 {
-    int detectionDewarpingCount = 4;
-    float aspectRatio = 3.f / 4.f;
-    float minElevation = math::deg2rad(0.f);
-    float maxElevation = math::deg2rad(90.f);
+    std::shared_ptr<AudioConfig> audioInputConfig = config->audioInputConfig();
+    std::shared_ptr<VideoConfig> videoOutputConfig = config->videoOutputConfig();
+    std::shared_ptr<VideoConfig> videoInputConfig = config->videoInputConfig();
+    std::shared_ptr<StreamConfig> streamConfig = config->streamConfig();
+    std::shared_ptr<DarknetConfig> darknetConfig = config->darknetConfig();
 
-    m_imageBuffer = std::make_shared<LockTripleBuffer<Image>>(RGBImage(m_videoInputConfig.resolution));
+    float aspectRatio = streamConfig->value(StreamConfig::ASPECT_RATIO_WIDTH).toFloat() /
+                        streamConfig->value(StreamConfig::ASPECT_RATIO_HEIGHT).toFloat();
+    float minElevation = streamConfig->value(StreamConfig::MIN_ELEVATION).toFloat();
+    float maxElevation = streamConfig->value(StreamConfig::MAX_ELEVATION).toFloat();
+    int fps = videoOutputConfig->value(VideoConfig::FPS).toInt();
+    Dim2<int> resolution(videoInputConfig->value(VideoConfig::WIDTH).toInt(),
+                         videoInputConfig->value(VideoConfig::HEIGHT).toInt());
+
     std::shared_ptr<moodycamel::ReaderWriterQueue<std::vector<SphericalAngleRect>>> detectionQueue =
         std::make_shared<moodycamel::ReaderWriterQueue<std::vector<SphericalAngleRect>>>(1);
 
+    int sleepBetweenLayersForwardUs = darknetConfig->value(DarknetConfig::SLEEP_BETWEEN_LAYERS_FORWARD_US).toInt();
     std::string configFile =
         (QCoreApplication::applicationDirPath() + "/../configs/yolo/cfg/yolov3-tiny.cfg").toStdString();
     std::string weightsFile =
         (QCoreApplication::applicationDirPath() + "/../configs/yolo/weights/yolov3-tiny.weights").toStdString();
     std::string metaFile = (QCoreApplication::applicationDirPath() + "/../configs/yolo/cfg/coco.data").toStdString();
 
+    m_imageBuffer = std::make_shared<LockTripleBuffer<Image>>(RGBImage(resolution));
+
     m_objectFactory = m_implementationFactory.getDetectionObjectFactory();
     m_objectFactory->allocateObjectLockTripleBuffer(*m_imageBuffer);
 
     m_detectionThread = std::make_unique<DetectionThread>(
-        m_imageBuffer, m_implementationFactory.getDetector(configFile, weightsFile, metaFile), detectionQueue,
-        m_implementationFactory.getDetectionFisheyeDewarper(aspectRatio),
+        m_imageBuffer,
+        m_implementationFactory.getDetector(configFile, weightsFile, metaFile, sleepBetweenLayersForwardUs),
+        detectionQueue, m_implementationFactory.getDetectionFisheyeDewarper(aspectRatio),
         m_implementationFactory.getDetectionObjectFactory(), m_implementationFactory.getDetectionSynchronizer(),
-        m_dewarpingConfig, detectionDewarpingCount);
+        config->dewarpingConfig());
 
     m_mediaThread = std::make_unique<MediaThread>(
-        std::make_unique<OdasAudioSource>(10030, 1000 / m_videoOutputConfig.fpsTarget, 4, m_audioInputConfig),
+        std::make_unique<OdasAudioSource>(10030, 1000 / fps, 4, audioInputConfig),
         std::make_unique<RawFileAudioSink>("audio_output.raw"), std::make_unique<OdasPositionSource>(10020),
-        m_implementationFactory.getCameraReader(m_videoInputConfig), m_implementationFactory.getFisheyeDewarper(),
-        m_implementationFactory.getObjectFactory(), std::make_unique<VirtualCameraOutput>(m_videoOutputConfig),
+        m_implementationFactory.getCameraReader(videoInputConfig), m_implementationFactory.getFisheyeDewarper(),
+        m_implementationFactory.getObjectFactory(), std::make_unique<VirtualCameraOutput>(videoOutputConfig),
         m_implementationFactory.getSynchronizer(),
         std::make_unique<VirtualCameraManager>(aspectRatio, minElevation, maxElevation), detectionQueue, m_imageBuffer,
-        m_implementationFactory.getImageConverter(), m_dewarpingConfig, m_videoInputConfig, m_videoOutputConfig,
-        m_audioInputConfig, m_audioOutputConfig);
+        m_implementationFactory.getImageConverter(), config);
 
-    m_odasClient = std::make_unique<OdasClient>();
+    m_odasClient = std::make_unique<OdasClient>(config->appConfig());
     m_odasClient->attach(this);
 }
 

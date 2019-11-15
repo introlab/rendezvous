@@ -2,12 +2,17 @@
 
 #include "model/stream/utils/cuda_utils.cuh"
 
+#include <cstring>
+
 namespace Model
 {
-CudaCameraReader::CudaCameraReader(const VideoConfig& videoConfig)
+CudaCameraReader::CudaCameraReader(std::shared_ptr<VideoConfig> videoConfig)
     : CameraReader(videoConfig, 3)
     , nextImage_(nullptr)
+    , pageLockedImage_(videoConfig->resolution.width, videoConfig->resolution.height, videoConfig->imageFormat)
 {
+    checkCuda(cudaMallocHost(&pageLockedImage_.hostData, pageLockedImage_.size, 0));
+
     for (std::size_t i = 0; i < images_.size(); ++i)
     {
         deviceCudaObjectFactory_.allocateObject(images_.current().image);
@@ -19,6 +24,8 @@ CudaCameraReader::CudaCameraReader(const VideoConfig& videoConfig)
 
 CudaCameraReader::~CudaCameraReader()
 {
+    cudaFreeHost(pageLockedImage_.hostData);
+
     for (std::size_t i = 0; i < images_.size(); ++i)
     {
         deviceCudaObjectFactory_.deallocateObject(images_.current().image);
@@ -31,10 +38,15 @@ CudaCameraReader::~CudaCameraReader()
 void CudaCameraReader::open()
 {
     CameraReader::open();
-
-    // Read a frame to prepare the next read
     nextImage_ = &CameraReader::readImage();
-    cudaMemcpyAsync(nextImage_->deviceData, nextImage_->hostData, nextImage_->size, cudaMemcpyHostToDevice, stream_);
+    copyImageToDevice(*nextImage_);
+    cudaStreamSynchronize(stream_);
+}
+
+void CudaCameraReader::close()
+{
+    CameraReader::close();
+    nextImage_ = nullptr;
 }
 
 const Image& CudaCameraReader::readImage()
@@ -45,11 +57,21 @@ const Image& CudaCameraReader::readImage()
     }
 
     const Image& image = *nextImage_;
-    cudaStreamSynchronize(stream_);
-
     nextImage_ = &CameraReader::readImage();
-    cudaMemcpyAsync(nextImage_->deviceData, nextImage_->hostData, nextImage_->size, cudaMemcpyHostToDevice, stream_);
+    copyImageToDevice(*nextImage_);
 
     return image;
+}
+
+void CudaCameraReader::copyImageToDevice(const Image& image)
+{
+    // Copy the image data to a page-locked image (this is for faster async copy to device memory)
+    std::memcpy(pageLockedImage_.hostData, image.hostData, image.size);
+
+    // Wait for the previous async copy completion
+    cudaStreamSynchronize(stream_);
+
+    // Async copy to device memory
+    cudaMemcpyAsync(image.deviceData, pageLockedImage_.hostData, image.size, cudaMemcpyHostToDevice, stream_);
 }
 }    // namespace Model

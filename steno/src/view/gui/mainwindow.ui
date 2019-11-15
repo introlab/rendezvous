@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Steno - Groupe RendezVoUS</string>
   </property>
-  <widget class="QWidget" name="centralWidget">
+  <widget class="QWidget" name="MainWidget">
    <layout class="QGridLayout" name="gridLayout">
     <property name="leftMargin">
      <number>0</number>
@@ -31,10 +31,16 @@
      <number>0</number>
     </property>
     <item row="0" column="0">
-     <layout class="QHBoxLayout" name="mainLayout">
-      <property name="spacing">
-       <number>0</number>
+     <layout class="QGridLayout" name="mainLayout">
+      <property name="sizeConstraint">
+       <enum>QLayout::SetFixedSize</enum>
       </property>
+      <item row="0" column="0">
+       <layout class="QVBoxLayout" name="leftLayout"/>
+      </item>
+      <item row="0" column="1">
+       <layout class="QVBoxLayout" name="rightLayout"/>
+      </item>
      </layout>
     </item>
    </layout>

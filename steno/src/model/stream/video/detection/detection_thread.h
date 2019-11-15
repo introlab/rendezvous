@@ -12,6 +12,8 @@
 #include "model/stream/video/dewarping/i_detection_fisheye_dewarper.h"
 #include "model/stream/video/dewarping/models/dewarping_config.h"
 
+#include <memory>
+
 namespace Model
 {
 class DetectionThread : public Thread
@@ -20,8 +22,7 @@ class DetectionThread : public Thread
     DetectionThread(std::shared_ptr<LockTripleBuffer<Image>> imageBuffer, std::unique_ptr<IDetector> detector,
                     std::shared_ptr<moodycamel::ReaderWriterQueue<std::vector<SphericalAngleRect>>> detectionQueue,
                     std::unique_ptr<IDetectionFisheyeDewarper> dewarper, std::unique_ptr<IObjectFactory> objectFactory,
-                    std::unique_ptr<ISynchronizer> synchronizer, const DewarpingConfig& dewarpingConfig,
-                    int dewarpCount);
+                    std::unique_ptr<ISynchronizer> synchronizer, std::shared_ptr<DewarpingConfig> dewarpingConfig);
 
    private:
     void run() override;
@@ -38,7 +39,7 @@ class DetectionThread : public Thread
     std::unique_ptr<ISynchronizer> synchronizer_;
     std::shared_ptr<moodycamel::ReaderWriterQueue<std::vector<SphericalAngleRect>>> detectionQueue_;
 
-    DewarpingConfig dewarpingConfig_;
+    std::shared_ptr<DewarpingConfig> dewarpingConfig_;
     int dewarpCount_;
 };
 

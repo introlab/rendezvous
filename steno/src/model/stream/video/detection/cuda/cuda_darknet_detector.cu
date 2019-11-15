@@ -3,8 +3,8 @@
 namespace Model
 {
 CudaDarknetDetector::CudaDarknetDetector(const std::string& configFile, const std::string& weightsFile,
-                                         const std::string& metaFile)
-    : BaseDarknetDetector(configFile, weightsFile, metaFile)
+                                         const std::string& metaFile, int sleepBetweenLayersForwardUs)
+    : BaseDarknetDetector(configFile, weightsFile, metaFile, sleepBetweenLayersForwardUs)
 {
 }
 

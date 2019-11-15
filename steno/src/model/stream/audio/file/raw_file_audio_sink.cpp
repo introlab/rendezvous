@@ -26,7 +26,10 @@ void RawFileAudioSink::open()
 
 void RawFileAudioSink::close()
 {
-    fclose(m_file);
+    if (m_file != nullptr)
+    {
+        fclose(m_file);
+    }
 }
 
 int RawFileAudioSink::write(uint8_t* buffer, int bytesToWrite)
