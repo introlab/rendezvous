@@ -1,4 +1,5 @@
 #include "top_bar.h"
+#include "model/app_config.h"
 #include "model/config/config.h"
 #include "model/transcription/transcription_config.h"
 #include "ui_top_bar.h"
@@ -112,8 +113,8 @@ void TopBar::onRecorderStateChanged(const QMediaRecorder::State& state)
                 transcriptionConfig->value(Model::TranscriptionConfig::AUTOMATIC_TRANSCRIPTION).toBool();
             if (isTranscriptionEnabled)
             {
-                m_transcription->transcribe(QCoreApplication::applicationDirPath() +
-                                            "/../resources/test-transcription.wav");
+                m_transcription->transcribe(m_config->appConfig()->value(Model::AppConfig::OUTPUT_FOLDER).toString() +
+                                            "/video.webm");
             }
             break;
         }

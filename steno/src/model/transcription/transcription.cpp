@@ -1,4 +1,5 @@
 #include "transcription.h"
+#include "model/app_config.h"
 #include "model/config/config.h"
 #include "transcription_config.h"
 
@@ -10,6 +11,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
+#include <QProcess>
 #include <QSslCertificate>
 #include <QSslConfiguration>
 #include <QSslKey>
@@ -20,11 +22,14 @@ namespace Model
 {
 Transcription::Transcription(std::shared_ptr<Config> config, QObject* parent)
     : QObject(parent)
-    , m_config(config->transcriptionConfig())
+    , m_config(config)
 {
     m_manager = std::make_unique<QNetworkAccessManager>();
 
-    connect(m_manager.get(), &QNetworkAccessManager::finished, [=](QNetworkReply* reply) { emit finished(reply); });
+    connect(m_manager.get(), &QNetworkAccessManager::finished, [=](QNetworkReply* reply) {
+        postTranscription();
+        emit finished(reply);
+    });
 }
 
 /**
@@ -34,29 +39,49 @@ Transcription::Transcription(std::shared_ptr<Config> config, QObject* parent)
  */
 bool Transcription::transcribe(const QString& videoFilePath)
 {
-    QString wavFilePath;
-    bool isOK = prepareTranscription(videoFilePath, wavFilePath);
+    bool isOK = prepareTranscription(videoFilePath);
     if (!isOK) return isOK;
 
-    isOK = requestTranscription(wavFilePath);
-    if (!isOK) return isOK;
-
-    isOK = postTranscription(wavFilePath);
+    isOK = requestTranscription();
     return isOK;
 }
 
 /**
  * @brief Prepare the ssl configuration and generate the audio file from the video file in input.
  * @param [IN] videoFilePath - video filepath to transcribe the audio.
- * @param [OUT] wavFilePath - filepath of the generated audio file.
  * @return true/false if success
  */
-bool Transcription::prepareTranscription(const QString& videoFilePath, QString& wavFilePath)
+bool Transcription::prepareTranscription(const QString& videoFilePath)
 {
-    // TODO: take the videoFilePath file and create a temp wav file.
-    wavFilePath = videoFilePath;
-    bool isOK = configureRequest();
+    const auto appConfig = m_config->appConfig();
+    const QString& outputFolder = appConfig->value(AppConfig::OUTPUT_FOLDER).toString();
+    m_tempWavFilePath = outputFolder + "/audio.wav";
+    bool isOK = extractAudioFromVideo(videoFilePath);
+    if (!isOK) return false;
+
+    isOK = configureRequest();
     return isOK;
+}
+
+/**
+ * @brief Transcription::extractAudioFromVideo
+ * @param videoFilePath - file to extract the audio
+ * @return true/false if success
+ */
+bool Transcription::extractAudioFromVideo(const QString& videoFilePath)
+{
+    if (!QFile::exists(videoFilePath))
+    {
+        qCritical() << "Cannot find video file:" << videoFilePath;
+        return false;
+    }
+
+    QProcess process;
+    const QString command = "ffmpeg -i " + videoFilePath + " -f wav " + m_tempWavFilePath;
+    process.start(command);
+
+    process.waitForFinished();
+    return process.exitCode() == 0;
 }
 
 /**
@@ -92,13 +117,12 @@ bool Transcription::configureRequest()
 
 /**
  * @brief Ask the transcription server for a transcript of a wav file in input.
- * @param [IN] wavFilePath - audio filepath to transcribe.
  * @return true/false if success
  */
-bool Transcription::requestTranscription(const QString& wavFilePath)
+bool Transcription::requestTranscription()
 {
     // body construction (put the audio file in the request)
-    QFile* audioFile = new QFile(wavFilePath);
+    QFile* audioFile = new QFile(m_tempWavFilePath);
     if (!audioFile->exists()) return false;
     audioFile->open(QIODevice::ReadOnly);
 
@@ -121,12 +145,14 @@ bool Transcription::requestTranscription(const QString& wavFilePath)
     QUrlQuery query;
     query.addQueryItem("encoding", encodingName(Encoding::LINEAR16));
     query.addQueryItem("enhanced", "true");
-    const Language lang = static_cast<Language>(m_config->value(TranscriptionConfig::LANGUAGE).toInt());
+
+    const auto transcriptionConfig = m_config->transcriptionConfig();
+    const Language lang = static_cast<Language>(transcriptionConfig->value(TranscriptionConfig::LANGUAGE).toInt());
     query.addQueryItem("language", languageName(lang));
-    query.addQueryItem("sampleRate", "44100");
+
+    query.addQueryItem("sampleRate", "48000");
     query.addQueryItem("audioChannels", "2");
     query.addQueryItem("model", modelName(Model::DEFAULT));
-    query.addQueryItem("storage", "true");
     // TODO: Make a UID generator that each Jetson will use to acquire a unique ID and use it as bucketID.
     query.addQueryItem("bucketID", "steno1");
 
@@ -145,13 +171,36 @@ bool Transcription::requestTranscription(const QString& wavFilePath)
 
 /**
  * @brief Delete the temporary audio file generated and generate the srt file.
- * @param [IN] wavFilePath - audio filepath to delete.
  * @return true/false if success
  */
-bool Transcription::postTranscription(const QString& wavFilePath)
+bool Transcription::postTranscription()
 {
-    // TODO: delete the temp wav file generated.
+    bool isOK = deleteFile();
+    if (!isOK) return false;
     // TODO: ask srt file generation.
     return true;
+}
+
+/**
+ * @brief Delete the temp audio file from the system.
+ * @return true/false if success
+ */
+bool Transcription::deleteFile()
+{
+    const QString program = "rm";
+    QStringList arguments;
+    arguments << m_tempWavFilePath;
+
+    if (!QFile::exists(m_tempWavFilePath))
+    {
+        qCritical() << "Cannot find file to delete:" << m_tempWavFilePath;
+        return false;
+    }
+
+    QProcess process;
+    process.start(program, arguments);
+
+    process.waitForFinished();
+    return process.exitCode() == 0;
 }
 }    // namespace Model
