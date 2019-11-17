@@ -1,10 +1,10 @@
 #include "top_bar.h"
+#include "colors.h"
 #include "model/app_config.h"
 #include "model/config/config.h"
 #include "model/transcription/transcription_config.h"
+#include "model/utils/filesutil.h"
 #include "ui_top_bar.h"
-
-#include "colors.h"
 
 #include <QDesktopServices>
 #include <QNetworkReply>
@@ -112,8 +112,13 @@ void TopBar::onRecorderStateChanged(const QMediaRecorder::State& state)
                 transcriptionConfig->value(Model::TranscriptionConfig::AUTOMATIC_TRANSCRIPTION).toBool();
             if (isTranscriptionEnabled)
             {
-                m_transcription->transcribe(m_config->appConfig()->value(Model::AppConfig::OUTPUT_FOLDER).toString() +
-                                            "/video.webm");
+                QString folder = m_config->appConfig()->value(Model::AppConfig::OUTPUT_FOLDER).toString();
+                QString lastRecordingPath;
+                bool isOK = Model::Util::mostRecentModified(folder, "webm", lastRecordingPath);
+                qDebug() << lastRecordingPath;
+                if (!isOK) break;
+
+                m_transcription->transcribe(lastRecordingPath);
             }
             break;
         }
