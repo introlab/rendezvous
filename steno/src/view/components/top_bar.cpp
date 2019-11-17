@@ -45,11 +45,10 @@ TopBar::TopBar(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::Me
 
     connect(m_ui->meetButton, &QAbstractButton::clicked, [=] { QDesktopServices::openUrl(m_rendezvousMeetUrl); });
 
-    connect(m_transcription.get(), &Model::Transcription::finished, [=](QNetworkReply* reply) {
-        qDebug() << reply->readAll();
-        if (reply->error() != QNetworkReply::NoError)
+    connect(m_transcription.get(), &Model::Transcription::finished, [=](bool isOK, QString reply) {
+        if (!isOK)
         {
-            qDebug() << reply->errorString();
+            qDebug() << reply;
         }
     });
 }

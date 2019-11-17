@@ -7,6 +7,7 @@
 
 #include <QFile>
 #include <QHttpMultiPart>
+#include <QJsonDocument>
 #include <QJsonObject>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
@@ -27,8 +28,14 @@ Transcription::Transcription(std::shared_ptr<Config> config, QObject* parent)
     m_manager = std::make_unique<QNetworkAccessManager>();
 
     connect(m_manager.get(), &QNetworkAccessManager::finished, [=](QNetworkReply* reply) {
-        postTranscription();
-        emit finished(reply);
+        if (reply->error() != QNetworkReply::NoError)
+        {
+            emit finished(false, reply->errorString());
+        }
+
+        QJsonDocument doc = QJsonDocument::fromJson(reply->readAll());
+        postTranscription(doc);
+        emit finished(true, "transcription done");
     });
 }
 
@@ -171,10 +178,12 @@ bool Transcription::requestTranscription()
 
 /**
  * @brief Delete the temporary audio file generated and generate the srt file.
+ * @param response - json document of the transcription request.
  * @return true/false if success
  */
-bool Transcription::postTranscription()
+bool Transcription::postTranscription(QJsonDocument response)
 {
+    qDebug() << response;
     bool isOK = deleteFile();
     if (!isOK) return false;
     // TODO: ask srt file generation.

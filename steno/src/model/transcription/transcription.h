@@ -100,12 +100,12 @@ class Transcription : public QObject
     }
 
    signals:
-    void finished(QNetworkReply* reply);
+    void finished(bool isOK, QString reply);
 
    private:
     bool prepareTranscription(const QString& videoFilePath);
     bool requestTranscription();
-    bool postTranscription();
+    bool postTranscription(QJsonDocument response);
     bool configureRequest();
 
     bool extractAudioFromVideo(const QString& videoFilePath);
