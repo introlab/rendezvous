@@ -30,7 +30,8 @@ Transcription::Transcription(std::shared_ptr<Config> config, QObject* parent)
     connect(m_manager.get(), &QNetworkAccessManager::finished, [=](QNetworkReply* reply) {
         if (reply->error() != QNetworkReply::NoError)
         {
-            emit finished(false, reply->errorString());
+            emit finished(false, reply->readAll());
+            return;
         }
 
         QJsonDocument doc = QJsonDocument::fromJson(reply->readAll());
@@ -63,6 +64,12 @@ bool Transcription::prepareTranscription(const QString& videoFilePath)
     const auto appConfig = m_config->appConfig();
     const QString& outputFolder = appConfig->value(AppConfig::OUTPUT_FOLDER).toString();
     m_tempWavFilePath = outputFolder + "/audio.wav";
+
+    if (QFile::exists(m_tempWavFilePath))
+    {
+        deleteFile();
+    }
+
     bool isOK = extractAudioFromVideo(videoFilePath);
     if (!isOK) return false;
 
