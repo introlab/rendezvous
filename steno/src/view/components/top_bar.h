@@ -37,7 +37,7 @@ class TopBar : public QWidget
     std::shared_ptr<Model::IStream> m_stream;
     std::shared_ptr<Model::Media> m_media;
     std::shared_ptr<Model::Transcription> m_transcription;
-    std::shared_ptr<Model::Config> m_config;
+    std::shared_ptr<Model::TranscriptionConfig> m_transcriptionConfig;
     const QUrl m_rendezvousMeetUrl = QUrl("https://rendezvous-meet.com/");
 };
 

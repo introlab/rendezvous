@@ -20,7 +20,7 @@ TopBar::TopBar(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::Me
     , m_stream(stream)
     , m_media(media)
     , m_transcription(transcription)
-    , m_config(config)
+    , m_transcriptionConfig(config->transcriptionConfig())
 {
     m_ui->setupUi(this);
 
@@ -107,9 +107,8 @@ void TopBar::onRecorderStateChanged(const QMediaRecorder::State& state)
         case QMediaRecorder::State::StoppedState:
         {
             m_ui->recordButton->setText("Start recording");
-            const auto transcriptionConfig = m_config->transcriptionConfig();
             const bool isTranscriptionEnabled =
-                transcriptionConfig->value(Model::TranscriptionConfig::AUTOMATIC_TRANSCRIPTION).toBool();
+                m_transcriptionConfig->value(Model::TranscriptionConfig::AUTOMATIC_TRANSCRIPTION).toBool();
             if (isTranscriptionEnabled)
             {
                 m_transcription->transcribe(QCoreApplication::applicationDirPath() +
