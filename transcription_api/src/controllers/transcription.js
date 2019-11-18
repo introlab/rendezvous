@@ -2,6 +2,7 @@ let express = require('express');
 let router = express.Router();
 let multer = require('multer');
 let async = require('async');
+let musicMetaData = require('music-metadata');
 
 let httpErrors = require('../utils/HttpError');
 let {SpeechToText} = require('../core/speech_to_text');
@@ -20,8 +21,6 @@ router.post('/transcription', multerMiddleware.single('audio'), function(req, re
     let encoding = req.query.encoding;
     let enhanced = req.query.enhanced;
     let language = req.query.language;
-    let sampleRate = req.query.sampleRate;
-    let audioChannels = req.query.audioChannels;
     let model = req.query.model;
     let audio = req.file;
 
@@ -38,17 +37,22 @@ router.post('/transcription', multerMiddleware.single('audio'), function(req, re
         function(uri, callback) {
             let defaultConfig = speechToText.getConfig();
 
-            let config = {
-                uri: uri,
-                encoding: encoding ? encoding : defaultConfig.encoding,
-                enhanced: !!enhanced ? enhanced : defaultConfig.enhanced,
-                languageCode: language ? language : defaultConfig.languageCode,
-                model: model ? model : defaultConfig.model,
-                sampleRate: sampleRate ? sampleRate : defaultConfig.sampleRate,
-                audioChannelCount: audioChannels? audioChannels : defaultConfig.audioChannelCount
-            };
-
-            transcribe(config, callback);
+            musicMetaData.parseBuffer(audio.buffer, audio.mimetype)
+            .then(metadata => {
+                let config = {
+                    uri: uri,
+                    encoding: encoding ? encoding : defaultConfig.encoding,
+                    enhanced: !!enhanced ? enhanced : defaultConfig.enhanced,
+                    languageCode: language ? language : defaultConfig.languageCode,
+                    model: model ? model : defaultConfig.model,
+                    sampleRate: metadata.format.sampleRate,
+                    audioChannelCount: metadata.format.numberOfChannels
+                };
+    
+                transcribe(config, callback);
+            }).catch(err => {
+                callback(err);
+            });
         }
     ], function(err, transcription, words) {
         if (err) {

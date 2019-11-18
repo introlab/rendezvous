@@ -163,9 +163,6 @@ bool Transcription::requestTranscription()
     const auto transcriptionConfig = m_config->transcriptionConfig();
     const Language lang = static_cast<Language>(transcriptionConfig->value(TranscriptionConfig::LANGUAGE).toInt());
     query.addQueryItem("language", languageName(lang));
-
-    query.addQueryItem("sampleRate", "48000");
-    query.addQueryItem("audioChannels", "2");
     query.addQueryItem("model", modelName(Model::DEFAULT));
     // TODO: Make a UID generator that each Jetson will use to acquire a unique ID and use it as bucketID.
     query.addQueryItem("bucketID", "steno1");
