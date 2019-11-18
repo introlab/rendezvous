@@ -102,6 +102,10 @@ void Config::loadDefault()
 
     m_transcriptionConfig->setValue(TranscriptionConfig::Key::LANGUAGE, Transcription::Language::FR_CA);
     m_transcriptionConfig->setValue(TranscriptionConfig::Key::AUTOMATIC_TRANSCRIPTION, false);
+    m_transcriptionConfig->setValue(TranscriptionConfig::Key::CERTIFICATE_PATH,
+                                    QCoreApplication::applicationDirPath() + "/../ssl/client.crt");
+    m_transcriptionConfig->setValue(TranscriptionConfig::Key::CERTIFICATE_KEY_PATH,
+                                    QCoreApplication::applicationDirPath() + "/../ssl/client.key");
 
     m_dewarpingConfig->setValue(DewarpingConfig::Key::IN_RADIUS, 400);
     m_dewarpingConfig->setValue(DewarpingConfig::Key::OUT_RADIUS, 1400);

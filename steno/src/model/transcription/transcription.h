@@ -116,7 +116,7 @@ class Transcription : public QObject
 
     QSslConfiguration m_sslConfig;
     std::unique_ptr<QNetworkAccessManager> m_manager;
-    QUrl m_url = QUrl("https://localhost:3000/transcription");
+    QUrl m_url = QUrl("https://rendezvous-meet.com/transcription-api/transcription");
     std::shared_ptr<Config> m_config;
     QString m_tempWavFilePath;
 };

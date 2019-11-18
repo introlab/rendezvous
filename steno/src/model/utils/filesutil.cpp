@@ -20,6 +20,8 @@ bool mostRecentModified(const QString& directory, const QString& extension, QStr
 
     QStringList extensionFilter("*." + extension);
     QFileInfoList list = dir.entryInfoList(extensionFilter, QDir::NoFilter, QDir::Time);
+    if (list.isEmpty()) return false;
+
     mostRecentModifiedFilePath = list.first().absoluteFilePath();
     return true;
 }

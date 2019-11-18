@@ -114,18 +114,20 @@ bool Transcription::configureRequest()
     m_sslConfig = QSslConfiguration::defaultConfiguration();
     m_sslConfig.setProtocol(QSsl::TlsV1_2);
 
-    QFile certFile("/home/morel/development/rendezvous/transcription_api/ssl/client.crt");
+    const auto transcriptionConfig = m_config->transcriptionConfig();
+    QFile certFile(transcriptionConfig->value(TranscriptionConfig::CERTIFICATE_PATH).toString());
     if (!certFile.exists()) return false;
 
     certFile.open(QFile::ReadOnly);
     QSslCertificate certificate(&certFile);
     certFile.close();
 
-    QFile keyFile("/home/morel/development/rendezvous/transcription_api/ssl/client.key");
+    QFile keyFile(transcriptionConfig->value(TranscriptionConfig::CERTIFICATE_KEY_PATH).toString());
     if (!keyFile.exists()) return false;
 
     keyFile.open(QFile::ReadOnly);
-    QSslKey key(&keyFile, QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey, "password");
+    // TODO: find a solution for the key password.
+    QSslKey key(&keyFile, QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey, "carlosmatos");
     keyFile.close();
 
     m_sslConfig.setPrivateKey(key);
