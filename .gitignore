@@ -76,6 +76,7 @@ transcription_api/node_modules
 transcription_api/service_account.json
 transcription_api/config/development/.env
 !transcription_api/bin/www.js
+output/
 
 # Odas
 odas/

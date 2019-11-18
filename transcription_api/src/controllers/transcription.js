@@ -2,6 +2,7 @@ let express = require('express');
 let router = express.Router();
 let multer = require('multer');
 let async = require('async');
+let musicMetaData = require('music-metadata');
 
 let httpErrors = require('../utils/HttpError');
 let {SpeechToText} = require('../core/speech_to_text');
@@ -16,22 +17,14 @@ let multerMiddleware = multer({
 
 router.post('/transcription', multerMiddleware.single('audio'), function(req, res, next) {
     // Request validation
-    let uploadToGStorage = req.query.storage == 'true';
     let bucketID = req.query.bucketID;
     let encoding = req.query.encoding;
     let enhanced = req.query.enhanced;
     let language = req.query.language;
-    let sampleRate = req.query.sampleRate;
-    let audioChannels = req.query.audioChannels;
     let model = req.query.model;
     let audio = req.file;
 
-    if (!audio) {
-        res.sendStatus(httpErrors.BAD_REQUEST);
-        return;
-    }
-
-    if (uploadToGStorage && !bucketID) {
+    if (!audio || !bucketID) {
         res.sendStatus(httpErrors.BAD_REQUEST);
         return;
     }
@@ -39,26 +32,27 @@ router.post('/transcription', multerMiddleware.single('audio'), function(req, re
     // Request processing
     async.waterfall([
         function(callback) {
-            if (uploadToGStorage) {
-                uploadAudioFile(bucketID, audio, callback);
-                return;
-            }
-            callback(null);
+            uploadAudioFile(bucketID, audio, callback);
         },
-        function(callback) {
+        function(uri, callback) {
             let defaultConfig = speechToText.getConfig();
 
-            let config = {
-                audio: audio,
-                encoding: encoding ? encoding : defaultConfig.encoding,
-                enhanced: !!enhanced ? enhanced : defaultConfig.enhanced,
-                languageCode: language ? language : defaultConfig.languageCode,
-                model: model ? model : defaultConfig.model,
-                sampleRate: sampleRate ? sampleRate : defaultConfig.sampleRate,
-                audioChannelCount: audioChannels? audioChannels : defaultConfig.audioChannelCount
-            };
-
-            transcribe(config, callback);
+            musicMetaData.parseBuffer(audio.buffer, audio.mimetype)
+            .then(metadata => {
+                let config = {
+                    uri: uri,
+                    encoding: encoding ? encoding : defaultConfig.encoding,
+                    enhanced: !!enhanced ? enhanced : defaultConfig.enhanced,
+                    languageCode: language ? language : defaultConfig.languageCode,
+                    model: model ? model : defaultConfig.model,
+                    sampleRate: metadata.format.sampleRate,
+                    audioChannelCount: metadata.format.numberOfChannels
+                };
+    
+                transcribe(config, callback);
+            }).catch(err => {
+                callback(err);
+            });
         }
     ], function(err, transcription, words) {
         if (err) {
@@ -109,7 +103,10 @@ let uploadAudioFile = function(bucketName, audio, next) {
             });
         }
     ], function(err) {
-        next(err);
+        if (err) return next(err);
+
+        let uri = `gs://${bucketName}/${audio.originalname}`;
+        next(null, uri);
     });
 };
 

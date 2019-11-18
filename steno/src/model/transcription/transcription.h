@@ -50,9 +50,9 @@ class Transcription : public QObject
             case Encoding::AMR_WB:
                 return "Adaptive Multi-Rate Wideband";
             case Encoding::OGG_OPUS:
-                return "OggOpus";
+                return "OGG_OPUS";
             case Encoding::SPEEX_WITH_HEADER_BYTE:
-                return "Speex Wtih Header Byte";
+                return "SPEEX_WITH_HEADER_BYTE";
         }
     }
 
@@ -100,18 +100,25 @@ class Transcription : public QObject
     }
 
    signals:
-    void finished(QNetworkReply* reply);
+    void finished(bool isOK, QString reply);
+
+   private slots:
+    void requestFinished(QNetworkReply* reply);
 
    private:
-    bool prepareTranscription(const QString& videoFilePath, QString& wavFilePath);
-    bool requestTranscription(const QString& wavFilePath);
-    bool postTranscription(const QString& wavFilePath);
+    bool prepareTranscription(const QString& videoFilePath);
+    bool requestTranscription();
+    bool postTranscription(QJsonDocument response);
     bool configureRequest();
+
+    bool extractAudioFromVideo(const QString& videoFilePath);
+    bool deleteFile();
 
     QSslConfiguration m_sslConfig;
     std::unique_ptr<QNetworkAccessManager> m_manager;
     QUrl m_url = QUrl("https://localhost:3000/transcription");
-    std::shared_ptr<TranscriptionConfig> m_config;
+    std::shared_ptr<Config> m_config;
+    QString m_tempWavFilePath;
 };
 }    // namespace Model
 

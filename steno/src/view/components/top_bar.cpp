@@ -1,9 +1,10 @@
 #include "top_bar.h"
+#include "colors.h"
+#include "model/app_config.h"
 #include "model/config/config.h"
 #include "model/transcription/transcription_config.h"
+#include "model/utils/filesutil.h"
 #include "ui_top_bar.h"
-
-#include "colors.h"
 
 #include <QDesktopServices>
 #include <QNetworkReply>
@@ -21,6 +22,7 @@ TopBar::TopBar(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::Me
     , m_media(media)
     , m_transcription(transcription)
     , m_transcriptionConfig(config->transcriptionConfig())
+    , m_applicationConfig(config->appConfig())
 {
     m_ui->setupUi(this);
 
@@ -44,13 +46,8 @@ TopBar::TopBar(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::Me
 
     connect(m_ui->meetButton, &QAbstractButton::clicked, [=] { QDesktopServices::openUrl(m_rendezvousMeetUrl); });
 
-    connect(m_transcription.get(), &Model::Transcription::finished, [=](QNetworkReply* reply) {
-        qDebug() << reply->readAll();
-        if (reply->error() != QNetworkReply::NoError)
-        {
-            qDebug() << reply->errorString();
-        }
-    });
+    connect(m_transcription.get(), &Model::Transcription::finished,
+            [=](bool isOK, QString reply) { onTranscriptionFinished(isOK, reply); });
 }
 
 void TopBar::onStreamStateChanged(const Model::IStream::State& state)
@@ -107,12 +104,10 @@ void TopBar::onRecorderStateChanged(const QMediaRecorder::State& state)
         case QMediaRecorder::State::StoppedState:
         {
             m_ui->recordButton->setText("Start recording");
-            const bool isTranscriptionEnabled =
-                m_transcriptionConfig->value(Model::TranscriptionConfig::AUTOMATIC_TRANSCRIPTION).toBool();
-            if (isTranscriptionEnabled)
+            bool isOK = askTranscription();
+            if (!isOK)
             {
-                m_transcription->transcribe(QCoreApplication::applicationDirPath() +
-                                            "/../resources/test-transcription.wav");
+                qCritical() << "transcription failed";
             }
             break;
         }
@@ -136,6 +131,40 @@ void TopBar::onRecordButtonClicked()
         case QMediaRecorder::State::PausedState:
             break;
     }
+}
+
+/**
+ * @brief Callback when a transcription is done.
+ * @param isOK - status
+ * @param reply - error message
+ */
+void TopBar::onTranscriptionFinished(bool isOK, QString reply)
+{
+    if (!isOK)
+    {
+        qCritical() << reply;
+    }
+}
+
+/**
+ * @brief Ask the model for a speech-to-text transcription
+ * @return true/false if success
+ */
+bool TopBar::askTranscription()
+{
+    const bool isTranscriptionEnabled =
+        m_transcriptionConfig->value(Model::TranscriptionConfig::AUTOMATIC_TRANSCRIPTION).toBool();
+    if (isTranscriptionEnabled)
+    {
+        QString folder = m_applicationConfig->value(Model::AppConfig::OUTPUT_FOLDER).toString();
+        QString lastRecordingPath;
+        bool isOK = Model::Util::mostRecentModified(folder, "webm", lastRecordingPath);
+        if (!isOK) return false;
+
+        isOK = m_transcription->transcribe(lastRecordingPath);
+        if (!isOK) return false;
+    }
+    return true;
 }
 
 }    // namespace View
