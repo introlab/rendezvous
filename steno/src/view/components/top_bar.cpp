@@ -115,7 +115,6 @@ void TopBar::onRecorderStateChanged(const QMediaRecorder::State& state)
                 QString folder = m_config->appConfig()->value(Model::AppConfig::OUTPUT_FOLDER).toString();
                 QString lastRecordingPath;
                 bool isOK = Model::Util::mostRecentModified(folder, "webm", lastRecordingPath);
-                qDebug() << lastRecordingPath;
                 if (!isOK) break;
 
                 m_transcription->transcribe(lastRecordingPath);

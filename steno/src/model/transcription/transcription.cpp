@@ -148,8 +148,10 @@ bool Transcription::requestTranscription()
 
     QHttpPart audioPart;
     audioPart.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("audio/wav"));
+
+    QString filename = "audio-" + QDateTime::currentDateTime().toString() + ".wav";
     audioPart.setHeader(QNetworkRequest::ContentDispositionHeader,
-                        QVariant("form-data; name=\"audio\"; filename=\"audio.wav\""));
+                        QVariant("form-data; name=\"audio\"; filename=\"" + filename + "\""));
     audioPart.setBodyDevice(audioFile);
     audioFile->setParent(multiPart);    // we can't delete the audioFile pointer, so we set the multiPart has the
                                         // parent. This way Qt will destroy audioFile pointer with the MultiPart.
