@@ -5,7 +5,7 @@
 namespace Model
 {
 std::vector<int> Classifier::classify(const std::vector<SourcePosition> &audioPositions,
-                                      const std::vector<SphericalAngleRect> &imagePositions, const int &rangeThreshold)
+                                      const std::vector<SphericalAngleRect> &imagePositions, const float &rangeThreshold)
 {
     std::vector<int> sourcesToSuppress;
 

@@ -34,7 +34,6 @@ SOURCES += \
     src/model/media_player/media_player.cpp \
     src/model/media_player/subtitles/srt_file.cpp \
     src/model/media_player/subtitles/subtitles.cpp \
-    src/model/network/local_socket_server.cpp \
     src/model/stream/video/output/default_virtual_camera_output.cpp \
     src/model/transcription/transcription.cpp \
     src/model/utils/filesutil.cpp \
@@ -91,8 +90,6 @@ HEADERS += \
     src/model/media_player/subtitles/srt_file.h \
     src/model/media_player/subtitles/subtitle_item.h \
     src/model/media_player/subtitles/subtitles.h \
-    src/model/network/i_socket_server.h \
-    src/model/network/local_socket_server.h \
     src/model/recorder/i_recorder.h \
     src/model/stream/audio/audio_config.h \
     src/model/stream/stream_config.h \

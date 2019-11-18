@@ -33,6 +33,7 @@ Stream::Stream(std::shared_ptr<Config> config)
     , m_implementationFactory(false)
 {
     std::shared_ptr<AudioConfig> audioInputConfig = config->audioInputConfig();
+    std::shared_ptr<AudioConfig> audioOutputConfig = config->audioOutputConfig();
     std::shared_ptr<VideoConfig> videoOutputConfig = config->videoOutputConfig();
     std::shared_ptr<VideoConfig> videoInputConfig = config->videoInputConfig();
     std::shared_ptr<StreamConfig> streamConfig = config->streamConfig();
@@ -69,8 +70,9 @@ Stream::Stream(std::shared_ptr<Config> config)
         config->dewarpingConfig());
 
     m_mediaThread = std::make_unique<MediaThread>(
-        std::make_unique<OdasAudioSource>(10030, 1000 / fps, 4, audioInputConfig),
-        std::make_unique<RawFileAudioSink>("audio_output.raw"), std::make_unique<OdasPositionSource>(10020),
+        std::make_unique<OdasAudioSource>(10030, 1000 / fps, 5, audioInputConfig),
+        std::make_unique<RawFileAudioSink>(QString(config->appConfig()->value(AppConfig::OUTPUT_FOLDER).toString() + "audio_output.raw").toStdString()),
+        std::make_unique<OdasPositionSource>(10020, 1024),
         m_implementationFactory.getCameraReader(videoInputConfig), m_implementationFactory.getFisheyeDewarper(),
         m_implementationFactory.getObjectFactory(), std::make_unique<VirtualCameraOutput>(videoOutputConfig),
         m_implementationFactory.getSynchronizer(),
@@ -101,11 +103,11 @@ void Stream::stop()
 {
     updateState(IStream::State::Stopping);
 
-    if (m_odasClient->getState() != OdasClientState::CRASHED)
-    {
-        m_odasClient->stop();
-        m_odasClient->join();
-    }
+     if (m_odasClient->getState() != OdasClientState::CRASHED)
+     {
+         m_odasClient->stop();
+         m_odasClient->join();
+     }
 
     m_detectionThread->stop();
     m_detectionThread->join();
