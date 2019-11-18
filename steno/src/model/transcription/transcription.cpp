@@ -27,17 +27,24 @@ Transcription::Transcription(std::shared_ptr<Config> config, QObject* parent)
 {
     m_manager = std::make_unique<QNetworkAccessManager>();
 
-    connect(m_manager.get(), &QNetworkAccessManager::finished, [=](QNetworkReply* reply) {
-        if (reply->error() != QNetworkReply::NoError)
-        {
-            emit finished(false, reply->readAll());
-            return;
-        }
+    connect(m_manager.get(), &QNetworkAccessManager::finished, [=](QNetworkReply* reply) { requestFinished(reply); });
+}
 
-        QJsonDocument doc = QJsonDocument::fromJson(reply->readAll());
-        postTranscription(doc);
-        emit finished(true, "transcription done");
-    });
+/**
+ * @brief Callback when we receive an answer from the server.
+ * @param reply - request JSON reply
+ */
+void Transcription::requestFinished(QNetworkReply* reply)
+{
+    if (reply->error() != QNetworkReply::NoError)
+    {
+        emit finished(false, reply->readAll());
+        return;
+    }
+
+    QJsonDocument doc = QJsonDocument::fromJson(reply->readAll());
+    postTranscription(doc);
+    emit finished(true, "transcription done");
 }
 
 /**

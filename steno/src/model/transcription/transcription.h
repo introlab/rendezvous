@@ -102,6 +102,9 @@ class Transcription : public QObject
    signals:
     void finished(bool isOK, QString reply);
 
+   private slots:
+    void requestFinished(QNetworkReply* reply);
+
    private:
     bool prepareTranscription(const QString& videoFilePath);
     bool requestTranscription();
