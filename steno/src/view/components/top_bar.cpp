@@ -1,20 +1,26 @@
 #include "top_bar.h"
+#include "model/config/config.h"
+#include "model/transcription/transcription_config.h"
 #include "ui_top_bar.h"
 
 #include "colors.h"
 
 #include <QDesktopServices>
-#include <QSignalBlocker>
+#include <QNetworkReply>
 #include <QStyle>
 #include <QUrl>
 
 namespace View
 {
-TopBar::TopBar(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::Media> media, QWidget* parent)
+TopBar::TopBar(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::Media> media,
+               std::shared_ptr<Model::Transcription> transcription, std::shared_ptr<Model::Config> config,
+               QWidget* parent)
     : QWidget(parent)
     , m_ui(new Ui::TopBar)
     , m_stream(stream)
     , m_media(media)
+    , m_transcription(transcription)
+    , m_transcriptionConfig(config->transcriptionConfig())
 {
     m_ui->setupUi(this);
 
@@ -36,8 +42,15 @@ TopBar::TopBar(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::Me
             [=](const QMediaRecorder::State& state) { onRecorderStateChanged(state); });
     connect(m_ui->recordButton, &QAbstractButton::clicked, [=] { onRecordButtonClicked(); });
 
-    connect(m_ui->meetButton, &QAbstractButton::clicked,
-            [] { QDesktopServices::openUrl(QUrl("https://rendezvous-meet.com/")); });
+    connect(m_ui->meetButton, &QAbstractButton::clicked, [=] { QDesktopServices::openUrl(m_rendezvousMeetUrl); });
+
+    connect(m_transcription.get(), &Model::Transcription::finished, [=](QNetworkReply* reply) {
+        qDebug() << reply->readAll();
+        if (reply->error() != QNetworkReply::NoError)
+        {
+            qDebug() << reply->errorString();
+        }
+    });
 }
 
 void TopBar::onStreamStateChanged(const Model::IStream::State& state)
@@ -92,8 +105,17 @@ void TopBar::onRecorderStateChanged(const QMediaRecorder::State& state)
             m_ui->recordButton->setText("Stop recording");
             break;
         case QMediaRecorder::State::StoppedState:
+        {
             m_ui->recordButton->setText("Start recording");
+            const bool isTranscriptionEnabled =
+                m_transcriptionConfig->value(Model::TranscriptionConfig::AUTOMATIC_TRANSCRIPTION).toBool();
+            if (isTranscriptionEnabled)
+            {
+                m_transcription->transcribe(QCoreApplication::applicationDirPath() +
+                                            "/../resources/test-transcription.wav");
+            }
             break;
+        }
         case QMediaRecorder::State::PausedState:
             break;
     }

@@ -36,6 +36,7 @@ SOURCES += \
     src/model/media_player/subtitles/subtitles.cpp \
     src/model/network/local_socket_server.cpp \
     src/model/stream/video/output/default_virtual_camera_output.cpp \
+    src/model/transcription/transcription.cpp \
     src/model/utils/time.cpp \
     src/model/stream/audio/file/raw_file_audio_sink.cpp \
     src/model/stream/audio/odas/odas_audio_source.cpp \
@@ -94,8 +95,8 @@ HEADERS += \
     src/model/recorder/i_recorder.h \
     src/model/stream/audio/audio_config.h \
     src/model/stream/stream_config.h \
+    src/model/transcription/transcription.h \
     src/model/transcription/transcription_config.h \
-    src/model/transcription/transcription_constants.h \
     src/model/stream/video/output/default_virtual_camera_output.h \
     src/model/utils/observer/i_observer.h \
     src/model/utils/observer/i_subject.h \
