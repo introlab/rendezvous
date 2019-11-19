@@ -126,7 +126,7 @@ CudaImageConverter::CudaImageConverter(cudaStream_t stream)
 {
 }
 
-void CudaImageConverter::convert(const Image& inImage, const Image& outImage)
+void CudaImageConverter::convert(const Image& inImage, Image& outImage)
 {
     int size = inImage.width * inImage.height;
     int blockCount = (size + BLOCK_SIZE - 1) / BLOCK_SIZE;
@@ -170,6 +170,7 @@ void CudaImageConverter::convert(const Image& inImage, const Image& outImage)
                                     getImageFormatString(outImage.format) + " is not defined!");
     }
     cudaStreamSynchronize(stream_);
+    outImage.timeStamp = inImage.timeStamp;
 }
 
 }    // namespace Model

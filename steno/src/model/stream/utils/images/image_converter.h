@@ -8,7 +8,7 @@ namespace Model
 class ImageConverter : public IImageConverter
 {
    public:
-    void convert(const Image& inImage, const Image& outImage) override;
+    void convert(const Image& inImage, Image& outImage) override;
 
    private:
     void getRGBFromUYVY(const UYVY& uyvy, RGB& rgb1, RGB& rgb2);
