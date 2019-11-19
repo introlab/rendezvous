@@ -3,37 +3,32 @@
 
 #include <memory>
 
-#include "model/network/local_socket_server.h"
-#include "model/stream/audio/i_position_source.h"
+#include <QThread>
 
-constexpr int POSITION_BUFFER_SIZE = 10000;
+#include "model/stream/audio/i_position_source.h"
 
 class QMutex;
 
 namespace Model
 {
-class OdasPositionSource : public QObject, public IPositionSource
+class OdasPositionSource : public QThread, public IPositionSource
 {
-    Q_OBJECT
-
    public:
-    OdasPositionSource(quint16 port);
+    OdasPositionSource(int port, int positionBufferSize);
     ~OdasPositionSource() override;
 
     void open() override;
     void close() override;
     std::vector<SourcePosition> getPositions() override;
 
-   private slots:
-    void onPositionsReady(int numberOfBytes);
-
    private:
+    void run() override;
     void updatePositions(std::vector<SourcePosition>& sourcePositions);
 
-    std::unique_ptr<LocalSocketServer> m_socketServer;
+    int m_port;
     std::unique_ptr<QMutex> m_mutex;
     std::vector<SourcePosition> m_sourcePositions;
-    std::array<char, POSITION_BUFFER_SIZE> m_buffer;
+    std::shared_ptr<char> m_readBuffer;
 };
 
 }    // namespace Model

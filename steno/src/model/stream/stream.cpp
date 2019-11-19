@@ -33,6 +33,7 @@ Stream::Stream(std::shared_ptr<Config> config)
     , m_implementationFactory(false)
 {
     std::shared_ptr<AudioConfig> audioInputConfig = config->audioInputConfig();
+    std::shared_ptr<AudioConfig> audioOutputConfig = config->audioOutputConfig();
     std::shared_ptr<VideoConfig> videoOutputConfig = config->videoOutputConfig();
     std::shared_ptr<VideoConfig> videoInputConfig = config->videoInputConfig();
     std::shared_ptr<StreamConfig> streamConfig = config->streamConfig();
@@ -42,9 +43,21 @@ Stream::Stream(std::shared_ptr<Config> config)
                         streamConfig->value(StreamConfig::ASPECT_RATIO_HEIGHT).toFloat();
     float minElevation = streamConfig->value(StreamConfig::MIN_ELEVATION).toFloat();
     float maxElevation = streamConfig->value(StreamConfig::MAX_ELEVATION).toFloat();
-    int fps = videoOutputConfig->value(VideoConfig::FPS).toInt();
     Dim2<int> resolution(videoInputConfig->value(VideoConfig::WIDTH).toInt(),
                          videoInputConfig->value(VideoConfig::HEIGHT).toInt());
+
+    int fps = videoOutputConfig->value(VideoConfig::FPS).toInt();
+    if (fps == 0)
+    {
+        throw std::invalid_argument("Error in Stream - Fps cannot be 0");
+    }
+    int audioChunkDurationMs = 1000 / fps;
+
+    // TODO: config
+    int numberOfAudioBuffers = 5;
+    int positionBufferSize = 1024;
+    int odasAudioPort = 10030;
+    int odasPositionPort = 10020;
 
     std::shared_ptr<moodycamel::ReaderWriterQueue<std::vector<SphericalAngleRect>>> detectionQueue =
         std::make_shared<moodycamel::ReaderWriterQueue<std::vector<SphericalAngleRect>>>(1);
@@ -69,8 +82,9 @@ Stream::Stream(std::shared_ptr<Config> config)
         config->dewarpingConfig());
 
     m_mediaThread = std::make_unique<MediaThread>(
-        std::make_unique<OdasAudioSource>(10030, 1000 / fps, 4, audioInputConfig),
-        std::make_unique<RawFileAudioSink>("audio_output.raw"), std::make_unique<OdasPositionSource>(10020),
+        std::make_unique<OdasAudioSource>(odasAudioPort, audioChunkDurationMs, numberOfAudioBuffers, audioInputConfig),
+        std::make_unique<RawFileAudioSink>(QString(config->appConfig()->value(AppConfig::OUTPUT_FOLDER).toString() + "audio_output.raw").toStdString()),
+        std::make_unique<OdasPositionSource>(odasPositionPort, positionBufferSize),
         m_implementationFactory.getCameraReader(videoInputConfig), m_implementationFactory.getFisheyeDewarper(),
         m_implementationFactory.getObjectFactory(), std::make_unique<VirtualCameraOutput>(videoOutputConfig),
         m_implementationFactory.getSynchronizer(),
