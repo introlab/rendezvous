@@ -1,8 +1,8 @@
 #include "odas_audio_source.h"
 
 #include <cmath>
-#include <iostream>
 
+#include <QDebug>
 #include <QTcpServer>
 #include <QTcpSocket>
 
@@ -47,7 +47,7 @@ void OdasAudioSource::run()
     server->setMaxPendingConnections(1);
     server->listen(QHostAddress::Any, port_);
 
-    std::cout << "Odas audio source thread started" << std::endl;
+    qDebug() << "Odas audio source thread started";
 
     unsigned int readIndex = 0;
     while (!isInterruptionRequested())
@@ -136,7 +136,7 @@ void OdasAudioSource::run()
         }
     }
 
-    std::cout << "Odas audio source thread stopped" << std::endl;
+    qDebug() << "Odas audio source thread stopped";
 }
 
 bool OdasAudioSource::readAudioChunk(AudioChunk& outAudioChunk)

@@ -70,6 +70,12 @@ void MediaThread::run()
     // TODO: config?
     const float classifierRangeThreshold = 0.35;
 
+    if (videoInputConfig_->fpsTarget == 0)
+    {
+        qCritical() << "MediaThread: target fps cannot be zero";
+        return;
+    }
+
     int chunkDurationMs = 1000 / videoInputConfig_->fpsTarget;
 
     try

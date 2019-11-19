@@ -1,7 +1,6 @@
 #include "odas_position_source.h"
 
-#include <iostream>
-
+#include <QDebug>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QMutexLocker>
@@ -42,7 +41,7 @@ void OdasPositionSource::run()
     server->setMaxPendingConnections(1);
     server->listen(QHostAddress::Any, m_port);
 
-    std::cout << "Odas position source thread started" << std::endl;
+    qDebug() << "Odas position source thread started";
 
     char buffer[100000];
 
@@ -68,12 +67,18 @@ void OdasPositionSource::run()
 
                     QByteArray byteArray = QByteArray::fromRawData(buffer, bytesRead);
                     QJsonDocument json = QJsonDocument::fromJson(byteArray);
-
-                    QJsonArray odasSources = json["src"].toArray();
-                    for (auto it = odasSources.begin(); it < odasSources.end(); it++)
+                    if (!json.isNull())
                     {
-                        SourcePosition source = SourcePosition::deserialize(*it);
-                        sourcePositions.push_back(source);
+                        QJsonValue odasSources = json["src"];
+                        if (odasSources != QJsonValue::Undefined)
+                        {
+                            QJsonArray odasSourcesArray = odasSources.toArray();
+                            for (auto it = odasSourcesArray.begin(); it < odasSourcesArray.end(); it++)
+                            {
+                                SourcePosition source = SourcePosition::deserialize(*it);
+                                sourcePositions.push_back(source);
+                            }
+                        }
                     }
 
                     updatePositions(sourcePositions);
@@ -92,7 +97,7 @@ void OdasPositionSource::run()
         }
     }
 
-    std::cout << "Odas position source thread stopped" << std::endl;
+    qDebug() << "Odas position source thread stopped";
 }
 
 std::vector<SourcePosition> OdasPositionSource::getPositions()
