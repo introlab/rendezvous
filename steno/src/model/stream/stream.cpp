@@ -16,6 +16,7 @@
 #include "model/stream/video/detection/darknet_config.h"
 #include "model/stream/video/dewarping/models/dewarping_config.h"
 #include "model/stream/video/impl/implementation_factory.h"
+#include "model/stream/video/output/default_virtual_camera_output.h"
 #include "model/stream/video/output/virtual_camera_output.h"
 #include "model/stream/video/video_config.h"
 
@@ -30,13 +31,14 @@ Stream::Stream(std::shared_ptr<Config> config)
     : m_state(IStream::State::Stopped)
     , m_mediaThread(nullptr)
     , m_detectionThread(nullptr)
+    , m_config(config)
     , m_implementationFactory(false)
 {
-    std::shared_ptr<AudioConfig> audioInputConfig = config->audioInputConfig();
-    std::shared_ptr<VideoConfig> videoOutputConfig = config->videoOutputConfig();
-    std::shared_ptr<VideoConfig> videoInputConfig = config->videoInputConfig();
-    std::shared_ptr<StreamConfig> streamConfig = config->streamConfig();
-    std::shared_ptr<DarknetConfig> darknetConfig = config->darknetConfig();
+    std::shared_ptr<AudioConfig> audioInputConfig = m_config->audioInputConfig();
+    std::shared_ptr<VideoConfig> videoOutputConfig = m_config->videoOutputConfig();
+    std::shared_ptr<VideoConfig> videoInputConfig = m_config->videoInputConfig();
+    std::shared_ptr<StreamConfig> streamConfig = m_config->streamConfig();
+    std::shared_ptr<DarknetConfig> darknetConfig = m_config->darknetConfig();
 
     float aspectRatio = streamConfig->value(StreamConfig::ASPECT_RATIO_WIDTH).toFloat() /
                         streamConfig->value(StreamConfig::ASPECT_RATIO_HEIGHT).toFloat();
@@ -66,7 +68,7 @@ Stream::Stream(std::shared_ptr<Config> config)
         m_implementationFactory.getDetector(configFile, weightsFile, metaFile, sleepBetweenLayersForwardUs),
         detectionQueue, m_implementationFactory.getDetectionFisheyeDewarper(aspectRatio),
         m_implementationFactory.getDetectionObjectFactory(), m_implementationFactory.getDetectionSynchronizer(),
-        config->dewarpingConfig());
+        m_config->dewarpingConfig());
 
     m_mediaThread = std::make_unique<MediaThread>(
         std::make_unique<OdasAudioSource>(10030, 1000 / fps, 4, audioInputConfig),
@@ -75,9 +77,9 @@ Stream::Stream(std::shared_ptr<Config> config)
         m_implementationFactory.getObjectFactory(), std::make_unique<VirtualCameraOutput>(videoOutputConfig),
         m_implementationFactory.getSynchronizer(),
         std::make_unique<VirtualCameraManager>(aspectRatio, minElevation, maxElevation), detectionQueue, m_imageBuffer,
-        m_implementationFactory.getImageConverter(), config);
+        m_implementationFactory.getImageConverter(), m_config);
 
-    m_odasClient = std::make_unique<OdasClient>(config->appConfig());
+    m_odasClient = std::make_unique<OdasClient>(m_config->appConfig());
     m_odasClient->attach(this);
 }
 
@@ -111,6 +113,9 @@ void Stream::stop()
     m_detectionThread->join();
     m_mediaThread->stop();
     m_mediaThread->join();
+
+    Model::DefaultVirtualCameraOutput::writeDefaultImage(
+        m_config->videoOutputConfig()->value(Model::VideoConfig::DEVICE_NAME).toString());
 
     updateState(IStream::State::Stopped);
 }
