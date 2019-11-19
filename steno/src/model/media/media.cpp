@@ -18,7 +18,7 @@ Media::Media(std::shared_ptr<Config> config)
 
 void Media::setViewFinder(QCameraViewfinder* view)
 {
-    if (m_camera != nullptr)
+    if (!m_camera.isNull())
     {
         m_camera->unload();
         m_camera->setViewfinder(view);
