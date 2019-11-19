@@ -12,7 +12,9 @@ class TranscriptionConfig : public BaseConfig
     enum Key
     {
         LANGUAGE,
-        AUTOMATIC_TRANSCRIPTION
+        AUTOMATIC_TRANSCRIPTION,
+        CERTIFICATE_PATH,
+        CERTIFICATE_KEY_PATH
     };
     Q_ENUM(Key)
 

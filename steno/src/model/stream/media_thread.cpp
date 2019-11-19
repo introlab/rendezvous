@@ -68,7 +68,15 @@ void MediaThread::run()
     std::vector<Image> vcOutputFormatImages(1, Image(maxVcDim.width, maxVcDim.height, videoOutputConfig_->imageFormat));
 
     // TODO: config?
-    const int classifierRangeThreshold = 2;
+    const float classifierRangeThreshold = 0.35;
+
+    if (videoInputConfig_->fpsTarget == 0)
+    {
+        qCritical() << "MediaThread: target fps cannot be zero";
+        return;
+    }
+
+    int chunkDurationMs = 1000 / videoInputConfig_->fpsTarget;
 
     try
     {
@@ -109,10 +117,6 @@ void MediaThread::run()
 
             // Update the position and size of virtual cameras
             virtualCameraManager_->updateVirtualCameras(videoStabilizer.getLastFrameTimeMs());
-
-            AudioChunk audioChunk;
-            bool audioReadSuccess = audioSource_->readAudioChunk(audioChunk);
-            std::vector<SourcePosition> sourcePositions = positionSource_->getPositions();
 
             // Read image from video input and convert it to rgb format for dewarping
             const Image& rawImage = videoInput_->readImage();
@@ -186,21 +190,27 @@ void MediaThread::run()
                 videoOutput_->writeImage(emptyDisplay);
             }
 
-            if (audioReadSuccess)
+            std::vector<SourcePosition> sourcePositions = positionSource_->getPositions();
+            std::vector<SphericalAngleRect> imagePositions;
+            imagePositions.reserve(virtualCameras.size());
+            for (const auto& vc : virtualCameras)
             {
-                std::vector<SphericalAngleRect> imagePositions;
-                imagePositions.reserve(virtualCameras.size());
-                for (const auto& vc : virtualCameras)
-                {
-                    imagePositions.push_back(vc);
-                }
+                imagePositions.push_back(vc);
+            }
 
+            int readCount = videoStabilizer.getLastFrameTimeMs() / (chunkDurationMs / 2) + 1;
+            
+            AudioChunk audioChunk;
+            while (audioSource_->readAudioChunk(audioChunk) && readCount > 0)
+            {
                 std::vector<int> sourcesToSuppress =
                     Classifier::classify(sourcePositions, imagePositions, classifierRangeThreshold);
 
                 AudioSuppresser::suppressSources(sourcesToSuppress, audioChunk.audioData.get(), audioChunk.size);
 
                 audioSink_->write(audioChunk.audioData.get(), audioChunk.size);
+
+                --readCount;
             }
 
             detections.clear();
@@ -211,7 +221,7 @@ void MediaThread::run()
     }
     catch (const std::exception& e)
     {
-        std::cout << "Error in video thread : " << e.what() << std::endl;
+        std::cout << "Error in media thread : " << e.what() << std::endl;
     }
 
     // Clean audio and video resources

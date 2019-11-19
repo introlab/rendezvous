@@ -60,7 +60,8 @@ void CameraReader::close()
 {
     if (xioctl(VIDIOC_STREAMOFF, &buffer_.type) == ERROR_CODE)
     {
-        throw std::runtime_error("Failed to stop camera capture");
+        std::cerr << "Failed to stop camera capture" << std::endl;
+        return;
     }
 
     for (std::size_t i = 0; i < images_.size(); ++i)

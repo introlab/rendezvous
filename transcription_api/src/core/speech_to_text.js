@@ -1,7 +1,7 @@
 let speech = require('@google-cloud/speech');
 
 const EncodingTypes = {
-    ENCODING_UNSPECIFIED : 'ENCODING_USPECIFIED',
+    ENCODING_UNSPECIFIED : 'ENCODING_UNSPECIFIED',
     FLAC : 'FLAC',
     AMR : 'AMR',
     AMR_WB : 'AMR_WB',
@@ -39,7 +39,7 @@ let SpeechToText = class {
         
         // ! All the parameters needed to perform a transcription.
         this._config = {
-            audio : null,
+            uri : null,
             encoding : null,
             enhanced : false,
             languageCode : null,
@@ -109,7 +109,7 @@ let SpeechToText = class {
         }
 
         const audio = {
-            content: this._config.audio.buffer
+            uri: this._config.uri
         };
 
         const config = {
@@ -127,28 +127,28 @@ let SpeechToText = class {
             config: config
         };
 
-        const [response] = await this._client.recognize(request);
-        
-        const transcription = response.results
-            .map(result => result.alternatives[0].transcript)
-            .join('\n');
+        this._client.longRunningRecognize(request, async function(err, operation) {
+            if (err) return next(err);
+            
+            const [response] = await operation.promise();
 
-        const words = response.results
-            .map(result => result.alternatives[0].words)
+            const transcription = response.results
+                .map(result => result.alternatives[0].transcript)
+                .join('\n');
 
-        next(null, transcription, words);
+            const words = response.results
+                .map(result => result.alternatives[0].words)
+
+            next(null, transcription, words);
+        });
     }
 
     /**
      * Validates the configuration and returns an error if there is a problem.
      */
     _validateInput() {
-        if (!this._config.audio) {
+        if (!this._config.uri) {
             return new Error('Invalid audio');
-        }
-
-        if (this._config.audio.buffer.length < 100) {
-            return new Error('Audio file empty');
         }
 
         if (!EncodingTypes[this._config.encoding]) {

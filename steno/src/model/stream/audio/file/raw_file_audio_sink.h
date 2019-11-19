@@ -10,7 +10,7 @@ namespace Model
 class RawFileAudioSink : public IAudioSink
 {
    public:
-    RawFileAudioSink(std::string fileName);
+    RawFileAudioSink(const std::string& fileName);
     ~RawFileAudioSink() override;
 
     void open() override;
