@@ -120,7 +120,7 @@ void MediaThread::run()
 
             // Read image from video input and convert it to rgb format for dewarping
             const Image& rawImage = videoInput_->readImage();
-            const Image& rgbImage = imageBuffer_->getCurrent();
+            Image& rgbImage = imageBuffer_->getCurrent();
             imageConverter_->convert(rawImage, rgbImage);
             imageBuffer_->swap();
 
@@ -173,8 +173,11 @@ void MediaThread::run()
                 }
 
                 // Clear the image before writting to it
-                const Image& displayImage = displayBuffers.current();
+                Image& displayImage = displayBuffers.current();
                 std::memcpy(displayImage.hostData, emptyDisplay.hostData, displayImage.size);
+
+                // Set the timestamp of the output image to the timestamp of the input image
+                displayImage.timeStamp = rawImage.timeStamp;
 
                 // Wait for dewarping to be completed
                 synchronizer_->sync();

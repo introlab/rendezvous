@@ -34,8 +34,8 @@ class CameraReader : public IVideoInput
     CircularBuffer<IndexedImage> images_;
 
    private:
-    void queueCapture(v4l2_buffer& buf);
-    void dequeueCapture(v4l2_buffer& buf);
+    void queueCapture(IndexedImage& indexedImage);
+    void dequeueCapture(const IndexedImage& indexedImage);
     void requestBuffers(std::size_t bufferCount);
     void mapBuffer(IndexedImage& indexedImage);
     void unmapBuffer(IndexedImage& indexedImage);

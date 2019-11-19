@@ -9,7 +9,7 @@ class IImageConverter
 {
    public:
     virtual ~IImageConverter() = default;
-    virtual void convert(const Image& inImage, const Image& outImage) = 0;
+    virtual void convert(const Image& inImage, Image& outImage) = 0;
 };
 
 }    // namespace Model
