@@ -45,6 +45,7 @@ Config::Config(std::shared_ptr<QSettings> settings, const QString &configPath)
     {
         loadDefault();
     }
+    settings->sync();
 }
 
 std::shared_ptr<AppConfig> Config::appConfig() const
