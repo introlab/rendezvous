@@ -8,7 +8,7 @@
 
 namespace Model
 {
-void ImageConverter::convert(const Image& inImage, const Image& outImage)
+void ImageConverter::convert(const Image& inImage, Image& outImage)
 {
     int size = inImage.width * inImage.height;
 
@@ -62,6 +62,8 @@ void ImageConverter::convert(const Image& inImage, const Image& outImage)
         throw std::invalid_argument("Conversion from " + getImageFormatString(inImage.format) + " to " +
                                     getImageFormatString(outImage.format) + " is not defined!");
     }
+
+    outImage.timeStamp = inImage.timeStamp;
 }
 
 void ImageConverter::getRGBFromUYVY(const UYVY& uyvy, RGB& rgb1, RGB& rgb2)

@@ -18,6 +18,7 @@ struct ImageTemplate : public Dim2<int>
         , format(format)
         , bytesPerPixel(getBytesPerPixel(format))
         , size(width * height * bytesPerPixel)
+        , timeStamp(0)
         , hostData(nullptr)
         , deviceData(nullptr)
     {
@@ -26,6 +27,7 @@ struct ImageTemplate : public Dim2<int>
     ImageFormat format;
     float bytesPerPixel;
     std::size_t size;
+    uint64_t timeStamp;
 
     T* hostData;
     T* deviceData;

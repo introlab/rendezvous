@@ -6,6 +6,8 @@
 #include <unistd.h>
 #include <iostream>
 
+#include "model/stream/utils/time/time_utils.h"
+
 namespace Model
 {
 namespace
@@ -51,9 +53,7 @@ void CameraReader::open()
     }
 
     // Queue a first capture for fast read
-    v4l2_buffer buffer = buffer_;
-    buffer.index = images_.current().index;
-    queueCapture(buffer);
+    queueCapture(images_.current());
 }
 
 void CameraReader::close()
@@ -76,33 +76,34 @@ void CameraReader::close()
 
 const Image& CameraReader::readImage()
 {
-    const CameraReader::IndexedImage& currentImage = images_.current();
+    const CameraReader::IndexedImage& currentIndexedImage = images_.current();
 
-    // Change the getCurrent buffer
+    // Change the current() indexed image
     images_.next();
 
-    // This is the buffer with the queued frame
-    v4l2_buffer currentBuffer = buffer_;
-    currentBuffer.index = currentImage.index;
-    dequeueCapture(currentBuffer);
+    // Recover the last frame in queue
+    dequeueCapture(currentIndexedImage);
 
-    // This is the buffer for the next frame
-    v4l2_buffer nextBuffer = buffer_;
-    nextBuffer.index = images_.current().index;
-    queueCapture(nextBuffer);
+    // Queue the next frame
+    queueCapture(images_.current());
 
-    return currentImage.image;
+    return currentIndexedImage.image;
 }
 
-void CameraReader::queueCapture(v4l2_buffer& buffer)
+void CameraReader::queueCapture(IndexedImage& indexedImage)
 {
+    v4l2_buffer buffer = buffer_;
+    buffer.index = indexedImage.index;
+
     if (xioctl(VIDIOC_QBUF, &buffer) == ERROR_CODE)
     {
         throw std::runtime_error("Failed to querry camera buffer");
     }
+
+    indexedImage.image.timeStamp = systemTimeSinceEpoch();
 }
 
-void CameraReader::dequeueCapture(v4l2_buffer& buffer)
+void CameraReader::dequeueCapture(const IndexedImage& indexedImage)
 {
     fd_set fds;
     FD_ZERO(&fds);
@@ -117,6 +118,9 @@ void CameraReader::dequeueCapture(v4l2_buffer& buffer)
     {
         throw std::runtime_error("Error waiting for camera frame");
     }
+
+    v4l2_buffer buffer = buffer_;
+    buffer.index = indexedImage.index;
 
     if (xioctl(VIDIOC_DQBUF, &buffer) == ERROR_CODE)
     {
