@@ -95,7 +95,7 @@ std::shared_ptr<DarknetConfig> Config::darknetConfig() const
 
 void Config::loadDefault()
 {
-    m_appConfig->setValue(AppConfig::Key::OUTPUT_FOLDER, QDir::homePath());
+    m_appConfig->setValue(AppConfig::Key::OUTPUT_FOLDER, QDir::homePath() + "/");
     m_appConfig->setValue(AppConfig::Key::MICROPHONE_CONFIGURATION,
                           QCoreApplication::applicationDirPath() + "/../configs/odas/odas_16_mic.cfg");
     m_appConfig->setValue(AppConfig::Key::ODAS_LIBRARY,
