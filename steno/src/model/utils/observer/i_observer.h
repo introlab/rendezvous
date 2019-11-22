@@ -3,6 +3,9 @@
 
 namespace Model
 {
+/**
+ * @brief The IObserver class is the subscriber in the Observer design pattern. The one who gets notify.
+ */
 class IObserver
 {
    public:
