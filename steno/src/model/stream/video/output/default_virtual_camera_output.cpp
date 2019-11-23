@@ -4,6 +4,10 @@
 
 namespace Model
 {
+/**
+ * @brief Initialize the v4l2loopback device with the default image.
+ * @param [IN] - deviceName
+ */
 void DefaultVirtualCameraOutput::writeDefaultImage(const QString& deviceName)
 {
     QProcess process;

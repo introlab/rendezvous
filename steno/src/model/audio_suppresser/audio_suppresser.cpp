@@ -2,6 +2,12 @@
 
 namespace Model
 {
+/**
+ * @brief Take audio buffer in input and remove sources in sourcesToSuppress/
+ * @param [IN] sourcesToSuppress - vector of audio sources to remove.
+ * @param [IN/OUT] audioBuf - Audio buffer to modify
+ * @param [IN] bufferLength
+ */
 void AudioSuppresser::suppressSources(const std::vector<int> &sourcesToSuppress, uint8_t *audioBuf,
                                       const int bufferLength)
 {
@@ -28,6 +34,12 @@ void AudioSuppresser::suppressSources(const std::vector<int> &sourcesToSuppress,
     }
 }
 
+/**
+ * @brief Create a mask to suppress a source in a audio source.
+ * @param [IN] index - index of the source
+ * @param [OUT] mask - mask for suppression
+ * @param [IN] maskLength
+ */
 void AudioSuppresser::createMaskFromIndex(const int index, uint8_t *mask, const int maskLength)
 {
     // By default we use 16 bits precision => 2 bytes per source

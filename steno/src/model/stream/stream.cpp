@@ -104,6 +104,9 @@ Stream::~Stream()
     m_objectFactory->deallocateObjectLockTripleBuffer(*m_imageBuffer);
 }
 
+/**
+ * @brief Start children threads.
+ */
 void Stream::start()
 {
     if (m_state == IStream::State::Stopped)
@@ -115,6 +118,9 @@ void Stream::start()
     }
 }
 
+/**
+ * @brief Stop children threads.
+ */
 void Stream::stop()
 {
     updateState(IStream::State::Stopping);
@@ -142,6 +148,9 @@ void Stream::updateState(const IStream::State& state)
     emit stateChanged(m_state);
 }
 
+/**
+ * @brief What to do when a child thread crash.
+ */
 void Stream::updateObserver()
 {
     OdasClientState state = m_odasClient->getState();
