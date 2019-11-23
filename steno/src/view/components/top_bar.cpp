@@ -181,4 +181,19 @@ bool TopBar::askTranscription()
     return true;
 }
 
+/**
+ * @brief Stop the stream if it's running and if it is stopping wait that it's stopped.
+ */
+void TopBar::stopThreads()
+{
+    if (m_stream->state() == Model::IStream::Started)
+    {
+        m_stream->stop();
+    }
+    else if (m_stream->state() == Model::IStream::Stopping)
+    {
+        m_stream->join();
+    }
+}
+
 }    // namespace View

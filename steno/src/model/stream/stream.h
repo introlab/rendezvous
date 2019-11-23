@@ -25,6 +25,7 @@ class Stream : public IStream, public IObserver
 
     void start() override;
     void stop() override;
+    void join() override;
     IStream::State state() const override
     {
         return m_state;
