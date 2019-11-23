@@ -142,6 +142,16 @@ void Stream::stop()
     updateState(IStream::State::Stopped);
 }
 
+/**
+ * @brief Wait that all children threads terminate, do not call if you called Stream::stop
+ */
+void Stream::join()
+{
+    m_odasClient->join();
+    m_detectionThread->join();
+    m_mediaThread->join();
+}
+
 void Stream::updateState(const IStream::State& state)
 {
     m_state = state;

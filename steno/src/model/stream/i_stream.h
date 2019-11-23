@@ -20,6 +20,7 @@ class IStream : public QObject
     virtual ~IStream() = default;
     virtual void start() = 0;
     virtual void stop() = 0;
+    virtual void join() = 0;
     virtual State state() const = 0;
 
    signals:

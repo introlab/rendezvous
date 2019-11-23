@@ -26,6 +26,8 @@ class TopBar : public QWidget
            std::shared_ptr<Model::Transcription> transcription, std::shared_ptr<Model::Config> config,
            QWidget* parent = nullptr);
 
+    void stopThreads();
+
    private slots:
     void onStreamStateChanged(const Model::IStream::State& state);
     void onStartButtonClicked();
