@@ -13,6 +13,9 @@ BaseConfig::BaseConfig(const QString &group, std::shared_ptr<QSettings> settings
 {
 }
 
+/**
+ * @brief Update the Qt subconfigs
+ */
 void BaseConfig::updateSubconfigs()
 {
     for (auto config : m_subConfigs)
@@ -21,6 +24,10 @@ void BaseConfig::updateSubconfigs()
     }
 }
 
+/**
+ * @brief Add a subconfig section to the global config.
+ * @param [IN] - config to add.
+ */
 void BaseConfig::addSubConfig(std::shared_ptr<BaseConfig> cfg)
 {
     if (!cfg->group().isEmpty() && !m_mapConfig.contains(cfg->group()))

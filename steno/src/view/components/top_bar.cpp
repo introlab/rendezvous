@@ -50,6 +50,10 @@ TopBar::TopBar(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::Me
             [=](bool isOK, QString reply) { onTranscriptionFinished(isOK, reply); });
 }
 
+/**
+ * @brief Callback when the stream change of state, edit the UI in consequence.
+ * @param [IN] state
+ */
 void TopBar::onStreamStateChanged(const Model::IStream::State& state)
 {
     switch (state)
@@ -72,6 +76,9 @@ void TopBar::onStreamStateChanged(const Model::IStream::State& state)
     }
 }
 
+/**
+ * @brief Start or stop the stream when the associate button is clicked.
+ */
 void TopBar::onStartButtonClicked()
 {
     m_ui->startButton->setDisabled(true);
@@ -94,6 +101,10 @@ void TopBar::onStartButtonClicked()
     }
 }
 
+/**
+ * @brief Callback when the recorder change of state, edit the UI in consequence.
+ * @param [IN] state
+ */
 void TopBar::onRecorderStateChanged(const QMediaRecorder::State& state)
 {
     switch (state)
@@ -117,6 +128,9 @@ void TopBar::onRecorderStateChanged(const QMediaRecorder::State& state)
     m_ui->recordButton->setDisabled(false);
 }
 
+/**
+ * @brief Start/Stop the recorder when the associate button is clicked
+ */
 void TopBar::onRecordButtonClicked()
 {
     m_ui->recordButton->setDisabled(true);

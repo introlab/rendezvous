@@ -40,6 +40,11 @@ MediaPlayerView::MediaPlayerView(std::shared_ptr<Model::IMediaPlayer> mediaPlaye
             [=](const QString& error) { onErrorOccured(error); });
 }
 
+/**
+ * @brief Callback when the QMediaPlayer current state changed.
+ * Currently change the playButton icon.
+ * @param [IN] state
+ */
 void MediaPlayerView::onMediaStateChanged(QMediaPlayer::State state)
 {
     switch (state)
@@ -53,27 +58,46 @@ void MediaPlayerView::onMediaStateChanged(QMediaPlayer::State state)
     }
 }
 
+/**
+ * @brief Change the slider position representing the media file progression in time.
+ * @param position
+ */
 void MediaPlayerView::onPositionChanged(qint64 position)
 {
     m_ui->positionSlider->setValue(static_cast<int>(position));
 }
 
+/**
+ * @brief Change the media duration in the UI.
+ * @param duration
+ */
 void MediaPlayerView::onDurationChanged(qint64 duration)
 {
     m_ui->positionSlider->setRange(0, static_cast<int>(duration));
 }
 
+/**
+ * @brief Change the current subtile in the UI.
+ * @param subtitle
+ */
 void MediaPlayerView::onSubtitleChanged(const QString& subtitle)
 {
     m_ui->statusLabel->setText(subtitle);
 }
 
+/**
+ * @brief Show the QMediaPlayer error
+ * @param error
+ */
 void MediaPlayerView::onErrorOccured(const QString& error)
 {
     m_ui->playButton->setEnabled(false);
     m_ui->statusLabel->setText(error);
 }
 
+/**
+ * @brief Called when the user wants to load a media file in the player.
+ */
 void MediaPlayerView::openFile()
 {
     QFileDialog fileDialog(this);
