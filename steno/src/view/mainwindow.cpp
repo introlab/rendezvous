@@ -53,7 +53,7 @@ void MainWindow::addView(View::AbstractView *view, const QIcon &icon)
 
 void MainWindow::closeEvent(QCloseEvent * /*event*/)
 {
-    qDebug() << "closing application...";
+    qInfo() << "closing application...";
     m_topBar->stopThreads();
 }
 
