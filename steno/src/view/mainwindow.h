@@ -38,7 +38,6 @@ class MainWindow : public QMainWindow
 
    private:
     void addView(View::AbstractView *view, const QIcon &icon);
-    void closeEvent(QCloseEvent *event);
 
     Ui::MainWindow *m_ui;
     View::SideBar *m_sideBar;

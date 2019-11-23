@@ -29,7 +29,6 @@ void RawFileAudioSink::close()
     if (m_file != nullptr)
     {
         fclose(m_file);
-        m_file = nullptr;
     }
 }
 

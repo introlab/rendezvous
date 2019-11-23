@@ -51,10 +51,4 @@ void MainWindow::addView(View::AbstractView *view, const QIcon &icon)
     m_views->addWidget(view);
 }
 
-void MainWindow::closeEvent(QCloseEvent * /*event*/)
-{
-    qDebug() << "closing application...";
-    m_topBar->stopThreads();
-}
-
 }    // namespace View
