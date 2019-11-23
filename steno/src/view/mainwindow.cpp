@@ -51,6 +51,9 @@ void MainWindow::addView(View::AbstractView *view, const QIcon &icon)
     m_views->addWidget(view);
 }
 
+/**
+ * @brief Callback when the close button is clicked. Ensure all threads are stopped.
+ */
 void MainWindow::closeEvent(QCloseEvent * /*event*/)
 {
     qInfo() << "closing application...";
