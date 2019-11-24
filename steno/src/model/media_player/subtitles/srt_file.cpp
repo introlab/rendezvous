@@ -8,6 +8,11 @@
 
 namespace Model
 {
+/**
+ * @brief Parse a srt file and extract the subtitles.
+ * @param [IN] path - absolute path to the file to parse.
+ * @return Vector of subtitles.
+ */
 std::vector<SubtitleItem> SrtFile::parse(const QString& path)
 {
     std::vector<SubtitleItem> subtitles;

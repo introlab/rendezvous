@@ -20,11 +20,18 @@ Subtitles::Subtitles(QObject *parent)
     connect(&m_timer, &QTimer::timeout, [=] { onTimerTimeout(); });
 }
 
+/**
+ * @brief Open a SRT file and parse the content.
+ * @param [IN] srtFilePath - SRT file to open.
+ */
 void Subtitles::open(const QString &srtFilePath)
 {
     m_subtitles = SrtFile::parse(srtFilePath);
 }
 
+/**
+ * @brief Start the substitle engine based on the timestamps.
+ */
 void Subtitles::play()
 {
     if (!m_subtitles.empty())
@@ -34,6 +41,9 @@ void Subtitles::play()
     }
 }
 
+/**
+ * @brief Pause the subtitles engine.
+ */
 void Subtitles::pause()
 {
     if (!m_subtitles.empty())
@@ -42,6 +52,9 @@ void Subtitles::pause()
     }
 }
 
+/**
+ * @brief Stop the subtitles engine.
+ */
 void Subtitles::stop()
 {
     if (!m_subtitles.empty())
@@ -51,6 +64,10 @@ void Subtitles::stop()
     }
 }
 
+/**
+ * @brief change the timer value.
+ * @param [IN] time - value to set.
+ */
 void Subtitles::setCurrentTime(qint64 time)
 {
     if (!m_subtitles.empty())
@@ -65,6 +82,9 @@ void Subtitles::setCurrentTime(qint64 time)
     }
 }
 
+/**
+ * @brief What to do when the timer is finished.
+ */
 void Subtitles::onTimerTimeout()
 {
     m_currentTime += m_timerInterval;
@@ -76,6 +96,9 @@ void Subtitles::onTimerTimeout()
     }
 }
 
+/**
+ * @brief Reset subtitles engine.
+ */
 void Subtitles::reset()
 {
     m_subtitles.clear();
@@ -85,6 +108,12 @@ void Subtitles::reset()
     subtitleChanged(QString());
 }
 
+/**
+ * @brief Get the current subtile
+ * @param [IN] time
+ * @param [IN] manual
+ * @return
+ */
 QString Subtitles::currentSubtitle(qint64 time, bool manual)
 {
     QString subtitle = "";
@@ -106,6 +135,11 @@ QString Subtitles::currentSubtitle(qint64 time, bool manual)
     return subtitle;
 }
 
+/**
+ * @brief Search algorithm for a specific subtitle.
+ * @param [IN] time
+ * @param [OUT] subtitle
+ */
 void Subtitles::linearSearch(qint64 time, QString &subtitle)
 {
     for (quint64 i = m_lastSubtitleIndex, len = m_subtitles.size(); i < len; i++)
@@ -120,6 +154,11 @@ void Subtitles::linearSearch(qint64 time, QString &subtitle)
     }
 }
 
+/**
+ * @brief Search algorithm for a specific subtitle faster than linearSearch.
+ * @param [IN] time
+ * @param [OUT] subtitle
+ */
 void Subtitles::binarySearch(qint64 time, QString &subtitle)
 {
     quint64 lo = 0, hi = m_subtitles.size() - 1;

@@ -48,6 +48,10 @@ Config::Config(std::shared_ptr<QSettings> settings, const QString &configPath)
     settings->sync();
 }
 
+/**
+ * @brief Config::appConfig
+ * @return The application configuration, these are global configuration parameters usefull everywhere.
+ */
 std::shared_ptr<AppConfig> Config::appConfig() const
 {
     return m_appConfig;
@@ -93,6 +97,9 @@ std::shared_ptr<DarknetConfig> Config::darknetConfig() const
     return m_darknetConfig;
 }
 
+/**
+ * @brief Load the default configuration, if the config file is modified by the user this is not called.
+ */
 void Config::loadDefault()
 {
     m_appConfig->setValue(AppConfig::Key::OUTPUT_FOLDER, QDir::homePath());

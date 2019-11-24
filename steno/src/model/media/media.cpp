@@ -16,6 +16,10 @@ Media::Media(std::shared_ptr<Config> config)
     initRecorder();
 }
 
+/**
+ * @brief Tell the camera where to render the camera images.
+ * @param [IN] view
+ */
 void Media::setViewFinder(QCameraViewfinder* view)
 {
     if (!m_camera.isNull())
@@ -26,21 +30,34 @@ void Media::setViewFinder(QCameraViewfinder* view)
     }
 }
 
+/**
+ * @brief Start the recording of the audio and video stream.
+ */
 void Media::startRecorder()
 {
     m_mediaRecorder->record();
 }
 
+/**
+ * @brief Stop the recording of the audio and video stream.
+ */
 void Media::stopRecorder()
 {
     m_mediaRecorder->stop();
 }
 
+/**
+ * @brief Media::recorderState
+ * @return the current state of the Qt recording object.
+ */
 QMediaRecorder::State Media::recorderState() const
 {
     return m_mediaRecorder->state();
 }
 
+/**
+ * @brief Initialize the camera to record based on the desired camera in the config file.
+ */
 void Media::initCamera()
 {
     auto deviceName = m_videoConfig->value(VideoConfig::Key::DEVICE_NAME).toString();
@@ -54,6 +71,9 @@ void Media::initCamera()
     }
 }
 
+/**
+ * Initialization of the Qt recording object (Codecs, qualities, etc.)
+ */
 void Media::initRecorder()
 {
     m_mediaRecorder.reset(new QMediaRecorder(m_camera.get()));

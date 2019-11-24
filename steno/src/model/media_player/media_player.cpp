@@ -35,6 +35,10 @@ int MediaPlayer::volume() const
     return m_mediaPlayer.volume();
 }
 
+/**
+ * @brief Set the current media file to play.
+ * @param [IN] url - Path to the file to play.
+ */
 void MediaPlayer::setMedia(const QUrl &url)
 {
     m_mediaPlayer.setMedia(url);
@@ -63,12 +67,20 @@ void MediaPlayer::play()
     }
 }
 
+/**
+ * @brief Set the current position in time of the media file.
+ * @param [IN] position
+ */
 void MediaPlayer::setPosition(int position)
 {
     m_mediaPlayer.setPosition(position);
     m_subtitles.setCurrentTime(position);
 }
 
+/**
+ * @brief what to do when the QMediaPlayer state changed
+ * @param [IN] state
+ */
 void MediaPlayer::onStateChanged(QMediaPlayer::State state)
 {
     if (state == QMediaPlayer::State::StoppedState)

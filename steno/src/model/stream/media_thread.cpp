@@ -51,6 +51,9 @@ MediaThread::MediaThread(std::unique_ptr<IAudioSource> audioSource, std::unique_
     }
 }
 
+/**
+ * @brief Managing odas threads for audio and localization + camera and images processing.
+ */
 void MediaThread::run()
 {
     // Utilitary objects
@@ -202,7 +205,7 @@ void MediaThread::run()
             }
 
             int readCount = videoStabilizer.getLastFrameTimeMs() / (chunkDurationMs / 2) + 1;
-            
+
             AudioChunk audioChunk;
             while (audioSource_->readAudioChunk(audioChunk) && readCount > 0)
             {
