@@ -2,7 +2,7 @@
 Description=Overclock jetson.
 
 [Service]
-Type=idel
+Type=idle
 ExecStart=/bin/bash /usr/bin/overclock-jetson.sh
 
 [Install]
