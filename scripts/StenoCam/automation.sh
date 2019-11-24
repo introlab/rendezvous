@@ -10,3 +10,4 @@ sudo chmod 644 /etc/systemd/system/stenocam.service
 sudo systemctl daemon-reload
 sudo systemctl start stenocam.service && sudo systemctl enable stenocam.service
 sudo systemctl daemon-reload
+ 
