@@ -7,6 +7,6 @@ sudo chmod +x /usr/bin/stenomics-creation.sh
 sudo cp $PWD/scripts/StenoMics/stenomics.service /etc/systemd/system/stenomics.service
 sudo chmod 644 /etc/systemd/system/stenomics.service
 
-sudo systemctl --user daemon-reload
-sudo systemctl --user start stenomics.service && sudo systemctl --user enable stenomics.service
-sudo systemctl --user daemon-reload 
+systemctl --user daemon-reload
+systemctl --user start stenomics.service && sudo systemctl --user enable stenomics.service
+systemctl --user daemon-reload 
