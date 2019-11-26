@@ -70,7 +70,7 @@ sed -i "s/$(cat $DAEMON_CONF_PATH | grep default-sample-channels)/default-sample
 
 if pgrep -x "pulseaudio" > /dev/null; then
     echo "killing running pulseaudio..."
-    pulseaudio -k
+    DISPLAY=:0 pulseaudio -k
     sleep 1
 fi
 echo "starting pulseaudio..."
