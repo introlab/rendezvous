@@ -2,7 +2,7 @@
 Description=StenoMics automation.
 
 [Service]
-Type=simple
+Type=idle
 RemainAfterExit=true
 ExecStart=/bin/bash /usr/bin/stenomics-creation.sh --default
 
