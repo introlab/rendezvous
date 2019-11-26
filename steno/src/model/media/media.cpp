@@ -66,6 +66,7 @@ void Media::initCamera()
         if (cameraInfo.deviceName() == deviceName)
         {
             m_camera.reset(new QCamera(cameraInfo));
+            m_camera->setCaptureMode(QCamera::CaptureMode::CaptureVideo);
             break;
         }
     }
