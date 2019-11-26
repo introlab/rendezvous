@@ -74,7 +74,7 @@ if pgrep -x "pulseaudio" > /dev/null; then
     sleep 1
 fi
 echo "starting pulseaudio..."
-DISPLAY:0 pulseaudio --start
+DISPLAY=:0 pulseaudio --start
 sleep 3
 
 if $CREATE_VIRTUAL_OUTPUT || $USE_DEFAULT; then
