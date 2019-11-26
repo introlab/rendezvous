@@ -7,4 +7,4 @@ RemainAfterExit=true
 ExecStart=/bin/bash /usr/bin/stenomics-creation.sh --default
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target
