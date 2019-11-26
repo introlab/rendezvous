@@ -5,7 +5,7 @@ Description=StenoMics automation.
 Type=idle
 User=nvidia
 Group=nvidia
-ExecStart=/bin/bash /usr/bin/stenomics-creation.sh --default --reset
+ExecStart=/bin/bash /usr/bin/stenomics-creation.sh --default
 
 [Install]
 WantedBy=default.target
