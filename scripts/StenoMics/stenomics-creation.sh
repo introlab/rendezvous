@@ -70,30 +70,30 @@ sed -i "s/$(cat $DAEMON_CONF_PATH | grep default-sample-channels)/default-sample
 
 if pgrep -x "pulseaudio" > /dev/null; then
     echo "killing running pulseaudio..."
-    DISPLAY=:0 pulseaudio -k
+    pulseaudio -k
     sleep 1
 fi
 echo "starting pulseaudio..."
-DISPLAY=:0 pulseaudio --start
+pulseaudio --start
 sleep 3
 
 if $CREATE_VIRTUAL_OUTPUT || $USE_DEFAULT; then
-    DISPLAY=:0 pacmd load-module module-null-sink sink_name=$SINK_NAME format=$SAMPLE_FORMAT rate=$SAMPLE_RATE channels=$ODAS_CHANNELS channel_map=$ODAS_CHANNEL_MAP
+    pacmd load-module module-null-sink sink_name=$SINK_NAME format=$SAMPLE_FORMAT rate=$SAMPLE_RATE channels=$ODAS_CHANNELS channel_map=$ODAS_CHANNEL_MAP
 fi
 
 if $AEC || $USE_DEFAULT; then
     if [[ "$SAMPLE_CHANNELS" -eq 8 ]]; then
         # 8 channels
         SOURCE_MASTER_8_CH=source_8_ch
-        DISPLAY=:0 pacmd load-module module-remap-source master=$SOURCE_MASTER source_name=$SOURCE_MASTER_8_CH format=s32le rate=$SAMPLE_RATE channels=8 master_channel_map=$INTROLAB_CARD_CHANNEL_MAP_8 channel_map=$INTROLAB_CARD_CHANNEL_MAP_8
-        DISPLAY=:0 pacmd load-module module-echo-cancel source_name=$AEC_SOURCE_NAME source_master=$SOURCE_MASTER_8_CH sink_name=$AEC_SINK_NAME sink_master=$SINK_MASTER aec_method=$AEC_METHOD use_master_format=1 aec_args="'high_pass_filter=1 noise_suppression=1 analog_gain_control=0'"
+        pacmd load-module module-remap-source master=$SOURCE_MASTER source_name=$SOURCE_MASTER_8_CH format=s32le rate=$SAMPLE_RATE channels=8 master_channel_map=$INTROLAB_CARD_CHANNEL_MAP_8 channel_map=$INTROLAB_CARD_CHANNEL_MAP_8
+        pacmd load-module module-echo-cancel source_name=$AEC_SOURCE_NAME source_master=$SOURCE_MASTER_8_CH sink_name=$AEC_SINK_NAME sink_master=$SINK_MASTER aec_method=$AEC_METHOD use_master_format=1 aec_args="'high_pass_filter=1 noise_suppression=1 analog_gain_control=0'"
     else
         # 16 channels
-        DISPLAY=:0 pacmd load-module module-echo-cancel source_name=$AEC_SOURCE_NAME source_master=$SOURCE_MASTER sink_name=$AEC_SINK_NAME sink_master=$SINK_MASTER aec_method=$AEC_METHOD use_master_format=1 aec_args="'high_pass_filter=1 noise_suppression=1 analog_gain_control=0'"
+        pacmd load-module module-echo-cancel source_name=$AEC_SOURCE_NAME source_master=$SOURCE_MASTER sink_name=$AEC_SINK_NAME sink_master=$SINK_MASTER aec_method=$AEC_METHOD use_master_format=1 aec_args="'high_pass_filter=1 noise_suppression=1 analog_gain_control=0'"
     fi
 
-    DISPLAY=:0 pacmd set-default-source $AEC_SOURCE_NAME
-    DISPLAY=:0 pacmd set-default-sink $AEC_SINK_NAME
+    pacmd set-default-source $AEC_SOURCE_NAME
+    pacmd set-default-sink $AEC_SINK_NAME
 fi
 
 echo "done!"
