@@ -1,20 +1,28 @@
 #include "top_bar.h"
+#include "colors.h"
+#include "model/app_config.h"
+#include "model/config/config.h"
+#include "model/transcription/transcription_config.h"
+#include "model/utils/filesutil.h"
 #include "ui_top_bar.h"
 
-#include "colors.h"
-
 #include <QDesktopServices>
-#include <QSignalBlocker>
+#include <QNetworkReply>
 #include <QStyle>
 #include <QUrl>
 
 namespace View
 {
-TopBar::TopBar(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::Media> media, QWidget* parent)
+TopBar::TopBar(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::Media> media,
+               std::shared_ptr<Model::Transcription> transcription, std::shared_ptr<Model::Config> config,
+               QWidget* parent)
     : QWidget(parent)
     , m_ui(new Ui::TopBar)
     , m_stream(stream)
     , m_media(media)
+    , m_transcription(transcription)
+    , m_transcriptionConfig(config->transcriptionConfig())
+    , m_applicationConfig(config->appConfig())
 {
     m_ui->setupUi(this);
 
@@ -36,10 +44,16 @@ TopBar::TopBar(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::Me
             [=](const QMediaRecorder::State& state) { onRecorderStateChanged(state); });
     connect(m_ui->recordButton, &QAbstractButton::clicked, [=] { onRecordButtonClicked(); });
 
-    connect(m_ui->meetButton, &QAbstractButton::clicked,
-            [] { QDesktopServices::openUrl(QUrl("https://rendezvous-meet.com/")); });
+    connect(m_ui->meetButton, &QAbstractButton::clicked, [=] { QDesktopServices::openUrl(m_rendezvousMeetUrl); });
+
+    connect(m_transcription.get(), &Model::Transcription::finished,
+            [=](bool isOK, QString reply) { onTranscriptionFinished(isOK, reply); });
 }
 
+/**
+ * @brief Callback when the stream change of state, edit the UI in consequence.
+ * @param [IN] state
+ */
 void TopBar::onStreamStateChanged(const Model::IStream::State& state)
 {
     switch (state)
@@ -62,6 +76,9 @@ void TopBar::onStreamStateChanged(const Model::IStream::State& state)
     }
 }
 
+/**
+ * @brief Start or stop the stream when the associate button is clicked.
+ */
 void TopBar::onStartButtonClicked()
 {
     m_ui->startButton->setDisabled(true);
@@ -84,6 +101,10 @@ void TopBar::onStartButtonClicked()
     }
 }
 
+/**
+ * @brief Callback when the recorder change of state, edit the UI in consequence.
+ * @param [IN] state
+ */
 void TopBar::onRecorderStateChanged(const QMediaRecorder::State& state)
 {
     switch (state)
@@ -92,14 +113,24 @@ void TopBar::onRecorderStateChanged(const QMediaRecorder::State& state)
             m_ui->recordButton->setText("Stop recording");
             break;
         case QMediaRecorder::State::StoppedState:
+        {
             m_ui->recordButton->setText("Start recording");
+            bool isOK = askTranscription();
+            if (!isOK)
+            {
+                qCritical() << "transcription failed";
+            }
             break;
+        }
         case QMediaRecorder::State::PausedState:
             break;
     }
     m_ui->recordButton->setDisabled(false);
 }
 
+/**
+ * @brief Start/Stop the recorder when the associate button is clicked
+ */
 void TopBar::onRecordButtonClicked()
 {
     m_ui->recordButton->setDisabled(true);
@@ -113,6 +144,55 @@ void TopBar::onRecordButtonClicked()
             break;
         case QMediaRecorder::State::PausedState:
             break;
+    }
+}
+
+/**
+ * @brief Callback when a transcription is done.
+ * @param isOK - status
+ * @param reply - error message
+ */
+void TopBar::onTranscriptionFinished(bool isOK, QString reply)
+{
+    if (!isOK)
+    {
+        qCritical() << reply;
+    }
+}
+
+/**
+ * @brief Ask the model for a speech-to-text transcription
+ * @return true/false if success
+ */
+bool TopBar::askTranscription()
+{
+    const bool isTranscriptionEnabled =
+        m_transcriptionConfig->value(Model::TranscriptionConfig::AUTOMATIC_TRANSCRIPTION).toBool();
+    if (isTranscriptionEnabled)
+    {
+        QString folder = m_applicationConfig->value(Model::AppConfig::OUTPUT_FOLDER).toString();
+        QString lastRecordingPath;
+        bool isOK = Model::Util::mostRecentModified(folder, "webm", lastRecordingPath);
+        if (!isOK) return false;
+
+        isOK = m_transcription->transcribe(lastRecordingPath);
+        if (!isOK) return false;
+    }
+    return true;
+}
+
+/**
+ * @brief Stop the stream if it's running and if it is stopping wait that it's stopped.
+ */
+void TopBar::stopThreads()
+{
+    if (m_stream->state() == Model::IStream::Started)
+    {
+        m_stream->stop();
+    }
+    else if (m_stream->state() == Model::IStream::Stopping)
+    {
+        m_stream->join();
     }
 }
 

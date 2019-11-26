@@ -5,6 +5,7 @@
 #include "components/side_bar.h"
 #include "components/top_bar.h"
 #include "model/media_player/i_media_player.h"
+#include "model/transcription/transcription.h"
 #include "views/abstract_view.h"
 #include "views/conference_view.h"
 #include "views/media_player_view.h"
@@ -15,11 +16,12 @@
 namespace View
 {
 MainWindow::MainWindow(std::shared_ptr<Model::Config> config, std::shared_ptr<Model::IMediaPlayer> mediaPlayer,
-                       std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::Media> media, QWidget *parent)
+                       std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::Media> media,
+                       std::shared_ptr<Model::Transcription> transcription, QWidget *parent)
     : QMainWindow(parent)
     , m_ui(new Ui::MainWindow)
     , m_sideBar(new View::SideBar(this))
-    , m_topBar(new View::TopBar(stream, media, this))
+    , m_topBar(new View::TopBar(stream, media, transcription, config, this))
     , m_views(new QStackedWidget(this))
 {
     m_ui->setupUi(this);
@@ -47,6 +49,15 @@ void MainWindow::addView(View::AbstractView *view, const QIcon &icon)
 {
     m_sideBar->add(view->getName(), icon);
     m_views->addWidget(view);
+}
+
+/**
+ * @brief Callback when the close button is clicked. Ensure all threads are stopped.
+ */
+void MainWindow::closeEvent(QCloseEvent * /*event*/)
+{
+    qInfo() << "closing application...";
+    m_topBar->stopThreads();
 }
 
 }    // namespace View

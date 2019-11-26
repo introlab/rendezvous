@@ -5,6 +5,9 @@
 
 namespace Model
 {
+/**
+ * @brief The ISubject class is the emitter in the Observer design pattern.
+ */
 class ISubject
 {
    public:

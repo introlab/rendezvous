@@ -7,8 +7,8 @@
 #include "model/stream/video/detection/darknet_config.h"
 #include "model/stream/video/dewarping/models/dewarping_config.h"
 #include "model/stream/video/video_config.h"
+#include "model/transcription/transcription.h"
 #include "model/transcription/transcription_config.h"
-#include "model/transcription/transcription_constants.h"
 
 #include <QCoreApplication>
 #include <QDir>
@@ -45,8 +45,13 @@ Config::Config(std::shared_ptr<QSettings> settings, const QString &configPath)
     {
         loadDefault();
     }
+    settings->sync();
 }
 
+/**
+ * @brief Config::appConfig
+ * @return The application configuration, these are global configuration parameters usefull everywhere.
+ */
 std::shared_ptr<AppConfig> Config::appConfig() const
 {
     return m_appConfig;
@@ -92,6 +97,9 @@ std::shared_ptr<DarknetConfig> Config::darknetConfig() const
     return m_darknetConfig;
 }
 
+/**
+ * @brief Load the default configuration, if the config file is modified by the user this is not called.
+ */
 void Config::loadDefault()
 {
     m_appConfig->setValue(AppConfig::Key::OUTPUT_FOLDER, QDir::homePath());
@@ -102,6 +110,10 @@ void Config::loadDefault()
 
     m_transcriptionConfig->setValue(TranscriptionConfig::Key::LANGUAGE, Transcription::Language::FR_CA);
     m_transcriptionConfig->setValue(TranscriptionConfig::Key::AUTOMATIC_TRANSCRIPTION, false);
+    m_transcriptionConfig->setValue(TranscriptionConfig::Key::CERTIFICATE_PATH,
+                                    QCoreApplication::applicationDirPath() + "/../ssl/client.crt");
+    m_transcriptionConfig->setValue(TranscriptionConfig::Key::CERTIFICATE_KEY_PATH,
+                                    QCoreApplication::applicationDirPath() + "/../ssl/client.key");
 
     m_dewarpingConfig->setValue(DewarpingConfig::Key::IN_RADIUS, 400);
     m_dewarpingConfig->setValue(DewarpingConfig::Key::OUT_RADIUS, 1400);

@@ -12,6 +12,9 @@ OdasClient::OdasClient(std::shared_ptr<AppConfig> appConfig)
 {
 }
 
+/**
+ * @brief run loop of the thread, it spawn a process that starts odaslive and checks if odaslive is alive.
+ */
 void OdasClient::run()
 {
     qInfo() << "Odaslive thread started";
@@ -66,6 +69,10 @@ void OdasClient::run()
     qInfo() << "Odaslive thread finished";
 }
 
+/**
+ * @brief close in a clean way the process passed in parameters.
+ * @param [IN] process - process to close.
+ */
 void OdasClient::closeProcess(QProcess& process)
 {
     // Ensure the process clean close.
@@ -78,6 +85,10 @@ void OdasClient::closeProcess(QProcess& process)
     }
 }
 
+/**
+ * @brief Attach an object to the notifications send by OdasClient.
+ * @param observer - object to attach to notifications.
+ */
 void OdasClient::attach(IObserver* observer)
 {
     if (observer != nullptr)
@@ -86,6 +97,10 @@ void OdasClient::attach(IObserver* observer)
     }
 }
 
+/**
+ * @brief Remove an observer from the list of subscribers.
+ * @param observer - object to remove from the notifications list.
+ */
 void OdasClient::detach(IObserver* observer)
 {
     for (int index = 0; static_cast<size_t>(index) < m_subscribers.size(); ++index)
@@ -97,6 +112,9 @@ void OdasClient::detach(IObserver* observer)
     }
 }
 
+/**
+ * @brief Notify all observers that the state of OdasClient changed.
+ */
 void OdasClient::notify()
 {
     for (auto observer : m_subscribers)

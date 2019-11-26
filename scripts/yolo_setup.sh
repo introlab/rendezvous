@@ -7,7 +7,7 @@ REPO_DIR="`dirname \"$REPO_DIR\"`"
 
 cd $REPO_DIR
 
-# Create the yolo config folders
+# Create the yolo config folders 
 mkdir -p steno/configs/yolo/cfg
 mkdir -p steno/configs/yolo/data
 mkdir -p steno/configs/yolo/weights

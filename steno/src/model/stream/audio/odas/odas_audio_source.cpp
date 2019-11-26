@@ -1,9 +1,10 @@
+#include "odas_audio_source.h"
+
 #include <cmath>
 
+#include <QDebug>
 #include <QTcpServer>
 #include <QTcpSocket>
-
-#include "odas_audio_source.h"
 
 namespace Model
 {
@@ -45,6 +46,8 @@ void OdasAudioSource::run()
     std::unique_ptr<QTcpServer> server = std::make_unique<QTcpServer>();
     server->setMaxPendingConnections(1);
     server->listen(QHostAddress::Any, port_);
+
+    qDebug() << "Odas audio source thread started";
 
     unsigned int readIndex = 0;
     while (!isInterruptionRequested())
@@ -132,11 +135,13 @@ void OdasAudioSource::run()
             }
         }
     }
+
+    qDebug() << "Odas audio source thread stopped";
 }
 
 bool OdasAudioSource::readAudioChunk(AudioChunk& outAudioChunk)
 {
-    return audioQueue_->wait_dequeue_timed(outAudioChunk, 500000);
+    return audioQueue_->try_dequeue(outAudioChunk);
 }
 
 unsigned long long OdasAudioSource::calculateNewTimestamp(unsigned long long currentTimestamp, int bytesForward)

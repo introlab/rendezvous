@@ -31,6 +31,11 @@ SideBar::SideBar(QWidget* parent)
 
     connect(m_ui->list, &QListWidget::currentRowChanged, [=](int index) { emit currentRowChanged(index); });
 }
+/**
+ * @brief Add an item to the sidebar menu.
+ * @param [IN] name
+ * @param [IN] icon
+ */
 void SideBar::add(const QString& name, const QIcon& icon)
 {
     auto sideBarItem = new SideBarItem(name, icon, this);
@@ -40,6 +45,10 @@ void SideBar::add(const QString& name, const QIcon& icon)
     listWidgetItem->setSizeHint(m_itemSize);
 }
 
+/**
+ * @brief Change the current selected item in the sidebar menu.
+ * @param row
+ */
 void SideBar::setCurrentRow(int row)
 {
     m_ui->list->setCurrentRow(row);

@@ -1,0 +1,9 @@
+[Unit]
+Description=Rendezvous speech-to-text API.
+
+[Service]
+Type=idle
+ExecStart=/bin/bash /etc/transcription-api/scripts/prod.sh
+
+[Install]
+WantedBy=default.target

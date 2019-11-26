@@ -4,9 +4,9 @@
 
 namespace Model
 {
-RawFileAudioSink::RawFileAudioSink(std::string fileName)
+RawFileAudioSink::RawFileAudioSink(const std::string& fileName)
     : m_file(nullptr)
-    , m_fileName(std::move(fileName))
+    , m_fileName(fileName)
 {
 }
 
@@ -29,6 +29,7 @@ void RawFileAudioSink::close()
     if (m_file != nullptr)
     {
         fclose(m_file);
+        m_file = nullptr;
     }
 }
 

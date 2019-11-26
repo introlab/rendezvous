@@ -12,7 +12,7 @@ class CudaImageConverter : public IImageConverter
    public:
     explicit CudaImageConverter(cudaStream_t stream);
 
-    void convert(const Image& inImage, const Image& outImage) override;
+    void convert(const Image& inImage, Image& outImage) override;
 
    private:
     cudaStream_t stream_;

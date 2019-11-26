@@ -2,8 +2,8 @@
 #include "ui_settings_view.h"
 
 #include "model/app_config.h"
+#include "model/transcription/transcription.h"
 #include "model/transcription/transcription_config.h"
-#include "model/transcription/transcription_constants.h"
 
 #include <QComboBox>
 #include <QFileDialog>
@@ -38,6 +38,9 @@ SettingsView::SettingsView(std::shared_ptr<Model::Config> config, QWidget* paren
             [=](const int& state) { onAutoTranscriptionCheckBoxStateChanged(state); });
 }
 
+/**
+ * @brief get the current output folder an open the files explorer to select a folder
+ */
 void SettingsView::onOutputFolderButtonClicked()
 {
     QString outputFolder = QFileDialog::getExistingDirectory(
@@ -51,12 +54,20 @@ void SettingsView::onOutputFolderButtonClicked()
     }
 }
 
+/**
+ * @brief Callback when the language combobox changed of value.
+ * @param [IN] index - combobox index.
+ */
 void SettingsView::onLanguageComboboxCurrentIndexChanged(const int& index)
 {
     m_config->subConfig(Model::Config::TRANSCRIPTION)
         ->setValue(Model::TranscriptionConfig::LANGUAGE, static_cast<Model::Transcription::Language>(index));
 }
 
+/**
+ * @brief Callback when the automatic transcription checkbox change of state.
+ * @param [IN] state
+ */
 void SettingsView::onAutoTranscriptionCheckBoxStateChanged(const int& state)
 {
     m_config->subConfig(Model::Config::TRANSCRIPTION)

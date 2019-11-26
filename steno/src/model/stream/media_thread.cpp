@@ -51,6 +51,9 @@ MediaThread::MediaThread(std::unique_ptr<IAudioSource> audioSource, std::unique_
     }
 }
 
+/**
+ * @brief Managing odas threads for audio and localization + camera and images processing.
+ */
 void MediaThread::run()
 {
     // Utilitary objects
@@ -68,7 +71,15 @@ void MediaThread::run()
     std::vector<Image> vcOutputFormatImages(1, Image(maxVcDim.width, maxVcDim.height, videoOutputConfig_->imageFormat));
 
     // TODO: config?
-    const int classifierRangeThreshold = 2;
+    const float classifierRangeThreshold = 0.35;
+
+    if (videoInputConfig_->fpsTarget == 0)
+    {
+        qCritical() << "MediaThread: target fps cannot be zero";
+        return;
+    }
+
+    int chunkDurationMs = 1000 / videoInputConfig_->fpsTarget;
 
     try
     {
@@ -110,13 +121,9 @@ void MediaThread::run()
             // Update the position and size of virtual cameras
             virtualCameraManager_->updateVirtualCameras(videoStabilizer.getLastFrameTimeMs());
 
-            AudioChunk audioChunk;
-            bool audioReadSuccess = audioSource_->readAudioChunk(audioChunk);
-            std::vector<SourcePosition> sourcePositions = positionSource_->getPositions();
-
             // Read image from video input and convert it to rgb format for dewarping
             const Image& rawImage = videoInput_->readImage();
-            const Image& rgbImage = imageBuffer_->getCurrent();
+            Image& rgbImage = imageBuffer_->getCurrent();
             imageConverter_->convert(rawImage, rgbImage);
             imageBuffer_->swap();
 
@@ -169,8 +176,11 @@ void MediaThread::run()
                 }
 
                 // Clear the image before writting to it
-                const Image& displayImage = displayBuffers.current();
+                Image& displayImage = displayBuffers.current();
                 std::memcpy(displayImage.hostData, emptyDisplay.hostData, displayImage.size);
+
+                // Set the timestamp of the output image to the timestamp of the input image
+                displayImage.timeStamp = rawImage.timeStamp;
 
                 // Wait for dewarping to be completed
                 synchronizer_->sync();
@@ -186,21 +196,27 @@ void MediaThread::run()
                 videoOutput_->writeImage(emptyDisplay);
             }
 
-            if (audioReadSuccess)
+            std::vector<SourcePosition> sourcePositions = positionSource_->getPositions();
+            std::vector<SphericalAngleRect> imagePositions;
+            imagePositions.reserve(virtualCameras.size());
+            for (const auto& vc : virtualCameras)
             {
-                std::vector<SphericalAngleRect> imagePositions;
-                imagePositions.reserve(virtualCameras.size());
-                for (const auto& vc : virtualCameras)
-                {
-                    imagePositions.push_back(vc);
-                }
+                imagePositions.push_back(vc);
+            }
 
+            int readCount = videoStabilizer.getLastFrameTimeMs() / (chunkDurationMs / 2) + 1;
+
+            AudioChunk audioChunk;
+            while (audioSource_->readAudioChunk(audioChunk) && readCount > 0)
+            {
                 std::vector<int> sourcesToSuppress =
                     Classifier::classify(sourcePositions, imagePositions, classifierRangeThreshold);
 
                 AudioSuppresser::suppressSources(sourcesToSuppress, audioChunk.audioData.get(), audioChunk.size);
 
                 audioSink_->write(audioChunk.audioData.get(), audioChunk.size);
+
+                --readCount;
             }
 
             detections.clear();
@@ -211,7 +227,7 @@ void MediaThread::run()
     }
     catch (const std::exception& e)
     {
-        std::cout << "Error in video thread : " << e.what() << std::endl;
+        std::cout << "Error in media thread : " << e.what() << std::endl;
     }
 
     // Clean audio and video resources

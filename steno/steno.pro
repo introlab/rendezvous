@@ -1,9 +1,30 @@
+# If you want to compile without using CUDA (Everything will run on cpu)
+# no_cuda(default) -> compile wihtout cuda, cuda -> compile with cuda
+compilation = no_cuda
+
+# Uncomment if you want to cross-compile for Jetson Tx2
+target = #jetson_tx2
+
+# --------------------------------------------------------------------------------
+# !! Do NOT manual modify beyond this point, unless you know what you are doing !!
+# --------------------------------------------------------------------------------
+
+contains(target, jetson_tx2) {
+    architecture = aarch64
+    compilation = cuda
+} else {
+    architecture = $$QMAKE_HOST.arch
+}
+
+message("Compilation  : "$$compilation)
+message("Architecture : "$$architecture)
+
 ! include (3rd/v4l2.pri) {
-    error( "Couldn't find v4l2.pri file!" )
+    error( "v4l2.pri not found in 3rd" )
 }
 
 ! include (3rd/darknet.pri) {
-    error( "Couldn't find darknet.pri file!" )
+    error( "darknet.pri not found in 3rd" )
 }
 
 QT += core gui network widgets multimedia multimediawidgets
@@ -14,10 +35,6 @@ DESTDIR = bin
 OBJECTS_DIR = bin
 MOC_DIR = bin
 UI_DIR = bin
-
-# If you want to compile without using CUDA (Everything will run on cpu)
-compilation = no_cuda
-
 
 # Add 3rd party library dependency
 LIBS += $$V4L2_LIBS $$DARKNET_LIBS -lpulse-simple -lpulse -lpthread
@@ -34,8 +51,9 @@ SOURCES += \
     src/model/media_player/media_player.cpp \
     src/model/media_player/subtitles/srt_file.cpp \
     src/model/media_player/subtitles/subtitles.cpp \
-    src/model/network/local_socket_server.cpp \
     src/model/stream/video/output/default_virtual_camera_output.cpp \
+    src/model/transcription/transcription.cpp \
+    src/model/utils/filesutil.cpp \
     src/model/utils/time.cpp \
     src/model/stream/audio/file/raw_file_audio_sink.cpp \
     src/model/stream/audio/odas/odas_audio_source.cpp \
@@ -89,14 +107,13 @@ HEADERS += \
     src/model/media_player/subtitles/srt_file.h \
     src/model/media_player/subtitles/subtitle_item.h \
     src/model/media_player/subtitles/subtitles.h \
-    src/model/network/i_socket_server.h \
-    src/model/network/local_socket_server.h \
     src/model/recorder/i_recorder.h \
     src/model/stream/audio/audio_config.h \
     src/model/stream/stream_config.h \
+    src/model/transcription/transcription.h \
     src/model/transcription/transcription_config.h \
-    src/model/transcription/transcription_constants.h \
     src/model/stream/video/output/default_virtual_camera_output.h \
+    src/model/utils/filesutil.h \
     src/model/utils/observer/i_observer.h \
     src/model/utils/observer/i_subject.h \
     src/model/utils/time.h \
@@ -213,26 +230,17 @@ CUDA_SOURCES += \
 contains(compilation, no_cuda) {
     DEFINES += NO_CUDA
 } else {
-    INCLUDEPATH += $(CUDA_HOME)/include
 
-    CUDA_HOME=$$(CUDA_HOME)
-    !isEmpty(CUDA_HOME) {
-        exists($$(CUDA_HOME)/lib) {
-            LIBS += -L$(CUDA_HOME)/lib
-        } else {
-            exists($$(CUDA_HOME)/lib64) {
-                LIBS += -L$(CUDA_HOME)/lib64
-            }
-        }
-    } else {
-        message("CUDA_HOME is not set, will try to use PATH")
-    }
+    HOST_CUDA_DIR = /usr/local/cuda-10.0
+    TARGET_CUDA_DIR = $$[QT_SYSROOT]/usr/local/cuda-10.0
 
-    LIBS += -lcuda -lcudart
+    INCLUDEPATH *= $$TARGET_CUDA_DIR/include
+    LIBS += -L$$TARGET_CUDA_DIR/lib64/stubs -lcuda -L$$TARGET_CUDA_DIR/lib64 -lcudart -lcurand -lcublas
+    NVCC = $$HOST_CUDA_DIR/bin/nvcc
 
     cuda.input = CUDA_SOURCES
     cuda.output = $$OBJECTS_DIR/${QMAKE_FILE_BASE}.o
-    cuda.commands = nvcc -c --compiler-options \"$(CFLAGS)\" $(INCPATH) $$LIBS -o ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
+    cuda.commands = $$NVCC -ccbin $$QMAKE_CXX -c --compiler-options \"$(CFLAGS)\" $(INCPATH) $$LIBS -o ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
     cuda.dependcy_type = TYPE_C
     QMAKE_EXTRA_COMPILERS += cuda
 }
@@ -251,5 +259,5 @@ RESOURCES += \
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
-else: unix:!android: target.path = /opt/$${TARGET}/bin
+else: unix:!android: target.path = /home/nvidia/rendezvous/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
