@@ -2,7 +2,8 @@
 Description=StenoMics automation.
 
 [Service]
-Type=notify
+Type=simple
+RemainAfterExit=true
 ExecStart=/bin/bash /usr/bin/stenomics-creation.sh --default
 
 [Install]
