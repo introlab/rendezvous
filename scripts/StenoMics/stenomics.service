@@ -6,4 +6,4 @@ Type=idle
 ExecStart=/bin/bash /usr/bin/stenomics-creation.sh --default
 
 [Install]
-WantedBy=default.target
+WantedBy=multi-user.target
