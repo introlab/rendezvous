@@ -2,7 +2,7 @@
 Description=StenoMics automation.
 
 [Service]
-Type=oneshot
+Type=idle
 ExecStart=/bin/bash /usr/bin/stenomics-creation.sh --default
 
 [Install]
