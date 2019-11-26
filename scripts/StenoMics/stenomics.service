@@ -3,7 +3,7 @@ Description=StenoMics automation.
 
 [Service]
 Type=idle
-ExecStart=/bin/bash /usr/bin/stenomics-creation.sh
+ExecStart=/bin/bash /usr/bin/stenomics-creation.sh --default
 
 [Install]
 WantedBy=default.target 
