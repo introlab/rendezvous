@@ -2,9 +2,11 @@
 Description=StenoMics automation.
 
 [Service]
-Type=idle
+Type=oneshot
 User=nvidia
 Group=nvidia
+RemainAfterExit=true
+StandardOutput=journal
 ExecStart=/bin/bash /usr/bin/stenomics-creation.sh --default
 
 [Install]
