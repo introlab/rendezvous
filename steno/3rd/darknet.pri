@@ -3,6 +3,9 @@ INCLUDEPATH *= $$DARKNET_DIR/include
 
 contains(architecture, aarch64) {
     DARKNET_LIBS = -L$$DARKNET_DIR/lib/aarch64 -ldarknet
+    darknet.path = /home/nvidia/rendezvous/$${TARGET}/bin
+    darknet.files = $$DARKNET_DIR/lib/aarch64/*
+    !isEmpty(darknet.path): INSTALLS += darknet
 }
 
 contains(architecture, x86_64) {

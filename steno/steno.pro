@@ -3,7 +3,7 @@
 compilation = no_cuda
 
 # Uncomment if you want to cross-compile for Jetson Tx2
-target = #jetson_tx2
+target = jetson_tx2
 
 # --------------------------------------------------------------------------------
 # !! Do NOT manual modify beyond this point, unless you know what you are doing !!
