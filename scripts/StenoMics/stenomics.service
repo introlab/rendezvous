@@ -3,8 +3,6 @@ Description=StenoMics automation.
 
 [Service]
 Type=oneshot
-User=nvidia
-Group=nvidia
 ExecStart=/bin/bash /usr/bin/stenomics-creation.sh --default
 
 [Install]
