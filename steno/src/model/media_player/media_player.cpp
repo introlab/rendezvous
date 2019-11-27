@@ -50,11 +50,6 @@ void MediaPlayer::setMedia(const QUrl &url)
     {
         m_subtitles.open(srtFilePath);
     }
-
-    // We do that to load the first frame of the video when the user open a media file.
-    m_mediaPlayer.play();
-    m_mediaPlayer.pause();
-    setPosition(0);
 }
 
 void MediaPlayer::play()
