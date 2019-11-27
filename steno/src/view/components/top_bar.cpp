@@ -166,6 +166,7 @@ void TopBar::onTranscriptionFinished(bool isOK, QString reply)
  */
 bool TopBar::askTranscription()
 {
+    qInfo() << "Asking transcription...";
     const bool isTranscriptionEnabled =
         m_transcriptionConfig->value(Model::TranscriptionConfig::AUTOMATIC_TRANSCRIPTION).toBool();
     if (isTranscriptionEnabled)
@@ -178,6 +179,7 @@ bool TopBar::askTranscription()
         isOK = m_transcription->transcribe(lastRecordingPath);
         if (!isOK) return false;
     }
+    qInfo() << "transcription request done, waiting for response...";
     return true;
 }
 

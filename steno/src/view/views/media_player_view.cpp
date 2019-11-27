@@ -109,6 +109,7 @@ void MediaPlayerView::openFile()
     if (fileDialog.exec() == QDialog::Accepted)
     {
         m_mediaPlayer->setMedia(fileDialog.selectedUrls().constFirst());
+        m_mediaPlayer->play();
         m_ui->statusLabel->setText(QString());
         m_ui->playButton->setEnabled(true);
     }
