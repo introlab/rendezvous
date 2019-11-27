@@ -2,8 +2,6 @@
 
 #include "classifier.h"
 
-#include <iostream>    //toremove
-
 namespace Model
 {
 /**

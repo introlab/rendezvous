@@ -215,11 +215,6 @@ void MediaThread::run()
                 std::vector<int> sourcesToKeep =
                     Classifier::getSourcesToKeep(sourcePositions, imagePositions, classifierRangeThreshold);
 
-                std::vector<std::pair<int, int>> audioImagePairs =
-                    Classifier::getAudioImagePairs(sourcePositions, imagePositions, classifierRangeThreshold);
-
-                qInfo() << "audio/image pairs: " << audioImagePairs;
-
                 AudioSuppresser::suppressNoise(sourcesToKeep, audioChunkFiltered, audioChunk.size);
 
                 audioSink_->write(audioChunkFiltered, audioChunk.size);
