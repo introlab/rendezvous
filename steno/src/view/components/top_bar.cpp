@@ -110,11 +110,9 @@ void TopBar::onRecorderStateChanged(const QMediaRecorder::State& state)
     switch (state)
     {
         case QMediaRecorder::State::RecordingState:
-            m_ui->recordButton->setText("Stop recording");
             break;
         case QMediaRecorder::State::StoppedState:
         {
-            m_ui->recordButton->setText("Start recording");
             bool isOK = askTranscription();
             if (!isOK)
             {

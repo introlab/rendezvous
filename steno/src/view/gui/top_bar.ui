@@ -36,13 +36,44 @@
    <item>
     <widget class="QPushButton" name="recordButton">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
+     <property name="maximumSize">
+      <size>
+       <width>60</width>
+       <height>25</height>
+      </size>
+     </property>
+     <property name="layoutDirection">
+      <enum>Qt::LeftToRight</enum>
+     </property>
+     <property name="autoFillBackground">
+      <bool>false</bool>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
      <property name="text">
-      <string>Record</string>
+      <string>Rec</string>
+     </property>
+     <property name="icon">
+      <iconset>
+       <normalon>:/icons/start_record.svg</normalon>
+       <selectedoff>:/icons/stop_record.svg</selectedoff>
+       <selectedon>:/icons/stop_record.svg</selectedon>
+      </iconset>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>18</width>
+       <height>18</height>
+      </size>
+     </property>
+     <property name="checkable">
+      <bool>false</bool>
      </property>
     </widget>
    </item>
