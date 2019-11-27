@@ -71,7 +71,7 @@ void MediaThread::run()
     std::vector<Image> vcOutputFormatImages(1, Image(maxVcDim.width, maxVcDim.height, videoOutputConfig_->imageFormat));
 
     // TODO: config?
-    const float classifierRangeThreshold = 0.35;
+    const float classifierRangeThreshold = 0.26;    // ~15 degrees
 
     if (videoInputConfig_->fpsTarget == 0)
     {
@@ -209,12 +209,20 @@ void MediaThread::run()
             AudioChunk audioChunk;
             while (audioSource_->readAudioChunk(audioChunk) && readCount > 0)
             {
-                std::vector<int> sourcesToSuppress =
-                    Classifier::classify(sourcePositions, imagePositions, classifierRangeThreshold);
+                uint8_t audioChunkFiltered[audioChunk.size];
+                std::copy(audioChunk.audioData.get(), audioChunk.audioData.get() + audioChunk.size, audioChunkFiltered);
 
-                AudioSuppresser::suppressSources(sourcesToSuppress, audioChunk.audioData.get(), audioChunk.size);
+                std::vector<int> sourcesToKeep =
+                    Classifier::getSourcesToKeep(sourcePositions, imagePositions, classifierRangeThreshold);
 
-                audioSink_->write(audioChunk.audioData.get(), audioChunk.size);
+                std::vector<std::pair<int, int>> audioImagePairs =
+                    Classifier::getAudioImagePairs(sourcePositions, imagePositions, classifierRangeThreshold);
+
+                qInfo() << "audio/image pairs: " << audioImagePairs;
+
+                AudioSuppresser::suppressNoise(sourcesToKeep, audioChunkFiltered, audioChunk.size);
+
+                audioSink_->write(audioChunkFiltered, audioChunk.size);
 
                 --readCount;
             }

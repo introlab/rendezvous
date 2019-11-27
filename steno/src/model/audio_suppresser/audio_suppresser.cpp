@@ -3,31 +3,30 @@
 namespace Model
 {
 /**
- * @brief Take audio buffer in input and remove sources in sourcesToSuppress/
- * @param [IN] sourcesToSuppress - vector of audio sources to remove.
+ * @brief Removes all audio sources that are not in the vector sourcesToKeep/
+ * @param [IN] sourcesToKeep - vector of audio sources to keep.
  * @param [IN/OUT] audioBuf - Audio buffer to modify
  * @param [IN] bufferLength
  */
-void AudioSuppresser::suppressSources(const std::vector<int> &sourcesToSuppress, uint8_t *audioBuf,
-                                      const int bufferLength)
+void AudioSuppresser::suppressNoise(const std::vector<int> &sourcesToKeep, uint8_t *audioBuf, const int bufferLength)
 {
     // Initialize mask
     uint8_t mask[bufferLength];
 
     for (int i = 0; i < bufferLength; i++)
     {
-        mask[i] = 255;
+        mask[i] = 0;
     }
 
     // Build mask
     int index;
-    for (std::size_t i = 0; i < sourcesToSuppress.size(); i++)
+    for (std::size_t i = 0; i < sourcesToKeep.size(); i++)
     {
-        index = sourcesToSuppress[i];
+        index = sourcesToKeep[i];
         createMaskFromIndex(index, mask, bufferLength);
     }
 
-    // Supress sources
+    // Supress sources that we don't want to keep
     for (int i = 0; i < bufferLength; i++)
     {
         audioBuf[i] = audioBuf[i] & mask[i];
@@ -35,8 +34,8 @@ void AudioSuppresser::suppressSources(const std::vector<int> &sourcesToSuppress,
 }
 
 /**
- * @brief Create a mask to suppress a source in a audio source.
- * @param [IN] index - index of the source
+ * @brief Create a mask to supress all audio sources that we don't want to keep.
+ * @param [IN] index - index of the source to keep
  * @param [OUT] mask - mask for suppression
  * @param [IN] maskLength
  */
@@ -45,9 +44,9 @@ void AudioSuppresser::createMaskFromIndex(const int index, uint8_t *mask, const 
     // By default we use 16 bits precision => 2 bytes per source
     for (int i = 2 * index; i < maskLength; i = i + 8)
     {
-        mask[i] = 0;
+        mask[i] = 255;
 
-        if (i + 1 < maskLength) mask[i + 1] = 0;
+        if (i + 1 < maskLength) mask[i + 1] = 255;
     }
 }
 

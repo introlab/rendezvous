@@ -9,7 +9,7 @@ namespace Model
 class AudioSuppresser
 {
    public:
-    static void suppressSources(const std::vector<int> &indexToSuppress, uint8_t *audioBuf, const int bufferLength);
+    static void suppressNoise(const std::vector<int> &indexToKeep, uint8_t *audioBuf, const int bufferLength);
 
    private:
     static void createMaskFromIndex(const int index, uint8_t *mask, const int maskLength);
