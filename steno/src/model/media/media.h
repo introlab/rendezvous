@@ -19,7 +19,7 @@ class Media : public QObject
    public:
     explicit Media(std::shared_ptr<Config> config, std::shared_ptr<IStream> stream);
 
-    void setViewFinder(QCameraViewfinder *view);
+    void setViewFinder(QCameraViewfinder* view);
 
     void startRecorder();
     void stopRecorder();

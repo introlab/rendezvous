@@ -16,7 +16,7 @@ Media::Media(std::shared_ptr<Config> config, std::shared_ptr<IStream> stream)
     initCamera();
     initRecorder();
 
-    connect(m_stream.get(), &IStream::stateChanged, [=](const IStream::State& state){ onStreamStateChanged(state); });
+    connect(m_stream.get(), &IStream::stateChanged, [=](const IStream::State& state) { onStreamStateChanged(state); });
 }
 
 /**

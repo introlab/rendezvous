@@ -40,7 +40,8 @@ TopBar::TopBar(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::Me
             [=](const Model::IStream::State& state) { onStreamStateChanged(state); });
     connect(m_ui->startButton, &QAbstractButton::clicked, [=] { onStartButtonClicked(); });
 
-    connect(m_media.get(), &Model::Media::recorderAvailabilityChanged, [=](bool available){ onRecorderAvailabilityChanged(available); });
+    connect(m_media.get(), &Model::Media::recorderAvailabilityChanged,
+            [=](bool available) { onRecorderAvailabilityChanged(available); });
 
     connect(m_media.get(), &Model::Media::recorderStateChanged,
             [=](const QMediaRecorder::State& state) { onRecorderStateChanged(state); });
