@@ -32,6 +32,7 @@ class TopBar : public QWidget
     void onStreamStateChanged(const Model::IStream::State& state);
     void onStartButtonClicked();
     void onRecorderStateChanged(const QMediaRecorder::State& state);
+    void onRecorderAvailabilityChanged(bool available);
     void onRecordButtonClicked();
     void onTranscriptionFinished(bool isOK, QString reply);
 

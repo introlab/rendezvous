@@ -36,7 +36,7 @@
    <item>
     <widget class="QPushButton" name="recordButton">
      <property name="sizePolicy">
-      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
@@ -60,11 +60,8 @@
       <string>Rec</string>
      </property>
      <property name="icon">
-      <iconset>
-       <normalon>:/icons/start_record.svg</normalon>
-       <selectedoff>:/icons/stop_record.svg</selectedoff>
-       <selectedon>:/icons/stop_record.svg</selectedon>
-      </iconset>
+      <iconset resource="../../../resources/resources.qrc">
+       <normaloff>:/icons/start_record.svg</normaloff>:/icons/start_record.svg</iconset>
      </property>
      <property name="iconSize">
       <size>
@@ -99,6 +96,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../../../resources/resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

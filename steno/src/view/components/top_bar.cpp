@@ -40,6 +40,8 @@ TopBar::TopBar(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::Me
             [=](const Model::IStream::State& state) { onStreamStateChanged(state); });
     connect(m_ui->startButton, &QAbstractButton::clicked, [=] { onStartButtonClicked(); });
 
+    connect(m_media.get(), &Model::Media::recorderAvailabilityChanged, [=](bool available){ onRecorderAvailabilityChanged(available); });
+
     connect(m_media.get(), &Model::Media::recorderStateChanged,
             [=](const QMediaRecorder::State& state) { onRecorderStateChanged(state); });
     connect(m_ui->recordButton, &QAbstractButton::clicked, [=] { onRecordButtonClicked(); });
@@ -61,17 +63,14 @@ void TopBar::onStreamStateChanged(const Model::IStream::State& state)
         case Model::IStream::Started:
             m_ui->startButton->setText("Stop");
             m_ui->startButton->setDisabled(false);
-            m_ui->recordButton->setDisabled(false);
             break;
         case Model::IStream::Stopping:
             m_ui->startButton->setText("Stopping");
             m_ui->startButton->setDisabled(true);
-            m_ui->recordButton->setDisabled(true);
             break;
         case Model::IStream::Stopped:
             m_ui->startButton->setText("Start");
             m_ui->startButton->setDisabled(false);
-            m_ui->recordButton->setDisabled(true);
             break;
     }
 }
@@ -110,9 +109,11 @@ void TopBar::onRecorderStateChanged(const QMediaRecorder::State& state)
     switch (state)
     {
         case QMediaRecorder::State::RecordingState:
+            m_ui->recordButton->setIcon(QIcon(":/icons/stop_record.svg"));
             break;
         case QMediaRecorder::State::StoppedState:
         {
+            m_ui->recordButton->setIcon(QIcon(":/icons/start_record.svg"));
             bool isOK = askTranscription();
             if (!isOK)
             {
@@ -123,7 +124,15 @@ void TopBar::onRecorderStateChanged(const QMediaRecorder::State& state)
         case QMediaRecorder::State::PausedState:
             break;
     }
-    m_ui->recordButton->setDisabled(false);
+}
+
+/**
+ * @brief Callback when the recorder availability changes.
+ * @param [IN] Availability of the recorder
+ */
+void TopBar::onRecorderAvailabilityChanged(bool available)
+{
+    m_ui->recordButton->setDisabled(!available);
 }
 
 /**
@@ -131,7 +140,6 @@ void TopBar::onRecorderStateChanged(const QMediaRecorder::State& state)
  */
 void TopBar::onRecordButtonClicked()
 {
-    m_ui->recordButton->setDisabled(true);
     switch (m_media->recorderState())
     {
         case QMediaRecorder::State::RecordingState:
