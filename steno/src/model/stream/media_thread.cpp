@@ -7,6 +7,7 @@
 #include "model/classifier/classifier.h"
 #include "model/stream/audio/audio_config.h"
 #include "model/stream/utils/alloc/heap_object_factory.h"
+#include "model/stream/utils/images/image_drawing.h"
 #include "model/stream/utils/models/circular_buffer.h"
 #include "model/stream/utils/models/point.h"
 #include "model/stream/video/dewarping/dewarping_helper.h"
@@ -184,6 +185,23 @@ void MediaThread::run()
 
                 // Wait for dewarping to be completed
                 synchronizer_->sync();
+
+                int borderWidth = 2;
+                RGB borderColor;
+                borderColor.r = 0;
+                borderColor.g = 165;
+                borderColor.b = 89;
+
+                std::vector<std::pair<int, int>> audioImagePairs;    // = getAudioImagePairs(...);
+                // temp
+                std::pair<int, int> pair(0, 0);
+                audioImagePairs.push_back(pair);
+                // ---
+
+                for (std::pair<int, int> pair : audioImagePairs)
+                {
+                    ImageDrawing::drawBordersUYVY(vcResizeOutputFormatImages[pair.second], borderWidth, borderColor);
+                }
 
                 // Write to output image and send it to the video output
                 displayImageBuilder.createDisplayImage(vcResizeOutputFormatImages, displayImage);
