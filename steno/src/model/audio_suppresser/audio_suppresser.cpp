@@ -7,8 +7,7 @@ namespace Model
 /**
  * @brief Removes all audio sources that are not in the vector sourcesToKeep
  * @param [IN] sourcesToKeep - vector of audio sources to keep.
- * @param [IN/OUT] audioBuf - Audio buffer to modify
- * @param [IN] bufferLength
+ * @param [IN/OUT] audioChunk - Audio chunk to modify
  */
 void AudioSuppresser::suppressNoise(const std::vector<int> &sourcesToKeep, AudioChunk& audioChunk)
 {
