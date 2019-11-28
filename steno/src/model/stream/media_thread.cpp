@@ -203,10 +203,6 @@ void MediaThread::run()
 
                 std::vector<std::pair<int, int>> audioImagePairs =
                     Classifier::getAudioImagePairs(sourcePositions, imagePositions, classifierRangeThreshold);
-                // temp
-                // std::pair<int, int> pair(0, 0);
-                // audioImagePairs.push_back(pair);
-                // ---
 
                 for (std::pair<int, int> pair : audioImagePairs)
                 {
