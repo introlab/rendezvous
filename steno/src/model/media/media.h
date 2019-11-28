@@ -18,11 +18,12 @@ class Media : public QObject
    public:
     explicit Media(std::shared_ptr<Config> config);
 
-    void setViewFinder(QCameraViewfinder *view);
+    void setViewFinder(QCameraViewfinder* view);
 
     void startRecorder();
     void stopRecorder();
     QMediaRecorder::State recorderState() const;
+    void unLoadCamera();
 
    signals:
     void recorderStateChanged(QMediaRecorder::State state);

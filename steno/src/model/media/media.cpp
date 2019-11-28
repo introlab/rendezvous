@@ -1,6 +1,7 @@
 #include "media.h"
 
 #include "model/app_config.h"
+#include "model/stream/video/output/default_virtual_camera_output.h"
 #include "model/stream/video/video_config.h"
 
 #include <QCameraInfo>
@@ -16,16 +17,22 @@ Media::Media(std::shared_ptr<Config> config)
     initRecorder();
 }
 
+void Media::unLoadCamera()
+{
+    m_camera->unload();
+}
+
 /**
  * @brief Tell the camera where to render the camera images.
  * @param [IN] view
  */
 void Media::setViewFinder(QCameraViewfinder* view)
 {
-    if (!m_camera.isNull())
+    if (!m_camera.isNull() && view != nullptr)
     {
         m_camera->unload();
         m_camera->setViewfinder(view);
+        view->show();
         m_camera->start();
     }
 }
@@ -94,6 +101,9 @@ void Media::initRecorder()
     m_mediaRecorder->setOutputLocation(m_appConfig->value(AppConfig::OUTPUT_FOLDER).toString());
     connect(m_mediaRecorder.get(), &QMediaRecorder::stateChanged,
             [=](QMediaRecorder::State state) { emit recorderStateChanged(state); });
+
+    connect(m_mediaRecorder.get(), QOverload<QMediaRecorder::Error>::of(&QMediaRecorder::error),
+            [=](const QMediaRecorder::Error& error) { qCritical() << "Media Recorder Error: " << error; });
 }
 
 }    // namespace Model
