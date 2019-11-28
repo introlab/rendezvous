@@ -57,13 +57,7 @@ std::vector<std::pair<int, int>> Classifier::getAudioImagePairs(const std::vecto
             if (std::abs(audioPositions[i].azimuth - imagePositionAzimuth) < rangeThreshold &&
                 std::abs(audioPositions[i].elevation - imagePositions[j].elevation) < rangeThreshold)
             {
-                audioImagePair = std::make_pair(i, j);
-
-                // Check if the audio/image pair is already in the vector
-                if (std::find(audioImagePairs.begin(), audioImagePairs.end(), audioImagePair) == audioImagePairs.end())
-                {
-                    audioImagePairs.push_back(audioImagePair);
-                }
+                audioImagePairs.push_back(std::make_pair(i, j));
             }
         }
     }
