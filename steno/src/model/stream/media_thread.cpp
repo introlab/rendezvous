@@ -186,16 +186,26 @@ void MediaThread::run()
                 // Wait for dewarping to be completed
                 synchronizer_->sync();
 
+                // Get audio sources and image spatial positions
+                std::vector<SourcePosition> sourcePositions = positionSource_->getPositions();
+                std::vector<SphericalAngleRect> imagePositions;
+                imagePositions.reserve(virtualCameras.size());
+                for (const auto& vc : virtualCameras)
+                {
+                    imagePositions.push_back(vc);
+                }
+
                 int borderWidth = 2;
                 RGB borderColor;
                 borderColor.r = 0;
                 borderColor.g = 165;
                 borderColor.b = 89;
 
-                std::vector<std::pair<int, int>> audioImagePairs;    // = getAudioImagePairs(...);
+                std::vector<std::pair<int, int>> audioImagePairs =
+                    Classifier::getAudioImagePairs(sourcePositions, imagePositions, classifierRangeThreshold);
                 // temp
-                std::pair<int, int> pair(0, 0);
-                audioImagePairs.push_back(pair);
+                // std::pair<int, int> pair(0, 0);
+                // audioImagePairs.push_back(pair);
                 // ---
 
                 for (std::pair<int, int> pair : audioImagePairs)
@@ -207,34 +217,27 @@ void MediaThread::run()
                 displayImageBuilder.createDisplayImage(vcResizeOutputFormatImages, displayImage);
                 videoOutput_->writeImage(displayImage);
                 displayBuffers.next();
+
+                int readCount = videoStabilizer.getLastFrameTimeMs() / (chunkDurationMs / 2) + 1;
+
+                // Remove unwanted audio sources and write audio into audio sink
+                AudioChunk audioChunk;
+                while (audioSource_->readAudioChunk(audioChunk) && readCount > 0)
+                {
+                    std::vector<int> sourcesToKeep =
+                        Classifier::getSourcesToKeep(sourcePositions, imagePositions, classifierRangeThreshold);
+
+                    AudioSuppresser::suppressNoise(sourcesToKeep, audioChunk);
+
+                    audioSink_->write(audioChunk.audioData.get(), audioChunk.size);
+
+                    --readCount;
+                }
             }
             else
             {
                 // If there are no active virtual cameras, just send an empty image
                 videoOutput_->writeImage(emptyDisplay);
-            }
-
-            std::vector<SourcePosition> sourcePositions = positionSource_->getPositions();
-            std::vector<SphericalAngleRect> imagePositions;
-            imagePositions.reserve(virtualCameras.size());
-            for (const auto& vc : virtualCameras)
-            {
-                imagePositions.push_back(vc);
-            }
-
-            int readCount = videoStabilizer.getLastFrameTimeMs() / (chunkDurationMs / 2) + 1;
-
-            AudioChunk audioChunk;
-            while (audioSource_->readAudioChunk(audioChunk) && readCount > 0)
-            {
-                std::vector<int> sourcesToKeep =
-                    Classifier::getSourcesToKeep(sourcePositions, imagePositions, classifierRangeThreshold);
-
-                AudioSuppresser::suppressNoise(sourcesToKeep, audioChunk);
-
-                audioSink_->write(audioChunk.audioData.get(), audioChunk.size);
-
-                --readCount;
             }
 
             detections.clear();
