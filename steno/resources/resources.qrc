@@ -7,5 +7,7 @@
         <file>meeting.svg</file>
         <file>player.svg</file>
         <file>app_icon.svg</file>
+        <file>start_record.svg</file>
+        <file>stop_record.svg</file>
     </qresource>
 </RCC>

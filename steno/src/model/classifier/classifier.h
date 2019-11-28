@@ -12,7 +12,8 @@ class Classifier
 {
    public:
     static std::vector<int> classify(const std::vector<SourcePosition> &audioPositions,
-                                     const std::vector<SphericalAngleRect> &imagePositions, const float &rangeThreshold);
+                                     const std::vector<SphericalAngleRect> &imagePositions,
+                                     const float &rangeThreshold);
 };
 
 }    // namespace Model
