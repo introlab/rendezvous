@@ -4,15 +4,14 @@
 #include <cstdint>
 #include <vector>
 
+#include "model/stream/audio/audio_chunk.h"
+
 namespace Model
 {
 class AudioSuppresser
 {
    public:
-    static void suppressNoise(const std::vector<int> &indexToKeep, uint8_t *audioBuf, const int bufferLength);
-
-   private:
-    static void createMaskFromIndex(const int index, uint8_t *mask, const int maskLength);
+    static void suppressNoise(const std::vector<int> &indexToKeep, AudioChunk& audioChunk);
 };
 
 }    // namespace Model

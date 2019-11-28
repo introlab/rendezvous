@@ -209,15 +209,12 @@ void MediaThread::run()
             AudioChunk audioChunk;
             while (audioSource_->readAudioChunk(audioChunk) && readCount > 0)
             {
-                uint8_t audioChunkFiltered[audioChunk.size];
-                std::copy(audioChunk.audioData.get(), audioChunk.audioData.get() + audioChunk.size, audioChunkFiltered);
-
                 std::vector<int> sourcesToKeep =
                     Classifier::getSourcesToKeep(sourcePositions, imagePositions, classifierRangeThreshold);
 
-                AudioSuppresser::suppressNoise(sourcesToKeep, audioChunkFiltered, audioChunk.size);
+                AudioSuppresser::suppressNoise(sourcesToKeep, audioChunk);
 
-                audioSink_->write(audioChunkFiltered, audioChunk.size);
+                audioSink_->write(audioChunk.audioData.get(), audioChunk.size);
 
                 --readCount;
             }
