@@ -85,9 +85,7 @@ Stream::Stream(std::shared_ptr<Config> config)
 
     m_mediaThread = std::make_unique<MediaThread>(
         std::make_unique<OdasAudioSource>(odasAudioPort, audioChunkDurationMs, numberOfAudioBuffers, audioInputConfig),
-        std::make_unique<RawFileAudioSink>(
-            QString(m_config->appConfig()->value(AppConfig::OUTPUT_FOLDER).toString() + "/audio_output.raw")
-                .toStdString()),
+        std::make_unique<PulseAudioSink>(audioOutputConfig),
         std::make_unique<OdasPositionSource>(odasPositionPort, positionBufferSize),
         m_implementationFactory.getCameraReader(videoInputConfig), m_implementationFactory.getFisheyeDewarper(),
         m_implementationFactory.getObjectFactory(), std::make_unique<VirtualCameraOutput>(videoOutputConfig),

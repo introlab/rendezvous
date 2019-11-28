@@ -9,8 +9,10 @@ namespace Model
 struct AudioChunk
 {
     AudioChunk() = default;
-    AudioChunk(int audioSize)
-        : size(audioSize)
+    AudioChunk(int elements, int channels, int bytesPerChannel)
+        : size(elements * channels * bytesPerChannel)
+        , channels(channels)
+        , bytesPerChannel(bytesPerChannel)
         , timestamp(0)
         , audioData(nullptr)
     {
@@ -18,6 +20,8 @@ struct AudioChunk
     ~AudioChunk() = default;
 
     std::size_t size;
+    int channels;
+    int bytesPerChannel;
     unsigned long long timestamp;
 
     std::shared_ptr<uint8_t> audioData;
