@@ -8,4 +8,11 @@ qint64 Time::milliseconds(const QString &hour, const QString &minute, const QStr
            millisecond.toLongLong();
 }
 
+QString Time::clockFormat(const qint64 timeInSeconds)
+{
+    return QString("%1").arg(timeInSeconds / 3600, 2, 10, QChar('0')) + ":" +
+           QString("%1").arg((timeInSeconds % 3600) / 60, 2, 10, QChar('0')) + ":" +
+           QString("%1").arg((timeInSeconds % 3600) % 60, 2, 10, QChar('0'));
+}
+
 }    // namespace Model
