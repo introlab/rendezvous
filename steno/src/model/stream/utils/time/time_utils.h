@@ -5,7 +5,6 @@
 
 namespace Model
 {
-
 uint64_t systemTimeSinceEpoch()
 {
     const auto now = std::chrono::system_clock::now();

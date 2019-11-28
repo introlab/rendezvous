@@ -121,11 +121,11 @@ void TopBar::onRecorderStateChanged(const QMediaRecorder::State& state)
     switch (state)
     {
         case QMediaRecorder::State::RecordingState:
-            m_ui->recordButton->setText("Stop recording");
+            m_ui->recordButton->setIcon(QIcon(":/icons/stop_record.svg"));
             break;
         case QMediaRecorder::State::StoppedState:
         {
-            m_ui->recordButton->setText("Start recording");
+            m_ui->recordButton->setIcon(QIcon(":/icons/start_record.svg"));
             bool isOK = askTranscription();
             if (!isOK)
             {
@@ -136,7 +136,6 @@ void TopBar::onRecorderStateChanged(const QMediaRecorder::State& state)
         case QMediaRecorder::State::PausedState:
             break;
     }
-    m_ui->recordButton->setDisabled(false);
 }
 
 /**
@@ -148,14 +147,23 @@ void TopBar::onRecordButtonClicked()
     switch (m_media->recorderState())
     {
         case QMediaRecorder::State::RecordingState:
+        {
+            QApplication::processEvents();
+            QSignalBlocker blocker(m_ui->recordButton);
             m_media->stopRecorder();
             break;
+        }
         case QMediaRecorder::State::StoppedState:
+        {
+            QApplication::processEvents();
+            QSignalBlocker blocker(m_ui->recordButton);
             m_media->startRecorder();
             break;
+        }
         case QMediaRecorder::State::PausedState:
             break;
     }
+    m_ui->recordButton->setDisabled(false);
 }
 
 /**
