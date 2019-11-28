@@ -38,7 +38,7 @@ void Media::setViewFinder(QCameraViewfinder* view)
  */
 void Media::startRecorder()
 {
-    if (m_mediaRecorder && m_mediaRecorder->state() == QMediaRecorder::State::StoppedState)
+    if (m_mediaRecorder)
     {
         m_mediaRecorder->record();
     }
@@ -49,7 +49,7 @@ void Media::startRecorder()
  */
 void Media::stopRecorder()
 {
-    if (m_mediaRecorder && m_mediaRecorder->state() == QMediaRecorder::State::RecordingState)
+    if (m_mediaRecorder)
     {
         m_mediaRecorder->stop();
     }
@@ -73,12 +73,11 @@ void Media::onStreamStateChanged(const IStream::State& state)
     switch (state)
     {
         case IStream::Started:
-            emit recorderAvailabilityChanged(true);
             break;
         case IStream::Stopping:
-        case IStream::Stopped:
-            emit recorderAvailabilityChanged(false);
             stopRecorder();
+            break;
+        case IStream::Stopped:
             break;
     }
 }

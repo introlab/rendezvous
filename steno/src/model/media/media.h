@@ -27,7 +27,6 @@ class Media : public QObject
 
    signals:
     void recorderStateChanged(QMediaRecorder::State state);
-    void recorderAvailabilityChanged(bool available);
 
    private slots:
     void onStreamStateChanged(const IStream::State& state);
