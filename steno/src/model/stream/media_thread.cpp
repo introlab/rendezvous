@@ -206,7 +206,8 @@ void MediaThread::run()
 
                 for (std::pair<int, int> pair : audioImagePairs)
                 {
-                    ImageDrawing::drawBordersUYVY(vcResizeOutputFormatImages[pair.second], borderWidth, borderColor);
+                    ImageDrawing::drawBorders(vcResizeOutputFormatImages[pair.second], ImageFormat::UYVY_FMT,
+                                              borderWidth, borderColor);
                 }
 
                 // Write to output image and send it to the video output
@@ -234,6 +235,15 @@ void MediaThread::run()
             {
                 // If there are no active virtual cameras, just send an empty image
                 videoOutput_->writeImage(emptyDisplay);
+
+                // Empty audio buffer
+                int readCount = videoStabilizer.getLastFrameTimeMs() / (chunkDurationMs / 2) + 1;
+
+                AudioChunk audioChunk;
+                while (audioSource_->readAudioChunk(audioChunk) && readCount > 0)
+                {
+                    --readCount;
+                }
             }
 
             detections.clear();
