@@ -17,11 +17,15 @@ DefaultImageThread::DefaultImageThread(std::shared_ptr<IVideoOutput> videoOutput
 void DefaultImageThread::run()
 {
     qInfo() << "DefaulImageThread started";
+    m_state = ThreadStatus::RUNNING;
+    notify();
 
     QFile file(":/defaultImage.jpg");
     if (!file.exists())
     {
         qCritical() << file.symLinkTarget() << "does not exists.";
+        m_state = ThreadStatus::CRASHED;
+        notify();
         return;
     }
 
@@ -38,6 +42,46 @@ void DefaultImageThread::run()
     }
 
     qInfo() << "DefaulImageThread finished";
+    m_state = ThreadStatus::STOPPED;
+    notify();
+}
+
+/**
+ * @brief Attach an object to the notifications send by DefaultImageThread.
+ * @param observer - object to attach to notifications.
+ */
+void DefaultImageThread::attach(IObserver* observer)
+{
+    if (observer != nullptr)
+    {
+        m_subscribers.push_back(observer);
+    }
+}
+
+/**
+ * @brief Remove an observer from the list of subscribers.
+ * @param observer - object to remove from the notifications list.
+ */
+void DefaultImageThread::detach(IObserver* observer)
+{
+    for (int index = 0; static_cast<size_t>(index) < m_subscribers.size(); ++index)
+    {
+        if (m_subscribers.at(static_cast<size_t>(index)) == observer)
+        {
+            m_subscribers.erase(m_subscribers.begin() + index);
+        }
+    }
+}
+
+/**
+ * @brief Notify all observers that the state of DefaultImageThread changed.
+ */
+void DefaultImageThread::notify()
+{
+    for (auto observer : m_subscribers)
+    {
+        observer->updateObserver();
+    }
 }
 
 }    // namespace Model
