@@ -1,7 +1,7 @@
 #include "video_stabilizer.h"
 
-#include <thread>
 #include <iostream>
+#include <thread>
 
 #include "model/stream/utils/math/helpers.h"
 

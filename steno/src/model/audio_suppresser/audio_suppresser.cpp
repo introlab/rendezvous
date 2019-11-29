@@ -1,53 +1,37 @@
 #include "audio_suppresser.h"
 
+#include <cstring>
+
 namespace Model
 {
 /**
- * @brief Take audio buffer in input and remove sources in sourcesToSuppress/
- * @param [IN] sourcesToSuppress - vector of audio sources to remove.
- * @param [IN/OUT] audioBuf - Audio buffer to modify
- * @param [IN] bufferLength
+ * @brief Removes all audio sources that are not in the vector sourcesToKeep
+ * @param [IN] sourcesToKeep - vector of audio sources to keep.
+ * @param [IN/OUT] audioChunk - Audio chunk to modify
  */
-void AudioSuppresser::suppressSources(const std::vector<int> &sourcesToSuppress, uint8_t *audioBuf,
-                                      const int bufferLength)
+void AudioSuppresser::suppressNoise(const std::vector<int> &sourcesToKeep, AudioChunk& audioChunk)
 {
-    // Initialize mask
-    uint8_t mask[bufferLength];
-
-    for (int i = 0; i < bufferLength; i++)
-    {
-        mask[i] = 255;
-    }
+    // Initialize mask to zeros
+    uint8_t mask[audioChunk.channels] = {};
 
     // Build mask
-    int index;
-    for (std::size_t i = 0; i < sourcesToSuppress.size(); i++)
+    for (int channel : sourcesToKeep)
     {
-        index = sourcesToSuppress[i];
-        createMaskFromIndex(index, mask, bufferLength);
+        if (channel >= audioChunk.channels)
+        {
+            throw std::runtime_error("AudioSuppresser error : channel index is invalid!");
+        }
+        
+        mask[channel] = 0xFF;
     }
 
-    // Supress sources
-    for (int i = 0; i < bufferLength; i++)
-    {
-        audioBuf[i] = audioBuf[i] & mask[i];
-    }
-}
+    uint8_t* data = audioChunk.audioData.get();
 
-/**
- * @brief Create a mask to suppress a source in a audio source.
- * @param [IN] index - index of the source
- * @param [OUT] mask - mask for suppression
- * @param [IN] maskLength
- */
-void AudioSuppresser::createMaskFromIndex(const int index, uint8_t *mask, const int maskLength)
-{
-    // By default we use 16 bits precision => 2 bytes per source
-    for (int i = 2 * index; i < maskLength; i = i + 8)
+    // Supress sources that we don't want to keep
+    for (int i = 0; i < static_cast<int>(audioChunk.size); i++)
     {
-        mask[i] = 0;
-
-        if (i + 1 < maskLength) mask[i + 1] = 0;
+        int channel = (i / audioChunk.bytesPerChannel) % audioChunk.channels;
+        data[i] &= mask[channel];
     }
 }
 

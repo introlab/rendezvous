@@ -12,8 +12,8 @@ OdasAudioSource::OdasAudioSource(int port, int desiredChunkDurationMs, int numbe
                                  std::shared_ptr<AudioConfig> audioConfig)
     : port_(port)
     , audioConfig_(audioConfig)
-    , audioChunks_(numberOfBuffers, AudioChunk(desiredChunkDurationMs / 1000.f * audioConfig_->rate *
-                                               audioConfig_->channels * audioConfig_->formatBytes))
+    , audioChunks_(numberOfBuffers, AudioChunk(desiredChunkDurationMs / 1000.f * audioConfig_->rate,
+                                               audioConfig_->channels, audioConfig_->formatBytes))
     , audioQueue_(std::make_shared<moodycamel::BlockingReaderWriterQueue<AudioChunk>>(1))
 {
     for (int i = 0; i < numberOfBuffers; i++)

@@ -3,6 +3,7 @@
 #include "model/app_config.h"
 #include "model/config/config.h"
 #include "model/transcription/transcription_config.h"
+#include "model/utils/time.h"
 #include "model/utils/filesutil.h"
 #include "ui_top_bar.h"
 
@@ -10,6 +11,7 @@
 #include <QNetworkReply>
 #include <QStyle>
 #include <QUrl>
+#include <QTime>
 
 namespace View
 {
@@ -51,6 +53,8 @@ TopBar::TopBar(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::IS
     connect(m_transcription.get(), &Model::Transcription::finished,
             [=](bool isOK, QString reply) { onTranscriptionFinished(isOK, reply); });
 
+    QObject::connect(&m_streamTimer, &QTimer::timeout, [=]{ onStreamTimerTimeout();});
+
     connect(m_defaultStream.get(), &Model::IStream::stateChanged,
             [=](const Model::IStream::State& state) { onStreamStateChanged(state); });
     m_defaultStream->start();
@@ -65,16 +69,23 @@ void TopBar::onStreamStateChanged(const Model::IStream::State& state)
     switch (state)
     {
         case Model::IStream::Started:
+            m_streamStartTime.start();
+            m_streamTimer.start(1000);
+            m_ui->statusLabel->setText("Running");
             m_ui->startButton->setText("Stop");
             m_ui->startButton->setDisabled(false);
             m_ui->recordButton->setDisabled(false);
             break;
         case Model::IStream::Stopping:
-            m_ui->startButton->setText("Stopping");
+            m_streamTimer.stop();
+            qInfo() << "Stream elasped time : " + Model::Time::clockFormat(m_streamStartTime.elapsed() / 1000);
+            m_ui->statusLabel->setText("Stopping");
             m_ui->startButton->setDisabled(true);
             m_ui->recordButton->setDisabled(true);
             break;
         case Model::IStream::Stopped:
+            m_ui->streamRunTimeLabel->setText("00:00:00");
+            m_ui->statusLabel->setText("Idle");
             m_ui->startButton->setText("Start");
             m_ui->startButton->setDisabled(false);
             m_ui->recordButton->setDisabled(true);
@@ -118,11 +129,11 @@ void TopBar::onRecorderStateChanged(const QMediaRecorder::State& state)
     switch (state)
     {
         case QMediaRecorder::State::RecordingState:
-            m_ui->recordButton->setText("Stop recording");
+            m_ui->recordButton->setIcon(QIcon(":/icons/stop_record.svg"));
             break;
         case QMediaRecorder::State::StoppedState:
         {
-            m_ui->recordButton->setText("Start recording");
+            m_ui->recordButton->setIcon(QIcon(":/icons/start_record.svg"));
             bool isOK = askTranscription();
             if (!isOK)
             {
@@ -133,7 +144,6 @@ void TopBar::onRecorderStateChanged(const QMediaRecorder::State& state)
         case QMediaRecorder::State::PausedState:
             break;
     }
-    m_ui->recordButton->setDisabled(false);
 }
 
 /**
@@ -145,14 +155,23 @@ void TopBar::onRecordButtonClicked()
     switch (m_media->recorderState())
     {
         case QMediaRecorder::State::RecordingState:
+        {
+            QApplication::processEvents();
+            QSignalBlocker blocker(m_ui->recordButton);
             m_media->stopRecorder();
             break;
+        }
         case QMediaRecorder::State::StoppedState:
+        {
+            QApplication::processEvents();
+            QSignalBlocker blocker(m_ui->recordButton);
             m_media->startRecorder();
             break;
+        }
         case QMediaRecorder::State::PausedState:
             break;
     }
+    m_ui->recordButton->setDisabled(false);
 }
 
 /**
@@ -166,6 +185,14 @@ void TopBar::onTranscriptionFinished(bool isOK, QString reply)
     {
         qCritical() << reply;
     }
+}
+
+/**
+ * @brief Callback when the stream timer timeout.
+ */
+void TopBar::onStreamTimerTimeout()
+{
+    m_ui->streamRunTimeLabel->setText(Model::Time::clockFormat(m_streamStartTime.elapsed() / 1000));
 }
 
 /**

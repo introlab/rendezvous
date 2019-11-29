@@ -8,6 +8,8 @@
 
 #include <memory>
 
+#include <QTimer>
+#include <QTime>
 #include <QWidget>
 
 namespace Ui
@@ -34,6 +36,7 @@ class TopBar : public QWidget
     void onRecorderStateChanged(const QMediaRecorder::State& state);
     void onRecordButtonClicked();
     void onTranscriptionFinished(bool isOK, QString reply);
+    void onStreamTimerTimeout();
 
    private:
     bool askTranscription();
@@ -46,6 +49,9 @@ class TopBar : public QWidget
     std::shared_ptr<Model::TranscriptionConfig> m_transcriptionConfig;
     std::shared_ptr<Model::AppConfig> m_applicationConfig;
     const QUrl m_rendezvousMeetUrl = QUrl("https://rendezvous-meet.com/");
+
+    QTimer m_streamTimer;
+    QTime m_streamStartTime;
 };
 
 }    // namespace View

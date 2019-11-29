@@ -9,12 +9,15 @@
 
 namespace Model
 {
-Media::Media(std::shared_ptr<Config> config)
+Media::Media(std::shared_ptr<Config> config, std::shared_ptr<IStream> stream)
     : m_appConfig(config->subConfig(Config::APP))
     , m_videoConfig(config->subConfig(Config::VIDEO_OUTPUT))
+    , m_stream(stream)
 {
     initCamera();
     initRecorder();
+
+    connect(m_stream.get(), &IStream::stateChanged, [=](const IStream::State& state) { onStreamStateChanged(state); });
 }
 
 void Media::unLoadCamera()
@@ -42,7 +45,10 @@ void Media::setViewFinder(QCameraViewfinder* view)
  */
 void Media::startRecorder()
 {
-    m_mediaRecorder->record();
+    if (m_mediaRecorder)
+    {
+        m_mediaRecorder->record();
+    }
 }
 
 /**
@@ -50,7 +56,10 @@ void Media::startRecorder()
  */
 void Media::stopRecorder()
 {
-    m_mediaRecorder->stop();
+    if (m_mediaRecorder)
+    {
+        m_mediaRecorder->stop();
+    }
 }
 
 /**
@@ -60,6 +69,24 @@ void Media::stopRecorder()
 QMediaRecorder::State Media::recorderState() const
 {
     return m_mediaRecorder->state();
+}
+
+/**
+ * @brief Callback when the stream change of state.
+ * @param [IN] state
+ */
+void Media::onStreamStateChanged(const IStream::State& state)
+{
+    switch (state)
+    {
+        case IStream::Started:
+            break;
+        case IStream::Stopping:
+            stopRecorder();
+            break;
+        case IStream::Stopped:
+            break;
+    }
 }
 
 /**

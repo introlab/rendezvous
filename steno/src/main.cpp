@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
 
     std::shared_ptr<Model::IStream> stream = std::make_shared<Model::Stream>(config);
 
-    std::shared_ptr<Model::Media> media = std::make_shared<Model::Media>(config);
+    std::shared_ptr<Model::Media> media = std::make_shared<Model::Media>(config, stream);
 
     std::shared_ptr<Model::Transcription> transcription = std::make_shared<Model::Transcription>(config);
 
