@@ -13,12 +13,13 @@
 
 namespace View
 {
-TopBar::TopBar(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::Media> media,
-               std::shared_ptr<Model::Transcription> transcription, std::shared_ptr<Model::Config> config,
-               QWidget* parent)
+TopBar::TopBar(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::IStream> defaultStream,
+               std::shared_ptr<Model::Media> media, std::shared_ptr<Model::Transcription> transcription,
+               std::shared_ptr<Model::Config> config, QWidget* parent)
     : QWidget(parent)
     , m_ui(new Ui::TopBar)
     , m_stream(stream)
+    , m_defaultStream(defaultStream)
     , m_media(media)
     , m_transcription(transcription)
     , m_transcriptionConfig(config->transcriptionConfig())
@@ -38,6 +39,7 @@ TopBar::TopBar(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::Me
 
     connect(m_stream.get(), &Model::IStream::stateChanged,
             [=](const Model::IStream::State& state) { onStreamStateChanged(state); });
+
     connect(m_ui->startButton, &QAbstractButton::clicked, [=] { onStartButtonClicked(); });
 
     connect(m_media.get(), &Model::Media::recorderStateChanged,
@@ -48,6 +50,10 @@ TopBar::TopBar(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::Me
 
     connect(m_transcription.get(), &Model::Transcription::finished,
             [=](bool isOK, QString reply) { onTranscriptionFinished(isOK, reply); });
+
+    connect(m_defaultStream.get(), &Model::IStream::stateChanged,
+            [=](const Model::IStream::State& state) { onStreamStateChanged(state); });
+    m_defaultStream->start();
 }
 
 /**
@@ -91,11 +97,13 @@ void TopBar::onStartButtonClicked()
             // The signals are reenable when the blocker is out of scope.
             QSignalBlocker blocker(m_ui->startButton);
             m_stream->stop();
+            m_defaultStream->start();
             break;
         }
         case Model::IStream::Stopping:
             break;
         case Model::IStream::Stopped:
+            m_defaultStream->stop();
             m_stream->start();
             break;
     }
@@ -184,7 +192,7 @@ bool TopBar::askTranscription()
 }
 
 /**
- * @brief Stop the stream if it's running and if it is stopping wait that it's stopped.
+ * @brief Stop the streams if they're running and if they're stopping wait that they're stopped.
  */
 void TopBar::stopThreads()
 {
@@ -195,6 +203,15 @@ void TopBar::stopThreads()
     else if (m_stream->state() == Model::IStream::Stopping)
     {
         m_stream->join();
+    }
+
+    if (m_defaultStream->state() == Model::IStream::Started)
+    {
+        m_defaultStream->stop();
+    }
+    else if (m_defaultStream->state() == Model::IStream::Stopping)
+    {
+        m_defaultStream->join();
     }
 }
 

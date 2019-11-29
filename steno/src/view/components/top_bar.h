@@ -22,9 +22,9 @@ class TopBar : public QWidget
     Q_OBJECT
 
    public:
-    TopBar(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::Media> media,
-           std::shared_ptr<Model::Transcription> transcription, std::shared_ptr<Model::Config> config,
-           QWidget* parent = nullptr);
+    TopBar(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::IStream> defaultStream,
+           std::shared_ptr<Model::Media> media, std::shared_ptr<Model::Transcription> transcription,
+           std::shared_ptr<Model::Config> config, QWidget* parent = nullptr);
 
     void stopThreads();
 
@@ -40,6 +40,7 @@ class TopBar : public QWidget
 
     Ui::TopBar* m_ui;
     std::shared_ptr<Model::IStream> m_stream;
+    std::shared_ptr<Model::IStream> m_defaultStream;
     std::shared_ptr<Model::Media> m_media;
     std::shared_ptr<Model::Transcription> m_transcription;
     std::shared_ptr<Model::TranscriptionConfig> m_transcriptionConfig;

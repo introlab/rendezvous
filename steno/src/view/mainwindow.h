@@ -33,8 +33,9 @@ class MainWindow : public QMainWindow
 
    public:
     MainWindow(std::shared_ptr<Model::Config> config, std::shared_ptr<Model::IMediaPlayer> mediaPlayer,
-               std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::Media> media,
-               std::shared_ptr<Model::Transcription> transcription, QWidget *parent = nullptr);
+               std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::IStream> defaultStream,
+               std::shared_ptr<Model::Media> media, std::shared_ptr<Model::Transcription> transcription,
+               QWidget *parent = nullptr);
 
    private:
     void addView(View::AbstractView *view, const QIcon &icon);

@@ -18,6 +18,7 @@ class Thread
     void join();
     bool isRunning();
     bool isAbortRequested();
+    void sleep(const int timeMs);
 
    protected:
     virtual void run() = 0;

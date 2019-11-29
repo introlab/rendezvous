@@ -136,8 +136,8 @@ void Stream::stop()
     m_mediaThread->stop();
     m_mediaThread->join();
 
-    Model::DefaultVirtualCameraOutput::writeDefaultImage(
-        m_config->videoOutputConfig()->value(Model::VideoConfig::DEVICE_NAME).toString());
+    //    Model::DefaultVirtualCameraOutput::writeDefaultImage(
+    //        m_config->videoOutputConfig()->value(Model::VideoConfig::DEVICE_NAME).toString());
 
     updateState(IStream::State::Stopped);
 }
