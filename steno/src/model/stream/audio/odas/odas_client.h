@@ -10,18 +10,10 @@
 
 namespace Model
 {
-enum class OdasClientState
-{
-    RUNNING,
-    STOPPED,
-    CRASHED
-};
-
 class OdasClient : public Thread, public Subject
 {
    public:
     OdasClient(std::shared_ptr<AppConfig> appConfig);
-    OdasClientState getState();
 
    protected:
     void run() override;
@@ -32,7 +24,6 @@ class OdasClient : public Thread, public Subject
     const int m_waitTime = 100;    // ms
     const int m_joinTime = 500;    // ms
     std::shared_ptr<AppConfig> m_appConfig;
-    OdasClientState m_state = OdasClientState::STOPPED;
 };
 }    // namespace Model
 

@@ -16,25 +16,12 @@ class DefaultImageThread : public Thread, public Subject
    public:
     DefaultImageThread(std::shared_ptr<IVideoOutput> videoOutput, std::shared_ptr<VideoConfig> videoConfig);
 
-    enum class ThreadStatus
-    {
-        RUNNING,
-        STOPPED,
-        CRASHED
-    };
-
-    ThreadStatus getState()
-    {
-        return m_state;
-    }
-
    protected:
     void run() override;
 
    private:
     std::shared_ptr<IVideoOutput> m_videoOutput;
     std::shared_ptr<VideoConfig> m_videoConfig;
-    ThreadStatus m_state = ThreadStatus::STOPPED;
 };
 
 }    // namespace Model
