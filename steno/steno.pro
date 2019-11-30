@@ -53,7 +53,6 @@ SOURCES += \
     src/model/media_player/subtitles/subtitles.cpp \
     src/model/stream/default_image_thread.cpp \
     src/model/stream/default_stream.cpp \
-    src/model/stream/video/output/default_virtual_camera_output.cpp \
     src/model/transcription/transcription.cpp \
     src/model/utils/filesutil.cpp \
     src/model/utils/time.cpp \
@@ -116,7 +115,6 @@ HEADERS += \
     src/model/stream/stream_config.h \
     src/model/transcription/transcription.h \
     src/model/transcription/transcription_config.h \
-    src/model/stream/video/output/default_virtual_camera_output.h \
     src/model/utils/filesutil.h \
     src/model/utils/observer/i_observer.h \
     src/model/utils/observer/i_subject.h \
