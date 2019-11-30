@@ -12,7 +12,7 @@ class ImageDrawing
     static void drawBorders(Image& image, ImageFormat imageFormat, int borderWidth, RGB color);
 
    private:
-    static void drawPixel(UYVY* image, ImageFormat imageFormat, int width, int xPixel, int yPixel, RGB color);
+    static void drawPixel(UYVY* image, ImageFormat imageFormat, int imageWidth, int xPixel, int yPixel, RGB color);
 };
 }    // namespace Model
 

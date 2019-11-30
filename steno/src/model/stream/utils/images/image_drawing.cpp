@@ -2,6 +2,13 @@
 
 namespace Model
 {
+/**
+ * @brief Draws a border around the image received as a parameter
+ * @param image - the image that we want to draw a border on
+ * @param imageFormat - the format of the image (ex. UYVY)
+ * @param borderWidth - the width of the border
+ * @param color - the color of the border
+ */
 void ImageDrawing::drawBorders(Image& image, ImageFormat imageFormat, int borderWidth, RGB color)
 {
     UYVY* uyvyData;
@@ -42,12 +49,21 @@ void ImageDrawing::drawBorders(Image& image, ImageFormat imageFormat, int border
     }
 }
 
-void ImageDrawing::drawPixel(UYVY* image, ImageFormat imageFormat, int width, int xPixel, int yPixel, RGB color)
+/**
+ * @brief Draws a color at a specific pixel of an image
+ * @param image - the image that we want to draw a pixel on
+ * @param imageFormat - the format of the image (ex. UYVY)
+ * @param imageWidth - the width of the image
+ * @param xPixel - the x position of the pixel on the image
+ * @param yPixel - the y position of the pixel on the image
+ * @param color - the color of the pixel
+ */
+void ImageDrawing::drawPixel(UYVY* image, ImageFormat imageFormat, int imageWidth, int xPixel, int yPixel, RGB color)
 {
     switch (imageFormat)
     {
         case ImageFormat::UYVY_FMT:
-            int index = (width * yPixel / 2 + xPixel);
+            int index = (imageWidth * yPixel / 2 + xPixel);
             image[index].u = ((-38 * color.r - 74 * color.g + 112 * color.b + 128) >> 8) + 128;
             image[index].y1 = ((66 * color.r + 129 * color.g + 25 * color.b + 128) >> 8) + 16;
             image[index].v = ((112 * color.r - 94 * color.g - 18 * color.b + 128) >> 8) + 128;
