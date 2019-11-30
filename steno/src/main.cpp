@@ -35,8 +35,5 @@ int main(int argc, char *argv[])
     View::MainWindow w(config, mediaPlayer, stream, defaultStream, media, transcription);
     w.show();
 
-    //    Model::DefaultVirtualCameraOutput::writeDefaultImage(
-    //        config->videoOutputConfig()->value(Model::VideoConfig::DEVICE_NAME).toString());
-
     return QApplication::exec();
 }
