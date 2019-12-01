@@ -6,13 +6,17 @@
 
 #include "memory"
 
+#include "QCoreApplication"
+
 namespace Model
 {
 DefaultStream::DefaultStream(std::shared_ptr<Config> config)
 {
     const auto videoInputConf = config->videoInputConfig();
     std::shared_ptr<IVideoOutput> vcOutput = std::make_shared<VirtualCameraOutput>(videoInputConf);
-    m_defaultImageThread = std::make_unique<DefaultImageThread>(vcOutput, videoInputConf);
+
+    const QString defaultImagePath = QCoreApplication::applicationDirPath() + "/../resources/defaultImage.jpg";
+    m_defaultImageThread = std::make_unique<DefaultImageThread>(vcOutput, videoInputConf, defaultImagePath);
 }
 
 /**
