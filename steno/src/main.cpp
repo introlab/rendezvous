@@ -3,7 +3,6 @@
 #include "model/media_player/media_player.h"
 #include "model/stream/default_stream.h"
 #include "model/stream/stream.h"
-#include "model/stream/video/output/default_virtual_camera_output.h"
 #include "model/transcription/transcription.h"
 #include "view/mainwindow.h"
 
