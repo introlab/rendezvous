@@ -35,7 +35,7 @@ void DefaultImageThread::run()
         try
         {
             m_videoOutput->writeImage(image);
-            sleep(10);
+            sleep(100);
         }
         catch (const std::exception& e)
         {
