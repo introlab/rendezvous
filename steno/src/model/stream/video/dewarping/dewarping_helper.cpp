@@ -6,10 +6,14 @@
 #include "model/stream/utils/math/angle_calculations.h"
 #include "model/stream/utils/math/geometry_utils.h"
 #include "model/stream/utils/math/math_constants.h"
+#include "model/stream/utils/math/helpers.h"
 
 namespace Model
 {
-DonutSlice createDewarpingDonutSlice(DonutSlice& baseDonutSlice, float centersDistance)
+
+float OVERLAP_THRESHOLD = 0.8f;
+
+DonutSlice createDewarpingDonutSlice(const DonutSlice& baseDonutSlice, float centersDistance)
 {
     if (baseDonutSlice.middleAngle > 2 * math::PI)
     {
@@ -20,36 +24,25 @@ DonutSlice createDewarpingDonutSlice(DonutSlice& baseDonutSlice, float centersDi
         throw std::invalid_argument("Donut slice angle span must be between 0 and 2*PI rad!");
     }
 
-    float xNewCenter = baseDonutSlice.xCenter - sin(baseDonutSlice.middleAngle) * centersDistance;
-    float yNewCenter = baseDonutSlice.yCenter - cos(baseDonutSlice.middleAngle) * centersDistance;
+    float xNewCenter = baseDonutSlice.xCenter - std::sin(baseDonutSlice.middleAngle) * centersDistance;
+    float yNewCenter = baseDonutSlice.yCenter - std::cos(baseDonutSlice.middleAngle) * centersDistance;
 
     // Length of a line which start from the new center, pass by image center and end to form the side of a right -
     // angled triangle which other point is on the circle of center(xImageCenter, yImageCenter) and radius(outRadius)
-    float d = cos(baseDonutSlice.angleSpan / 2) * baseDonutSlice.outRadius + centersDistance;
+    float d = std::cos(baseDonutSlice.angleSpan / 2) * baseDonutSlice.outRadius + centersDistance;
 
     float newInRadius = baseDonutSlice.inRadius + centersDistance;
-    float newOutRadius = sqrt(pow(d, 2) + pow(sin(baseDonutSlice.angleSpan / 2) * baseDonutSlice.outRadius, 2));
-    float newAngleSpan = acos(d / newOutRadius) * 2;
+    float newOutRadius = std::sqrt(std::pow(d, 2) + std::pow(sin(baseDonutSlice.angleSpan / 2) * baseDonutSlice.outRadius, 2));
+    float newAngleSpan = std::acos(d / newOutRadius) * 2;
 
     return DonutSlice(xNewCenter, yNewCenter, newInRadius, newOutRadius, baseDonutSlice.middleAngle, newAngleSpan);
-}
-
-DewarpingParameters getDewarpingParameters(const Dim2<int>& imageSize, std::shared_ptr<DewarpingConfig> dewarpingConfig,
-                                           float middleAngle)
-{
-    DonutSlice donutSlice(static_cast<float>(imageSize.width) / 2.f, static_cast<float>(imageSize.height) / 2.f,
-                          dewarpingConfig->inRadius, dewarpingConfig->outRadius, middleAngle,
-                          dewarpingConfig->angleSpan);
-
-    return getDewarpingParameters(donutSlice, dewarpingConfig->topDistorsionFactor,
-                                  dewarpingConfig->bottomDistorsionFactor);
 }
 
 DewarpingParameters getDewarpingParameters(DonutSlice& baseDonutSlice, float topDistorsionFactor,
                                            float bottomDistorsionFactor)
 {
     // Distance between center of baseDonutSlice and newDonutSlice to calculate
-    float centersDistance = topDistorsionFactor * 10000;
+    float centersDistance = baseDonutSlice.inRadius * topDistorsionFactor;
 
     // Return a new donut mapping based on the one passed, which have properties to reduce the distorsion in the image
     DonutSlice newDonutSlice = createDewarpingDonutSlice(baseDonutSlice, centersDistance);
@@ -78,45 +71,110 @@ DewarpingParameters getDewarpingParametersFromNewDonutSlice(DonutSlice& baseDonu
                                newDonutSlice.inRadius, centerRadius, outRadiusDiff, xOffset, bottomDistorsionFactor);
 }
 
-DewarpingParameters getDewarpingParametersFromAngleBoundingBox(const SphericalAngleRect& angleRect,
-                                                               const Point<float>& fisheyeCenter,
-                                                               std::shared_ptr<DewarpingConfig> dewarpingConfig)
+DewarpingParameters getDewarpingParametersFromSphericalAngleRect(const SphericalAngleRect& angleRect, 
+                                                                 const DewarpingConfig& dewarpingConfig, 
+                                                                 const Point<float>& fisheyeCenter)
 {
     SphericalAngleBox angleBox = math::convertToAngleBox(angleRect);
-    DonutSlice donutSlice(fisheyeCenter.x, fisheyeCenter.y, dewarpingConfig->inRadius, dewarpingConfig->outRadius,
-                          angleRect.azimuth, angleRect.azimuthSpan);
-    DewarpingParameters dewarpingParameters = getDewarpingParameters(donutSlice, dewarpingConfig->topDistorsionFactor,
-                                                                     dewarpingConfig->bottomDistorsionFactor);
+    float topDistanceFromCenter = math::getDistanceToFisheyeCenterFromElevation(angleBox.topElevation, fisheyeCenter.x, dewarpingConfig.fisheyeAngle);
+    float bottomDistanceFromCenter = math::getDistanceToFisheyeCenterFromElevation(angleBox.bottomElevation, fisheyeCenter.x, dewarpingConfig.fisheyeAngle);
 
-    float maxElevation = math::getElevationFromImage(Point<float>(dewarpingParameters.dewarpWidth / 2.f, 0),
-                                                     dewarpingConfig->fisheyeAngle, fisheyeCenter, dewarpingParameters);
-    float minElevation = math::getElevationFromImage(
-        Point<float>(dewarpingParameters.dewarpWidth / 2.f, dewarpingParameters.dewarpHeight),
-        dewarpingConfig->fisheyeAngle, fisheyeCenter, dewarpingParameters);
-
-    float deltaElevation = maxElevation - minElevation;
-    float deltaElevationTop = maxElevation - angleBox.topElevation;
-    float deltaElevationBottom = angleBox.bottomElevation - minElevation;
-
-    dewarpingParameters.topOffset = (deltaElevationTop * dewarpingParameters.dewarpHeight) / deltaElevation;
-    dewarpingParameters.bottomOffset = (deltaElevationBottom * dewarpingParameters.dewarpHeight) / deltaElevation;
+    DonutSlice baseDonutSlice(fisheyeCenter.x, fisheyeCenter.y, topDistanceFromCenter, bottomDistanceFromCenter, angleRect.azimuth, angleRect.azimuthSpan);
+    DewarpingParameters dewarpingParameters = getDewarpingParameters(baseDonutSlice, dewarpingConfig.topDistorsionFactor, 
+                                                                     dewarpingConfig.bottomDistorsionFactor);
 
     return dewarpingParameters;
 }
 
-Point<float> getSourcePixelFromDewarpedImage(const Point<float>& pixel, const DewarpingParameters& dewarpingParameters)
+Point<float> getSourcePixelFromDewarpedImageNormalizedPixel(const Point<float>& normalizedPixel, const DewarpingParameters& dewarpingParameters)
 {
-    float xRadiusFactor = sinf((math::PI * pixel.x) / dewarpingParameters.dewarpWidth);
-    float yRadiusFactor = sinf((math::PI * pixel.y) / (dewarpingParameters.dewarpHeight * 2.f));
+    float xRadiusFactor = std::sin(math::PI * normalizedPixel.x);
+    float yRadiusFactor = std::sin((math::PI * normalizedPixel.y) / 2.f);
 
-    float radius = pixel.y + dewarpingParameters.inRadius +
+    float dewarpDimensionX = normalizedPixel.x * dewarpingParameters.dewarpWidth;
+    float dewarpDimensionY = normalizedPixel.y * dewarpingParameters.dewarpHeight;
+
+    float radius = dewarpDimensionY + dewarpingParameters.inRadius +
                    dewarpingParameters.outRadiusDiff * xRadiusFactor * yRadiusFactor *
-                       (1 - dewarpingParameters.bottomDistorsionFactor);
-    float theta = (pixel.x + dewarpingParameters.xOffset) / dewarpingParameters.centerRadius;
-    float x = dewarpingParameters.xCenter + radius * sinf(theta);
-    float y = dewarpingParameters.yCenter + radius * cosf(theta);
+                   dewarpingParameters.bottomDistorsionFactor;
+    float theta = (dewarpDimensionX + dewarpingParameters.xOffset) / dewarpingParameters.centerRadius;
 
-    return Point<float>(x, y);
+    Point<float> sourcePixel;
+    sourcePixel.x = dewarpingParameters.xCenter + radius * std::sin(theta);
+    sourcePixel.y = dewarpingParameters.yCenter + radius * std::cos(theta);
+
+    return sourcePixel;
+}
+
+int getSourcePixelIndex(const Point<float>& pixel, const Dim2<int>& dim)
+{
+    return (int(pixel.x) + int(pixel.y) * dim.width);
+}
+
+Point<float> getNormalizedPixelFromIndex(int index, const Dim2<int>& dim)
+{
+    Point<float> normalizedPoint;
+    normalizedPoint.x = float(index % dim.width) / dim.width;
+    normalizedPoint.y = float(index / dim.width) / dim.height;
+
+    return normalizedPoint;
+}
+
+float getPercentageOverlap(float azimuthLeft, float azimuthRight, float azimuthLeftEdge, float azimuthRightEdge)
+{
+    float azimuthRightNew = math::getPositiveAngle(azimuthRight - azimuthLeft);
+    float azimuthLeftEdgeNew = math::getPositiveAngle(azimuthLeftEdge - azimuthLeft);
+    float azimuthRightEdgeNew = math::getPositiveAngle(azimuthRightEdge - azimuthLeft);
+    float azimuthOverlap = 0.f;
+    float percentageOverlap = 0.f;
+
+    bool leftEdgeBetweenAzimuthLeftRight = azimuthLeftEdgeNew < azimuthRightNew;
+    bool rightEdgeBetweenAzimuthLeftRight = azimuthRightEdgeNew < azimuthRightNew;
+
+    if (leftEdgeBetweenAzimuthLeftRight && rightEdgeBetweenAzimuthLeftRight)
+    {
+        if (azimuthLeftEdgeNew < azimuthRightEdgeNew)
+        {
+            azimuthOverlap = azimuthRightEdgeNew - azimuthLeftEdgeNew;
+        }
+        else
+        {
+            azimuthOverlap = azimuthRightNew - (azimuthLeftEdgeNew - azimuthRightEdgeNew);
+        }
+    }
+    else if (leftEdgeBetweenAzimuthLeftRight)
+    {
+        azimuthOverlap = azimuthRightNew - azimuthLeftEdgeNew;
+    }
+    else if (rightEdgeBetweenAzimuthLeftRight)
+    {
+        azimuthOverlap = azimuthRightEdgeNew;
+    }
+    else if (azimuthRightEdgeNew < azimuthLeftEdgeNew)
+    {
+        azimuthOverlap = azimuthRightNew;
+    }
+
+    if (azimuthOverlap > 0.f)
+    {
+        float azimuthDifference = azimuthRight - azimuthLeft;
+        float absAzimuthDifference = math::getSmallestAbsAzimuthDifference(std::abs(azimuthDifference));
+
+        percentageOverlap = azimuthOverlap / absAzimuthDifference;
+    }
+
+    return percentageOverlap;
+}
+
+bool isInOverlappingZone(const SphericalAngleRect& sphericalAngleRect, float angleSpan, float middleAngle)
+{
+    float azimuthLeft = math::getPositiveAngle(sphericalAngleRect.azimuth - sphericalAngleRect.azimuthSpan / 2.f);
+    float azimuthRight = math::getPositiveAngle(sphericalAngleRect.azimuth + sphericalAngleRect.azimuthSpan / 2.f);
+    float azimuthLeftEdge = math::getPositiveAngle(middleAngle - angleSpan / 2.f);
+    float azimuthRightEdge = math::getPositiveAngle(middleAngle + angleSpan / 2.f);
+    float percentageOverlap = getPercentageOverlap(azimuthLeft, azimuthRight, azimuthLeftEdge, azimuthRightEdge);
+
+    return percentageOverlap < OVERLAP_THRESHOLD;
 }
 
 SphericalAngleRect getAngleRectFromDewarpedImageRectangle(const Rectangle& rectangle,
@@ -126,6 +184,7 @@ SphericalAngleRect getAngleRectFromDewarpedImageRectangle(const Rectangle& recta
 {
     BoundingBox boundingBox = math::convertToBoundingBox(rectangle);
 
+    // Dewarped image size is not necessarily the optimal dewarp size, but all calculations need to be executed as if it was
     float dewarpWidthFactor = dewarpingParameters.dewarpWidth / static_cast<float>(imageSize.width);
     float dewarpHeightFactor = dewarpingParameters.dewarpHeight / static_cast<float>(imageSize.height);
 
@@ -134,59 +193,44 @@ SphericalAngleRect getAngleRectFromDewarpedImageRectangle(const Rectangle& recta
     float bottomY = static_cast<float>(boundingBox.bottomY) * dewarpHeightFactor;
     float topY = static_cast<float>(boundingBox.topY) * dewarpHeightFactor;
 
-    float xMostTop, xMostBottom, yMostLeft, yMostRight;
+    float middleX = static_cast<float>(rectangle.x) * dewarpWidthFactor;
+    float middleY = static_cast<float>(rectangle.y) * dewarpHeightFactor;
 
+    float azimuthLeft, azimuthRight, elevationTop, elevationBottom;
+    float azimuth = getAzimuthFromDewarpedImagePixel(Point<float>(middleX, middleY), fisheyeCenter, dewarpingParameters);
+    float elevation = getElevationFromDewarpedImagePixel(Point<float>(middleX, middleY), fisheyeAngle, fisheyeCenter, dewarpingParameters);
+
+    // We take the largest angle spans possible to include the whole box (Required because dewarping is non-linear)
     if (rectangle.x > imageSize.width / 2.f)
     {
-        xMostTop = leftX;
-        xMostBottom = rightX;
-        yMostLeft = topY;
-        yMostRight = bottomY;
+        elevationBottom = getElevationFromDewarpedImagePixel(Point<float>(rightX, bottomY), fisheyeAngle, fisheyeCenter, dewarpingParameters);
+        elevationTop = getElevationFromDewarpedImagePixel(Point<float>(leftX, topY), fisheyeAngle, fisheyeCenter, dewarpingParameters);
+        azimuthLeft = getAzimuthFromDewarpedImagePixel(Point<float>(leftX, bottomY), fisheyeCenter, dewarpingParameters);
+        azimuthRight = getAzimuthFromDewarpedImagePixel(Point<float>(rightX, topY), fisheyeCenter, dewarpingParameters);
     }
     else
     {
-        xMostTop = rightX;
-        xMostBottom = leftX;
-        yMostLeft = topY;
-        yMostRight = bottomY;
+        elevationBottom = getElevationFromDewarpedImagePixel(Point<float>(leftX, bottomY), fisheyeAngle, fisheyeCenter, dewarpingParameters);
+        elevationTop = getElevationFromDewarpedImagePixel(Point<float>(rightX, topY), fisheyeAngle, fisheyeCenter, dewarpingParameters);
+        azimuthLeft = getAzimuthFromDewarpedImagePixel(Point<float>(leftX, topY), fisheyeCenter, dewarpingParameters);
+        azimuthRight = getAzimuthFromDewarpedImagePixel(Point<float>(rightX, bottomY), fisheyeCenter, dewarpingParameters);
     }
 
-    // Are the bottomY and topY inverted?
-    float azimuthLeft = math::getAzimuthFromImage(Point<float>(leftX, yMostLeft), fisheyeCenter, dewarpingParameters);
-    float azimuthRight =
-        math::getAzimuthFromImage(Point<float>(rightX, yMostRight), fisheyeCenter, dewarpingParameters);
-    float elevationTop =
-        math::getElevationFromImage(Point<float>(xMostTop, bottomY), fisheyeAngle, fisheyeCenter, dewarpingParameters);
-    float elevationBottom =
-        math::getElevationFromImage(Point<float>(xMostBottom, topY), fisheyeAngle, fisheyeCenter, dewarpingParameters);
+    float deltaAzimuthLeft = std::abs(azimuth - azimuthLeft);
+    float deltaAzimuthRight = std::abs(azimuth - azimuthRight);
+    float azimuthSpan = std::min(deltaAzimuthLeft, deltaAzimuthRight) * 2;
 
-    return math::convertToAngleRect(SphericalAngleBox(azimuthLeft, azimuthRight, elevationBottom, elevationTop));
+    float deltaElevationTop = std::abs(elevation - elevationTop);
+    float deltaElevationBottom = std::abs(elevation - elevationBottom);
+    float elevationSpan = deltaElevationTop + deltaElevationBottom;
+    elevation = elevationTop - elevationSpan / 2.f;
+
+    SphericalAngleRect sphericalRect(azimuth, elevation, azimuthSpan, elevationSpan);
+
+    return sphericalRect;
 }
 
-Point<float> calculateSourcePixelPosition(const Dim2<int>& dst, const DewarpingParameters& params, int index)
-{
-    float x = index % dst.width;
-    float y = index / dst.width;
-
-    float textureCoordsX = x / dst.width;
-    float textureCoordsY = y / dst.height;
-
-    float heightFactor = (1 - ((params.bottomOffset + params.topOffset) / params.dewarpHeight)) * textureCoordsY +
-                         params.topOffset / params.dewarpHeight;
-    float factor = params.outRadiusDiff * (1 - params.bottomDistorsionFactor) * std::sin(math::PI * textureCoordsX) *
-                   std::sin((math::PI * heightFactor) / 2.0);
-    float radius = textureCoordsY * params.dewarpHeight + params.inRadius + factor +
-                   (1 - textureCoordsY) * params.topOffset - textureCoordsY * params.bottomOffset;
-    float theta = ((textureCoordsX * params.dewarpWidth) + params.xOffset) / params.centerRadius;
-
-    Point<float> srcPixelPosition;
-    srcPixelPosition.x = params.xCenter + radius * std::sin(theta);
-    srcPixelPosition.y = params.yCenter + radius * std::cos(theta);
-
-    return srcPixelPosition;
-}
-
-LinearPixelFilter calculateLinearPixelFilter(const Point<float>& pixel, const Dim2<int>& dim)
+LinearPixelFilter getLinearPixelFilter(const Point<float>& pixel, const Dim2<int>& dim)
 {
     int xRoundDown = int(pixel.x);
     int yRoundDown = int(pixel.y);
@@ -210,9 +254,31 @@ LinearPixelFilter calculateLinearPixelFilter(const Point<float>& pixel, const Di
     return linearPixelFilter;
 }
 
-int calculateSourcePixelIndex(const Point<float>& pixel, const Dim2<int>& dim)
+float getElevationFromDewarpedImagePixel(const Point<float>& pixel, float fisheyeAngle, const Point<float>& fisheyeCenter,
+                            const DewarpingParameters& dewarpingParameters)
 {
-    return (int(pixel.x) + int(pixel.y) * dim.width) * 3;
+    if (fisheyeAngle > 2.f * math::PI)
+    {
+        throw std::invalid_argument("Fisheye angle must be in radian!");
+    }
+
+    Point<float> normalizedPixel(pixel.x / dewarpingParameters.dewarpWidth, pixel.y / dewarpingParameters.dewarpHeight);
+    Point<float> sourcePixel = getSourcePixelFromDewarpedImageNormalizedPixel(normalizedPixel, dewarpingParameters);
+    float distanceToFisheyeCenter = math::euclideanDistance(Point<float>(sourcePixel.x - fisheyeCenter.x, sourcePixel.y - fisheyeCenter.y));
+    float elevation = math::getElevationFromDistanceToFisheyeCenter(distanceToFisheyeCenter, fisheyeCenter.x, fisheyeAngle);
+
+    return elevation;
+}
+
+float getAzimuthFromDewarpedImagePixel(const Point<float>& pixel, const Point<float>& fisheyeCenter,
+                                       const DewarpingParameters& dewarpingParameters)
+{
+    Point<float> normalizedPixel(pixel.x / dewarpingParameters.dewarpWidth, pixel.y / dewarpingParameters.dewarpHeight);
+    Point<float> sourcePixel = getSourcePixelFromDewarpedImageNormalizedPixel(normalizedPixel, dewarpingParameters);
+    Point<float> distanceToFisheyeCenter(sourcePixel.x - fisheyeCenter.x, sourcePixel.y - fisheyeCenter.y);
+    float azimuth = math::getAzimuthFromDistanceToFisheyeCenter(distanceToFisheyeCenter);
+
+    return azimuth;
 }
 
 }    // namespace Model

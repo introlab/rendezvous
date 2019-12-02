@@ -64,8 +64,8 @@ BoundingBox convertToBoundingBox(const Rectangle& rectangle)
 {
     int leftX = rectangle.x - (rectangle.width / 2);
     int rightX = rectangle.x + (rectangle.width / 2);
-    int bottomY = rectangle.y - (rectangle.height / 2);
-    int topY = rectangle.y + (rectangle.height / 2);
+    int bottomY = rectangle.y + (rectangle.height / 2);
+    int topY = rectangle.y - (rectangle.height / 2);
 
     return BoundingBox(leftX, rightX, bottomY, topY);
 }

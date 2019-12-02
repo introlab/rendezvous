@@ -164,7 +164,7 @@ void MediaThread::run()
                     // Dewarping of virtual camera
                     const VirtualCamera& virtualCamera = virtualCameras[i];
                     DewarpingParameters vcParams =
-                        getDewarpingParametersFromAngleBoundingBox(virtualCamera, fisheyeCenter, dewarpingConfig_);
+                        getDewarpingParametersFromSphericalAngleRect(virtualCamera, *dewarpingConfig_, fisheyeCenter);
                     dewarper_->dewarpImageFiltered(rgbImage, vcResizeImage, vcParams);
 
                     // Use the same buffers as vcOutputFormatImages for the smaller dewarped (and converted) images

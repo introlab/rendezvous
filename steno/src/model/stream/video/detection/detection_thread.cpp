@@ -3,8 +3,8 @@
 #include <iostream>
 
 #include "model/stream/utils/math/math_constants.h"
+#include "model/stream/utils/math/geometry_utils.h"
 #include "model/stream/video/dewarping/dewarping_helper.h"
-#include "model/stream/video/input/image_file_reader.h"
 
 namespace Model
 {
@@ -21,7 +21,6 @@ DetectionThread::DetectionThread(
     , synchronizer_(std::move(synchronizer))
     , detectionQueue_(detectionQueue)
     , dewarpingConfig_(dewarpingConfig)
-    , dewarpCount_(dewarpingConfig->value(DewarpingConfig::DETECTION_DEWARPING_COUNT).toInt())
 {
     if (!imageBuffer_ || !detector_ || !dewarper_ || !objectFactory_ || !synchronizer_ || !detectionQueue_)
     {
@@ -33,7 +32,9 @@ void DetectionThread::run()
 {
     Dim2<int> resolution(imageBuffer_->getCurrent());
     Dim2<int> detectionResolution(detector_->getInputImageDim());
+    Dim2<int> rectifiedResolution(dewarper_->getRectifiedOutputDim(detectionResolution));
     Point<float> fisheyeCenter(resolution.width / 2.f, resolution.height / 2.f);
+    RGBImageFloat detectionImage(rectifiedResolution);
 
     std::vector<DewarpingParameters> dewarpingParams;
     std::vector<ImageFloat> detectionImages;
@@ -43,9 +44,9 @@ void DetectionThread::run()
     try
     {
         // Allocate and prepare objects for dewarping and detection
-        dewarpingParams = getDetectionDewarpingParameters(resolution, dewarpCount_);
-        detectionImages = getDetectionImages(detectionResolution, dewarpCount_);
-        dewarpingMappings = getDewarpingMappings(dewarpingParams, resolution, detectionResolution, dewarpCount_);
+        dewarpingParams = getDetectionDewarpingParameters(resolution, dewarpingConfig_->detectionDewarpingCount);
+        detectionImages = getDetectionImages(detectionResolution, dewarpingConfig_->detectionDewarpingCount);
+        dewarpingMappings = getDewarpingMappings(dewarpingParams, resolution, rectifiedResolution, dewarpingConfig_->detectionDewarpingCount);
 
         std::cout << "DetectionThread loop started" << std::endl;
 
@@ -68,17 +69,29 @@ void DetectionThread::run()
             const Image& image = imageBuffer_->getLocked();
 
             // Dewarp each view, detect on each view and concatenate the results
-            for (int i = 0; i < dewarpCount_; ++i)
+            for (int i = 0; i < dewarpingConfig_->detectionDewarpingCount; ++i)
             {
                 dewarper_->dewarpImage(image, detectionImages[i], dewarpingMappings[i]);
                 synchronizer_->sync();
-                const std::vector<Rectangle> viewDetections = detector_->detectInImage(detectionImages[i]);
+
+                // Detection image has the exact dewarped size (size of data ignoring the possible formatting required by the detector)
+                detectionImage.hostData = detectionImages[i].hostData;
+                detectionImage.deviceData = detectionImages[i].deviceData;
+
+                std::vector<Rectangle> viewDetections = detector_->detectInImage(detectionImage);
 
                 for (const Rectangle& detection : viewDetections)
                 {
-                    detections.push_back(getAngleRectFromDewarpedImageRectangle(detection, dewarpingParams[i],
-                                                                                detectionImages[i], fisheyeCenter,
-                                                                                dewarpingConfig_->fisheyeAngle));
+                    float middleAngleDiff = (2.f * math::PI) / dewarpingConfig_->detectionDewarpingCount;
+                    
+                    SphericalAngleRect sphericalAngleRect = getAngleRectFromDewarpedImageRectangle(detection, dewarpingParams[i],
+                                                                                                   detectionImage, fisheyeCenter,
+                                                                                                   dewarpingConfig_->fisheyeAngle);
+
+                    if (!isInOverlappingZone(sphericalAngleRect, dewarpingConfig_->angleSpan, middleAngleDiff * i))
+                    {
+                        detections.push_back(sphericalAngleRect);
+                    }
                 }
             }
 
@@ -109,25 +122,29 @@ void DetectionThread::run()
     std::cout << "DetectionThread loop finished" << std::endl;
 }
 
-std::vector<DewarpingParameters> DetectionThread::getDetectionDewarpingParameters(const Dim2<int>& dim, int dewarpCount)
+std::vector<DewarpingParameters> DetectionThread::getDetectionDewarpingParameters(const Dim2<int>& dim, int detectionDewarpingCount)
 {
     std::vector<DewarpingParameters> dewarpingParams;
-    dewarpingParams.reserve(dewarpCount);
+    dewarpingParams.reserve(detectionDewarpingCount);
 
-    float angleSpan = (2.f * math::PI) / dewarpCount;
+    float middleAngleDiff = (2.f * math::PI) / detectionDewarpingCount;
 
-    for (int i = 0; i < dewarpCount; ++i)
+    for (int i = 0; i < detectionDewarpingCount; ++i)
     {
-        dewarpingParams.push_back(getDewarpingParameters(dim, dewarpingConfig_, i * angleSpan));
+        DonutSlice donutSlice(static_cast<float>(dim.width) / 2.f, static_cast<float>(dim.height) / 2.f, 
+                              dewarpingConfig_->inRadius, dewarpingConfig_->outRadius, i * middleAngleDiff,
+                              dewarpingConfig_->angleSpan);
+        dewarpingParams.push_back(getDewarpingParameters(donutSlice, dewarpingConfig_->topDistorsionFactor, 
+                                                         dewarpingConfig_->bottomDistorsionFactor));
     }
 
     return dewarpingParams;
 }
 
-std::vector<ImageFloat> DetectionThread::getDetectionImages(const Dim2<int>& dim, int dewarpCount)
+std::vector<ImageFloat> DetectionThread::getDetectionImages(const Dim2<int>& dim, int detectionDewarpingCount)
 {
     std::vector<ImageFloat> detectionImages;
-    detectionImages.resize(dewarpCount, RGBImageFloat(dim));
+    detectionImages.resize(detectionDewarpingCount, RGBImageFloat(dim));
 
     objectFactory_->allocateObjectVector(detectionImages);
 
@@ -143,15 +160,14 @@ std::vector<ImageFloat> DetectionThread::getDetectionImages(const Dim2<int>& dim
 
 std::vector<DewarpingMapping> DetectionThread::getDewarpingMappings(
     const std::vector<DewarpingParameters>& dewarpingParams, const Dim2<int>& src, const Dim2<int>& dst,
-    int dewarpCount)
+    int detectionDewarpingCount)
 {
     std::vector<DewarpingMapping> dewarpingMappings;
-    Dim2<int> rectifiedDim = dewarper_->getRectifiedOutputDim(dst);
-    dewarpingMappings.resize(dewarpCount, DewarpingMapping(rectifiedDim));
+    dewarpingMappings.resize(detectionDewarpingCount, DewarpingMapping(dst));
 
     objectFactory_->allocateObjectVector(dewarpingMappings);
 
-    for (int i = 0; i < dewarpCount; ++i)
+    for (int i = 0; i < detectionDewarpingCount; ++i)
     {
         dewarper_->fillDewarpingMapping(src, dewarpingParams[i], dewarpingMappings[i]);
     }

@@ -2,60 +2,70 @@
 
 #include "model/stream/utils/math/math_constants.h"
 
-// __device__ Point<float> calculateSourcePixelPosition(const Dim2<int>& dst, const DewarpingParameters& params, int
-// index)
-// {
-//     float x = index % dst.width;
-//     float y = index / dst.width;
+namespace Model
+{
 
-//     float textureCoordsX = x / dst.width;
-//     float textureCoordsY = y / dst.height;
+__device__ Point<float> getSourcePixelFromDewarpedImageNormalizedPixelDevice(const Point<float>& normalizedPixel, const DewarpingParameters& dewarpingParameters)
+{
+    float xRadiusFactor = __sinf(math::PI * normalizedPixel.x);
+    float yRadiusFactor = __sinf((math::PI * normalizedPixel.y) / 2.f);
 
-//     float heightFactor = (1 - ((params.bottomOffset + params.topOffset) / params.dewarpHeight)) *
-//         textureCoordsY + params.topOffset / params.dewarpHeight;
-//     float factor = params.outRadiusDiff * (1 - params.bottomDistorsionFactor) *
-//         __sinf(math::PI * textureCoordsX) * __sinf((math::PI * heightFactor) / 2.0);
-//     float radius = textureCoordsY * params.dewarpHeight + params.inRadius + factor +
-//         (1 - textureCoordsY) * params.topOffset - textureCoordsY * params.bottomOffset;
-//     float theta = ((textureCoordsX * params.dewarpWidth) + params.xOffset) / params.centerRadius;
+    float dewarpDimensionX = normalizedPixel.x * dewarpingParameters.dewarpWidth;
+    float dewarpDimensionY = normalizedPixel.y * dewarpingParameters.dewarpHeight;
 
-//     Point<float> srcPixelPosition;
-//     srcPixelPosition.x = params.xCenter + radius * __sinf(theta);
-//     srcPixelPosition.y = params.yCenter + radius * __cosf(theta);
+    float radius = dewarpDimensionY + dewarpingParameters.inRadius +
+                   dewarpingParameters.outRadiusDiff * xRadiusFactor * yRadiusFactor *
+                   dewarpingParameters.bottomDistorsionFactor;
+    float theta = (dewarpDimensionX + dewarpingParameters.xOffset) / dewarpingParameters.centerRadius;
 
-//     return srcPixelPosition;
-// }
+    Point<float> sourcePixel;
+    sourcePixel.x = dewarpingParameters.xCenter + radius * __sinf(theta);
+    sourcePixel.y = dewarpingParameters.yCenter + radius * __cosf(theta);
 
-// __device__ LinearPixelFilter calculateLinearPixelFilter(const Point<float>& pixel, const Dim3<int>& dim)
-// {
-//     int xRoundDown = int(pixel.x);
-//     int yRoundDown = int(pixel.y);
-//     float xRatio = pixel.x - xRoundDown;
-//     float yRatio = pixel.y - yRoundDown;
-//     float xOpposite = 1 - xRatio;
-//     float yOpposite = 1 - yRatio;
+    return sourcePixel;
+}
 
-//     LinearPixelFilter linearPixelFilter;
+__device__ LinearPixelFilter calculateLinearPixelFilterDevice(const Point<float>& pixel, const Dim2<int>& dim)
+{
+    int xRoundDown = int(pixel.x);
+    int yRoundDown = int(pixel.y);
+    float xRatio = pixel.x - xRoundDown;
+    float yRatio = pixel.y - yRoundDown;
+    float xOpposite = 1 - xRatio;
+    float yOpposite = 1 - yRatio;
 
-//     linearPixelFilter.pc1.index = (xRoundDown + (yRoundDown * dim.width)) * dim.channels;
-//     linearPixelFilter.pc2.index = linearPixelFilter.pc1.index + dim.channels;
-//     linearPixelFilter.pc3.index = linearPixelFilter.pc1.index + dim.width * dim.channels;
-//     linearPixelFilter.pc4.index = linearPixelFilter.pc2.index + dim.width * dim.channels;
+    LinearPixelFilter linearPixelFilter;
 
-//     linearPixelFilter.pc1.ratio = xOpposite * yOpposite;
-//     linearPixelFilter.pc2.ratio = xRatio * yOpposite;
-//     linearPixelFilter.pc3.ratio = xOpposite * yRatio;
-//     linearPixelFilter.pc4.ratio = xRatio * yRatio;
+    linearPixelFilter.pc1.index = (xRoundDown + (yRoundDown * dim.width)) * 3;
+    linearPixelFilter.pc2.index = linearPixelFilter.pc1.index + 3;
+    linearPixelFilter.pc3.index = linearPixelFilter.pc1.index + dim.width * 3;
+    linearPixelFilter.pc4.index = linearPixelFilter.pc2.index + dim.width * 3;
 
-//     return linearPixelFilter;
-// }
+    linearPixelFilter.pc1.ratio = xOpposite * yOpposite;
+    linearPixelFilter.pc2.ratio = xRatio * yOpposite;
+    linearPixelFilter.pc3.ratio = xOpposite * yRatio;
+    linearPixelFilter.pc4.ratio = xRatio * yRatio;
 
-// __device__ int calculateSourcePixelIndex(const Point<float>& pixel, const Dim3<int>& dim)
-// {
-//     return (int(pixel.x) + int(pixel.y) * dim.width) * dim.channels;
-// }
+    return linearPixelFilter;
+}
 
-// int calculateKernelBlockCount(const Dim2<int>& dim, int blockSize)
-// {
-//    return (dim.width * dim.height + blockSize - 1) / blockSize;
-// }
+__device__ Point<float> getNormalizedPixelFromIndexDevice(int index, const Dim2<int>& dim)
+{
+    Point<float> normalizedPoint;
+    normalizedPoint.x = float(index % dim.width) / dim.width;
+    normalizedPoint.y = float(index / dim.width) / dim.height;
+
+    return normalizedPoint;
+}
+
+__device__ int getSourcePixelIndexDevice(const Point<float>& pixel, const Dim2<int>& dim)
+{
+    return (int(pixel.x) + int(pixel.y) * dim.width);
+}
+
+int calculateKernelBlockCount(const Dim2<int>& dim, int blockSize)
+{
+    return (dim.width * dim.height + blockSize - 1) / blockSize;
+}
+
+}    // namespace Model
