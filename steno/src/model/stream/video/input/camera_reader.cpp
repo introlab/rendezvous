@@ -15,12 +15,11 @@ namespace
 const int ERROR_CODE = -1;
 }
 
-int CameraReader::IndexedImage::v4l2Index = 0;
-
 CameraReader::IndexedImage::IndexedImage(const Image& image)
-    : index(v4l2Index++)
+    : index(0)
     , image(image)
 {
+    std::cout << index << std::endl;
 }
 
 CameraReader::CameraReader(std::shared_ptr<VideoConfig> videoConfig, std::size_t bufferCount)
@@ -142,7 +141,9 @@ void CameraReader::requestBuffers(std::size_t bufferCount)
 
     for (std::size_t i = 0; i < images_.size(); ++i)
     {
-        mapBuffer(images_.current());
+        IndexedImage& indexedImage = images_.current();
+        indexedImage.index = i;
+        mapBuffer(indexedImage);
         images_.next();
     }
 }
