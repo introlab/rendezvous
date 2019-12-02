@@ -23,8 +23,6 @@ class CameraReader : public BaseCameraReader
 
     struct IndexedImage
     {
-        static int v4l2Index;
-
         IndexedImage() = default;
         IndexedImage(const Image& image);
 
