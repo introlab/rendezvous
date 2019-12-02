@@ -87,7 +87,7 @@ Stream::Stream(std::shared_ptr<Config> config)
         std::make_unique<OdasAudioSource>(odasAudioPort, audioChunkDurationMs, numberOfAudioBuffers, audioInputConfig),
         std::make_unique<PulseAudioSink>(audioOutputConfig),
         std::make_unique<OdasPositionSource>(odasPositionPort, positionBufferSize),
-        m_implementationFactory.getCameraReader(videoInputConfig), m_implementationFactory.getFisheyeDewarper(),
+        m_implementationFactory.getCameraReader2(videoInputConfig), m_implementationFactory.getFisheyeDewarper(),
         m_implementationFactory.getObjectFactory(), std::make_unique<VirtualCameraOutput>(videoOutputConfig),
         m_implementationFactory.getSynchronizer(),
         std::make_unique<VirtualCameraManager>(aspectRatio, minElevation, maxElevation), detectionQueue, m_imageBuffer,

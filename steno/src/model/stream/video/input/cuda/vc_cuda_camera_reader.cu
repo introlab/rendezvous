@@ -1,4 +1,4 @@
-#include "cuda_camera_reader.h"
+#include "vc_cuda_camera_reader.h"
 
 #include "model/stream/utils/cuda_utils.cuh"
 
@@ -6,8 +6,8 @@
 
 namespace Model
 {
-CudaCameraReader::CudaCameraReader(std::shared_ptr<VideoConfig> videoConfig)
-    : CameraReader(videoConfig, 3)
+VcCudaCameraReader::VcCudaCameraReader(std::shared_ptr<VideoConfig> videoConfig)
+    : VcCameraReader(videoConfig, 3)
     , nextImage_(nullptr)
     , pageLockedImage_(videoConfig->resolution.width, videoConfig->resolution.height, videoConfig->imageFormat)
 {
@@ -15,41 +15,41 @@ CudaCameraReader::CudaCameraReader(std::shared_ptr<VideoConfig> videoConfig)
 
     for (std::size_t i = 0; i < images_.size(); ++i)
     {
-        deviceCudaObjectFactory_.allocateObject(images_.current().image);
+        deviceCudaObjectFactory_.allocateObject(images_.current());
         images_.next();
     }
 
     checkCuda(cudaStreamCreate(&stream_));
 }
 
-CudaCameraReader::~CudaCameraReader()
+VcCudaCameraReader::~VcCudaCameraReader()
 {
     cudaFreeHost(pageLockedImage_.hostData);
 
     for (std::size_t i = 0; i < images_.size(); ++i)
     {
-        deviceCudaObjectFactory_.deallocateObject(images_.current().image);
+        deviceCudaObjectFactory_.deallocateObject(images_.current());
         images_.next();
     }
 
     cudaStreamDestroy(stream_);
 }
 
-void CudaCameraReader::open()
+void VcCudaCameraReader::open()
 {
-    CameraReader::open();
-    nextImage_ = &CameraReader::readImage();
+    BaseCameraReader::open();
+    nextImage_ = &VcCameraReader::readImage();
     copyImageToDevice(*nextImage_);
     cudaStreamSynchronize(stream_);
 }
 
-void CudaCameraReader::close()
+void VcCudaCameraReader::close()
 {
     BaseCameraReader::close();
     nextImage_ = nullptr;
 }
 
-const Image& CudaCameraReader::readImage()
+const Image& VcCudaCameraReader::readImage()
 {
     if (nextImage_ == nullptr)
     {
@@ -57,13 +57,13 @@ const Image& CudaCameraReader::readImage()
     }
 
     const Image& image = *nextImage_;
-    nextImage_ = &CameraReader::readImage();
+    nextImage_ = &VcCameraReader::readImage();
     copyImageToDevice(*nextImage_);
 
     return image;
 }
 
-void CudaCameraReader::copyImageToDevice(const Image& image)
+void VcCudaCameraReader::copyImageToDevice(const Image& image)
 {
     // Copy the image data to a page-locked image (this is for faster async copy to device memory)
     std::memcpy(pageLockedImage_.hostData, image.hostData, image.size);
