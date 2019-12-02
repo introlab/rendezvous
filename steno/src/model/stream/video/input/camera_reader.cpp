@@ -19,7 +19,6 @@ CameraReader::IndexedImage::IndexedImage(const Image& image)
     : index(0)
     , image(image)
 {
-    std::cout << index << std::endl;
 }
 
 CameraReader::CameraReader(std::shared_ptr<VideoConfig> videoConfig, std::size_t bufferCount)
