@@ -16,7 +16,7 @@ class CameraReader : public IVideoInput
 
     void open() override;
     void close() override;
-    const Image& readImage() override;
+    bool readImage(Image& image) override;
 
    protected:
     struct IndexedImage

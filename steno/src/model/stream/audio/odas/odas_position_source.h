@@ -2,6 +2,7 @@
 #define ODAS_POSITION_SOURCE_H
 
 #include <memory>
+#include <mutex>
 
 #include <QThread>
 
@@ -26,9 +27,9 @@ class OdasPositionSource : public QThread, public IPositionSource
     void updatePositions(std::vector<SourcePosition>& sourcePositions);
 
     int m_port;
-    std::unique_ptr<QMutex> m_mutex;
-    std::vector<SourcePosition> m_sourcePositions;
     std::shared_ptr<char> m_readBuffer;
+    std::vector<SourcePosition> m_sourcePositions;
+    std::mutex m_mutex;
 };
 
 }    // namespace Model

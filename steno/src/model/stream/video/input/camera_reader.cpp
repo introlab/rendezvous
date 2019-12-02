@@ -72,7 +72,7 @@ void CameraReader::close()
     fd_ = -1;
 }
 
-const Image& CameraReader::readImage()
+bool CameraReader::readImage(Image& image)
 {
     const CameraReader::IndexedImage& currentIndexedImage = images_.current();
 
@@ -85,7 +85,9 @@ const Image& CameraReader::readImage()
     // Queue the next frame
     queueCapture(images_.current());
 
-    return currentIndexedImage.image;
+    image = currentIndexedImage.image;
+
+    return true;
 }
 
 void CameraReader::queueCapture(IndexedImage& indexedImage)
