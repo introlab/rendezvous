@@ -60,8 +60,9 @@ void CpuFisheyeDewarper::dewarpImage(const Image& src, const Image& dst, const D
     {
         int dstIndex = index * 3;
 
-        Point<float> srcPosition = calculateSourcePixelPosition(dst, params, index);
-        int srcIndex = calculateSourcePixelIndex(srcPosition, Dim3<int>(src, 3));
+        Point<float> normalizedPixel = getNormalizedPixelFromIndex(index, dst);
+        Point<float> srcPosition = getSourcePixelFromDewarpedImageNormalizedPixel(normalizedPixel, params);
+        int srcIndex = getSourcePixelIndex(srcPosition, src) * 3;  // For now only can dewarp in RGB format
         dewarpImagePixel(src, dst, srcIndex, dstIndex);
     }
 }
@@ -86,8 +87,9 @@ void CpuFisheyeDewarper::dewarpImageFiltered(const Image& src, const Image& dst,
     {
         int dstIndex = index * 3;
 
-        Point<float> srcPosition = calculateSourcePixelPosition(dst, params, index);
-        LinearPixelFilter linearPixelFilter = calculateLinearPixelFilter(srcPosition, Dim3<int>(src, 3));
+        Point<float> normalizedPixel = getNormalizedPixelFromIndex(index, dst);
+        Point<float> srcPosition = getSourcePixelFromDewarpedImageNormalizedPixel(normalizedPixel, params);
+        LinearPixelFilter linearPixelFilter = getLinearPixelFilter(srcPosition, Dim3<int>(src, 3));
         dewarpImagePixelFiltered(src, dst, linearPixelFilter, dstIndex);
     }
 }

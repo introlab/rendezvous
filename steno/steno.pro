@@ -248,10 +248,21 @@ contains(compilation, no_cuda) {
     LIBS += -L$$TARGET_CUDA_DIR/lib64/stubs -lcuda -L$$TARGET_CUDA_DIR/lib64 -lcudart -lcurand -lcublas
     NVCC = $$HOST_CUDA_DIR/bin/nvcc
 
-    cuda.input = CUDA_SOURCES
-    cuda.output = $$OBJECTS_DIR/${QMAKE_FILE_BASE}.o
-    cuda.commands = $$NVCC -ccbin $$QMAKE_CXX -c --compiler-options \"$(CFLAGS)\" $(INCPATH) $$LIBS -o ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
-    cuda.dependcy_type = TYPE_C
+    cudaIntr.input = CUDA_SOURCES
+    cudaIntr.output = $$OBJECTS_DIR/${QMAKE_FILE_BASE}.o
+    cudaIntr.commands = $$NVCC -ccbin $$QMAKE_CXX -dc --compiler-options \"$(CFLAGS)\" $(INCPATH) $$LIBS -o ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
+    cudaIntr.variable_out = CUDA_OBJ
+    cudaIntr.variable_out += OBJECTS
+    cudaIntr.dependency_type = TYPE_C
+    QMAKE_EXTRA_COMPILERS += cudaIntr
+
+    CUDA_LINK = bin/cuda_fisheye_dewarper.o
+
+    cuda.input = CUDA_OBJ
+    cuda.output =  $$OBJECTS_DIR/cuda_link.o
+    cuda.commands = $$NVCC -dlink -o ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
+    cuda.dependency_type = TYPE_C
+    cuda.CONFIG = combine
     QMAKE_EXTRA_COMPILERS += cuda
 }
 

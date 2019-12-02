@@ -11,8 +11,9 @@ void CpuDewarpingMappingFiller::fillDewarpingMapping(const Dim2<int>& src, const
 
     for (int index = 0; index < size; ++index)
     {
-        Point<float> srcPosition = calculateSourcePixelPosition(mapping, params, index);
-        mapping.hostData[index] = calculateSourcePixelIndex(srcPosition, src);
+        Point<float> normalizedPixel = getNormalizedPixelFromIndex(index, mapping);
+        Point<float> srcPosition = getSourcePixelFromDewarpedImageNormalizedPixel(normalizedPixel, params);
+        mapping.hostData[index] = getSourcePixelIndex(srcPosition, src) * 3;  // For now only can dewarp in RGB format
     }
 }
 
@@ -23,8 +24,9 @@ void CpuDewarpingMappingFiller::fillFilteredDewarpingMapping(const Dim2<int>& sr
 
     for (int index = 0; index < size; ++index)
     {
-        Point<float> srcPosition = calculateSourcePixelPosition(mapping, params, index);
-        mapping.hostData[index] = calculateLinearPixelFilter(srcPosition, src);
+        Point<float> normalizedPixel = getNormalizedPixelFromIndex(index, mapping);
+        Point<float> srcPosition = getSourcePixelFromDewarpedImageNormalizedPixel(normalizedPixel, params);
+        mapping.hostData[index] = getLinearPixelFilter(srcPosition, src);
     }
 }
 }    // namespace Model

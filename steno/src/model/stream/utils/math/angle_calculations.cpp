@@ -4,31 +4,44 @@
 #include <stdexcept>
 
 #include "model/stream/utils/math/math_constants.h"
-#include "model/stream/video/dewarping/dewarping_helper.h"
+#include "model/stream/utils/math/helpers.h"
 
 namespace Model
 {
-namespace
-{
-Point<float> getSourceFromCenterDelta(const Point<float>& pixel, const Point<float>& fisheyeCenter,
-                                      const DewarpingParameters& dewarpingParameters)
-{
-    Point<float> sourcePixel = getSourcePixelFromDewarpedImage(pixel, dewarpingParameters);
-    return Point<float>(sourcePixel.x - fisheyeCenter.x, sourcePixel.y - fisheyeCenter.y);
-}
-
-}    // namespace
-
 namespace math
 {
 float deg2rad(float deg)
 {
-    return deg * PI / 180.f;
+    return deg * math::PI / 180.f;
 }
 
 float rad2deg(float rad)
 {
-    return rad / PI * 180.f;
+    return rad / math::PI * 180.f;
+}
+
+float getAngleAroundCircle(float angle)
+{
+    if (angle < 0.f)
+    {
+        angle += math::PI * 2.f;
+    }
+    else if (angle > math::PI * 2.f)
+    {
+        angle = std::fmod(angle, math::PI * 2.f);
+    }
+
+    return angle;
+}
+
+float getPositiveAngle(float angle)
+{
+    if (angle < 0.f)
+    {
+        angle += math::PI * 2.f;
+    }
+
+    return angle;
 }
 
 float getAzimuthFromPosition(float x, float y)
@@ -39,54 +52,56 @@ float getAzimuthFromPosition(float x, float y)
 
 float getElevationFromPosition(float x, float y, float z)
 {
-    float xyHypotenuse = std::sqrt(y * y + x * x);
+    float xyHypotenuse = euclideanDistance(x, y);
     float tanRes = std::atan2(z, xyHypotenuse);
     return std::fmod(tanRes, 2 * math::PI);
 }
 
-float getElevationFromImage(const Point<float>& pixel, float fisheyeAngle, const Point<float>& fisheyeCenter,
-                            const DewarpingParameters& dewarpingParameters)
+float getElevationFromDistanceToFisheyeCenter(float distanceToFisheyeCenter, float fisheyeRadius, float fisheyeAngle)
 {
-    if (fisheyeAngle > 2.f * PI)
-    {
-        throw std::invalid_argument("Fisheye angle must be in radian!");
-    }
+    float distanceFromFisheyeEdge = fisheyeRadius - distanceToFisheyeCenter;
+    float distanceRatio = (distanceFromFisheyeEdge / fisheyeRadius);
+    float fisheyeElevationSpan = fisheyeAngle / 2.f;
+    float elevation = distanceRatio * fisheyeElevationSpan + (math::PI / 2.f - fisheyeElevationSpan);
 
-    Point<float> delta = getSourceFromCenterDelta(pixel, fisheyeCenter, dewarpingParameters);
-    float distanceFromCenter = std::sqrt(delta.x * delta.x + delta.y * delta.y);
-    float distanceFromBorder = fisheyeCenter.x - distanceFromCenter;
-    float ratio = (distanceFromBorder / fisheyeCenter.x);
-
-    return ratio * (fisheyeAngle / 2.f) + (PI / 2.f - (fisheyeAngle / 2.f));
+    return elevation;
 }
 
-float getAzimuthFromImage(const Point<float>& pixel, const Point<float>& fisheyeCenter,
-                          const DewarpingParameters& dewarpingParameters)
+float getDistanceToFisheyeCenterFromElevation(float elevation, float fisheyeRadius, float fisheyeAngle)
 {
-    Point<float> delta = getSourceFromCenterDelta(pixel, fisheyeCenter, dewarpingParameters);
+    float fisheyeMaxElevationSpan = fisheyeAngle / 2.f;
+    float ratio = (elevation - (math::PI / 2.f - fisheyeMaxElevationSpan)) / fisheyeMaxElevationSpan;
+    float distanceFromBorder = ratio * fisheyeRadius;
+    float distanceToFisheyeCenter = fisheyeRadius - distanceFromBorder;
+
+    return distanceToFisheyeCenter;
+}
+
+float getAzimuthFromDistanceToFisheyeCenter(const Point<float>& distanceToFisheyeCenter)
+{
     float azimuth = 0.f;
 
     // Based on which dial of the image the pixel is, calculate the azimuth
-    if (delta.x >= 0.f)
+    if (distanceToFisheyeCenter.x >= 0.f)
     {
-        if (delta.y >= 0.f)
+        if (distanceToFisheyeCenter.y >= 0.f)
         {
-            azimuth = std::atan(delta.x / delta.y);
+            azimuth = std::atan(distanceToFisheyeCenter.x / distanceToFisheyeCenter.y);
         }
         else
         {
-            azimuth = std::atan(-delta.y / delta.x) + PI / 2.f;
+            azimuth = std::atan(-distanceToFisheyeCenter.y / distanceToFisheyeCenter.x) + math::PI / 2.f;
         }
     }
     else
     {
-        if (delta.y >= 0.f)
+        if (distanceToFisheyeCenter.y >= 0.f)
         {
-            azimuth = std::atan(delta.y / -delta.x) + 3.f * PI / 2.f;
+            azimuth = std::atan(distanceToFisheyeCenter.y / -distanceToFisheyeCenter.x) + 3.f * math::PI / 2.f;
         }
         else
         {
-            azimuth = std::atan(-delta.x / -delta.y) + PI;
+            azimuth = std::atan(-distanceToFisheyeCenter.x / -distanceToFisheyeCenter.y) + math::PI;
         }
     }
 
@@ -120,7 +135,7 @@ float getLinearApproximatedSphericalAnglesDistance(float srcAzimuth, float srcEl
     float azimuthDistance = getSignedAzimuthDifference(srcAzimuth, dstAzimuth);
     float elevationDistance = srcElevation - dstElevation;
 
-    return std::sqrt(azimuthDistance * azimuthDistance + elevationDistance * elevationDistance);
+    return euclideanDistance(azimuthDistance, elevationDistance);
 }
 
 float getApproximatedSphericalAnglesDistance(float srcElevation, float azimuthDifference, float elevationDifference)
@@ -131,7 +146,7 @@ float getApproximatedSphericalAnglesDistance(float srcElevation, float azimuthDi
         std::sin((math::PI / 2.f) - (srcElevation + elevationDifference / 2.f)) * absAzimuthDifference;
     float elevationArcDistance = std::abs(elevationDifference);
 
-    return std::sqrt(azimuthArcDistance * azimuthArcDistance + elevationArcDistance * elevationArcDistance);
+    return euclideanDistance(azimuthArcDistance, elevationArcDistance);
 }
 
 float getApproximatedSphericalAnglesDistance(float srcAzimuth, float srcElevation, float dstAzimuth, float dstElevation)
@@ -148,9 +163,7 @@ float getSphericalAnglesDistance(float srcAzimuth, float srcElevation, float dst
 
     return std::acos(std::sin(math::PI * 2.f - srcElevation) * std::sin(math::PI * 2.f - dstElevation) +
                      std::cos(math::PI * 2.f - srcElevation) * std::cos(math::PI * 2.f - dstElevation) *
-                         std::cos(absAzimuthDifference));
+                     std::cos(absAzimuthDifference));
 }
-
 }    // namespace math
-
 }    // namespace Model

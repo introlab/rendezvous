@@ -12,7 +12,7 @@ namespace Model
 {
 namespace
 {
-const float VIRTUAL_CAMERA_TIME_TO_LIVE_MS = 5000.f;    // Time in seconds the virtual camera will remain if not updated
+const int VIRTUAL_CAMERA_TIME_TO_LIVE_MS = 5000;    // Time in seconds the virtual camera will remain if not updated
 const float VIRTUAL_CAMERA_MIN_ELEVATION_SPAN = 0.3f;    // Minimum virtual camera's elevation span
 const float NEW_VIRTUAL_CAMERA_CREATION_THRESHOLD =
     0.5f;                                           // Distance at which a new vc will be created instead of moved
@@ -66,9 +66,8 @@ void VirtualCameraManager::updateVirtualCameras(int elapsedTimeMs)
             std::abs(vc.goal.elevationSpan - vc.elevationSpan) > DIMENTION_CHANGED_THRESHOLD)
         {
             float resizeFactor = 1 + (((vc.goal.elevationSpan / vc.elevationSpan) - 1) * updateRatio);
-            // Some issues still with this
-            // vc.elevationSpan *= resizeFactor;
-            // vc.azimuthSpan *= resizeFactor;
+            vc.elevationSpan *= resizeFactor;
+            vc.azimuthSpan *= resizeFactor;
         }
     }
 }
@@ -198,7 +197,7 @@ void VirtualCameraManager::updateRegionsBounds(std::vector<SphericalAngleRect>& 
     for (SphericalAngleRect& region : regions)
     {
         float newElevation = region.elevation + region.elevationSpan / ELEVATION_SHIFT_RATIO;
-        region.elevationSpan =
+        region.elevationSpan = 
             math::clamp(region.elevationSpan, VIRTUAL_CAMERA_MIN_ELEVATION_SPAN, srcImageMaxElevationSpan_);
         region.azimuthSpan = region.elevationSpan * aspectRatio_;
         region.elevation = newElevation - getElevationOverflow(newElevation, region.elevationSpan);
