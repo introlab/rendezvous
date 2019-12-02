@@ -71,6 +71,7 @@ SOURCES += \
     src/model/stream/utils/images/stb/stb_image_write.cpp \
     src/model/stream/utils/math/angle_calculations.cpp \
     src/model/stream/utils/math/geometry_utils.cpp \
+    src/model/stream/utils/time/time_utils.cpp \
     src/model/stream/utils/threads/thread.cpp \
     src/model/stream/video/detection/base_darknet_detector.cpp \
     src/model/stream/video/detection/darknet_detector.cpp \
@@ -81,7 +82,9 @@ SOURCES += \
     src/model/stream/video/dewarping/cpu_fisheye_dewarper.cpp \
     src/model/stream/video/dewarping/dewarping_helper.cpp \
     src/model/stream/video/impl/implementation_factory.cpp \
+    src/model/stream/video/input/base_camera_reader.cpp \
     src/model/stream/video/input/camera_reader.cpp \
+    src/model/stream/video/input/vc_camera_reader.cpp \
     src/model/stream/video/input/image_file_reader.cpp \
     src/model/stream/video/output/image_file_writer.cpp \
     src/model/stream/video/output/virtual_camera_output.cpp \
@@ -165,6 +168,7 @@ HEADERS += \
     src/model/stream/utils/threads/sync/i_synchronizer.h \
     src/model/stream/utils/threads/sync/nop_synchronizer.h \
     src/model/stream/utils/threads/thread.h \
+    src/model/stream/utils/time/time_utils.h \
     src/model/stream/utils/time/timer.h \
     src/model/stream/utils/vector_utils.h \
     src/model/stream/video/detection/base_darknet_detector.h \
@@ -189,8 +193,11 @@ HEADERS += \
     src/model/stream/video/dewarping/models/donut_slice.h \
     src/model/stream/video/dewarping/models/linear_pixel_filter.h \
     src/model/stream/video/impl/implementation_factory.h \
+    src/model/stream/video/input/base_camera_reader.h \
     src/model/stream/video/input/camera_reader.h \
+    src/model/stream/video/input/vc_camera_reader.h \
     src/model/stream/video/input/cuda/cuda_camera_reader.h \
+    src/model/stream/video/input/cuda/vc_cuda_camera_reader.h \
     src/model/stream/video/input/cuda/cuda_image_file_reader.h \
     src/model/stream/video/input/image_file_reader.h \
     src/model/stream/video/input/i_video_input.h \
@@ -227,6 +234,7 @@ CUDA_SOURCES += \
     src/model/stream/video/dewarping/cuda/cuda_dewarping_mapping_filler.cu \
     src/model/stream/video/dewarping/cuda/cuda_fisheye_dewarper.cu \
     src/model/stream/video/input/cuda/cuda_camera_reader.cu \
+    src/model/stream/video/input/cuda/vc_cuda_camera_reader.cu \
     src/model/stream/video/input/cuda/cuda_image_file_reader.cu
 
 contains(compilation, no_cuda) {
