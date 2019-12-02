@@ -71,6 +71,7 @@ SOURCES += \
     src/model/stream/utils/images/stb/stb_image_write.cpp \
     src/model/stream/utils/math/angle_calculations.cpp \
     src/model/stream/utils/math/geometry_utils.cpp \
+    src/model/stream/utils/time/time_utils.cpp \
     src/model/stream/utils/threads/thread.cpp \
     src/model/stream/video/detection/base_darknet_detector.cpp \
     src/model/stream/video/detection/darknet_detector.cpp \
@@ -165,6 +166,7 @@ HEADERS += \
     src/model/stream/utils/threads/sync/i_synchronizer.h \
     src/model/stream/utils/threads/sync/nop_synchronizer.h \
     src/model/stream/utils/threads/thread.h \
+    src/model/stream/utils/time/time_utils.h \
     src/model/stream/utils/time/timer.h \
     src/model/stream/utils/vector_utils.h \
     src/model/stream/video/detection/base_darknet_detector.h \
