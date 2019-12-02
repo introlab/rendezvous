@@ -17,7 +17,7 @@ namespace Model
 DewarpedVideoInput::DewarpedVideoInput(std::unique_ptr<IVideoInput> videoInput,
                                        std::unique_ptr<IFisheyeDewarper> dewarper, std::unique_ptr<IObjectFactory> objectFactory,
                                        std::unique_ptr<ISynchronizer> synchronizer,
-                                       std::unique_ptr<VirtualCameraManager> virtualCameraManager,
+                                       std::shared_ptr<VirtualCameraManager> virtualCameraManager,
                                        std::unique_ptr<DetectionThread> detectionThread,
                                        std::shared_ptr<LockTripleBuffer<RGBImage>> imageBuffer, std::unique_ptr<IImageConverter> imageConverter,
                                        std::shared_ptr<IPositionSource> positionSource,
@@ -30,7 +30,7 @@ DewarpedVideoInput::DewarpedVideoInput(std::unique_ptr<IVideoInput> videoInput,
     , dewarper_(std::move(dewarper))
     , objectFactory_(std::move(objectFactory))
     , synchronizer_(std::move(synchronizer))
-    , virtualCameraManager_(std::move(virtualCameraManager))
+    , virtualCameraManager_(virtualCameraManager)
     , detectionThread_(std::move(detectionThread))
     , imageBuffer_(imageBuffer)
     , imageConverter_(std::move(imageConverter))

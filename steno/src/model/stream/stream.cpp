@@ -85,10 +85,12 @@ Stream::Stream(std::shared_ptr<Config> config)
 
     std::shared_ptr<IPositionSource> odasPositionSource = std::make_shared<OdasPositionSource>(odasPositionPort, positionBufferSize);
 
+    std::shared_ptr<VirtualCameraManager> virtualCameraManager = std::make_shared<VirtualCameraManager>(aspectRatio, minElevation, maxElevation);
+
     std::unique_ptr<IVideoInput> dewarpedVideoInput = std::make_unique<DewarpedVideoInput>(
         m_implementationFactory.getCameraReader(videoInputConfig), m_implementationFactory.getFisheyeDewarper(),
         m_implementationFactory.getObjectFactory(), m_implementationFactory.getSynchronizer(),
-        std::make_unique<VirtualCameraManager>(aspectRatio, minElevation, maxElevation), std::move(detectionThread), m_imageBuffer,
+        virtualCameraManager, std::move(detectionThread), m_imageBuffer,
         m_implementationFactory.getImageConverter(), odasPositionSource, dewarpingConfig, videoInputConfig, videoOutputConfig, 10, classifierRangeThreshold);
 
     m_mediaThread = std::make_unique<MediaThread>(
@@ -97,6 +99,7 @@ Stream::Stream(std::shared_ptr<Config> config)
         odasPositionSource,
         std::move(dewarpedVideoInput),
         std::make_unique<VirtualCameraOutput>(videoOutputConfig),
+        virtualCameraManager,
         std::make_unique<MediaSynchronizer>(audioChunkDurationMs * 1000),
         fps, classifierRangeThreshold);
 

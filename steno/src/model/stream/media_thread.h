@@ -28,6 +28,7 @@ class MediaThread : public Thread
     MediaThread(std::unique_ptr<IAudioSource> audioSource, std::unique_ptr<IAudioSink> audioSink,
                 std::shared_ptr<IPositionSource> positionSource, std::unique_ptr<IVideoInput> videoInput,
                 std::unique_ptr<IVideoOutput> videoOutput,
+                std::shared_ptr<IVirtualCameraSource> virtualCameraSource,
                 std::unique_ptr<MediaSynchronizer> mediaSynchronizer,
                 int framePerSeconds,
                 float classifierRangeThreshold);
@@ -41,6 +42,7 @@ class MediaThread : public Thread
     std::shared_ptr<IPositionSource> positionSource_;
     std::unique_ptr<IVideoInput> videoInput_;
     std::unique_ptr<IVideoOutput> videoOutput_;
+    std::shared_ptr<IVirtualCameraSource> virtualCameraSource_;
     std::unique_ptr<MediaSynchronizer> mediaSynchronizer_;
     int framePerSeconds_;
     float classifierRangeThreshold_;

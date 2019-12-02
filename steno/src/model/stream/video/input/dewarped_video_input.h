@@ -25,7 +25,7 @@ public:
 
     DewarpedVideoInput(std::unique_ptr<IVideoInput> videoInput, std::unique_ptr<IFisheyeDewarper> dewarper, 
                        std::unique_ptr<IObjectFactory> objectFactory, std::unique_ptr<ISynchronizer> synchronizer,
-                       std::unique_ptr<VirtualCameraManager> virtualCameraManager,
+                       std::shared_ptr<VirtualCameraManager> virtualCameraManager,
                        std::unique_ptr<DetectionThread> detectionThread,
                        std::shared_ptr<LockTripleBuffer<RGBImage>> imageBuffer, std::unique_ptr<IImageConverter> imageConverter,
                        std::shared_ptr<IPositionSource> positionSource,
@@ -55,7 +55,7 @@ private:
     std::unique_ptr<IFisheyeDewarper> dewarper_;
     std::unique_ptr<IObjectFactory> objectFactory_;
     std::unique_ptr<ISynchronizer> synchronizer_;
-    std::unique_ptr<VirtualCameraManager> virtualCameraManager_;
+    std::shared_ptr<VirtualCameraManager> virtualCameraManager_;
     std::unique_ptr<DetectionThread> detectionThread_;
     std::shared_ptr<LockTripleBuffer<RGBImage>> imageBuffer_;
     std::unique_ptr<IImageConverter> imageConverter_;

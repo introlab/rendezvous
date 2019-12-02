@@ -206,6 +206,7 @@ HEADERS += \
     src/model/stream/video/output/virtual_camera_output.h \
     src/model/stream/video/video_config.h \
     src/model/stream/video/virtualcamera/display_image_builder.h \
+    src/model/stream/video/virtualcamera/i_virtual_camera_source.h \
     src/model/stream/video/virtualcamera/virtual_camera.h \
     src/model/stream/video/virtualcamera/virtual_camera_manager.h \
     src/view/components/colors.h \

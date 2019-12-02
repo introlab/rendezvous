@@ -21,6 +21,7 @@ namespace Model
 MediaThread::MediaThread(std::unique_ptr<IAudioSource> audioSource, std::unique_ptr<IAudioSink> audioSink,
                          std::shared_ptr<IPositionSource> positionSource, std::unique_ptr<IVideoInput> videoInput,
                          std::unique_ptr<IVideoOutput> videoOutput,
+                         std::shared_ptr<IVirtualCameraSource> virtualCameraSource,
                          std::unique_ptr<MediaSynchronizer> mediaSynchronizer,
                          int framePerSeconds,
                          float classifierRangeThreshold)
@@ -30,11 +31,12 @@ MediaThread::MediaThread(std::unique_ptr<IAudioSource> audioSource, std::unique_
     , positionSource_(std::move(positionSource))
     , videoInput_(std::move(videoInput))
     , videoOutput_(std::move(videoOutput))
+    , virtualCameraSource_(virtualCameraSource)
     , mediaSynchronizer_(std::move(mediaSynchronizer))
     , framePerSeconds_(framePerSeconds)
     , classifierRangeThreshold_(classifierRangeThreshold)
 {
-    if (!audioSource_ || !audioSink_ || !positionSource_ || !videoInput_ || !videoOutput_)
+    if (!audioSource_ || !audioSink_ || !positionSource_ || !videoInput_ || !videoOutput_ || !virtualCameraSource_)
     {
         throw std::invalid_argument("Error in MediaThread - Null is not a valid argument");
     }
@@ -79,10 +81,29 @@ void MediaThread::run()
             AudioChunk audioChunk;
             while (audioSource_->readAudioChunk(audioChunk))
             {
-                audioSink_->write(audioChunk.audioData.get(), audioChunk.size);
-
                 std::cout << "audio: " << audioChunk.timestamp - lastAudioTimeStamp << std::endl;
                 lastAudioTimeStamp = audioChunk.timestamp;
+
+                // Get audio sources and image spatial positions
+                std::vector<SourcePosition> sourcePositions = positionSource_->getPositions();
+                std::vector<VirtualCamera> virtualCameras = virtualCameraSource_->getVirtualCameras();
+
+                if (virtualCameras.size() > 0)
+                {
+                    std::vector<SphericalAngleRect> imagePositions;
+                    imagePositions.reserve(virtualCameras.size());
+                    for (const auto& vc : virtualCameras)
+                    {
+                        imagePositions.push_back(vc);
+                    }
+
+                    std::vector<int> sourcesToKeep =
+                                Classifier::getSourcesToKeep(sourcePositions, imagePositions, classifierRangeThreshold_);
+
+                    AudioSuppresser::suppressNoise(sourcesToKeep, audioChunk);
+
+                    audioSink_->write(audioChunk.audioData.get(), audioChunk.size);
+                }
 
                 //mediaSynchronizer_->queueAudio(audioChunk);
             }
