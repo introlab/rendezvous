@@ -5,6 +5,7 @@
 #include "model/stream/utils/math/math_constants.h"
 #include "model/stream/utils/math/geometry_utils.h"
 #include "model/stream/video/dewarping/dewarping_helper.h"
+#include "model/stream/video/detection/detection_dewarp_optimizer.h"
 
 namespace Model
 {
@@ -44,6 +45,8 @@ void DetectionThread::run()
     std::vector<DewarpingMapping> dewarpingMappings;
     std::vector<SphericalAngleRect> detections;
 
+    DetectionDewarpingOptimizer detectionDewarpingOptimizer(dewarpingConfig_->detectionDewarpingCount, 4);
+
     try
     {
         // Allocate and prepare objects for dewarping and detection
@@ -71,8 +74,10 @@ void DetectionThread::run()
             imageBuffer_->lockInUse();
             const Image& image = imageBuffer_->getLocked();
 
+            std::vector<int> nextDewarpingAreas = detectionDewarpingOptimizer.getNextDetectionAreas();
+
             // Dewarp each view, detect on each view and concatenate the results
-            for (int i = 0; i < dewarpingConfig_->detectionDewarpingCount; ++i)
+            for (int i : nextDewarpingAreas)
             {
                 dewarper_->dewarpImage(image, detectionImages[i], dewarpingMappings[i]);
                 synchronizer_->sync();
@@ -88,13 +93,18 @@ void DetectionThread::run()
                     float middleAngleDiff = (2.f * math::PI) / dewarpingConfig_->detectionDewarpingCount;
                     
                     SphericalAngleRect sphericalAngleRect = getAngleRectFromDewarpedImageRectangle(detection, dewarpingParams[i],
-                                                                                                   detectionImage, fisheyeCenter,
-                                                                                                   dewarpingConfig_->fisheyeAngle);
+                                                                                                detectionImage, fisheyeCenter,
+                                                                                                dewarpingConfig_->fisheyeAngle);
 
                     if (!isInOverlappingZone(sphericalAngleRect, dewarpingConfig_->angleSpan, middleAngleDiff * i))
                     {
                         detections.push_back(sphericalAngleRect);
                     }
+                }
+
+                if (!viewDetections.empty())
+                {
+                    detectionDewarpingOptimizer.incrementDetectionInArea(i);
                 }
             }
 
@@ -135,7 +145,7 @@ std::vector<DewarpingParameters> DetectionThread::getDetectionDewarpingParameter
     for (int i = 0; i < detectionDewarpingCount; ++i)
     {
         DonutSlice donutSlice(static_cast<float>(dim.width) / 2.f, static_cast<float>(dim.height) / 2.f, 
-                              dewarpingConfig_->inRadius, dewarpingConfig_->outRadius, i * middleAngleDiff,
+                              dewarpingConfig_->inRadius, dewarpingConfig_->outRadius, math::getAngleAroundCircle(i * middleAngleDiff),
                               dewarpingConfig_->angleSpan);
         dewarpingParams.push_back(getDewarpingParameters(donutSlice, dewarpingConfig_->topDistorsionFactor, 
                                                          dewarpingConfig_->bottomDistorsionFactor));

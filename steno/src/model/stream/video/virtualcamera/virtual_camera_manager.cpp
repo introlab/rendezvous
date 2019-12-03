@@ -16,11 +16,11 @@ const int VIRTUAL_CAMERA_TIME_TO_LIVE_MS = 5000;    // Time in seconds the virtu
 const float VIRTUAL_CAMERA_MIN_ELEVATION_SPAN = 0.3f;    // Minimum virtual camera's elevation span
 const float NEW_VIRTUAL_CAMERA_CREATION_THRESHOLD =
     0.5f;                                           // Distance at which a new vc will be created instead of moved
-const float POSITION_CHANGED_THRESHOLD = 0.01f;     // Change in position that cause a move of the virtual camera
-const float DIMENTION_CHANGED_THRESHOLD = 0.05f;    // Change in dimension that cause a resize of the virtual camera
+const float POSITION_CHANGED_THRESHOLD = 0.03f;     // Change in position that cause a move of the virtual camera
+const float DIMENTION_CHANGED_THRESHOLD = 0.10f;    // Change in dimension that cause a resize of the virtual camera
 const float DUPLICATE_FACE_ANGLE_RANGE = 0.4f;      // Range in angles where we consider faces to be duplicate
 const float ELEVATION_SHIFT_RATIO = 4.f;            // Shifting of elevation is required to center the virtual camera
-const int TIME_TO_GOAL_MS = 1000;                   // How much time is required for the camera to reach it's goal
+const int TIME_TO_GOAL_MS = 850;                   // How much time is required for the camera to reach it's goal
 }    // namespace
 
 VirtualCameraManager::VirtualCameraManager(float aspectRatio, float srcImageMinElevation, float srcImageMaxElevation)

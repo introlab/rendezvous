@@ -77,6 +77,7 @@ SOURCES += \
     src/model/stream/utils/threads/thread.cpp \
     src/model/stream/video/detection/base_darknet_detector.cpp \
     src/model/stream/video/detection/darknet_detector.cpp \
+    src/model/stream/video/detection/detection_dewarp_optimizer.cpp \
     src/model/stream/video/detection/detection_thread.cpp \
     src/model/stream/video/detection/detector_mock.cpp \
     src/model/stream/video/dewarping/cpu_darknet_fisheye_dewarper.cpp \
@@ -178,6 +179,7 @@ HEADERS += \
     src/model/stream/video/detection/base_darknet_detector.h \
     src/model/stream/video/detection/cuda/cuda_darknet_detector.h \
     src/model/stream/video/detection/darknet_detector.h \
+    src/model/stream/video/detection/detection_dewarp_optimizer.h \
     src/model/stream/video/detection/detection_thread.h \
     src/model/stream/video/detection/detector_mock.h \
     src/model/stream/video/detection/darknet_config.h \
