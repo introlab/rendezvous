@@ -54,6 +54,7 @@ class Transcription : public QObject
             case Encoding::SPEEX_WITH_HEADER_BYTE:
                 return "SPEEX_WITH_HEADER_BYTE";
         }
+        return "";
     }
 
     enum Language
@@ -97,6 +98,7 @@ class Transcription : public QObject
             case Model::VIDEO:
                 return "video";
         }
+        return "";
     }
 
    signals:

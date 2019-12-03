@@ -1,4 +1,5 @@
 #include "transcription.h"
+
 #include "model/app_config.h"
 #include "model/config/config.h"
 #include "transcription_config.h"
