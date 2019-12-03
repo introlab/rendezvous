@@ -15,7 +15,7 @@ class VcCameraReader : public BaseCameraReader
    public:
     VcCameraReader(std::shared_ptr<VideoConfig> cameraConfig, std::size_t bufferCount);
 
-    const Image& readImage() override;
+    bool readImage(Image& image) override;
 
    protected:
     void initializeInternal() override;

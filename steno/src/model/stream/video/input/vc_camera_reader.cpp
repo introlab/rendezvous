@@ -16,9 +16,9 @@ VcCameraReader::VcCameraReader(std::shared_ptr<VideoConfig> videoConfig, std::si
 {
 }
 
-const Image& VcCameraReader::readImage()
+bool VcCameraReader::readImage(Image& image)
 {
-    Image& image = images_.current();
+    image = images_.current();
 
     size_t size = read(fd_, image.hostData, image.size);
 
@@ -31,7 +31,7 @@ const Image& VcCameraReader::readImage()
 
     image.timeStamp = systemTimeSinceEpoch();
 
-    return image;
+    return true;
 }
 
 void VcCameraReader::initializeInternal()

@@ -33,7 +33,9 @@ VirtualCameraManager::VirtualCameraManager(float aspectRatio, float srcImageMinE
 
 void VirtualCameraManager::updateVirtualCameras(int elapsedTimeMs)
 {
-    if (virtualCameras_.empty()) return;
+    std::vector<VirtualCamera> virtualCameras = getVirtualCameras();
+
+    if (virtualCameras.empty()) return;
 
     auto updateTimeAndCheckIfDead = [elapsedTimeMs](VirtualCamera& vc) {
         vc.timeToLiveMs -= elapsedTimeMs;
@@ -41,13 +43,13 @@ void VirtualCameraManager::updateVirtualCameras(int elapsedTimeMs)
     };
 
     // Remove virtual cameras with time to live smaller or equal to zero
-    removeElementsAndPack(virtualCameras_, updateTimeAndCheckIfDead);
+    removeElementsAndPack(virtualCameras, updateTimeAndCheckIfDead);
 
     // Calculate the ratio to update the angles and angle spans
     float updateRatio = std::min(float(elapsedTimeMs) / TIME_TO_GOAL_MS, 1.f);
 
     // Move the virtual cameras toward their goal position
-    for (VirtualCamera& vc : virtualCameras_)
+    for (VirtualCamera& vc : virtualCameras)
     {
         float azimuthDifference = math::getSignedAzimuthDifference(vc.azimuth, vc.goal.azimuth);
         float elevationDifference = vc.goal.elevation - vc.elevation;
@@ -70,6 +72,8 @@ void VirtualCameraManager::updateVirtualCameras(int elapsedTimeMs)
             vc.azimuthSpan *= resizeFactor;
         }
     }
+
+    setVirtualCameras(virtualCameras);
 }
 
 void VirtualCameraManager::updateVirtualCamerasGoal(const std::vector<SphericalAngleRect>& goals)
@@ -138,10 +142,17 @@ void VirtualCameraManager::clearVirtualCameras()
     virtualCameras_.clear();
 }
 
-const std::vector<VirtualCamera>& VirtualCameraManager::getVirtualCameras()
+std::vector<VirtualCamera> VirtualCameraManager::getVirtualCameras()
 {
+    std::lock_guard<std::mutex> lock(mutex_);
     return virtualCameras_;
 }
+
+ void VirtualCameraManager::setVirtualCameras(const std::vector<VirtualCamera>& virtualCameras)
+ {
+     std::lock_guard<std::mutex> lock(mutex_);
+     virtualCameras_ = virtualCameras;
+ }
 
 float VirtualCameraManager::getElevationOverflow(float elevation, float elevationSpan)
 {

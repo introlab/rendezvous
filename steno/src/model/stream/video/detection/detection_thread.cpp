@@ -8,24 +8,27 @@
 
 namespace Model
 {
-DetectionThread::DetectionThread(
-    std::shared_ptr<LockTripleBuffer<Image>> imageBuffer, std::unique_ptr<IDetector> detector,
-    std::shared_ptr<moodycamel::ReaderWriterQueue<std::vector<SphericalAngleRect>>> detectionQueue,
-    std::unique_ptr<IDetectionFisheyeDewarper> dewarper, std::unique_ptr<IObjectFactory> objectFactory,
-    std::unique_ptr<ISynchronizer> synchronizer, std::shared_ptr<DewarpingConfig> dewarpingConfig)
+DetectionThread::DetectionThread(std::shared_ptr<LockTripleBuffer<RGBImage>> imageBuffer, std::unique_ptr<IDetector> detector,
+                                 std::unique_ptr<IDetectionFisheyeDewarper> dewarper, std::unique_ptr<IObjectFactory> objectFactory,
+                                 std::unique_ptr<ISynchronizer> synchronizer, std::shared_ptr<DewarpingConfig> dewarpingConfig)
     : Thread()
     , imageBuffer_(imageBuffer)
     , detector_(std::move(detector))
     , dewarper_(std::move(dewarper))
     , objectFactory_(std::move(objectFactory))
     , synchronizer_(std::move(synchronizer))
-    , detectionQueue_(detectionQueue)
     , dewarpingConfig_(dewarpingConfig)
+    , detectionQueue_(1)
 {
-    if (!imageBuffer_ || !detector_ || !dewarper_ || !objectFactory_ || !synchronizer_ || !detectionQueue_)
+    if (!imageBuffer_ || !detector_ || !dewarper_ || !objectFactory_ || !synchronizer_)
     {
         throw std::invalid_argument("Error in DetectionThread - Arguments can not be null");
     }
+}
+
+bool DetectionThread::getDetections(std::vector<SphericalAngleRect>& detections)
+{
+    return detectionQueue_.try_dequeue(detections);
 }
 
 void DetectionThread::run()
@@ -100,7 +103,7 @@ void DetectionThread::run()
             // Output the detections, if queue is full keep trying...
             while (!success && !isAbortRequested())
             {
-                success = detectionQueue_->try_enqueue(std::move(detections));
+                success = detectionQueue_.try_enqueue(std::move(detections));
 
                 if (!success)
                 {

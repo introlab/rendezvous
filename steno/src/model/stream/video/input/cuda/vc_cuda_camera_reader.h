@@ -16,13 +16,13 @@ class VcCudaCameraReader : public VcCameraReader
 
     void open() override;
     void close() override;
-    const Image& readImage() override;
+    bool readImage(Image& image) override;
 
    private:
     void copyImageToDevice(const Image& image);
 
     DeviceCudaObjectFactory deviceCudaObjectFactory_;
-    const Image* nextImage_;
+    Image nextImage_;
     cudaStream_t stream_;
     Image pageLockedImage_;
 };
