@@ -2,6 +2,7 @@
 #define TRANSCRIPTION_H
 
 #include "model/config/config.h"
+#include "srt_generator.h"
 
 #include <memory>
 
@@ -121,6 +122,7 @@ class Transcription : public QObject
     QUrl m_url = QUrl("https://rendezvous-meet.com/transcription-api/transcription");
     std::shared_ptr<Config> m_config;
     QString m_tempWavFilePath;
+    std::unique_ptr<SrtGenerator> m_srtGenerator;
 };
 }    // namespace Model
 
