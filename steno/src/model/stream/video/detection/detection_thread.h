@@ -41,7 +41,6 @@ class DetectionThread : public Thread, public Subject
     std::shared_ptr<moodycamel::ReaderWriterQueue<std::vector<SphericalAngleRect>>> detectionQueue_;
 
     std::shared_ptr<DewarpingConfig> dewarpingConfig_;
-    int dewarpCount_;
 };
 
 }    // namespace Model

@@ -11,15 +11,17 @@ namespace math
 float deg2rad(float deg);
 float rad2deg(float rad);
 
+float getAngleAroundCircle(float angle);
+float getPositiveAngle(float angle);
+
 float getAzimuthFromPosition(float x, float y);
 float getElevationFromPosition(float x, float y, float z);
 
-float getElevationFromImage(const Point<float>& pixel, float fisheyeAngle, const Point<float>& fisheyeCenter,
-                            const DewarpingParameters& dewarpingParameters);
-float getAzimuthFromImage(const Point<float>& pixel, const Point<float>& fisheyeCenter,
-                          const DewarpingParameters& dewarpingParameters);
+float getElevationFromDistanceToFisheyeCenter(float distanceToFisheyeCenter, float fisheyeRadius, float fisheyeAngle);
+float getDistanceToFisheyeCenterFromElevation(float elevation, float fisheyeRadius, float fisheyeAngle);
+float getAzimuthFromDistanceToFisheyeCenter(const Point<float>& distanceToFisheyeCenter);
 
-float getSmallestAbsAzimuthDifference(float srcAzimuth, float dstAzimuth);
+float getSmallestAbsAzimuthDifference(float absDifference);
 float getSignedAzimuthDifference(float srcAzimuth, float dstAzimuth);
 float getLinearApproximatedSphericalAnglesDistance(float srcAzimuth, float srcElevation, float dstAzimuth,
                                                    float dstElevation);

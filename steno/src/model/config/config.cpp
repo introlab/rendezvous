@@ -118,8 +118,8 @@ void Config::loadDefault()
     m_dewarpingConfig->setValue(DewarpingConfig::Key::IN_RADIUS, 400);
     m_dewarpingConfig->setValue(DewarpingConfig::Key::OUT_RADIUS, 1400);
     m_dewarpingConfig->setValue(DewarpingConfig::Key::ANGLE_SPAN, 90);
-    m_dewarpingConfig->setValue(DewarpingConfig::Key::TOP_DISTORSION_FACTOR, 0.08);
-    m_dewarpingConfig->setValue(DewarpingConfig::Key::BOTTOM_DISTORSION_FACTOR, 0);
+    m_dewarpingConfig->setValue(DewarpingConfig::Key::TOP_DISTORSION_FACTOR, 2);
+    m_dewarpingConfig->setValue(DewarpingConfig::Key::BOTTOM_DISTORSION_FACTOR, 1);
     m_dewarpingConfig->setValue(DewarpingConfig::Key::FISH_EYE_ANGLE, 220);
     m_dewarpingConfig->setValue(DewarpingConfig::Key::DETECTION_DEWARPING_COUNT, 4);
 

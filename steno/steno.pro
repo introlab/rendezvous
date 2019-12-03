@@ -53,6 +53,7 @@ SOURCES += \
     src/model/media_player/subtitles/subtitles.cpp \
     src/model/stream/default_image_thread.cpp \
     src/model/stream/default_stream.cpp \
+    src/model/stream/utils/images/image_drawing.cpp \
     src/model/stream/video/output/default_virtual_camera_output.cpp \
     src/model/transcription/transcription.cpp \
     src/model/utils/filesutil.cpp \
@@ -73,6 +74,7 @@ SOURCES += \
     src/model/stream/utils/images/stb/stb_image_write.cpp \
     src/model/stream/utils/math/angle_calculations.cpp \
     src/model/stream/utils/math/geometry_utils.cpp \
+    src/model/stream/utils/time/time_utils.cpp \
     src/model/stream/utils/threads/thread.cpp \
     src/model/stream/video/detection/base_darknet_detector.cpp \
     src/model/stream/video/detection/darknet_detector.cpp \
@@ -115,6 +117,7 @@ HEADERS += \
     src/model/stream/default_image_thread.h \
     src/model/stream/default_stream.h \
     src/model/stream/stream_config.h \
+    src/model/stream/utils/images/image_drawing.h \
     src/model/transcription/transcription.h \
     src/model/transcription/transcription_config.h \
     src/model/stream/video/output/default_virtual_camera_output.h \
@@ -168,6 +171,7 @@ HEADERS += \
     src/model/stream/utils/threads/sync/i_synchronizer.h \
     src/model/stream/utils/threads/sync/nop_synchronizer.h \
     src/model/stream/utils/threads/thread.h \
+    src/model/stream/utils/time/time_utils.h \
     src/model/stream/utils/time/timer.h \
     src/model/stream/utils/vector_utils.h \
     src/model/stream/video/detection/base_darknet_detector.h \
@@ -243,10 +247,19 @@ contains(compilation, no_cuda) {
     LIBS += -L$$TARGET_CUDA_DIR/lib64/stubs -lcuda -L$$TARGET_CUDA_DIR/lib64 -lcudart -lcurand -lcublas
     NVCC = $$HOST_CUDA_DIR/bin/nvcc
 
-    cuda.input = CUDA_SOURCES
-    cuda.output = $$OBJECTS_DIR/${QMAKE_FILE_BASE}.o
-    cuda.commands = $$NVCC -ccbin $$QMAKE_CXX -c --compiler-options \"$(CFLAGS)\" $(INCPATH) $$LIBS -o ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
-    cuda.dependcy_type = TYPE_C
+    cudaIntr.input = CUDA_SOURCES
+    cudaIntr.output = $$OBJECTS_DIR/${QMAKE_FILE_BASE}.o
+    cudaIntr.commands = $$NVCC -ccbin $$QMAKE_CXX -dc --compiler-options \"$(CFLAGS)\" $(INCPATH) $$LIBS -o ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
+    cudaIntr.variable_out = CUDA_OBJ
+    cudaIntr.variable_out += OBJECTS
+    cudaIntr.dependency_type = TYPE_C
+    QMAKE_EXTRA_COMPILERS += cudaIntr
+
+    cuda.input = CUDA_OBJ
+    cuda.output =  $$OBJECTS_DIR/cuda_link.o
+    cuda.commands = $$NVCC -ccbin $$QMAKE_CXX -dlink -o ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
+    cuda.dependency_type = TYPE_C
+    cuda.CONFIG = combine
     QMAKE_EXTRA_COMPILERS += cuda
 }
 

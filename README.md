@@ -4,15 +4,15 @@
 
 ## Introduction
 
-For our end of degree project in computer engineering at the University of Sherbrooke, the RendezVoUS team is happy to present you the next generation video-conference system : Steno!
+For our bachelor final project in computer engineering at the University of Sherbrooke, the RendezVoUS team is happy to present you the next generation video-conference system : Steno!
 
 ## Description
 
 No more video-conferences filled with technical problems and meetings with multiple people behind the same laptop! 
 
-Steno is an intelligent video-conferencing system that allows you to make worry-free calls by using 16 microphones and a 360° camera. The system use artificial intelligence as well as other technologies to offer an enhanced experience both visually and audibly.
+Steno is an intelligent video-conferencing system that allows you to make worry-free calls by using 16 microphones and a 360° camera. The system uses artificial intelligence as well as other technologies to offer an enhanced experience both visually and audibly.
 
-Steno film and record each person individually, then sends everything to the video-conferencing system. It's like if everyone had an webcam! Steno films you dynamically, which means that if you move around the table, it will be able track your voice and position, and make sure all your words and mouvements are sent to other end of the video-conference.
+Steno films and records each person individually, then sends everything to the video-conferencing system. It's like if everyone had a webcam! Steno films you dynamically, which means that if you move around the table, it will be able track your voice and position, and make sure all your words and movements are sent to the end users.
 
 ## Specifications
 
