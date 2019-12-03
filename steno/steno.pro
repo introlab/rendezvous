@@ -250,11 +250,9 @@ contains(compilation, no_cuda) {
     cudaIntr.dependency_type = TYPE_C
     QMAKE_EXTRA_COMPILERS += cudaIntr
 
-    CUDA_LINK = bin/cuda_fisheye_dewarper.o
-
     cuda.input = CUDA_OBJ
     cuda.output =  $$OBJECTS_DIR/cuda_link.o
-    cuda.commands = $$NVCC -dlink -o ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
+    cuda.commands = $$NVCC -ccbin $$QMAKE_CXX -dlink -o ${QMAKE_FILE_OUT} ${QMAKE_FILE_NAME}
     cuda.dependency_type = TYPE_C
     cuda.CONFIG = combine
     QMAKE_EXTRA_COMPILERS += cuda
