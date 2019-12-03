@@ -72,8 +72,8 @@ void MediaThread::run()
             {
                 videoOutput_->writeImage(image);
 
-                std::cout << "image: " << image.timeStamp - lastImageTimeStamp << std::endl;
-                lastImageTimeStamp = image.timeStamp;
+                // std::cout << "image: " << image.timeStamp - lastImageTimeStamp << std::endl;
+                // lastImageTimeStamp = image.timeStamp;
 
                 //mediaSynchronizer_->queueImage(image);
             }
@@ -100,12 +100,18 @@ void MediaThread::run()
                     std::vector<int> sourcesToKeep =
                                 Classifier::getSourcesToKeep(sourcePositions, imagePositions, classifierRangeThreshold_);
 
-                    AudioSuppresser::suppressNoise(sourcesToKeep, audioChunk);
+                     //AudioSuppresser::suppressNoise(sourcesToKeep, audioChunk);
 
-                    audioSink_->write(audioChunk.audioData.get(), audioChunk.size);
+                    
                 }
 
-                //mediaSynchronizer_->queueAudio(audioChunk);
+                // Timer timer;
+                // timer.reset();
+                // std::cout << "WRITE AUDIO Start " << audioChunk.size << std::endl;
+                audioSink_->write(audioChunk);
+                // std::cout << "WRITE AUDIO : " << timer.getElapsedTime<std::chrono::milliseconds>() << std::endl;
+
+            //     //mediaSynchronizer_->queueAudio(audioChunk);
             }
 
             /*SynchronizedMedia outputMedia;

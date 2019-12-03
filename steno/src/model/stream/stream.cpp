@@ -132,15 +132,11 @@ void Stream::stop()
 {
     updateState(IStream::State::Stopping);
 
-    // if (m_odasClient->getState() != OdasClientState::CRASHED)
-    // {
-    //     m_odasClient->stop();
     if (m_odasClient->getState() != OdasClientState::CRASHED)
     {
         m_odasClient->stop();
         m_odasClient->join();
     }
-    // }
 
     m_mediaThread->stop();
     m_mediaThread->join();
