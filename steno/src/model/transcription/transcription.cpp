@@ -8,6 +8,7 @@
 #include <memory>
 
 #include <QFile>
+#include <QFileInfo>
 #include <QHttpMultiPart>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -63,6 +64,10 @@ bool Transcription::transcribe(const QString& videoFilePath)
     if (!isOK) return isOK;
 
     isOK = requestTranscription();
+
+    const QFile file(videoFilePath);
+    const QFileInfo info(file);
+    m_srtFileName = info.baseName();
     return isOK;
 }
 
@@ -209,7 +214,7 @@ bool Transcription::postTranscription(QJsonDocument response)
 
     QJsonObject jsonObject = response.object();
     QJsonArray words = jsonObject["words"].toArray();
-    m_srtGenerator->generateSrtFile("video.srt", words[0].toArray());
+    m_srtGenerator->generateSrtFile(m_srtFileName + ".srt", words);
     return true;
 }
 

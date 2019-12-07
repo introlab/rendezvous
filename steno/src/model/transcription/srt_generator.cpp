@@ -1,8 +1,10 @@
 #include "srt_generator.h"
 
+#include <QChar>
 #include <QFile>
 #include <QJsonArray>
 #include <QJsonObject>
+#include <QString>
 
 #include <math.h>
 
@@ -29,12 +31,14 @@ void SrtGenerator::generateSrtFile(const QString& filename, QJsonArray transcrip
 
     QString block;
     QString word;
-    double lineStartTime;
-    double lineEndTime;
-    double wordStartTime;
-    double wordEndTime;
+    double lineStartTime = 0;
+    double lineEndTime = 0;
+    double wordStartTime = 0;
+    double wordEndTime = 0;
 
     getWordInfos(transcriptionWords[0].toObject(), block, lineStartTime, lineEndTime);
+
+    transcriptionWords.removeAt(0);
     int id = 1;
 
     for (auto transcriptionWord : transcriptionWords)
@@ -69,7 +73,7 @@ void SrtGenerator::generateSrtFile(const QString& filename, QJsonArray transcrip
 /**
  * @brief SRT block format:
  *        ID
- *        HH:MM:SS,mmm ---> HH:MM:SS,mmm
+ *        HH:MM:SS,mmm --> HH:MM:SS,mmm
  *        Line 1
  *        Line 2
  *        Blank line
@@ -84,13 +88,15 @@ QString SrtGenerator::getSrtBlock(const int blockId, double startTime, double en
     // ID
     QString block = QString::number(blockId) + "\n";
 
-    // HH:MM:SS,mmm ---> HH:MM:SS,mmm
-    block += QString::number(static_cast<int>(startTime / 360)) + QString::number(static_cast<int>(startTime / 60)) +
-             QString::number(static_cast<int>(std::fmod(startTime, 60))) +
-             QString::number(static_cast<int>(1000 * std::fmod(startTime, 1))) +
-             QString::number(static_cast<int>(endTime / 360)) + QString::number(static_cast<int>(endTime / 60)) +
-             QString::number(static_cast<int>(std::fmod(endTime, 60))) +
-             QString::number(static_cast<int>(1000 * std::fmod(endTime, 1))) + "\n";
+    // HH:MM:SS,mmm --> HH:MM:SS,mmm
+    block += QString("%1").arg(static_cast<qint64>(startTime / 360), 2, 10, QChar('0')) + ":" +
+             QString("%1").arg(static_cast<qint64>(startTime / 60), 2, 10, QChar('0')) + ":" +
+             QString("%1").arg(static_cast<qint64>(std::fmod(startTime, 60)), 2, 10, QChar('0')) + "," +
+             QString("%1").arg(static_cast<qint64>(1000 * std::fmod(startTime, 1)), 3, 10, QChar('0')) + " --> " +
+             QString("%1").arg(static_cast<qint64>(endTime / 360), 2, 10, QChar('0')) + ":" +
+             QString("%1").arg(static_cast<qint64>(endTime / 60), 2, 10, QChar('0')) + ":" +
+             QString("%1").arg(static_cast<qint64>(std::fmod(endTime, 60)), 2, 10, QChar('0')) + "," +
+             QString("%1").arg(static_cast<qint64>(1000 * std::fmod(endTime, 1)), 3, 10, QChar('0')) + "\n";
 
     // Might need to split the text in 2 lines.
     if (text.length() <= m_maxCharInSrtLine)
@@ -101,19 +107,18 @@ QString SrtGenerator::getSrtBlock(const int blockId, double startTime, double en
     else
     {
         QStringList words = text.split(" ");
-        int index = 0;
         QString tmpText = words[0];
-        words.removeAt(0);
 
-        for (QString word : words)
+        for (int index = 1; index < words.length(); index++)
         {
-            QString preview = tmpText + " " + word;
+            QString preview = tmpText + " " + words[index];
             if (preview.length() > m_maxCharInSrtLine)
             {
                 // Saving remaining iteration by getting remaining words.
-                QString rest = "\n" + words[index + 1];
-                for (int i = index + 2; i < words.length(); ++i)
+                QString rest = "\n" + words[index];
+                for (int i = index + 1; i < words.length(); i++)
                 {
+                    if (i >= words.length()) break;
                     rest += " " + words[i];
                 }
                 tmpText += " " + rest;
@@ -145,10 +150,15 @@ void SrtGenerator::getWordInfos(const QJsonObject& transcriptionWord, QString& w
                                 double& wordEndTime)
 {
     word = transcriptionWord["word"].toString();
-    wordStartTime =
-        transcriptionWord["start_time"]["seconds"].toInt() + transcriptionWord["start_time"]["nanos"].toInt() * 1e-9;
-    wordEndTime =
-        transcriptionWord["end_time"]["seconds"].toInt() + transcriptionWord["end_time"]["nanos"].toInt() * 1e-9;
+
+    wordStartTime = transcriptionWord["startTime"].toObject()["seconds"].toVariant().toUInt() +
+                    transcriptionWord["startTime"].toObject()["nanos"].toVariant().toUInt() * 1e-9;
+    wordEndTime = transcriptionWord["endTime"].toObject()["seconds"].toVariant().toUInt() +
+                  transcriptionWord["endTime"].toObject()["nanos"].toVariant().toUInt() * 1e-9;
+
+    qDebug() << "word:" << word;
+    qDebug() << "word start time" << wordStartTime;
+    qDebug() << "word end time" << wordEndTime;
 }
 
 }    // namespace Model

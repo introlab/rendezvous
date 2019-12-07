@@ -123,6 +123,7 @@ class Transcription : public QObject
     std::shared_ptr<Config> m_config;
     QString m_tempWavFilePath;
     std::unique_ptr<SrtGenerator> m_srtGenerator;
+    QString m_srtFileName = "";
 };
 }    // namespace Model
 
