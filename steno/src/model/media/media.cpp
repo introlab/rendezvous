@@ -1,7 +1,6 @@
 #include "media.h"
 
 #include "model/app_config.h"
-#include "model/stream/video/output/default_virtual_camera_output.h"
 #include "model/stream/video/video_config.h"
 
 #include <QCameraInfo>
@@ -22,7 +21,10 @@ Media::Media(std::shared_ptr<Config> config, std::shared_ptr<IStream> stream)
 
 void Media::unLoadCamera()
 {
-    m_camera->unload();
+    if (m_camera != nullptr)
+    {
+        m_camera->unload();
+    }
 }
 
 /**

@@ -14,7 +14,8 @@ namespace Model
 class DefaultImageThread : public Thread, public Subject
 {
    public:
-    DefaultImageThread(std::shared_ptr<IVideoOutput> videoOutput, std::shared_ptr<VideoConfig> videoConfig);
+    DefaultImageThread(std::shared_ptr<IVideoOutput> videoOutput, std::shared_ptr<VideoConfig> videoConfig,
+                       const QString defaultImagePath);
 
    protected:
     void run() override;
@@ -22,6 +23,7 @@ class DefaultImageThread : public Thread, public Subject
    private:
     std::shared_ptr<IVideoOutput> m_videoOutput;
     std::shared_ptr<VideoConfig> m_videoConfig;
+    const QString m_imageFilePath;
 };
 
 }    // namespace Model

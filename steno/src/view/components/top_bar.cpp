@@ -3,15 +3,15 @@
 #include "model/app_config.h"
 #include "model/config/config.h"
 #include "model/transcription/transcription_config.h"
-#include "model/utils/time.h"
 #include "model/utils/filesutil.h"
+#include "model/utils/time.h"
 #include "ui_top_bar.h"
 
 #include <QDesktopServices>
 #include <QNetworkReply>
 #include <QStyle>
-#include <QUrl>
 #include <QTime>
+#include <QUrl>
 
 namespace View
 {
@@ -53,7 +53,7 @@ TopBar::TopBar(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::IS
     connect(m_transcription.get(), &Model::Transcription::finished,
             [=](bool isOK, QString reply) { onTranscriptionFinished(isOK, reply); });
 
-    QObject::connect(&m_streamTimer, &QTimer::timeout, [=]{ onStreamTimerTimeout();});
+    QObject::connect(&m_streamTimer, &QTimer::timeout, [=] { onStreamTimerTimeout(); });
 
     connect(m_defaultStream.get(), &Model::IStream::stateChanged,
             [=](const Model::IStream::State& state) { onStreamStateChanged(state); });

@@ -120,7 +120,6 @@ HEADERS += \
     src/model/stream/utils/images/image_drawing.h \
     src/model/transcription/transcription.h \
     src/model/transcription/transcription_config.h \
-    src/model/stream/video/output/default_virtual_camera_output.h \
     src/model/utils/filesutil.h \
     src/model/utils/observer/i_observer.h \
     src/model/utils/observer/subject.h \
