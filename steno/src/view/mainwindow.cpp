@@ -16,12 +16,13 @@
 namespace View
 {
 MainWindow::MainWindow(std::shared_ptr<Model::Config> config, std::shared_ptr<Model::IMediaPlayer> mediaPlayer,
-                       std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::Media> media,
-                       std::shared_ptr<Model::Transcription> transcription, QWidget *parent)
+                       std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::IStream> defaultStream,
+                       std::shared_ptr<Model::Media> media, std::shared_ptr<Model::Transcription> transcription,
+                       QWidget *parent)
     : QMainWindow(parent)
     , m_ui(new Ui::MainWindow)
     , m_sideBar(new View::SideBar(this))
-    , m_topBar(new View::TopBar(stream, media, transcription, config, this))
+    , m_topBar(new View::TopBar(stream, defaultStream, media, transcription, config, this))
     , m_views(new QStackedWidget(this))
 {
     m_ui->setupUi(this);

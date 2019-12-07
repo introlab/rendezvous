@@ -137,15 +137,15 @@ void Config::loadDefault()
 
     m_audioInputConfig->setValue(AudioConfig::Key::DEVICE_NAME, "odas");
     m_audioInputConfig->setValue(AudioConfig::Key::CHANNELS, 4);
-    m_audioInputConfig->setValue(AudioConfig::Key::RATE, 44100);
+    m_audioInputConfig->setValue(AudioConfig::Key::RATE, 16000);
     m_audioInputConfig->setValue(AudioConfig::Key::FORMAT_BYTES, 2);
     m_audioInputConfig->setValue(AudioConfig::Key::IS_LITTLE_ENDIAN, true);
     m_audioInputConfig->setValue(AudioConfig::Key::PACKET_AUDIO_SIZE, 4096);
-    m_audioInputConfig->setValue(AudioConfig::Key::PACKET_HEADER_SIZE, 0);
+    m_audioInputConfig->setValue(AudioConfig::Key::PACKET_HEADER_SIZE, 8);
 
-    m_audioOutputConfig->setValue(AudioConfig::Key::DEVICE_NAME, "");
+    m_audioOutputConfig->setValue(AudioConfig::Key::DEVICE_NAME, "webrtc_in");
     m_audioOutputConfig->setValue(AudioConfig::Key::CHANNELS, 4);
-    m_audioOutputConfig->setValue(AudioConfig::Key::RATE, 44100);
+    m_audioOutputConfig->setValue(AudioConfig::Key::RATE, 16000);
     m_audioOutputConfig->setValue(AudioConfig::Key::FORMAT_BYTES, 2);
     m_audioOutputConfig->setValue(AudioConfig::Key::IS_LITTLE_ENDIAN, true);
     m_audioOutputConfig->setValue(AudioConfig::Key::PACKET_AUDIO_SIZE, 4096);

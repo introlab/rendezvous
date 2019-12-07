@@ -30,6 +30,9 @@ DetectionThread::DetectionThread(
 
 void DetectionThread::run()
 {
+    m_state = ThreadStatus::RUNNING;
+    notify();
+
     Dim2<int> resolution(imageBuffer_->getCurrent());
     Dim2<int> detectionResolution(detector_->getInputImageDim());
     Dim2<int> rectifiedResolution(dewarper_->getRectifiedOutputDim(detectionResolution));
@@ -114,12 +117,18 @@ void DetectionThread::run()
     catch (const std::exception& e)
     {
         std::cout << "Error in detection thread : " << e.what() << std::endl;
+        m_state = ThreadStatus::CRASHED;
     }
 
     objectFactory_->deallocateObjectVector(detectionImages);
     objectFactory_->deallocateObjectVector(dewarpingMappings);
 
     std::cout << "DetectionThread loop finished" << std::endl;
+    if (m_state != ThreadStatus::CRASHED)
+    {
+        m_state = ThreadStatus::STOPPED;
+    }
+    notify();
 }
 
 std::vector<DewarpingParameters> DetectionThread::getDetectionDewarpingParameters(const Dim2<int>& dim, int detectionDewarpingCount)

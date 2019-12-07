@@ -21,8 +21,13 @@ class ConferenceView : public AbstractView
    public:
     explicit ConferenceView(std::shared_ptr<Model::Media> media, QWidget* parent = nullptr);
 
+   protected:
+    void showEvent(QShowEvent* event);
+    void hideEvent(QHideEvent* event);
+
    private:
     Ui::ConferenceView* m_ui;
+    std::shared_ptr<Model::Media> m_media;
 };
 
 }    // namespace View

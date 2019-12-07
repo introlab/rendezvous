@@ -39,11 +39,13 @@ ImageFileReader::ImageFileReader(const std::string& imageFilePath, ImageFormat f
 void ImageFileReader::open()
 {
     // Nothing to be done
+    // TODO: breaks interfaces segregation principle
 }
 
 void ImageFileReader::close()
 {
     // Nothing to be done
+    // TODO: breaks interfaces segregation principle
 }
 
 const Image& ImageFileReader::readImage()

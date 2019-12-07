@@ -18,7 +18,7 @@ OdasClient::OdasClient(std::shared_ptr<AppConfig> appConfig)
 void OdasClient::run()
 {
     qInfo() << "Odaslive thread started";
-    m_state = OdasClientState::RUNNING;
+    m_state = ThreadStatus::RUNNING;
     notify();
 
     const QString& micPath = m_appConfig->value(AppConfig::MICROPHONE_CONFIGURATION).toString();
@@ -29,7 +29,7 @@ void OdasClient::run()
     if (!QFile::exists(program) || !QFile::exists(micPath))
     {
         qCritical() << "Cannot find odaslive and/or microphones config file: " << program << " " << micPath;
-        m_state = OdasClientState::CRASHED;
+        m_state = ThreadStatus::CRASHED;
         notify();
         qInfo() << "Odaslive thread finished";
         return;
@@ -56,7 +56,7 @@ void OdasClient::run()
             }
 
             closeProcess(process);
-            m_state = OdasClientState::CRASHED;
+            m_state = ThreadStatus::CRASHED;
             notify();
             qInfo() << "Odaslive thread finished";
             return;
@@ -64,7 +64,7 @@ void OdasClient::run()
     }
 
     closeProcess(process);
-    m_state = OdasClientState::STOPPED;
+    m_state = ThreadStatus::STOPPED;
     notify();
     qInfo() << "Odaslive thread finished";
 }
@@ -83,48 +83,5 @@ void OdasClient::closeProcess(QProcess& process)
         qWarning() << "Odaslive was killed.";
         process.kill();
     }
-}
-
-/**
- * @brief Attach an object to the notifications send by OdasClient.
- * @param observer - object to attach to notifications.
- */
-void OdasClient::attach(IObserver* observer)
-{
-    if (observer != nullptr)
-    {
-        m_subscribers.push_back(observer);
-    }
-}
-
-/**
- * @brief Remove an observer from the list of subscribers.
- * @param observer - object to remove from the notifications list.
- */
-void OdasClient::detach(IObserver* observer)
-{
-    for (int index = 0; static_cast<size_t>(index) < m_subscribers.size(); ++index)
-    {
-        if (m_subscribers.at(static_cast<size_t>(index)) == observer)
-        {
-            m_subscribers.erase(m_subscribers.begin() + index);
-        }
-    }
-}
-
-/**
- * @brief Notify all observers that the state of OdasClient changed.
- */
-void OdasClient::notify()
-{
-    for (auto observer : m_subscribers)
-    {
-        observer->updateObserver();
-    }
-}
-
-OdasClientState OdasClient::getState()
-{
-    return m_state;
 }
 }    // namespace Model
