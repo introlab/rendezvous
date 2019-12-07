@@ -61,8 +61,8 @@ void MediaThread::run()
 
     std::cout << "MediaThread loop started" << std::endl;
 
-    unsigned long long lastAudioTimeStamp = 0;
-    unsigned long long lastImageTimeStamp = 0;
+    //unsigned long long lastAudioTimeStamp = 0;
+    //unsigned long long lastImageTimeStamp = 0;
 
     try
     {
@@ -75,8 +75,8 @@ void MediaThread::run()
             {
                 videoOutput_->writeImage(image);
 
-                std::cout << "image: " << image.timeStamp - lastImageTimeStamp << std::endl;
-                lastImageTimeStamp = image.timeStamp;
+                //std::cout << "image: " << image.timeStamp - lastImageTimeStamp << std::endl;
+                //lastImageTimeStamp = image.timeStamp;
 
                 //mediaSynchronizer_->queueImage(image);
             }
@@ -84,8 +84,8 @@ void MediaThread::run()
             AudioChunk audioChunk;
             while (audioSource_->readAudioChunk(audioChunk))
             {
-                std::cout << "audio: " << audioChunk.timestamp - lastAudioTimeStamp << std::endl;
-                lastAudioTimeStamp = audioChunk.timestamp;
+                //std::cout << "audio: " << audioChunk.timestamp - lastAudioTimeStamp << std::endl;
+                //lastAudioTimeStamp = audioChunk.timestamp;
 
                 // Get audio sources and image spatial positions
                 std::vector<SourcePosition> sourcePositions = positionSource_->getPositions();
@@ -103,18 +103,14 @@ void MediaThread::run()
                     std::vector<int> sourcesToKeep =
                                 Classifier::getSourcesToKeep(sourcePositions, imagePositions, classifierRangeThreshold_);
 
-                     //AudioSuppresser::suppressNoise(sourcesToKeep, audioChunk);
+                     AudioSuppresser::suppressNoise(sourcesToKeep, audioChunk);
 
                     
                 }
 
-                // Timer timer;
-                // timer.reset();
-                // std::cout << "WRITE AUDIO Start " << audioChunk.size << std::endl;
                 audioSink_->write(audioChunk);
-                // std::cout << "WRITE AUDIO : " << timer.getElapsedTime<std::chrono::milliseconds>() << std::endl;
 
-            //     //mediaSynchronizer_->queueAudio(audioChunk);
+                //mediaSynchronizer_->queueAudio(audioChunk);
             }
 
             /*SynchronizedMedia outputMedia;
@@ -124,7 +120,7 @@ void MediaThread::run()
                 AudioChunk& outputAudio = outputMedia.audioChunk;
                 Image& outputImage = outputMedia.image;
 
-                audioSink_->write(outputAudio.audioData.get(), outputAudio.size);
+                audioSink_->write(outputAudio);
 
                 if (outputMedia.hasImage)
                 {
