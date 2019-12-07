@@ -19,6 +19,8 @@ DefaultImageThread::DefaultImageThread(std::shared_ptr<IVideoOutput> videoOutput
 void DefaultImageThread::run()
 {
     qInfo() << "DefaulImageThread started";
+    m_state = ThreadStatus::RUNNING;
+    notify();
 
     QDir dir(m_imageFilePath);
     dir.makeAbsolute();
@@ -40,11 +42,17 @@ void DefaultImageThread::run()
         catch (const std::exception& e)
         {
             std::cout << "Error in default image thread : " << e.what() << std::endl;
+            m_state = ThreadStatus::CRASHED;
+            break;
         }
     }
 
-    m_videoOutput->open();
+    m_videoOutput->close();
     qInfo() << "DefaulImageThread finished";
+    if (m_state != ThreadStatus::CRASHED)
+    {
+        m_state = ThreadStatus::STOPPED;
+    }
+    notify();
 }
-
 }    // namespace Model

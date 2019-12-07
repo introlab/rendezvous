@@ -20,8 +20,21 @@ class Thread
     bool isAbortRequested();
     void sleep(const int timeMs);
 
+    enum class ThreadStatus
+    {
+        RUNNING,
+        STOPPED,
+        CRASHED
+    };
+
+    ThreadStatus getState()
+    {
+        return m_state;
+    }
+
    protected:
     virtual void run() = 0;
+    ThreadStatus m_state = ThreadStatus::STOPPED;
 
    private:
     void threadExecution();

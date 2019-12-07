@@ -3,16 +3,18 @@
 
 #include "i_stream.h"
 #include "model/config/config.h"
-#include "model/stream/utils/threads/thread.h"
+#include "model/stream/default_image_thread.h"
+#include "model/utils/observer/i_observer.h"
 
 #include <memory>
 
 namespace Model
 {
-class DefaultStream : public IStream
+class DefaultStream : public IStream, public IObserver
 {
    public:
     DefaultStream(std::shared_ptr<Config> config);
+    ~DefaultStream() override;
     void start() override;
     void stop() override;
     void join() override;
@@ -20,13 +22,14 @@ class DefaultStream : public IStream
     {
         return m_state;
     }
+    void updateObserver() override;
 
    private:
     void updateState(const IStream::State& state);
 
     IStream::State m_state;
     std::shared_ptr<VideoConfig> m_config = nullptr;
-    std::unique_ptr<Thread> m_defaultImageThread = nullptr;
+    std::unique_ptr<DefaultImageThread> m_defaultImageThread = nullptr;
 };
 
 }    // namespace Model

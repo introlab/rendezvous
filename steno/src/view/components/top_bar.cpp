@@ -55,8 +55,6 @@ TopBar::TopBar(std::shared_ptr<Model::IStream> stream, std::shared_ptr<Model::IS
 
     QObject::connect(&m_streamTimer, &QTimer::timeout, [=] { onStreamTimerTimeout(); });
 
-    connect(m_defaultStream.get(), &Model::IStream::stateChanged,
-            [=](const Model::IStream::State& state) { onStreamStateChanged(state); });
     m_defaultStream->start();
 }
 

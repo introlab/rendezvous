@@ -14,9 +14,16 @@ DefaultStream::DefaultStream(std::shared_ptr<Config> config)
 {
     const auto videoInputConf = config->videoOutputConfig();
     std::shared_ptr<IVideoOutput> vcOutput = std::make_shared<VirtualCameraOutput>(videoInputConf);
-
+    
     const QString defaultImagePath = QCoreApplication::applicationDirPath() + "/../resources/defaultImage.jpg";
     m_defaultImageThread = std::make_unique<DefaultImageThread>(vcOutput, videoInputConf, defaultImagePath);
+    
+    m_defaultImageThread->attach(this);
+}
+
+DefaultStream::~DefaultStream()
+{
+    m_defaultImageThread->detach(this);
 }
 
 /**
@@ -40,6 +47,7 @@ void DefaultStream::start()
  */
 void DefaultStream::stop()
 {
+    updateState(State::Stopping);
     m_defaultImageThread->stop();
     m_defaultImageThread->join();
 }
@@ -52,5 +60,18 @@ void DefaultStream::updateState(const IStream::State &state)
 {
     m_state = state;
     emit stateChanged(m_state);
+}
+
+void DefaultStream::updateObserver()
+{
+    DefaultImageThread::ThreadStatus state = m_defaultImageThread->getState();
+    if (state == DefaultImageThread::ThreadStatus::CRASHED || state == DefaultImageThread::ThreadStatus::STOPPED)
+    {
+        updateState(State::Stopped);
+    }
+    else if (state == DefaultImageThread::ThreadStatus::RUNNING)
+    {
+        updateState(State::Started);
+    }
 }
 }    // namespace Model

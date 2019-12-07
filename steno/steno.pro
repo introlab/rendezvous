@@ -56,6 +56,7 @@ SOURCES += \
     src/model/stream/utils/images/image_drawing.cpp \
     src/model/transcription/transcription.cpp \
     src/model/utils/filesutil.cpp \
+    src/model/utils/observer/subject.cpp \
     src/model/utils/time.cpp \
     src/model/stream/audio/file/raw_file_audio_sink.cpp \
     src/model/stream/audio/odas/odas_audio_source.cpp \
@@ -120,7 +121,7 @@ HEADERS += \
     src/model/transcription/transcription_config.h \
     src/model/utils/filesutil.h \
     src/model/utils/observer/i_observer.h \
-    src/model/utils/observer/i_subject.h \
+    src/model/utils/observer/subject.h \
     src/model/utils/time.h \
     src/model/stream/audio/i_audio_sink.h \
     src/model/stream/audio/i_audio_source.h \

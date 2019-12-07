@@ -3,28 +3,17 @@
 
 #include "model/app_config.h"
 #include "model/stream/utils/threads/thread.h"
-#include "model/utils/observer/i_subject.h"
+#include "model/utils/observer/subject.h"
 
 #include <QProcess>
 #include <vector>
 
 namespace Model
 {
-enum class OdasClientState
-{
-    RUNNING,
-    STOPPED,
-    CRASHED
-};
-
-class OdasClient : public Thread, public ISubject
+class OdasClient : public Thread, public Subject
 {
    public:
     OdasClient(std::shared_ptr<AppConfig> appConfig);
-    void notify() override;
-    void attach(IObserver *observer) override;
-    void detach(IObserver *observer) override;
-    OdasClientState getState();
 
    protected:
     void run() override;
@@ -35,8 +24,6 @@ class OdasClient : public Thread, public ISubject
     const int m_waitTime = 100;    // ms
     const int m_joinTime = 500;    // ms
     std::shared_ptr<AppConfig> m_appConfig;
-    OdasClientState m_state = OdasClientState::STOPPED;
-    std::vector<IObserver *> m_subscribers;
 };
 }    // namespace Model
 
