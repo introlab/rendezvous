@@ -16,7 +16,6 @@
 #include "model/stream/video/detection/darknet_config.h"
 #include "model/stream/video/dewarping/models/dewarping_config.h"
 #include "model/stream/video/impl/implementation_factory.h"
-#include "model/stream/video/output/default_virtual_camera_output.h"
 #include "model/stream/video/output/virtual_camera_output.h"
 #include "model/stream/video/video_config.h"
 
@@ -133,9 +132,6 @@ void Stream::stop()
     m_detectionThread->join();
     m_mediaThread->stop();
     m_mediaThread->join();
-
-    Model::DefaultVirtualCameraOutput::writeDefaultImage(
-        m_config->videoOutputConfig()->value(Model::VideoConfig::DEVICE_NAME).toString());
 
     updateState(IStream::State::Stopped);
 }
