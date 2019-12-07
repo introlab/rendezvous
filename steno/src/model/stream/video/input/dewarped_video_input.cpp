@@ -65,8 +65,12 @@ void DewarpedVideoInput::open()
 
 void DewarpedVideoInput::close()
 {
-    detectionThread_->stop();
-    detectionThread_->join();
+    if (detectionThread_->getState() != Thread::ThreadStatus::CRASHED)
+    {
+        detectionThread_->stop();
+        detectionThread_->join();
+    }
+
     stop();
     join();
 }

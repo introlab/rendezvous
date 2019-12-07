@@ -28,7 +28,8 @@ void DefaultImageThread::run()
     ImageFormat imgFormat = static_cast<ImageFormat>(m_videoConfig->value(VideoConfig::IMAGE_FORMAT).toInt());
     ImageFileReader imageFileReader(dir.absolutePath().toStdString(), imgFormat);
     imageFileReader.open();
-    const Image& image = imageFileReader.readImage();
+    Image image;
+    imageFileReader.readImage(image);
     imageFileReader.close();
 
     m_videoOutput->open();

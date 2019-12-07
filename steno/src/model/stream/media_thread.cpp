@@ -75,8 +75,8 @@ void MediaThread::run()
             {
                 videoOutput_->writeImage(image);
 
-                // std::cout << "image: " << image.timeStamp - lastImageTimeStamp << std::endl;
-                // lastImageTimeStamp = image.timeStamp;
+                std::cout << "image: " << image.timeStamp - lastImageTimeStamp << std::endl;
+                lastImageTimeStamp = image.timeStamp;
 
                 //mediaSynchronizer_->queueImage(image);
             }

@@ -17,7 +17,6 @@
 #include "model/stream/video/dewarping/models/dewarping_config.h"
 #include "model/stream/video/impl/implementation_factory.h"
 #include "model/stream/video/input/dewarped_video_input.h"
-#include "model/stream/video/output/default_virtual_camera_output.h"
 #include "model/stream/video/output/virtual_camera_output.h"
 #include "model/stream/video/video_config.h"
 
@@ -62,7 +61,7 @@ Stream::Stream(std::shared_ptr<Config> config)
     int odasAudioPort = 10030;
     int odasPositionPort = 10020;
 
-    float classifierRangeThreshold = 0.26; // ~15 degrees
+    float classifierRangeThreshold = 0.26f; // ~15 degrees
 
     int sleepBetweenLayersForwardUs = darknetConfig->value(DarknetConfig::SLEEP_BETWEEN_LAYERS_FORWARD_US).toInt();
     std::string configFile =
@@ -88,7 +87,7 @@ Stream::Stream(std::shared_ptr<Config> config)
     std::shared_ptr<VirtualCameraManager> virtualCameraManager = std::make_shared<VirtualCameraManager>(aspectRatio, minElevation, maxElevation);
 
     std::unique_ptr<IVideoInput> dewarpedVideoInput = std::make_unique<DewarpedVideoInput>(
-        m_implementationFactory.getVcCameraReader(videoInputConfig), m_implementationFactory.getFisheyeDewarper(),
+        m_implementationFactory.getCameraReader(videoInputConfig), m_implementationFactory.getFisheyeDewarper(),
         m_implementationFactory.getObjectFactory(), m_implementationFactory.getSynchronizer(),
         virtualCameraManager, std::move(detectionThread), m_imageBuffer,
         m_implementationFactory.getImageConverter(), odasPositionSource, dewarpingConfig, videoInputConfig, videoOutputConfig, 10, classifierRangeThreshold);
@@ -138,12 +137,6 @@ void Stream::stop()
         m_odasClient->join();
     }
 
-    if (m_detectionThread->getState() != Thread::ThreadStatus::CRASHED)
-    {
-        m_detectionThread->stop();
-        m_detectionThread->join();
-    }
-
     if (m_mediaThread->getState() != Thread::ThreadStatus::CRASHED)
     {
         m_mediaThread->stop();
@@ -175,9 +168,7 @@ void Stream::updateObserver()
 {
     const Thread::ThreadStatus odasClientState = m_odasClient->getState();
     const Thread::ThreadStatus mediaState = m_mediaThread->getState();
-    const Thread::ThreadStatus detectionState = m_detectionThread->getState();
-    if (odasClientState == Thread::ThreadStatus::CRASHED || mediaState == Thread::ThreadStatus::CRASHED ||
-        detectionState == Thread::ThreadStatus::CRASHED)
+    if (odasClientState == Thread::ThreadStatus::CRASHED || mediaState == Thread::ThreadStatus::CRASHED)
     {
         stop();
     }
