@@ -54,7 +54,6 @@ SOURCES += \
     src/model/stream/default_image_thread.cpp \
     src/model/stream/default_stream.cpp \
     src/model/stream/utils/images/image_drawing.cpp \
-    src/model/stream/video/output/default_virtual_camera_output.cpp \
     src/model/transcription/transcription.cpp \
     src/model/utils/filesutil.cpp \
     src/model/utils/observer/subject.cpp \
