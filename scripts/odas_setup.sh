@@ -12,7 +12,7 @@ fi
 mkdir -p $INSTALL_PATH
 cd $INSTALL_PATH
 INSTALL_PATH=$PWD
-git clone https://github.com/introlab/odas.git
+git clone https://github.com/pbeaulieu26/odas.git
 cd odas
 mkdir build
 cd build
