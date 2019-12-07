@@ -70,7 +70,7 @@ Dim2<int> DisplayImageBuilder::getVirtualCameraDim(int virtualCameraCount)
     return Dim2<int>(vcWidth, vcHeight);
 }
 
-const Dim2<int>& DisplayImageBuilder::getMaxVirtualCameraDim()
+Dim2<int> DisplayImageBuilder::getMaxVirtualCameraDim()
 {
     return maxVirtualCameraDim_;
 }

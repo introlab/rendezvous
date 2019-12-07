@@ -31,6 +31,7 @@ class ImplementationFactory
     std::unique_ptr<IImageConverter> getImageConverter();
     std::unique_ptr<IVideoInput> getImageFileReader(const std::string& imageFilePath, ImageFormat format);
     std::unique_ptr<IVideoInput> getCameraReader(std::shared_ptr<VideoConfig> cameraConfig);
+    std::unique_ptr<IVideoInput> getVcCameraReader(std::shared_ptr<VideoConfig> videoConfig);
 
    private:
     bool useZeroCopyIfSupported_;

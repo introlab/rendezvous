@@ -18,7 +18,7 @@ class ImageFileReader : public IVideoInput
 
     void open() override;
     void close() override;
-    const Image& readImage() override;
+    bool readImage(Image& image) override;
 
    protected:
     Image image_;

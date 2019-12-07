@@ -16,11 +16,11 @@ const int VIRTUAL_CAMERA_TIME_TO_LIVE_MS = 5000;    // Time in seconds the virtu
 const float VIRTUAL_CAMERA_MIN_ELEVATION_SPAN = 0.3f;    // Minimum virtual camera's elevation span
 const float NEW_VIRTUAL_CAMERA_CREATION_THRESHOLD =
     0.5f;                                           // Distance at which a new vc will be created instead of moved
-const float POSITION_CHANGED_THRESHOLD = 0.01f;     // Change in position that cause a move of the virtual camera
-const float DIMENTION_CHANGED_THRESHOLD = 0.05f;    // Change in dimension that cause a resize of the virtual camera
+const float POSITION_CHANGED_THRESHOLD = 0.03f;     // Change in position that cause a move of the virtual camera
+const float DIMENTION_CHANGED_THRESHOLD = 0.10f;    // Change in dimension that cause a resize of the virtual camera
 const float DUPLICATE_FACE_ANGLE_RANGE = 0.4f;      // Range in angles where we consider faces to be duplicate
 const float ELEVATION_SHIFT_RATIO = 4.f;            // Shifting of elevation is required to center the virtual camera
-const int TIME_TO_GOAL_MS = 1000;                   // How much time is required for the camera to reach it's goal
+const int TIME_TO_GOAL_MS = 850;                   // How much time is required for the camera to reach it's goal
 }    // namespace
 
 VirtualCameraManager::VirtualCameraManager(float aspectRatio, float srcImageMinElevation, float srcImageMaxElevation)
@@ -33,7 +33,9 @@ VirtualCameraManager::VirtualCameraManager(float aspectRatio, float srcImageMinE
 
 void VirtualCameraManager::updateVirtualCameras(int elapsedTimeMs)
 {
-    if (virtualCameras_.empty()) return;
+    std::vector<VirtualCamera> virtualCameras = getVirtualCameras();
+
+    if (virtualCameras.empty()) return;
 
     auto updateTimeAndCheckIfDead = [elapsedTimeMs](VirtualCamera& vc) {
         vc.timeToLiveMs -= elapsedTimeMs;
@@ -41,13 +43,13 @@ void VirtualCameraManager::updateVirtualCameras(int elapsedTimeMs)
     };
 
     // Remove virtual cameras with time to live smaller or equal to zero
-    removeElementsAndPack(virtualCameras_, updateTimeAndCheckIfDead);
+    removeElementsAndPack(virtualCameras, updateTimeAndCheckIfDead);
 
     // Calculate the ratio to update the angles and angle spans
     float updateRatio = std::min(float(elapsedTimeMs) / TIME_TO_GOAL_MS, 1.f);
 
     // Move the virtual cameras toward their goal position
-    for (VirtualCamera& vc : virtualCameras_)
+    for (VirtualCamera& vc : virtualCameras)
     {
         float azimuthDifference = math::getSignedAzimuthDifference(vc.azimuth, vc.goal.azimuth);
         float elevationDifference = vc.goal.elevation - vc.elevation;
@@ -70,6 +72,8 @@ void VirtualCameraManager::updateVirtualCameras(int elapsedTimeMs)
             vc.azimuthSpan *= resizeFactor;
         }
     }
+
+    setVirtualCameras(virtualCameras);
 }
 
 void VirtualCameraManager::updateVirtualCamerasGoal(const std::vector<SphericalAngleRect>& goals)
@@ -138,10 +142,17 @@ void VirtualCameraManager::clearVirtualCameras()
     virtualCameras_.clear();
 }
 
-const std::vector<VirtualCamera>& VirtualCameraManager::getVirtualCameras()
+std::vector<VirtualCamera> VirtualCameraManager::getVirtualCameras()
 {
+    std::lock_guard<std::mutex> lock(mutex_);
     return virtualCameras_;
 }
+
+ void VirtualCameraManager::setVirtualCameras(const std::vector<VirtualCamera>& virtualCameras)
+ {
+     std::lock_guard<std::mutex> lock(mutex_);
+     virtualCameras_ = virtualCameras;
+ }
 
 float VirtualCameraManager::getElevationOverflow(float elevation, float elevationSpan)
 {

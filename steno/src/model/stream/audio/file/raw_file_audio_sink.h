@@ -15,7 +15,7 @@ class RawFileAudioSink : public IAudioSink
 
     void open() override;
     void close() override;
-    int write(uint8_t* buffer, int bytesToWrite) override;
+    int write(const AudioChunk& audioChunk) override;
 
    private:
     FILE* m_file;
