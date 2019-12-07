@@ -16,7 +16,6 @@
 #include "model/stream/video/detection/darknet_config.h"
 #include "model/stream/video/dewarping/models/dewarping_config.h"
 #include "model/stream/video/impl/implementation_factory.h"
-#include "model/stream/video/input/dewarped_video_input.h"
 #include "model/stream/video/output/virtual_camera_output.h"
 #include "model/stream/video/video_config.h"
 
@@ -30,6 +29,7 @@ namespace Model
 Stream::Stream(std::shared_ptr<Config> config)
     : m_state(IStream::State::Stopped)
     , m_mediaThread(nullptr)
+    , m_detectionThread(nullptr)
     , m_config(config)
     , m_implementationFactory(false)
 {
@@ -39,7 +39,6 @@ Stream::Stream(std::shared_ptr<Config> config)
     std::shared_ptr<VideoConfig> videoInputConfig = m_config->videoInputConfig();
     std::shared_ptr<StreamConfig> streamConfig = m_config->streamConfig();
     std::shared_ptr<DarknetConfig> darknetConfig = m_config->darknetConfig();
-    std::shared_ptr<DewarpingConfig> dewarpingConfig = m_config->dewarpingConfig();
 
     float aspectRatio = streamConfig->value(StreamConfig::ASPECT_RATIO_WIDTH).toFloat() /
                         streamConfig->value(StreamConfig::ASPECT_RATIO_HEIGHT).toFloat();
@@ -61,7 +60,8 @@ Stream::Stream(std::shared_ptr<Config> config)
     int odasAudioPort = 10030;
     int odasPositionPort = 10020;
 
-    float classifierRangeThreshold = 0.26f; // ~15 degrees
+    std::shared_ptr<moodycamel::ReaderWriterQueue<std::vector<SphericalAngleRect>>> detectionQueue =
+        std::make_shared<moodycamel::ReaderWriterQueue<std::vector<SphericalAngleRect>>>(1);
 
     int sleepBetweenLayersForwardUs = darknetConfig->value(DarknetConfig::SLEEP_BETWEEN_LAYERS_FORWARD_US).toInt();
     std::string configFile =
@@ -70,37 +70,27 @@ Stream::Stream(std::shared_ptr<Config> config)
         (QCoreApplication::applicationDirPath() + "/../configs/yolo/weights/yolov3-tiny.weights").toStdString();
     std::string metaFile = (QCoreApplication::applicationDirPath() + "/../configs/yolo/cfg/coco.data").toStdString();
 
-    m_imageBuffer = std::make_shared<LockTripleBuffer<RGBImage>>(RGBImage(resolution));
+    m_imageBuffer = std::make_shared<LockTripleBuffer<Image>>(RGBImage(resolution));
 
     m_objectFactory = m_implementationFactory.getDetectionObjectFactory();
     m_objectFactory->allocateObjectLockTripleBuffer(*m_imageBuffer);
 
-    std::unique_ptr<DetectionThread> detectionThread = std::make_unique<DetectionThread>(
+    m_detectionThread = std::make_unique<DetectionThread>(
         m_imageBuffer,
         m_implementationFactory.getDetector(configFile, weightsFile, metaFile, sleepBetweenLayersForwardUs),
-        m_implementationFactory.getDetectionFisheyeDewarper(aspectRatio),
+        detectionQueue, m_implementationFactory.getDetectionFisheyeDewarper(aspectRatio),
         m_implementationFactory.getDetectionObjectFactory(), m_implementationFactory.getDetectionSynchronizer(),
-        dewarpingConfig);
-
-    std::shared_ptr<IPositionSource> odasPositionSource = std::make_shared<OdasPositionSource>(odasPositionPort, positionBufferSize);
-
-    std::shared_ptr<VirtualCameraManager> virtualCameraManager = std::make_shared<VirtualCameraManager>(aspectRatio, minElevation, maxElevation);
-
-    std::unique_ptr<IVideoInput> dewarpedVideoInput = std::make_unique<DewarpedVideoInput>(
-        m_implementationFactory.getCameraReader(videoInputConfig), m_implementationFactory.getFisheyeDewarper(),
-        m_implementationFactory.getObjectFactory(), m_implementationFactory.getSynchronizer(),
-        virtualCameraManager, std::move(detectionThread), m_imageBuffer,
-        m_implementationFactory.getImageConverter(), odasPositionSource, dewarpingConfig, videoInputConfig, videoOutputConfig, 10, classifierRangeThreshold);
+        m_config->dewarpingConfig());
 
     m_mediaThread = std::make_unique<MediaThread>(
         std::make_unique<OdasAudioSource>(odasAudioPort, audioChunkDurationMs, numberOfAudioBuffers, audioInputConfig),
         std::make_unique<PulseAudioSink>(audioOutputConfig),
-        odasPositionSource,
-        std::move(dewarpedVideoInput),
-        std::make_unique<VirtualCameraOutput>(videoOutputConfig),
-        virtualCameraManager,
-        std::make_unique<MediaSynchronizer>(audioChunkDurationMs * 1000),
-        fps, classifierRangeThreshold);
+        std::make_unique<OdasPositionSource>(odasPositionPort, positionBufferSize),
+        m_implementationFactory.getCameraReader(videoInputConfig), m_implementationFactory.getFisheyeDewarper(),
+        m_implementationFactory.getObjectFactory(), std::make_unique<VirtualCameraOutput>(videoOutputConfig),
+        m_implementationFactory.getSynchronizer(),
+        std::make_unique<VirtualCameraManager>(aspectRatio, minElevation, maxElevation), detectionQueue, m_imageBuffer,
+        m_implementationFactory.getImageConverter(), m_config);
 
     m_odasClient = std::make_unique<OdasClient>(m_config->appConfig());
     m_odasClient->attach(this);
@@ -119,6 +109,7 @@ void Stream::start()
     if (m_state == IStream::State::Stopped)
     {
         m_mediaThread->start();
+        m_detectionThread->start();
         m_odasClient->start();
         updateState(IStream::State::Started);
     }
@@ -137,6 +128,12 @@ void Stream::stop()
         m_odasClient->join();
     }
 
+    if (m_detectionThread->getState() != Thread::ThreadStatus::CRASHED)
+    {
+        m_detectionThread->stop();
+        m_detectionThread->join();
+    }
+
     if (m_mediaThread->getState() != Thread::ThreadStatus::CRASHED)
     {
         m_mediaThread->stop();
@@ -152,6 +149,7 @@ void Stream::stop()
 void Stream::join()
 {
     m_odasClient->join();
+    m_detectionThread->join();
     m_mediaThread->join();
 }
 
@@ -168,7 +166,9 @@ void Stream::updateObserver()
 {
     const Thread::ThreadStatus odasClientState = m_odasClient->getState();
     const Thread::ThreadStatus mediaState = m_mediaThread->getState();
-    if (odasClientState == Thread::ThreadStatus::CRASHED || mediaState == Thread::ThreadStatus::CRASHED)
+    const Thread::ThreadStatus detectionState = m_detectionThread->getState();
+    if (odasClientState == Thread::ThreadStatus::CRASHED || mediaState == Thread::ThreadStatus::CRASHED ||
+        detectionState == Thread::ThreadStatus::CRASHED)
     {
         stop();
     }

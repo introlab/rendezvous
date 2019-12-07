@@ -1,4 +1,4 @@
-#include "frame_rate_stabilizer.h"
+#include "video_stabilizer.h"
 
 #include <iostream>
 #include <thread>
@@ -7,7 +7,7 @@
 
 namespace Model
 {
-FrameRateStabilizer::FrameRateStabilizer(int targetFps)
+VideoStabilizer::VideoStabilizer(int targetFps)
     : frameTimeTargetMs_(1000 / targetFps)
     , frameTimeDeltaMs_(0)
     , frameTimeMs_(0)
@@ -15,12 +15,12 @@ FrameRateStabilizer::FrameRateStabilizer(int targetFps)
 {
 }
 
-void FrameRateStabilizer::startFrame()
+void VideoStabilizer::startFrame()
 {
     timer_.reset();
 }
 
-void FrameRateStabilizer::endFrame()
+void VideoStabilizer::endFrame()
 {
     frameTimeMs_ = static_cast<int>(timer_.getElapsedTime<std::chrono::milliseconds>());
 
@@ -48,7 +48,7 @@ void FrameRateStabilizer::endFrame()
     // }
 }
 
-int FrameRateStabilizer::getLastFrameTimeMs()
+int VideoStabilizer::getLastFrameTimeMs()
 {
     return frameTimeMs_;
 }

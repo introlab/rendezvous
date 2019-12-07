@@ -4,23 +4,21 @@
 #include <linux/videodev2.h>
 
 #include "model/stream/utils/models/circular_buffer.h"
-#include "model/stream/video/input/base_camera_reader.h"
+#include "model/stream/video/input/i_video_input.h"
 #include "model/stream/video/video_config.h"
 
 namespace Model
 {
-class CameraReader : public BaseCameraReader
+class CameraReader : public IVideoInput
 {
    public:
     CameraReader(std::shared_ptr<VideoConfig> cameraConfig, std::size_t bufferCount);
 
     void open() override;
-    bool readImage(Image& image) override;
+    void close() override;
+    const Image& readImage() override;
 
    protected:
-    void initializeInternal() override;
-    void finalizeInternal() override;
-
     struct IndexedImage
     {
         IndexedImage() = default;
@@ -30,6 +28,7 @@ class CameraReader : public BaseCameraReader
         Image image;
     };
 
+    std::shared_ptr<VideoConfig> videoConfig_;
     CircularBuffer<IndexedImage> images_;
 
    private:
@@ -38,6 +37,12 @@ class CameraReader : public BaseCameraReader
     void requestBuffers(std::size_t bufferCount);
     void mapBuffer(IndexedImage& indexedImage);
     void unmapBuffer(IndexedImage& indexedImage);
+    void checkCaps();
+    void setImageFormat();
+    int xioctl(int request, void* arg);
+
+    v4l2_buffer buffer_;
+    int fd_;
 };
 
 }    // namespace Model

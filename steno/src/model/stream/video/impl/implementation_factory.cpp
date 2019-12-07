@@ -10,7 +10,6 @@
 #include "model/stream/video/dewarping/cpu_darknet_fisheye_dewarper.h"
 #include "model/stream/video/dewarping/cpu_fisheye_dewarper.h"
 #include "model/stream/video/input/camera_reader.h"
-#include "model/stream/video/input/vc_camera_reader.h"
 #include "model/stream/video/input/image_file_reader.h"
 #else
 #include "cuda_runtime.h"
@@ -23,7 +22,6 @@
 #include "model/stream/video/dewarping/cuda/cuda_darknet_fisheye_dewarper.h"
 #include "model/stream/video/dewarping/cuda/cuda_fisheye_dewarper.h"
 #include "model/stream/video/input/cuda/cuda_camera_reader.h"
-#include "model/stream/video/input/cuda/vc_cuda_camera_reader.h"
 #include "model/stream/video/input/cuda/cuda_image_file_reader.h"
 
 namespace
@@ -207,19 +205,6 @@ std::unique_ptr<IVideoInput> ImplementationFactory::getCameraReader(std::shared_
     cameraReader = std::make_unique<CameraReader>(videoConfig, 2);
 #else
     cameraReader = std::make_unique<CudaCameraReader>(videoConfig);
-#endif
-
-    return cameraReader;
-}
-
-std::unique_ptr<IVideoInput> ImplementationFactory::getVcCameraReader(std::shared_ptr<VideoConfig> videoConfig)
-{
-    std::unique_ptr<IVideoInput> cameraReader = nullptr;
-
-#ifdef NO_CUDA
-    cameraReader = std::make_unique<VcCameraReader>(videoConfig, 2);
-#else
-    cameraReader = std::make_unique<VcCudaCameraReader>(videoConfig);
 #endif
 
     return cameraReader;

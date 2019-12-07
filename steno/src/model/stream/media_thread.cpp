@@ -6,7 +6,6 @@
 #include "model/audio_suppresser/audio_suppresser.h"
 #include "model/classifier/classifier.h"
 #include "model/stream/audio/audio_config.h"
-#include "model/stream/frame_rate_stabilizer.h"
 #include "model/stream/utils/alloc/heap_object_factory.h"
 #include "model/stream/utils/images/image_drawing.h"
 #include "model/stream/utils/models/circular_buffer.h"
@@ -14,29 +13,40 @@
 #include "model/stream/video/dewarping/dewarping_helper.h"
 #include "model/stream/video/dewarping/models/dewarping_config.h"
 #include "model/stream/video/video_config.h"
+#include "model/stream/video/video_stabilizer.h"
 #include "model/stream/video/virtualcamera/display_image_builder.h"
 
 namespace Model
 {
 MediaThread::MediaThread(std::unique_ptr<IAudioSource> audioSource, std::unique_ptr<IAudioSink> audioSink,
-                         std::shared_ptr<IPositionSource> positionSource, std::unique_ptr<IVideoInput> videoInput,
-                         std::unique_ptr<IVideoOutput> videoOutput,
-                         std::shared_ptr<IVirtualCameraSource> virtualCameraSource,
-                         std::unique_ptr<MediaSynchronizer> mediaSynchronizer,
-                         int framePerSeconds,
-                         float classifierRangeThreshold)
-    : Thread()
-    , audioSource_(std::move(audioSource))
+                         std::unique_ptr<IPositionSource> positionSource, std::unique_ptr<IVideoInput> videoInput,
+                         std::unique_ptr<IFisheyeDewarper> dewarper, std::unique_ptr<IObjectFactory> objectFactory,
+                         std::unique_ptr<IVideoOutput> videoOutput, std::unique_ptr<ISynchronizer> synchronizer,
+                         std::unique_ptr<VirtualCameraManager> virtualCameraManager,
+                         std::shared_ptr<moodycamel::ReaderWriterQueue<std::vector<SphericalAngleRect>>> detectionQueue,
+                         std::shared_ptr<LockTripleBuffer<Image>> imageBuffer,
+                         std::unique_ptr<IImageConverter> imageConverter, std::shared_ptr<Config> config)
+    : audioSource_(std::move(audioSource))
     , audioSink_(std::move(audioSink))
     , positionSource_(std::move(positionSource))
     , videoInput_(std::move(videoInput))
+    , dewarper_(std::move(dewarper))
+    , objectFactory_(std::move(objectFactory))
     , videoOutput_(std::move(videoOutput))
-    , virtualCameraSource_(virtualCameraSource)
-    , mediaSynchronizer_(std::move(mediaSynchronizer))
-    , framePerSeconds_(framePerSeconds)
-    , classifierRangeThreshold_(classifierRangeThreshold)
+    , synchronizer_(std::move(synchronizer))
+    , virtualCameraManager_(std::move(virtualCameraManager))
+    , detectionQueue_(detectionQueue)
+    , imageBuffer_(imageBuffer)
+    , imageConverter_(std::move(imageConverter))
+    , dewarpingConfig_(config->dewarpingConfig())
+    , videoInputConfig_(config->videoInputConfig())
+    , videoOutputConfig_(config->videoOutputConfig())
+    , audioInputConfig_(config->audioInputConfig())
+    , audioOutputConfig_(config->audioOutputConfig())
 {
-    if (!audioSource_ || !audioSink_ || !positionSource_ || !videoInput_ || !videoOutput_ || !virtualCameraSource_)
+    if (!audioSource_ || !audioSink_ || !positionSource_ || !videoInput_ || !dewarper_ || !objectFactory_ ||
+        !videoOutput_ || !synchronizer_ || !virtualCameraManager_ || !detectionQueue_ || !imageBuffer_ ||
+        !imageConverter_)
     {
         throw std::invalid_argument("Error in MediaThread - Null is not a valid argument");
     }
@@ -47,92 +57,202 @@ MediaThread::MediaThread(std::unique_ptr<IAudioSource> audioSource, std::unique_
  */
 void MediaThread::run()
 {
-    FrameRateStabilizer frameStabilizer(framePerSeconds_);
-    
     m_state = ThreadStatus::RUNNING;
     notify();
 
-    // Start audio and video resources
-    audioSource_->open();
-    audioSink_->open();
-    positionSource_->open();
-    videoInput_->open();
-    videoOutput_->open();
+    // Utilitary objects
+    HeapObjectFactory heapObjectFactory;
+    DisplayImageBuilder displayImageBuilder(videoOutputConfig_->resolution);
+    VideoStabilizer videoStabilizer(videoInputConfig_->fpsTarget);
 
-    std::cout << "MediaThread loop started" << std::endl;
+    // Display images
+    Image emptyDisplay(videoOutputConfig_->resolution, videoOutputConfig_->imageFormat);
+    CircularBuffer<Image> displayBuffers(2, Image(videoOutputConfig_->resolution, videoOutputConfig_->imageFormat));
 
-    unsigned long long lastAudioTimeStamp = 0;
-    unsigned long long lastImageTimeStamp = 0;
+    // Virtual cameras images
+    const Dim2<int>& maxVcDim = displayImageBuilder.getMaxVirtualCameraDim();
+    std::vector<Image> vcImages(1, RGBImage(maxVcDim.width, maxVcDim.height));
+    std::vector<Image> vcOutputFormatImages(1, Image(maxVcDim.width, maxVcDim.height, videoOutputConfig_->imageFormat));
+
+    // TODO: config?
+    const float classifierRangeThreshold = 0.26;    // ~15 degrees
+
+    if (videoInputConfig_->fpsTarget == 0)
+    {
+        qCritical() << "MediaThread: target fps cannot be zero";
+        return;
+    }
+
+    int chunkDurationMs = 1000 / videoInputConfig_->fpsTarget;
 
     try
     {
+        // Allocate display images
+        heapObjectFactory.allocateObject(emptyDisplay);
+        heapObjectFactory.allocateObjectCircularBuffer(displayBuffers);
+
+        // Allocate virtual camera images
+        objectFactory_->allocateObjectVector(vcImages);
+        objectFactory_->allocateObjectVector(vcOutputFormatImages);
+
+        // Set background color of empty display
+        displayImageBuilder.setDisplayImageColor(emptyDisplay);
+
+        // Start audio and video resources
+        audioSource_->open();
+        audioSink_->open();
+        positionSource_->open();
+        videoInput_->open();
+        videoOutput_->open();
+
+        Point<float> fisheyeCenter(videoInputConfig_->resolution.width / 2.f,
+                                   videoInputConfig_->resolution.height / 2.f);
+        std::vector<SphericalAngleRect> detections;
+
+        // Media loop start
+        std::cout << "MediaThread loop started" << std::endl;
+
         while (!isAbortRequested())
         {
-            frameStabilizer.startFrame();
+            videoStabilizer.startFrame();
 
-            Image image;
-            while (videoInput_->readImage(image))
+            // Try to get queued detections
+            if (detectionQueue_->try_dequeue(detections))
             {
-                videoOutput_->writeImage(image);
-
-                std::cout << "image: " << image.timeStamp - lastImageTimeStamp << std::endl;
-                lastImageTimeStamp = image.timeStamp;
-
-                //mediaSynchronizer_->queueImage(image);
+                virtualCameraManager_->updateVirtualCamerasGoal(detections);
             }
 
-            AudioChunk audioChunk;
-            while (audioSource_->readAudioChunk(audioChunk))
+            // Update the position and size of virtual cameras
+            virtualCameraManager_->updateVirtualCameras(videoStabilizer.getLastFrameTimeMs());
+
+            // Read image from video input and convert it to rgb format for dewarping
+            const Image& rawImage = videoInput_->readImage();
+            Image& rgbImage = imageBuffer_->getCurrent();
+            imageConverter_->convert(rawImage, rgbImage);
+            imageBuffer_->swap();
+
+            // Get the active virtual cameras
+            const std::vector<VirtualCamera> virtualCameras = virtualCameraManager_->getVirtualCameras();
+            int vcCount = static_cast<int>(virtualCameras.size());
+
+            // If there are active virtual cameras, dewarp images of each vc and combine them in an output image
+            if (vcCount > 0)
             {
-                std::cout << "audio: " << audioChunk.timestamp - lastAudioTimeStamp << std::endl;
-                lastAudioTimeStamp = audioChunk.timestamp;
+                // Dynamically allocate more virtual camera images
+                for (int i = vcImages.size(); i < vcCount; ++i)
+                {
+                    RGBImage vcImage(maxVcDim.width, maxVcDim.height);
+                    objectFactory_->allocateObject(vcImage);
+                    vcImages.push_back(vcImage);
+
+                    Image vcOutputFormatImage(maxVcDim.width, maxVcDim.height, videoOutputConfig_->imageFormat);
+                    objectFactory_->allocateObject(vcOutputFormatImage);
+                    vcOutputFormatImages.push_back(vcOutputFormatImage);
+                }
+
+                // Get the size of the virtual camera images to dewarp (this is to prevent resize in the output format)
+                Dim2<int> resizeDim(displayImageBuilder.getVirtualCameraDim(vcCount));
+                std::vector<Image> vcResizeImages(vcCount, RGBImage(resizeDim));
+                std::vector<Image> vcResizeOutputFormatImages(vcCount,
+                                                              Image(resizeDim, videoOutputConfig_->imageFormat));
+
+                // Virtual camera dewarping loop
+                for (int i = 0; i < vcCount; ++i)
+                {
+                    // Use the same buffers as vcImages for the smaller dewarped images
+                    Image& vcResizeImage = vcResizeImages[i];
+                    vcResizeImage.hostData = vcImages[i].hostData;
+                    vcResizeImage.deviceData = vcImages[i].deviceData;
+
+                    // Dewarping of virtual camera
+                    const VirtualCamera& virtualCamera = virtualCameras[i];
+                    DewarpingParameters vcParams =
+                        getDewarpingParametersFromSphericalAngleRect(virtualCamera, *dewarpingConfig_, fisheyeCenter);
+                    dewarper_->dewarpImageFiltered(rgbImage, vcResizeImage, vcParams);
+
+                    // Use the same buffers as vcOutputFormatImages for the smaller dewarped (and converted) images
+                    Image& vcResizeOutputFormatImage = vcResizeOutputFormatImages[i];
+                    vcResizeOutputFormatImage.hostData = vcOutputFormatImages[i].hostData;
+                    vcResizeOutputFormatImage.deviceData = vcOutputFormatImages[i].deviceData;
+
+                    // Conversion from rgb to output format
+                    imageConverter_->convert(vcResizeImage, vcResizeOutputFormatImage);
+                }
+
+                // Clear the image before writting to it
+                Image& displayImage = displayBuffers.current();
+                std::memcpy(displayImage.hostData, emptyDisplay.hostData, displayImage.size);
+
+                // Set the timestamp of the output image to the timestamp of the input image
+                displayImage.timeStamp = rawImage.timeStamp;
+
+                // Wait for dewarping to be completed
+                synchronizer_->sync();
 
                 // Get audio sources and image spatial positions
                 std::vector<SourcePosition> sourcePositions = positionSource_->getPositions();
-                std::vector<VirtualCamera> virtualCameras = virtualCameraSource_->getVirtualCameras();
-
-                if (virtualCameras.size() > 0)
+                std::vector<SphericalAngleRect> imagePositions;
+                imagePositions.reserve(virtualCameras.size());
+                for (const auto& vc : virtualCameras)
                 {
-                    std::vector<SphericalAngleRect> imagePositions;
-                    imagePositions.reserve(virtualCameras.size());
-                    for (const auto& vc : virtualCameras)
-                    {
-                        imagePositions.push_back(vc);
-                    }
-
-                    std::vector<int> sourcesToKeep =
-                                Classifier::getSourcesToKeep(sourcePositions, imagePositions, classifierRangeThreshold_);
-
-                     //AudioSuppresser::suppressNoise(sourcesToKeep, audioChunk);
-
-                    
+                    imagePositions.push_back(vc);
                 }
 
-                // Timer timer;
-                // timer.reset();
-                // std::cout << "WRITE AUDIO Start " << audioChunk.size << std::endl;
-                audioSink_->write(audioChunk);
-                // std::cout << "WRITE AUDIO : " << timer.getElapsedTime<std::chrono::milliseconds>() << std::endl;
+                int borderWidth = 2;
+                RGB borderColor;
+                borderColor.r = 0;
+                borderColor.g = 165;
+                borderColor.b = 89;
 
-            //     //mediaSynchronizer_->queueAudio(audioChunk);
+                std::vector<std::pair<int, int>> audioImagePairs =
+                    Classifier::getAudioImagePairs(sourcePositions, imagePositions, classifierRangeThreshold);
+
+                for (std::pair<int, int> pair : audioImagePairs)
+                {
+                    ImageDrawing::drawBorders(vcResizeOutputFormatImages[pair.second], ImageFormat::UYVY_FMT,
+                                              borderWidth, borderColor);
+                }
+
+                // Write to output image and send it to the video output
+                displayImageBuilder.createDisplayImage(vcResizeOutputFormatImages, displayImage);
+                videoOutput_->writeImage(displayImage);
+                displayBuffers.next();
+
+                int readCount = videoStabilizer.getLastFrameTimeMs() / (chunkDurationMs / 2) + 1;
+
+                // Remove unwanted audio sources and write audio into audio sink
+                AudioChunk audioChunk;
+                while (audioSource_->readAudioChunk(audioChunk) && readCount > 0)
+                {
+                    std::vector<int> sourcesToKeep =
+                        Classifier::getSourcesToKeep(sourcePositions, imagePositions, classifierRangeThreshold);
+
+                    AudioSuppresser::suppressNoise(sourcesToKeep, audioChunk);
+
+                    audioSink_->write(audioChunk.audioData.get(), audioChunk.size);
+
+                    --readCount;
+                }
+            }
+            else
+            {
+                // If there are no active virtual cameras, just send an empty image
+                videoOutput_->writeImage(emptyDisplay);
+
+                // Empty audio buffer
+                int readCount = videoStabilizer.getLastFrameTimeMs() / (chunkDurationMs / 2) + 1;
+
+                AudioChunk audioChunk;
+                while (audioSource_->readAudioChunk(audioChunk) && readCount > 0)
+                {
+                    --readCount;
+                }
             }
 
-            /*SynchronizedMedia outputMedia;
-            bool syncSuccess = mediaSynchronizer_->synchronize(outputMedia);
-            if (syncSuccess)
-            {
-                AudioChunk& outputAudio = outputMedia.audioChunk;
-                Image& outputImage = outputMedia.image;
+            detections.clear();
 
-                audioSink_->write(outputAudio.audioData.get(), outputAudio.size);
-
-                if (outputMedia.hasImage)
-                {
-                    videoOutput_->writeImage(outputImage);
-                }
-            }*/
-
-            frameStabilizer.endFrame();
+            // If the frame took less than 1/fps, this call will block to match frame time of 1/fps
+            videoStabilizer.endFrame();
         }
     }
     catch (const std::exception& e)
@@ -147,9 +267,17 @@ void MediaThread::run()
     positionSource_->close();
     videoInput_->close();
     videoOutput_->close();
+    virtualCameraManager_->clearVirtualCameras();
+
+    // Deallocate display images
+    heapObjectFactory.deallocateObject(emptyDisplay);
+    heapObjectFactory.deallocateObjectCircularBuffer(displayBuffers);
+
+    // Deallocate virtual camera images
+    objectFactory_->deallocateObjectVector(vcImages);
+    objectFactory_->deallocateObjectVector(vcOutputFormatImages);
 
     std::cout << "MediaThread loop finished" << std::endl;
-    
     if (m_state != ThreadStatus::CRASHED)
     {
         m_state = ThreadStatus::STOPPED;

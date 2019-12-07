@@ -33,8 +33,8 @@ void RawFileAudioSink::close()
     }
 }
 
-int RawFileAudioSink::write(const AudioChunk& audioChunk)
+int RawFileAudioSink::write(uint8_t* buffer, int bytesToWrite)
 {
-    return fwrite(audioChunk.audioData.get(), sizeof(audioChunk.audioData.get()[0]), audioChunk.size, m_file);
+    return fwrite(buffer, sizeof(buffer[0]), bytesToWrite, m_file);
 }
 }    // namespace Model

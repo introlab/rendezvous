@@ -11,7 +11,7 @@
 namespace Model
 {
 
-float OVERLAP_THRESHOLD = 0.7f;
+float OVERLAP_THRESHOLD = 0.8f;
 
 DonutSlice createDewarpingDonutSlice(const DonutSlice& baseDonutSlice, float centersDistance)
 {

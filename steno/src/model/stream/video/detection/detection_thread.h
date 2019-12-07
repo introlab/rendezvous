@@ -20,11 +20,10 @@ namespace Model
 class DetectionThread : public Thread, public Subject
 {
    public:
-    DetectionThread(std::shared_ptr<LockTripleBuffer<RGBImage>> imageBuffer, std::unique_ptr<IDetector> detector,
+    DetectionThread(std::shared_ptr<LockTripleBuffer<Image>> imageBuffer, std::unique_ptr<IDetector> detector,
+                    std::shared_ptr<moodycamel::ReaderWriterQueue<std::vector<SphericalAngleRect>>> detectionQueue,
                     std::unique_ptr<IDetectionFisheyeDewarper> dewarper, std::unique_ptr<IObjectFactory> objectFactory,
                     std::unique_ptr<ISynchronizer> synchronizer, std::shared_ptr<DewarpingConfig> dewarpingConfig);
-
-    bool getDetections(std::vector<SphericalAngleRect>& detections);
 
    private:
     void run() override;
@@ -34,15 +33,14 @@ class DetectionThread : public Thread, public Subject
     std::vector<DewarpingMapping> getDewarpingMappings(const std::vector<DewarpingParameters>& paramsVector,
                                                        const Dim2<int>& src, const Dim2<int>& dst, int dewarpCount);
 
-    std::shared_ptr<LockTripleBuffer<RGBImage>> imageBuffer_;
+    std::shared_ptr<LockTripleBuffer<Image>> imageBuffer_;
     std::unique_ptr<IDetector> detector_;
     std::unique_ptr<IDetectionFisheyeDewarper> dewarper_;
     std::unique_ptr<IObjectFactory> objectFactory_;
     std::unique_ptr<ISynchronizer> synchronizer_;
+    std::shared_ptr<moodycamel::ReaderWriterQueue<std::vector<SphericalAngleRect>>> detectionQueue_;
 
     std::shared_ptr<DewarpingConfig> dewarpingConfig_;
-
-    moodycamel::ReaderWriterQueue<std::vector<SphericalAngleRect>> detectionQueue_;
 };
 
 }    // namespace Model

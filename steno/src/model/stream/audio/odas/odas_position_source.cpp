@@ -13,6 +13,7 @@ namespace Model
 {
 OdasPositionSource::OdasPositionSource(int port, int positionBufferSize)
     : m_port(port)
+    , m_mutex(std::make_unique<QMutex>())
     , m_readBuffer(std::shared_ptr<char>(new char[positionBufferSize], std::default_delete<char[]>()))
 {
 }
@@ -101,13 +102,13 @@ void OdasPositionSource::run()
 
 std::vector<SourcePosition> OdasPositionSource::getPositions()
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    QMutexLocker locker(m_mutex.get());
     return m_sourcePositions;
 }
 
 void OdasPositionSource::updatePositions(std::vector<SourcePosition>& positions)
 {
-    std::lock_guard<std::mutex> lock(m_mutex);
+    QMutexLocker locker(m_mutex.get());
     m_sourcePositions = positions;
 }
 

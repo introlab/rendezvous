@@ -14,8 +14,8 @@ CudaImageFileReader::~CudaImageFileReader()
     deviceCudaObjectFactory_.deallocateObject(image_);
 }
 
-bool CudaImageFileReader::readImage(Image& image)
+const Image& CudaImageFileReader::readImage()
 {
-    return ImageFileReader::readImage(image);
+    return ImageFileReader::readImage();
 }
 }    // namespace Model

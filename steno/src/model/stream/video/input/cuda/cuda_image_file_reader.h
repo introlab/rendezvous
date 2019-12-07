@@ -12,7 +12,7 @@ class CudaImageFileReader : public ImageFileReader
     CudaImageFileReader(const std::string& imageFilePath, ImageFormat format);
     virtual ~CudaImageFileReader();
 
-    bool readImage(Image& image) override;
+    const Image& readImage() override;
 
    private:
     DeviceCudaObjectFactory deviceCudaObjectFactory_;

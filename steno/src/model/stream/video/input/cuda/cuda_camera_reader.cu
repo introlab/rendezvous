@@ -8,6 +8,7 @@ namespace Model
 {
 CudaCameraReader::CudaCameraReader(std::shared_ptr<VideoConfig> videoConfig)
     : CameraReader(videoConfig, 3)
+    , nextImage_(nullptr)
     , pageLockedImage_(videoConfig->resolution.width, videoConfig->resolution.height, videoConfig->imageFormat)
 {
     checkCuda(cudaMallocHost(&pageLockedImage_.hostData, pageLockedImage_.size, 0));
@@ -37,23 +38,29 @@ CudaCameraReader::~CudaCameraReader()
 void CudaCameraReader::open()
 {
     CameraReader::open();
-    CameraReader::readImage(nextImage_);
-    copyImageToDevice(nextImage_);
+    nextImage_ = &CameraReader::readImage();
+    copyImageToDevice(*nextImage_);
     cudaStreamSynchronize(stream_);
 }
 
 void CudaCameraReader::close()
 {
-    BaseCameraReader::close();
+    CameraReader::close();
+    nextImage_ = nullptr;
 }
 
-bool CudaCameraReader::readImage(Image& image)
+const Image& CudaCameraReader::readImage()
 {
-    image = nextImage_;
-    CameraReader::readImage(nextImage_);
-    copyImageToDevice(nextImage_);
+    if (nextImage_ == nullptr)
+    {
+        throw std::runtime_error("Camera reader frame is null, this is not supposed to occur!");
+    }
 
-    return true;
+    const Image& image = *nextImage_;
+    nextImage_ = &CameraReader::readImage();
+    copyImageToDevice(*nextImage_);
+
+    return image;
 }
 
 void CudaCameraReader::copyImageToDevice(const Image& image)

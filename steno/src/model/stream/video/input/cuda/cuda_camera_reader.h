@@ -16,13 +16,13 @@ class CudaCameraReader : public CameraReader
 
     void open() override;
     void close() override;
-    bool readImage(Image& image) override;
+    const Image& readImage() override;
 
    private:
     void copyImageToDevice(const Image& image);
 
     DeviceCudaObjectFactory deviceCudaObjectFactory_;
-    Image nextImage_;
+    const Image* nextImage_;
     cudaStream_t stream_;
     Image pageLockedImage_;
 };

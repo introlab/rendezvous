@@ -9,7 +9,6 @@ namespace Model
 PulseAudioSink::PulseAudioSink(std::shared_ptr<AudioConfig> audioConfig)
     : m_deviceName(audioConfig->deviceName)
     , m_stream(nullptr)
-    , outputAudioChunk_(50)
 {
     // default format is 16 bits little endian
     pa_sample_format sampleFormat = PA_SAMPLE_S16LE;
@@ -57,15 +56,10 @@ void PulseAudioSink::open()
     {
         throw std::runtime_error("cannot initialize pulseaudio stream: " + std::string(pa_strerror(error)));
     }
-
-    start();
 }
 
 void PulseAudioSink::close()
 {
-    stop();
-    join();
-
     if (m_stream == nullptr)
     {
         return;
@@ -77,33 +71,16 @@ void PulseAudioSink::close()
     m_stream = nullptr;
 }
 
-void PulseAudioSink::run()
+int PulseAudioSink::write(uint8_t* buffer, int bytesToWrite)
 {
-    AudioChunk audioChunk;
-
-    while (!isAbortRequested())
+    int error;
+    int bytesWritten = pa_simple_write(m_stream, buffer, static_cast<size_t>(bytesToWrite), &error);
+    if (bytesWritten < 0)
     {
-        while (!outputAudioChunk_.try_dequeue(audioChunk) && !isAbortRequested())
-        {
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        }
-
-        int error;
-        int bytesWritten = pa_simple_write(m_stream, audioChunk.audioData.get(), audioChunk.size, &error);
-        if (bytesWritten < 0)
-        {
-            throw std::runtime_error("pulseaudio write failed: " + std::string(pa_strerror(error)));
-        }
+        throw std::runtime_error("pulseaudio write failed: " + std::string(pa_strerror(error)));
     }
-}
 
-int PulseAudioSink::write(const AudioChunk& audioChunk)
-{
-    while (!outputAudioChunk_.try_enqueue(audioChunk) && !isAbortRequested()) {}
-
-    std::cout << "Queue size " << outputAudioChunk_.size_approx() << std::endl;
-
-    return audioChunk.size;
+    return bytesWritten;
 }
 
 }    // namespace Model

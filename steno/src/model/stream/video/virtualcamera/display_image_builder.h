@@ -14,7 +14,7 @@ class DisplayImageBuilder
     explicit DisplayImageBuilder(const Dim2<int>& displayDimention);
 
     Dim2<int> getVirtualCameraDim(int virtualCameraCount);
-    Dim2<int> getMaxVirtualCameraDim();
+    const Dim2<int>& getMaxVirtualCameraDim();
     void createDisplayImage(const std::vector<Image>& vcImages, const Image& outDisplayImage);
     void setDisplayImageColor(const Image& displayImage);
     void clearVirtualCamerasOnDisplayImage(const Image& displayImage);

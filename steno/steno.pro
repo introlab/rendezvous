@@ -1,6 +1,6 @@
 # If you want to compile without using CUDA (Everything will run on cpu)
 # no_cuda(default) -> compile wihtout cuda, cuda -> compile with cuda
-#compilation = cuda
+compilation = no_cuda
 
 # Uncomment if you want to cross-compile for Jetson Tx2
 target = jetson_tx2
@@ -65,8 +65,6 @@ SOURCES += \
     src/model/stream/audio/odas/odas_position_source.cpp \
     src/model/stream/audio/pulseaudio/pulseaudio_sink.cpp \
     src/model/stream/audio/source_position.cpp \
-    src/model/stream/frame_rate_stabilizer.cpp \
-    src/model/stream/media_synchronizer.cpp \
     src/model/stream/media_thread.cpp \
     src/model/stream/stream.cpp \
     src/model/stream/utils/alloc/heap_object_factory.cpp \
@@ -80,7 +78,6 @@ SOURCES += \
     src/model/stream/utils/threads/thread.cpp \
     src/model/stream/video/detection/base_darknet_detector.cpp \
     src/model/stream/video/detection/darknet_detector.cpp \
-    src/model/stream/video/detection/detection_dewarp_optimizer.cpp \
     src/model/stream/video/detection/detection_thread.cpp \
     src/model/stream/video/detection/detector_mock.cpp \
     src/model/stream/video/dewarping/cpu_darknet_fisheye_dewarper.cpp \
@@ -88,13 +85,11 @@ SOURCES += \
     src/model/stream/video/dewarping/cpu_fisheye_dewarper.cpp \
     src/model/stream/video/dewarping/dewarping_helper.cpp \
     src/model/stream/video/impl/implementation_factory.cpp \
-    src/model/stream/video/input/base_camera_reader.cpp \
     src/model/stream/video/input/camera_reader.cpp \
-    src/model/stream/video/input/vc_camera_reader.cpp \
-    src/model/stream/video/input/dewarped_video_input.cpp \
     src/model/stream/video/input/image_file_reader.cpp \
     src/model/stream/video/output/image_file_writer.cpp \
     src/model/stream/video/output/virtual_camera_output.cpp \
+    src/model/stream/video/video_stabilizer.cpp \
     src/model/stream/video/virtualcamera/display_image_builder.cpp \
     src/model/stream/video/virtualcamera/virtual_camera_manager.cpp \
     src/view/components/side_bar.cpp \
@@ -133,15 +128,13 @@ HEADERS += \
     src/model/stream/audio/i_audio_sink.h \
     src/model/stream/audio/i_audio_source.h \
     src/model/stream/audio/i_position_source.h \
-    src/model/stream/audio/file/raw_file_audio_sink.h \
+    src/model/stream/audio/file/raw_file_audio_sink.cpp \
     src/model/stream/audio/odas/odas_audio_source.h \
     src/model/stream/audio/odas/odas_client.h \
     src/model/stream/audio/odas/odas_position_source.h \
     src/model/stream/audio/pulseaudio/pulseaudio_sink.h \
     src/model/stream/audio/source_position.h \
-    src/model/stream/frame_rate_stabilizer.h \
     src/model/stream/i_stream.h \
-    src/model/stream/media_synchronizer.h \
     src/model/stream/media_thread.h \
     src/model/stream/stream.h \
     src/model/stream/utils/alloc/cuda/device_cuda_object_factory.h \
@@ -184,7 +177,6 @@ HEADERS += \
     src/model/stream/video/detection/base_darknet_detector.h \
     src/model/stream/video/detection/cuda/cuda_darknet_detector.h \
     src/model/stream/video/detection/darknet_detector.h \
-    src/model/stream/video/detection/detection_dewarp_optimizer.h \
     src/model/stream/video/detection/detection_thread.h \
     src/model/stream/video/detection/detector_mock.h \
     src/model/stream/video/detection/darknet_config.h \
@@ -204,21 +196,17 @@ HEADERS += \
     src/model/stream/video/dewarping/models/donut_slice.h \
     src/model/stream/video/dewarping/models/linear_pixel_filter.h \
     src/model/stream/video/impl/implementation_factory.h \
-    src/model/stream/video/input/base_camera_reader.h \
     src/model/stream/video/input/camera_reader.h \
-    src/model/stream/video/input/vc_camera_reader.h \
     src/model/stream/video/input/cuda/cuda_camera_reader.h \
-    src/model/stream/video/input/cuda/vc_cuda_camera_reader.h \
     src/model/stream/video/input/cuda/cuda_image_file_reader.h \
-    src/model/stream/video/input/dewarped_video_input.h \
     src/model/stream/video/input/image_file_reader.h \
     src/model/stream/video/input/i_video_input.h \
     src/model/stream/video/output/image_file_writer.h \
     src/model/stream/video/output/i_video_output.h \
     src/model/stream/video/output/virtual_camera_output.h \
     src/model/stream/video/video_config.h \
+    src/model/stream/video/video_stabilizer.h \
     src/model/stream/video/virtualcamera/display_image_builder.h \
-    src/model/stream/video/virtualcamera/i_virtual_camera_source.h \
     src/model/stream/video/virtualcamera/virtual_camera.h \
     src/model/stream/video/virtualcamera/virtual_camera_manager.h \
     src/view/components/colors.h \
@@ -246,7 +234,6 @@ CUDA_SOURCES += \
     src/model/stream/video/dewarping/cuda/cuda_dewarping_mapping_filler.cu \
     src/model/stream/video/dewarping/cuda/cuda_fisheye_dewarper.cu \
     src/model/stream/video/input/cuda/cuda_camera_reader.cu \
-    src/model/stream/video/input/cuda/vc_cuda_camera_reader.cu \
     src/model/stream/video/input/cuda/cuda_image_file_reader.cu
 
 contains(compilation, no_cuda) {
