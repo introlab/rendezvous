@@ -2,6 +2,7 @@
 #define TRANSCRIPTION_H
 
 #include "model/config/config.h"
+#include "srt_generator.h"
 
 #include <memory>
 
@@ -54,6 +55,7 @@ class Transcription : public QObject
             case Encoding::SPEEX_WITH_HEADER_BYTE:
                 return "SPEEX_WITH_HEADER_BYTE";
         }
+        return "";
     }
 
     enum Language
@@ -97,6 +99,7 @@ class Transcription : public QObject
             case Model::VIDEO:
                 return "video";
         }
+        return "";
     }
 
    signals:
@@ -119,6 +122,8 @@ class Transcription : public QObject
     QUrl m_url = QUrl("https://rendezvous-meet.com/transcription-api/transcription");
     std::shared_ptr<Config> m_config;
     QString m_tempWavFilePath;
+    std::unique_ptr<SrtGenerator> m_srtGenerator;
+    QString m_srtFileName = "";
 };
 }    // namespace Model
 

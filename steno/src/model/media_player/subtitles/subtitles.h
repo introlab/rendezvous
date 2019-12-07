@@ -24,6 +24,7 @@ class Subtitles : public QObject
     void play();
     void pause();
     void stop();
+    void clear();
     void setCurrentTime(qint64 time);
 
    signals:

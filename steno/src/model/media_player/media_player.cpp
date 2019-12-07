@@ -41,6 +41,8 @@ int MediaPlayer::volume() const
  */
 void MediaPlayer::setMedia(const QUrl &url)
 {
+    m_subtitles.stop();
+    m_subtitles.clear();
     m_mediaPlayer.setMedia(url);
 
     QFileInfo fileInfo(url.toLocalFile());

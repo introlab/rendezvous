@@ -1,12 +1,16 @@
 #include "transcription.h"
+
 #include "model/app_config.h"
 #include "model/config/config.h"
+#include "srt_generator.h"
 #include "transcription_config.h"
 
 #include <memory>
 
 #include <QFile>
+#include <QFileInfo>
 #include <QHttpMultiPart>
+#include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QNetworkAccessManager>
@@ -28,6 +32,8 @@ Transcription::Transcription(std::shared_ptr<Config> config, QObject* parent)
     m_manager = std::make_unique<QNetworkAccessManager>();
 
     connect(m_manager.get(), &QNetworkAccessManager::finished, [=](QNetworkReply* reply) { requestFinished(reply); });
+
+    m_srtGenerator = std::make_unique<SrtGenerator>(m_config->appConfig(), this);
 }
 
 /**
@@ -58,6 +64,10 @@ bool Transcription::transcribe(const QString& videoFilePath)
     if (!isOK) return isOK;
 
     isOK = requestTranscription();
+
+    const QFile file(videoFilePath);
+    const QFileInfo info(file);
+    m_srtFileName = info.baseName();
     return isOK;
 }
 
@@ -198,10 +208,12 @@ bool Transcription::requestTranscription()
  */
 bool Transcription::postTranscription(QJsonDocument response)
 {
-    qDebug() << response;
     bool isOK = deleteFile();
-    if (!isOK) return false;
-    // TODO: ask srt file generation.
+    if (!isOK || response.isNull() || response.isEmpty()) return false;
+
+    QJsonObject jsonObject = response.object();
+    QJsonArray words = jsonObject["words"].toArray();
+    m_srtGenerator->generateSrtFile(m_srtFileName + ".srt", words);
     return true;
 }
 

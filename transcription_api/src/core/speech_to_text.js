@@ -132,12 +132,14 @@ let SpeechToText = class {
             
             const [response] = await operation.promise();
 
-            const transcription = response.results
-                .map(result => result.alternatives[0].transcript)
-                .join('\n');
+            let transcription = "";
+            let words = [];
 
-            const words = response.results
-                .map(result => result.alternatives[0].words)
+            response.results.forEach(result => {
+                let alternative = result.alternatives[0];
+                transcription = transcription  + alternative.transcript;
+                words.push(...alternative.words);
+            });
 
             next(null, transcription, words);
         });
