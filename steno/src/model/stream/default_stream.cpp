@@ -12,7 +12,7 @@ namespace Model
 {
 DefaultStream::DefaultStream(std::shared_ptr<Config> config)
 {
-    const auto videoInputConf = config->videoInputConfig();
+    const auto videoInputConf = config->videoOutputConfig();
     std::shared_ptr<IVideoOutput> vcOutput = std::make_shared<VirtualCameraOutput>(videoInputConf);
 
     const QString defaultImagePath = QCoreApplication::applicationDirPath() + "/../resources/defaultImage.jpg";
