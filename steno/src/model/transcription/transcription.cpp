@@ -208,7 +208,6 @@ bool Transcription::requestTranscription()
  */
 bool Transcription::postTranscription(QJsonDocument response)
 {
-    qDebug() << response;
     bool isOK = deleteFile();
     if (!isOK || response.isNull() || response.isEmpty()) return false;
 

@@ -155,10 +155,6 @@ void SrtGenerator::getWordInfos(const QJsonObject& transcriptionWord, QString& w
                     transcriptionWord["startTime"].toObject()["nanos"].toVariant().toUInt() * 1e-9;
     wordEndTime = transcriptionWord["endTime"].toObject()["seconds"].toVariant().toUInt() +
                   transcriptionWord["endTime"].toObject()["nanos"].toVariant().toUInt() * 1e-9;
-
-    qDebug() << "word:" << word;
-    qDebug() << "word start time" << wordStartTime;
-    qDebug() << "word end time" << wordEndTime;
 }
 
 }    // namespace Model
