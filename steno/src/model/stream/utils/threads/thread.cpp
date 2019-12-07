@@ -72,4 +72,13 @@ void Thread::threadExecution()
     isAbortRequested_ = false;
     isRunning_ = false;
 }
+
+/**
+ * @brief Put the thread in pause for a certain time.
+ * @param timeMs - time in milliseconds to sleep.
+ */
+void Thread::sleep(const int timeMs)
+{
+    std::this_thread::sleep_for(std::chrono::milliseconds(timeMs));
+}
 }    // namespace Model

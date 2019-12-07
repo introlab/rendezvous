@@ -1,8 +1,8 @@
 #include "model/config/config.h"
 #include "model/media/media.h"
 #include "model/media_player/media_player.h"
+#include "model/stream/default_stream.h"
 #include "model/stream/stream.h"
-#include "model/stream/video/output/default_virtual_camera_output.h"
 #include "model/transcription/transcription.h"
 #include "view/mainwindow.h"
 
@@ -23,17 +23,16 @@ int main(int argc, char *argv[])
 
     std::shared_ptr<Model::Config> config = std::make_shared<Model::Config>(qSettings, configFile);
 
+    std::shared_ptr<Model::IStream> defaultStream = std::make_shared<Model::DefaultStream>(config);
+
     std::shared_ptr<Model::IStream> stream = std::make_shared<Model::Stream>(config);
 
     std::shared_ptr<Model::Media> media = std::make_shared<Model::Media>(config, stream);
 
     std::shared_ptr<Model::Transcription> transcription = std::make_shared<Model::Transcription>(config);
 
-    View::MainWindow w(config, mediaPlayer, stream, media, transcription);
+    View::MainWindow w(config, mediaPlayer, stream, defaultStream, media, transcription);
     w.show();
-
-    Model::DefaultVirtualCameraOutput::writeDefaultImage(
-        config->videoOutputConfig()->value(Model::VideoConfig::DEVICE_NAME).toString());
 
     return QApplication::exec();
 }

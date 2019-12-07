@@ -24,6 +24,7 @@ class Media : public QObject
     void startRecorder();
     void stopRecorder();
     QMediaRecorder::State recorderState() const;
+    void unLoadCamera();
 
    signals:
     void recorderStateChanged(QMediaRecorder::State state);

@@ -51,10 +51,12 @@ SOURCES += \
     src/model/media_player/media_player.cpp \
     src/model/media_player/subtitles/srt_file.cpp \
     src/model/media_player/subtitles/subtitles.cpp \
+    src/model/stream/default_image_thread.cpp \
+    src/model/stream/default_stream.cpp \
     src/model/stream/utils/images/image_drawing.cpp \
-    src/model/stream/video/output/default_virtual_camera_output.cpp \
     src/model/transcription/transcription.cpp \
     src/model/utils/filesutil.cpp \
+    src/model/utils/observer/subject.cpp \
     src/model/utils/time.cpp \
     src/model/stream/audio/file/raw_file_audio_sink.cpp \
     src/model/stream/audio/odas/odas_audio_source.cpp \
@@ -116,14 +118,15 @@ HEADERS += \
     src/model/media_player/subtitles/subtitles.h \
     src/model/recorder/i_recorder.h \
     src/model/stream/audio/audio_config.h \
+    src/model/stream/default_image_thread.h \
+    src/model/stream/default_stream.h \
     src/model/stream/stream_config.h \
     src/model/stream/utils/images/image_drawing.h \
     src/model/transcription/transcription.h \
     src/model/transcription/transcription_config.h \
-    src/model/stream/video/output/default_virtual_camera_output.h \
     src/model/utils/filesutil.h \
     src/model/utils/observer/i_observer.h \
-    src/model/utils/observer/i_subject.h \
+    src/model/utils/observer/subject.h \
     src/model/utils/time.h \
     src/model/stream/audio/i_audio_sink.h \
     src/model/stream/audio/i_audio_source.h \

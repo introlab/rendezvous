@@ -48,6 +48,9 @@ MediaThread::MediaThread(std::unique_ptr<IAudioSource> audioSource, std::unique_
 void MediaThread::run()
 {
     FrameRateStabilizer frameStabilizer(framePerSeconds_);
+    
+    m_state = ThreadStatus::RUNNING;
+    notify();
 
     // Start audio and video resources
     audioSource_->open();
@@ -135,6 +138,7 @@ void MediaThread::run()
     catch (const std::exception& e)
     {
         std::cout << "Error in media thread : " << e.what() << std::endl;
+        m_state = ThreadStatus::CRASHED;
     }
 
     // Clean audio and video resources
@@ -144,6 +148,12 @@ void MediaThread::run()
     videoInput_->close();
     videoOutput_->close();
 
-    std::cout << "MediaThread loop stopped" << std::endl;
+    std::cout << "MediaThread loop finished" << std::endl;
+    
+    if (m_state != ThreadStatus::CRASHED)
+    {
+        m_state = ThreadStatus::STOPPED;
+    }
+    notify();
 }
 }    // namespace Model

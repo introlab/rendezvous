@@ -11,12 +11,13 @@
 #include "model/stream/video/detection/i_detector.h"
 #include "model/stream/video/dewarping/i_detection_fisheye_dewarper.h"
 #include "model/stream/video/dewarping/models/dewarping_config.h"
+#include "model/utils/observer/subject.h"
 
 #include <memory>
 
 namespace Model
 {
-class DetectionThread : public Thread
+class DetectionThread : public Thread, public Subject
 {
    public:
     DetectionThread(std::shared_ptr<LockTripleBuffer<RGBImage>> imageBuffer, std::unique_ptr<IDetector> detector,

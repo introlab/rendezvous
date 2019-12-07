@@ -132,17 +132,23 @@ void Stream::stop()
 {
     updateState(IStream::State::Stopping);
 
-    if (m_odasClient->getState() != OdasClientState::CRASHED)
+    if (m_odasClient->getState() != Thread::ThreadStatus::CRASHED)
     {
         m_odasClient->stop();
         m_odasClient->join();
     }
 
-    m_mediaThread->stop();
-    m_mediaThread->join();
+    if (m_detectionThread->getState() != Thread::ThreadStatus::CRASHED)
+    {
+        m_detectionThread->stop();
+        m_detectionThread->join();
+    }
 
-    Model::DefaultVirtualCameraOutput::writeDefaultImage(
-        m_config->videoOutputConfig()->value(Model::VideoConfig::DEVICE_NAME).toString());
+    if (m_mediaThread->getState() != Thread::ThreadStatus::CRASHED)
+    {
+        m_mediaThread->stop();
+        m_mediaThread->join();
+    }
 
     updateState(IStream::State::Stopped);
 }
@@ -167,8 +173,11 @@ void Stream::updateState(const IStream::State& state)
  */
 void Stream::updateObserver()
 {
-    OdasClientState state = m_odasClient->getState();
-    if (state == OdasClientState::CRASHED)
+    const Thread::ThreadStatus odasClientState = m_odasClient->getState();
+    const Thread::ThreadStatus mediaState = m_mediaThread->getState();
+    const Thread::ThreadStatus detectionState = m_detectionThread->getState();
+    if (odasClientState == Thread::ThreadStatus::CRASHED || mediaState == Thread::ThreadStatus::CRASHED ||
+        detectionState == Thread::ThreadStatus::CRASHED)
     {
         stop();
     }

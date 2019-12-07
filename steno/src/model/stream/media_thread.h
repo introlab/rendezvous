@@ -19,10 +19,11 @@
 #include "model/stream/video/output/i_video_output.h"
 #include "model/stream/video/video_config.h"
 #include "model/stream/video/virtualcamera/virtual_camera_manager.h"
+#include "model/utils/observer/subject.h"
 
 namespace Model
 {
-class MediaThread : public Thread
+class MediaThread : public Thread, public Subject
 {
    public:
     MediaThread(std::unique_ptr<IAudioSource> audioSource, std::unique_ptr<IAudioSink> audioSink,
