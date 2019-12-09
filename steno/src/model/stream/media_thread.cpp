@@ -61,9 +61,6 @@ void MediaThread::run()
 
     std::cout << "MediaThread loop started" << std::endl;
 
-    //unsigned long long lastAudioTimeStamp = 0;
-    //unsigned long long lastImageTimeStamp = 0;
-
     try
     {
         while (!isAbortRequested())
@@ -74,19 +71,11 @@ void MediaThread::run()
             while (videoInput_->readImage(image))
             {
                 videoOutput_->writeImage(image);
-
-                //std::cout << "image: " << image.timeStamp - lastImageTimeStamp << std::endl;
-                //lastImageTimeStamp = image.timeStamp;
-
-                //mediaSynchronizer_->queueImage(image);
             }
 
             AudioChunk audioChunk;
             while (audioSource_->readAudioChunk(audioChunk))
             {
-                //std::cout << "audio: " << audioChunk.timestamp - lastAudioTimeStamp << std::endl;
-                //lastAudioTimeStamp = audioChunk.timestamp;
-
                 // Get audio sources and image spatial positions
                 std::vector<SourcePosition> sourcePositions = positionSource_->getPositions();
                 std::vector<VirtualCamera> virtualCameras = virtualCameraSource_->getVirtualCameras();
@@ -109,24 +98,7 @@ void MediaThread::run()
                 }
 
                 audioSink_->write(audioChunk);
-
-                //mediaSynchronizer_->queueAudio(audioChunk);
             }
-
-            /*SynchronizedMedia outputMedia;
-            bool syncSuccess = mediaSynchronizer_->synchronize(outputMedia);
-            if (syncSuccess)
-            {
-                AudioChunk& outputAudio = outputMedia.audioChunk;
-                Image& outputImage = outputMedia.image;
-
-                audioSink_->write(outputAudio);
-
-                if (outputMedia.hasImage)
-                {
-                    videoOutput_->writeImage(outputImage);
-                }
-            }*/
 
             frameStabilizer.endFrame();
         }
@@ -150,6 +122,7 @@ void MediaThread::run()
     {
         m_state = ThreadStatus::STOPPED;
     }
+    
     notify();
 }
 }    // namespace Model
