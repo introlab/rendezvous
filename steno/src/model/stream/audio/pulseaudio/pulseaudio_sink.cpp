@@ -101,8 +101,6 @@ int PulseAudioSink::write(const AudioChunk& audioChunk)
 {
     while (!outputAudioChunk_.try_enqueue(audioChunk) && !isAbortRequested()) {}
 
-    std::cout << "Queue size " << outputAudioChunk_.size_approx() << std::endl;
-
     return audioChunk.size;
 }
 

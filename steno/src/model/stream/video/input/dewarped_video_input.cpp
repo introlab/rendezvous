@@ -189,7 +189,6 @@ void DewarpedVideoInput::run()
 
             // If the frame took less than 1/fps, this call will block to match frame time of 1/fps
             videoStabilizer.endFrame();
-            std::cout << videoStabilizer.getLastFrameTimeMs() << std::endl;
         }
     }
     catch (const std::exception& e)
