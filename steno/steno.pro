@@ -55,6 +55,7 @@ SOURCES += \
     src/model/stream/default_stream.cpp \
     src/model/stream/utils/images/image_drawing.cpp \
     src/model/transcription/transcription.cpp \
+    src/model/transcription/srt_generator.cpp \
     src/model/utils/filesutil.cpp \
     src/model/utils/observer/subject.cpp \
     src/model/utils/time.cpp \
@@ -122,6 +123,7 @@ HEADERS += \
     src/model/stream/default_stream.h \
     src/model/stream/stream_config.h \
     src/model/stream/utils/images/image_drawing.h \
+    src/model/transcription/srt_generator.h \
     src/model/transcription/transcription.h \
     src/model/transcription/transcription_config.h \
     src/model/utils/filesutil.h \

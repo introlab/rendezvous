@@ -101,7 +101,6 @@ void Subtitles::onTimerTimeout()
  */
 void Subtitles::reset()
 {
-    m_subtitles.clear();
     m_currentTime = 0;
     m_lastSubtitleIndex = 0;
     m_lastSubtitleSignaled = "";
@@ -186,6 +185,14 @@ void Subtitles::binarySearch(qint64 time, QString &subtitle)
         m_lastSubtitleIndex = lo;
         subtitle = m_subtitles.at(lo).text;
     }
+}
+
+/**
+ * @brief Delete all subtitles in memory.
+ */
+void Subtitles::clear()
+{
+    m_subtitles.clear();
 }
 
 }    // namespace Model
