@@ -1,6 +1,7 @@
 #include <cmath>
 
 #include "classifier.h"
+#include "model/stream/utils/math/angle_calculations.h"
 
 namespace Model
 {
@@ -52,7 +53,7 @@ std::vector<std::pair<int, int>> Classifier::getAudioImagePairs(const std::vecto
         for (size_t j = 0; j < imagePositions.size(); j++)
         {
             // Set the azimuth counter-clockwise to match the audio
-            float imagePositionAzimuth = 2.0 * M_PI - imagePositions[j].azimuth;
+            float imagePositionAzimuth = math::getAngleAroundCircle(2.0 * M_PI - imagePositions[j].azimuth - M_PI / 2.f);
 
             if (std::abs(audioPositions[i].azimuth - imagePositionAzimuth) < rangeThreshold &&
                 std::abs(audioPositions[i].elevation - imagePositions[j].elevation) < rangeThreshold)

@@ -92,7 +92,7 @@ void MediaThread::run()
                     std::vector<int> sourcesToKeep =
                                 Classifier::getSourcesToKeep(sourcePositions, imagePositions, classifierRangeThreshold_);
 
-                    //AudioSuppresser::suppressNoise(sourcesToKeep, audioChunk);
+                    AudioSuppresser::suppressNoise(sourcesToKeep, audioChunk);
                 }
 
                 audioSink_->write(audioChunk);
