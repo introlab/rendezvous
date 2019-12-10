@@ -1,5 +1,5 @@
-#ifndef FRAME_RATE__STABILIZER_H
-#define FRAME_RATE__STABILIZER_H
+#ifndef FRAME_RATE_STABILIZER_H
+#define FRAME_RATE_STABILIZER_H
 
 #include "model/stream/utils/time/timer.h"
 
@@ -25,4 +25,4 @@ class FrameRateStabilizer
 
 }    // namespace Model
 
-#endif    //! FRAME_RATE__STABILIZER_H
+#endif    //! FRAME_RATE_STABILIZER_H

@@ -4,12 +4,17 @@
 
 #include <pulse/error.h>
 
+namespace
+{
+const int QUEUE_SIZE = 10;
+}
+
 namespace Model
 {
 PulseAudioSink::PulseAudioSink(std::shared_ptr<AudioConfig> audioConfig)
     : m_deviceName(audioConfig->deviceName)
     , m_stream(nullptr)
-    , outputAudioChunk_(50)
+    , outputAudioChunk_(QUEUE_SIZE)
 {
     // default format is 16 bits little endian
     pa_sample_format sampleFormat = PA_SAMPLE_S16LE;
