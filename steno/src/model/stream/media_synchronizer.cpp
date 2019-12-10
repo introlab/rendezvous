@@ -3,11 +3,16 @@
 #include <iostream>
 #include <cmath>
 
+namespace
+{
+const float ACCEPTABLE_DELAY_FRAMETIME_MULTIPLIER = 1.2f;
+}
+
 namespace Model
 {
 
-MediaSynchronizer::MediaSynchronizer(int acceptableDelayMs)
-    : acceptableDelayMs_(acceptableDelayMs)
+MediaSynchronizer::MediaSynchronizer(int frameTimeUs)
+    : acceptableDelayUs_(frameTimeUs * ACCEPTABLE_DELAY_FRAMETIME_MULTIPLIER)
 {
 }
 
@@ -23,68 +28,78 @@ void MediaSynchronizer::queueImage(Image image)
 
 bool MediaSynchronizer::synchronize(SynchronizedMedia& outMedia)
 {
-    if (imageQueue_.empty() || audioQueue_.empty())
+    outMedia.hasAudio = false;
+    outMedia.hasImage = false;
+
+    AudioChunk audio;
+    if (!audioQueue_.empty())
     {
-        std::cout << "queue empty" << std::endl;
-        return false;
+        audio = audioQueue_.front();
+        outMedia.hasAudio = true;
     }
 
-    std::cout << "imageQueue: " << imageQueue_.size() << ", audioQueue: " << audioQueue_.size() << std::endl;
-
-    Image image = imageQueue_.front();
-    outMedia.hasImage = true;
-
-    AudioChunk audio = audioQueue_.front();
-
-    long long timeDiff = static_cast<long long>(audio.timestamp - image.timeStamp);
-    //std::cout << "timeDiff: " << timeDiff << std::endl;
-
-    if (std::abs(timeDiff) > acceptableDelayMs_)
+    Image image;
+    if (!imageQueue_.empty())
     {
-        if (timeDiff < 0)
+        image = imageQueue_.front();
+        outMedia.hasImage = true;
+    }
+
+    if (outMedia.hasImage && outMedia.hasAudio)
+    {
+        long long timeDiff = static_cast<long long>(audio.timestamp - image.timeStamp);
+        if (std::abs(timeDiff) > acceptableDelayUs_)
         {
-            // video ahead of audio, we send the last frame
-            std::cout << "MediaSynchronizer: video ahead of audio: " << timeDiff << std::endl;
-            outMedia.hasImage = false;
-        }
-        else
-        {
-            // audio ahead of video, we trash the video
-            std::cout << "===MediaSynchronizer: audio ahead of video: " << timeDiff << std::endl;
-            while(std::abs(timeDiff) > acceptableDelayMs_)
+            if (timeDiff < 0)
             {
-                imageQueue_.pop();
-
-                if (imageQueue_.empty())
+                // video ahead of audio, we send the last frame
+                outMedia.hasImage = false;
+            }
+            else
+            {
+                // audio ahead of video, we trash the video
+                while(std::abs(timeDiff) > acceptableDelayUs_)
                 {
-                    std::cout << "image queue size: " << imageQueue_.size() << std::endl;
-                    outMedia.hasImage = false;
-                    break;
-                }
+                    imageQueue_.pop();
 
-                image = imageQueue_.front();
-                timeDiff = static_cast<long long>(audio.timestamp - image.timeStamp);
-                std::cout << "timeDiff: " << timeDiff << std::endl;
+                    if (imageQueue_.empty())
+                    {
+                        outMedia.hasImage = false;
+                        break;
+                    }
+
+                    image = imageQueue_.front();
+                    timeDiff = static_cast<long long>(audio.timestamp - image.timeStamp);
+                }
             }
         }
-    }
-    else
-    {
-        std::cout << "Synced!" << std::endl;
     }
 
     outMedia.audioChunk = audio;
     outMedia.image = image;
 
-    if (!imageQueue_.empty() && outMedia.hasImage)
+    if (outMedia.hasImage)
     {
         imageQueue_.pop();
     }
 
-    if (!audioQueue_.empty())
+    if (outMedia.hasAudio)
     {
         audioQueue_.pop();
     }
+
+    return true;
+}
+
+bool MediaSynchronizer::popAudio(AudioChunk& outAudioChunk)
+{
+    if (audioQueue_.empty())
+    {
+        return false;
+    }
+
+    outAudioChunk = audioQueue_.front();
+    audioQueue_.pop();
 
     return true;
 }

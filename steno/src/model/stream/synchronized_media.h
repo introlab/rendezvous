@@ -13,6 +13,7 @@ struct SynchronizedMedia
     Image image;
 
     bool hasImage;
+    bool hasAudio;
 };
 
 }    // namespace Model

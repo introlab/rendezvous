@@ -12,11 +12,12 @@ OdasAudioSource::OdasAudioSource(int port, int desiredChunkDurationMs, int numbe
                                  std::shared_ptr<AudioConfig> audioConfig)
     : port_(port)
     , audioConfig_(audioConfig)
-    , audioChunks_(numberOfBuffers, AudioChunk(desiredChunkDurationMs / 1000.f * audioConfig_->rate,
+    // We add 10 buffers to make sure we don't overwrite data when reading from the socket
+    , audioChunks_(numberOfBuffers + 10, AudioChunk(desiredChunkDurationMs / 1000.f * audioConfig_->rate,
                                                audioConfig_->channels, audioConfig_->formatBytes))
-    , audioQueue_(std::make_shared<moodycamel::BlockingReaderWriterQueue<AudioChunk>>(1))
+    , audioQueue_(std::make_shared<moodycamel::BlockingReaderWriterQueue<AudioChunk>>(numberOfBuffers))
 {
-    for (int i = 0; i < numberOfBuffers; i++)
+    for (int i = 0; i < audioChunks_.size(); i++)
     {
         audioChunks_.current().audioData =
             std::shared_ptr<uint8_t>(new uint8_t[audioChunks_.current().size], std::default_delete<uint8_t[]>());
@@ -69,7 +70,7 @@ void OdasAudioSource::run()
 
                     unsigned long long currentTimeStamp = 0;
                     socket->read(reinterpret_cast<char*>(&currentTimeStamp), audioConfig_->packetHeaderSize);
-
+                    
                     if (readIndex == 0)
                     {
                         audioChunk.timestamp = currentTimeStamp;

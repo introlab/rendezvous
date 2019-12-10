@@ -68,11 +68,16 @@ void MediaThread::run()
             frameStabilizer.startFrame();
 
             Image image;
-            while (videoInput_->readImage(image))
+            if (videoInput_->readImage(image))
             {
-                videoOutput_->writeImage(image);
+                mediaSynchronizer_->queueImage(image);
             }
 
+            // Since the loop time is not always 1/fps, a delay can accumulate overtime.
+            // This results in 2 audio chunks available in the audio source. We need to
+            // process them both to stay in real time (otherwise an audio delay would 
+            // appear in the stream)
+            std::vector<AudioChunk> audioChunks;
             AudioChunk audioChunk;
             while (audioSource_->readAudioChunk(audioChunk))
             {
@@ -95,9 +100,37 @@ void MediaThread::run()
                     AudioSuppresser::suppressNoise(sourcesToKeep, audioChunk);
                 }
 
-                audioSink_->write(audioChunk);
+                audioChunks.push_back(audioChunk);
+                mediaSynchronizer_->queueAudio(audioChunk);
             }
 
+            SynchronizedMedia outputMedia;
+            if (mediaSynchronizer_->synchronize(outputMedia))
+            {
+                AudioChunk outputAudio = outputMedia.audioChunk;
+                Image outputImage = outputMedia.image;
+
+                if (outputMedia.hasAudio)
+                {
+                    audioSink_->write(outputAudio);
+
+                    // If 2 audio chunks were queued in the synchronizer, 2 need to come out
+                    AudioChunk secondAudioChunk;
+                    if (audioChunks.size() > 1)
+                    {
+                        if (mediaSynchronizer_->popAudio(secondAudioChunk))
+                        {
+                            audioSink_->write(secondAudioChunk);
+                        }
+                    }
+                }
+
+                if (outputMedia.hasImage)
+                {
+                    videoOutput_->writeImage(outputImage);
+                }
+            }
+            
             frameStabilizer.endFrame();
         }
     }
@@ -123,4 +156,5 @@ void MediaThread::run()
     
     notify();
 }
+
 }    // namespace Model

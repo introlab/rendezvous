@@ -28,6 +28,14 @@
 namespace
 {
 const int IMAGE_BUFFER_COUNT = 10;
+const int AUDIO_BUFFER_COUNT = 2;
+
+// TODO: config
+const int ODAS_AUDIO_PORT = 10030;
+const int ODAS_POSITION_PORT = 10020;
+
+// TODO: config
+float CLASSIFIER_RANGE_THRESHOLD = 0.26f; // ~15 degrees
 }
 
 namespace Model
@@ -60,14 +68,6 @@ Stream::Stream(std::shared_ptr<Config> config)
     }
     int audioChunkDurationMs = 1000 / fps;
 
-    // TODO: config
-    int numberOfAudioBuffers = 5;
-    int positionBufferSize = 1024;
-    int odasAudioPort = 10030;
-    int odasPositionPort = 10020;
-
-    float classifierRangeThreshold = 0.26f; // ~15 degrees
-
     int sleepBetweenLayersForwardUs = darknetConfig->value(DarknetConfig::SLEEP_BETWEEN_LAYERS_FORWARD_US).toInt();
     std::string configFile =
         (QCoreApplication::applicationDirPath() + "/../configs/yolo/cfg/yolov3-tiny.cfg").toStdString();
@@ -87,7 +87,7 @@ Stream::Stream(std::shared_ptr<Config> config)
         m_implementationFactory.getDetectionObjectFactory(), m_implementationFactory.getDetectionSynchronizer(),
         dewarpingConfig);
 
-    std::shared_ptr<IPositionSource> odasPositionSource = std::make_shared<OdasPositionSource>(odasPositionPort, positionBufferSize);
+    std::shared_ptr<IPositionSource> odasPositionSource = std::make_shared<OdasPositionSource>(ODAS_POSITION_PORT);
 
     std::shared_ptr<VirtualCameraManager> virtualCameraManager = std::make_shared<VirtualCameraManager>(aspectRatio, minElevation, maxElevation);
 
@@ -95,18 +95,18 @@ Stream::Stream(std::shared_ptr<Config> config)
         m_implementationFactory.getCameraReader(videoInputConfig), m_implementationFactory.getFisheyeDewarper(),
         m_implementationFactory.getObjectFactory(), m_implementationFactory.getSynchronizer(),
         virtualCameraManager, std::move(detectionThread), m_imageBuffer,
-        m_implementationFactory.getImageConverter(), odasPositionSource, dewarpingConfig, videoInputConfig, videoOutputConfig, 
-        IMAGE_BUFFER_COUNT, classifierRangeThreshold);
+        m_implementationFactory.getImageConverter(), odasPositionSource, dewarpingConfig, videoInputConfig, videoOutputConfig,
+        IMAGE_BUFFER_COUNT, CLASSIFIER_RANGE_THRESHOLD);
 
     m_mediaThread = std::make_unique<MediaThread>(
-        std::make_unique<OdasAudioSource>(odasAudioPort, audioChunkDurationMs, numberOfAudioBuffers, audioInputConfig),
+        std::make_unique<OdasAudioSource>(ODAS_AUDIO_PORT, audioChunkDurationMs, AUDIO_BUFFER_COUNT, audioInputConfig),
         std::make_unique<PulseAudioSink>(audioOutputConfig),
         odasPositionSource,
         std::move(dewarpedVideoInput),
         std::make_unique<VirtualCameraOutput>(videoOutputConfig),
         virtualCameraManager,
         std::make_unique<MediaSynchronizer>(audioChunkDurationMs * 1000),
-        fps, classifierRangeThreshold);
+        fps, CLASSIFIER_RANGE_THRESHOLD);
 
     m_odasClient = std::make_unique<OdasClient>(m_config->appConfig());
     m_odasClient->attach(this);

@@ -13,15 +13,16 @@ namespace Model
 class MediaSynchronizer
 {
 public:
-    MediaSynchronizer(int acceptableDelayMs);
+    MediaSynchronizer(int frameTimeUs);
     ~MediaSynchronizer() = default;
 
     void queueAudio(AudioChunk audioChunk);
     void queueImage(Image image);
     bool synchronize(SynchronizedMedia& outMedia);
+    bool popAudio(AudioChunk& outAudioChunk);
     
 private:
-    int acceptableDelayMs_;
+    int acceptableDelayUs_;
     std::queue<AudioChunk> audioQueue_;
     std::queue<Image> imageQueue_;
 };
