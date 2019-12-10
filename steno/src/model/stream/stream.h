@@ -39,10 +39,9 @@ class Stream : public IStream, public IObserver
     IStream::State m_state;
 
     std::unique_ptr<MediaThread> m_mediaThread;
-    std::unique_ptr<DetectionThread> m_detectionThread;
     std::unique_ptr<OdasClient> m_odasClient;
     std::unique_ptr<IObjectFactory> m_objectFactory;
-    std::shared_ptr<LockTripleBuffer<Image>> m_imageBuffer;
+    std::shared_ptr<LockTripleBuffer<RGBImage>> m_imageBuffer;
     std::shared_ptr<Config> m_config;
     ImplementationFactory m_implementationFactory;
 };

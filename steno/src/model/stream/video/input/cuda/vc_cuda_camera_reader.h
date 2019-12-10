@@ -1,18 +1,18 @@
-#ifndef CUDA_CAMERA_READER_H
-#define CUDA_CAMERA_READER_H
+#ifndef VC_CUDA_CAMERA_READER_H
+#define VC_CUDA_CAMERA_READER_H
 
 #include <cuda_runtime.h>
 
 #include "model/stream/utils/alloc/cuda/device_cuda_object_factory.h"
-#include "model/stream/video/input/camera_reader.h"
+#include "model/stream/video/input/vc_camera_reader.h"
 
 namespace Model
 {
-class CudaCameraReader : public CameraReader
+class VcCudaCameraReader : public VcCameraReader
 {
    public:
-    explicit CudaCameraReader(std::shared_ptr<VideoConfig> videoConfig);
-    virtual ~CudaCameraReader();
+    explicit VcCudaCameraReader(std::shared_ptr<VideoConfig> videoConfig);
+    virtual ~VcCudaCameraReader();
 
     void open() override;
     void close() override;
@@ -29,4 +29,4 @@ class CudaCameraReader : public CameraReader
 
 }    // namespace Model
 
-#endif    //! CUDA_CAMERA_READER_H
+#endif    //! VC_CUDA_CAMERA_READER_H

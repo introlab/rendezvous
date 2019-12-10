@@ -48,9 +48,10 @@ void ImageFileReader::close()
     // TODO: breaks interfaces segregation principle
 }
 
-const Image& ImageFileReader::readImage()
+bool ImageFileReader::readImage(Image& image)
 {
-    return image_;
+    image = image_;
+    return true;
 }
 
 bool ImageFileReader::loadImage(const char* fileName, unsigned char*& data, int& width, int& height, int& channels,
