@@ -12,6 +12,7 @@ OdasAudioSource::OdasAudioSource(int port, int desiredChunkDurationMs, int numbe
                                  std::shared_ptr<AudioConfig> audioConfig)
     : port_(port)
     , audioConfig_(audioConfig)
+    // We add 10 buffers to make sure we don't overwrite data when reading from the socket
     , audioChunks_(numberOfBuffers + 10, AudioChunk(desiredChunkDurationMs / 1000.f * audioConfig_->rate,
                                                audioConfig_->channels, audioConfig_->formatBytes))
     , audioQueue_(std::make_shared<moodycamel::BlockingReaderWriterQueue<AudioChunk>>(numberOfBuffers))
