@@ -15,7 +15,7 @@ namespace Model
 class OdasPositionSource : public QThread, public IPositionSource
 {
    public:
-    OdasPositionSource(int port, int positionBufferSize);
+    OdasPositionSource(int port);
     ~OdasPositionSource() override;
 
     void open() override;
@@ -27,7 +27,6 @@ class OdasPositionSource : public QThread, public IPositionSource
     void updatePositions(std::vector<SourcePosition>& sourcePositions);
 
     int m_port;
-    std::shared_ptr<char> m_readBuffer;
     std::vector<SourcePosition> m_sourcePositions;
     std::mutex m_mutex;
 };

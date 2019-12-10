@@ -34,7 +34,7 @@ class CameraReader : public BaseCameraReader
 
    private:
     void queueCapture(IndexedImage& indexedImage);
-    void dequeueCapture(const IndexedImage& indexedImage);
+    void dequeueCapture(IndexedImage& indexedImage);
     void requestBuffers(std::size_t bufferCount);
     void mapBuffer(IndexedImage& indexedImage);
     void unmapBuffer(IndexedImage& indexedImage);

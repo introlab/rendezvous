@@ -9,11 +9,15 @@
 
 #include "model/stream/audio/source_position.h"
 
+namespace
+{
+const int POSITION_SOURCE_BUFFER_SIZE = 10000;
+}
+
 namespace Model
 {
-OdasPositionSource::OdasPositionSource(int port, int positionBufferSize)
+OdasPositionSource::OdasPositionSource(int port)
     : m_port(port)
-    , m_readBuffer(std::shared_ptr<char>(new char[positionBufferSize], std::default_delete<char[]>()))
 {
 }
 
@@ -42,7 +46,7 @@ void OdasPositionSource::run()
 
     qDebug() << "Odas position source thread started";
 
-    char buffer[100000];
+    char buffer[POSITION_SOURCE_BUFFER_SIZE];
 
     while (!isInterruptionRequested())
     {

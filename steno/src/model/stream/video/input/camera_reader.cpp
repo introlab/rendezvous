@@ -39,7 +39,7 @@ void CameraReader::open()
 
 bool CameraReader::readImage(Image& image)
 {
-    const CameraReader::IndexedImage& currentIndexedImage = images_.current();
+    CameraReader::IndexedImage& currentIndexedImage = images_.current();
 
     // Change the current() indexed image
     images_.next();
@@ -78,11 +78,9 @@ void CameraReader::queueCapture(IndexedImage& indexedImage)
     {
         throw std::runtime_error("Failed to querry camera buffer");
     }
-
-    indexedImage.image.timeStamp = systemTimeSinceEpoch();
 }
 
-void CameraReader::dequeueCapture(const IndexedImage& indexedImage)
+void CameraReader::dequeueCapture(IndexedImage& indexedImage)
 {
     fd_set fds;
     FD_ZERO(&fds);
@@ -105,6 +103,9 @@ void CameraReader::dequeueCapture(const IndexedImage& indexedImage)
     {
         throw std::runtime_error("Failed to retrieve camera frame");
     }
+
+    // Set capture time + timestamp correction offset
+    indexedImage.image.timeStamp = systemTimeSinceEpoch() + 40000; // TODO: config
 }
 
 void CameraReader::requestBuffers(std::size_t bufferCount)
