@@ -50,7 +50,7 @@ if $USE_DEFAULT; then
     AEC_SINK_NAME=SpeakerFiltre
 
     #OUTPUT
-    SINK_NAME=webrtc_in
+    SINK_NAME=StenoMic
     ODAS_CHANNELS=4
     ODAS_CHANNEL_MAP=front-left,front-right,rear-left,rear-right
 fi
