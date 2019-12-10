@@ -11,7 +11,7 @@ class IVideoInput
     virtual ~IVideoInput() = default;
     virtual void open() = 0;
     virtual void close() = 0;
-    virtual const Image& readImage() = 0;
+    virtual bool readImage(Image& image) = 0;
 };
 
 }    // namespace Model

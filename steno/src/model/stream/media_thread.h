@@ -6,6 +6,7 @@
 #include "model/stream/audio/i_audio_sink.h"
 #include "model/stream/audio/i_audio_source.h"
 #include "model/stream/audio/i_position_source.h"
+#include "model/stream/media_synchronizer.h"
 #include "model/stream/utils/alloc/i_object_factory.h"
 #include "model/stream/utils/images/i_image_converter.h"
 #include "model/stream/utils/threads/lock_triple_buffer.h"
@@ -26,13 +27,12 @@ class MediaThread : public Thread, public Subject
 {
    public:
     MediaThread(std::unique_ptr<IAudioSource> audioSource, std::unique_ptr<IAudioSink> audioSink,
-                std::unique_ptr<IPositionSource> positionSource, std::unique_ptr<IVideoInput> videoInput,
-                std::unique_ptr<IFisheyeDewarper> dewarper, std::unique_ptr<IObjectFactory> objectFactory,
-                std::unique_ptr<IVideoOutput> videoOutput, std::unique_ptr<ISynchronizer> synchronizer,
-                std::unique_ptr<VirtualCameraManager> virtualCameraManager,
-                std::shared_ptr<moodycamel::ReaderWriterQueue<std::vector<SphericalAngleRect>>> detectionQueue,
-                std::shared_ptr<LockTripleBuffer<Image>> imageBuffer, std::unique_ptr<IImageConverter> imageConverter,
-                std::shared_ptr<Config> config);
+                std::shared_ptr<IPositionSource> positionSource, std::unique_ptr<IVideoInput> videoInput,
+                std::unique_ptr<IVideoOutput> videoOutput,
+                std::shared_ptr<IVirtualCameraSource> virtualCameraSource,
+                std::unique_ptr<MediaSynchronizer> mediaSynchronizer,
+                int framePerSeconds,
+                float classifierRangeThreshold);
 
    protected:
     void run() override;
@@ -40,22 +40,13 @@ class MediaThread : public Thread, public Subject
    private:
     std::unique_ptr<IAudioSource> audioSource_;
     std::unique_ptr<IAudioSink> audioSink_;
-    std::unique_ptr<IPositionSource> positionSource_;
+    std::shared_ptr<IPositionSource> positionSource_;
     std::unique_ptr<IVideoInput> videoInput_;
-    std::unique_ptr<IFisheyeDewarper> dewarper_;
-    std::unique_ptr<IObjectFactory> objectFactory_;
     std::unique_ptr<IVideoOutput> videoOutput_;
-    std::unique_ptr<ISynchronizer> synchronizer_;
-    std::unique_ptr<VirtualCameraManager> virtualCameraManager_;
-    std::shared_ptr<moodycamel::ReaderWriterQueue<std::vector<SphericalAngleRect>>> detectionQueue_;
-    std::shared_ptr<LockTripleBuffer<Image>> imageBuffer_;
-    std::unique_ptr<IImageConverter> imageConverter_;
-
-    std::shared_ptr<DewarpingConfig> dewarpingConfig_;
-    std::shared_ptr<VideoConfig> videoInputConfig_;
-    std::shared_ptr<VideoConfig> videoOutputConfig_;
-    std::shared_ptr<AudioConfig> audioInputConfig_;
-    std::shared_ptr<AudioConfig> audioOutputConfig_;
+    std::shared_ptr<IVirtualCameraSource> virtualCameraSource_;
+    std::unique_ptr<MediaSynchronizer> mediaSynchronizer_;
+    int framePerSeconds_;
+    float classifierRangeThreshold_;
 };
 
 }    // namespace Model

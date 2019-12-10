@@ -1,14 +1,14 @@
-#ifndef VIDEO_STABILIZER_H
-#define VIDEO_STABILIZER_H
+#ifndef FRAME_RATE_STABILIZER_H
+#define FRAME_RATE_STABILIZER_H
 
 #include "model/stream/utils/time/timer.h"
 
 namespace Model
 {
-class VideoStabilizer
+class FrameRateStabilizer
 {
    public:
-    explicit VideoStabilizer(int targetFps);
+    explicit FrameRateStabilizer(int targetFps);
 
     void startFrame();
     void endFrame();
@@ -25,4 +25,4 @@ class VideoStabilizer
 
 }    // namespace Model
 
-#endif    //! VIDEO_STABILIZER_H
+#endif    //! FRAME_RATE_STABILIZER_H

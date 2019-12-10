@@ -47,14 +47,14 @@ float getPositiveAngle(float angle)
 float getAzimuthFromPosition(float x, float y)
 {
     float tanRes = std::atan2(y, x);
-    return std::fmod(tanRes, 2 * math::PI);
+    return getPositiveAngle(tanRes);
 }
 
 float getElevationFromPosition(float x, float y, float z)
 {
     float xyHypotenuse = euclideanDistance(x, y);
     float tanRes = std::atan2(z, xyHypotenuse);
-    return std::fmod(tanRes, 2 * math::PI);
+    return getPositiveAngle(tanRes);
 }
 
 float getElevationFromDistanceToFisheyeCenter(float distanceToFisheyeCenter, float fisheyeRadius, float fisheyeAngle)
