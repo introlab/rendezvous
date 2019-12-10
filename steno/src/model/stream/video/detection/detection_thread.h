@@ -33,6 +33,8 @@ class DetectionThread : public Thread, public Subject
     std::vector<ImageFloat> getDetectionImages(const Dim2<int>& dim, int dewarpCount);
     std::vector<DewarpingMapping> getDewarpingMappings(const std::vector<DewarpingParameters>& paramsVector,
                                                        const Dim2<int>& src, const Dim2<int>& dst, int dewarpCount);
+    std::vector<SphericalAngleRect> getUniqueDetections(const std::vector<SphericalAngleRect>& detections, 
+                                                        const std::vector<float>& viewsMiddleAzimuth);
 
     std::shared_ptr<LockTripleBuffer<RGBImage>> imageBuffer_;
     std::unique_ptr<IDetector> detector_;

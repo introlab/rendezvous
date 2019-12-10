@@ -121,7 +121,7 @@ void Config::loadDefault()
     m_dewarpingConfig->setValue(DewarpingConfig::Key::TOP_DISTORSION_FACTOR, 2);
     m_dewarpingConfig->setValue(DewarpingConfig::Key::BOTTOM_DISTORSION_FACTOR, 1);
     m_dewarpingConfig->setValue(DewarpingConfig::Key::FISH_EYE_ANGLE, 220);
-    m_dewarpingConfig->setValue(DewarpingConfig::Key::DETECTION_DEWARPING_COUNT, 4);
+    m_dewarpingConfig->setValue(DewarpingConfig::Key::DETECTION_DEWARPING_COUNT, 5);
 
     m_videoInputConfig->setValue(VideoConfig::Key::FPS, 20);
     m_videoInputConfig->setValue(VideoConfig::Key::WIDTH, 2880);
