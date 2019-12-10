@@ -78,7 +78,7 @@ pulseaudio --start
 sleep 3
 
 if $CREATE_VIRTUAL_OUTPUT || $USE_DEFAULT; then
-    pacmd load-module module-null-sink sink_name=$SINK_NAME format=$SAMPLE_FORMAT rate=$SAMPLE_RATE channels=$ODAS_CHANNELS channel_map=$ODAS_CHANNEL_MAP
+    pacmd load-module module-null-sink sink_name=$SINK_NAME sink_properties=device.description=$SINK_NAME format=$SAMPLE_FORMAT rate=$SAMPLE_RATE channels=$ODAS_CHANNELS channel_map=$ODAS_CHANNEL_MAP
 fi
 
 if $AEC || $USE_DEFAULT; then
