@@ -55,8 +55,7 @@ std::vector<std::pair<int, int>> Classifier::getAudioImagePairs(const std::vecto
             // Set the azimuth counter-clockwise to match the audio
             float imagePositionAzimuth = math::getAngleAroundCircle(2.0 * M_PI - imagePositions[j].azimuth - M_PI / 2.f);
 
-            if (std::abs(audioPositions[i].azimuth - imagePositionAzimuth) < rangeThreshold &&
-                std::abs(audioPositions[i].elevation - imagePositions[j].elevation) < rangeThreshold)
+            if (std::abs(audioPositions[i].azimuth - imagePositionAzimuth) < rangeThreshold)
             {
                 audioImagePairs.push_back(std::make_pair(i, j));
             }
