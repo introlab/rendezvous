@@ -76,22 +76,19 @@ void VirtualCameraManager::updateVirtualCameras(int elapsedTimeMs)
     setVirtualCameras(virtualCameras);
 }
 
-void VirtualCameraManager::updateVirtualCamerasGoal(const std::vector<SphericalAngleRect>& goals)
+void VirtualCameraManager::updateVirtualCamerasGoal(std::vector<SphericalAngleRect> goals)
 {
     if (goals.empty()) return;
 
-    // Get a vector of non duplicate goals (duplicates are within a set threshold)
-    std::vector<SphericalAngleRect> uniqueGoals = getUniqueRegions(goals);
-
     // Update the goals elevation and spans to be within bounds
-    updateRegionsBounds(uniqueGoals);
+    updateRegionsBounds(goals);
 
     // Get the distance between each virtual camera and each goal in a sorted map (map values are indices pair)
-    const std::multimap<float, std::pair<int, int>> orderedDistanceMap = getVcToGoalOrderedDistances(uniqueGoals);
+    const std::multimap<float, std::pair<int, int>> orderedDistanceMap = getVcToGoalOrderedDistances(goals);
 
     // Create vectors to keep track of which virtual camera and goal were matched
     const int vcCount = virtualCameras_.size();
-    const int goalCount = uniqueGoals.size();
+    const int goalCount = goals.size();
     std::vector<bool> isVcUnmatchedVec(vcCount, true);
     std::vector<bool> isGoalUnmatchedVec(goalCount, true);
 
@@ -113,7 +110,7 @@ void VirtualCameraManager::updateVirtualCamerasGoal(const std::vector<SphericalA
             ++matchedGoalCount;
 
             // Update the virtual camera goal and reset its time to live
-            virtualCameras_[vcIndex].goal = uniqueGoals[goalIndex];
+            virtualCameras_[vcIndex].goal = goals[goalIndex];
             virtualCameras_[vcIndex].timeToLiveMs = VIRTUAL_CAMERA_TIME_TO_LIVE_MS;
 
             // If all virtual cameras or all goals were matched, no reason to keep going
@@ -131,7 +128,7 @@ void VirtualCameraManager::updateVirtualCamerasGoal(const std::vector<SphericalA
         {
             if (isGoalUnmatchedVec[i])
             {
-                virtualCameras_.emplace_back(uniqueGoals[i], VIRTUAL_CAMERA_TIME_TO_LIVE_MS);
+                virtualCameras_.emplace_back(goals[i], VIRTUAL_CAMERA_TIME_TO_LIVE_MS);
             }
         }
     }
@@ -169,38 +166,6 @@ float VirtualCameraManager::getElevationOverflow(float elevation, float elevatio
     }
 
     return elevationOverflow;
-}
-
-std::vector<SphericalAngleRect> VirtualCameraManager::getUniqueRegions(const std::vector<SphericalAngleRect>& regions)
-{
-    std::vector<SphericalAngleRect> uniqueRegions;
-    uniqueRegions.reserve(regions.size());
-
-    for (const SphericalAngleRect& region : regions)
-    {
-        bool isGoalDuplicate = false;
-
-        // Check if there is already a region within the angle thresholds
-        for (const SphericalAngleRect& uniqueRegion : uniqueRegions)
-        {
-            if (region.azimuth > uniqueRegion.azimuth - DUPLICATE_FACE_ANGLE_RANGE &&
-                region.azimuth < uniqueRegion.azimuth + DUPLICATE_FACE_ANGLE_RANGE &&
-                region.elevation > uniqueRegion.elevation - DUPLICATE_FACE_ANGLE_RANGE &&
-                region.elevation < uniqueRegion.elevation + DUPLICATE_FACE_ANGLE_RANGE)
-            {
-                isGoalDuplicate = true;
-                break;
-            }
-        }
-
-        // If this region is not a duplicate, add it to the unique regions
-        if (!isGoalDuplicate)
-        {
-            uniqueRegions.emplace_back(region.azimuth, region.elevation, region.azimuthSpan, region.elevationSpan);
-        }
-    }
-
-    return uniqueRegions;
 }
 
 void VirtualCameraManager::updateRegionsBounds(std::vector<SphericalAngleRect>& regions)

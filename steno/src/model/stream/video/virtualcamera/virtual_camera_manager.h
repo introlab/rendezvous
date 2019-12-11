@@ -17,14 +17,13 @@ class VirtualCameraManager : public IVirtualCameraSource
     VirtualCameraManager(float aspectRatio, float srcImageMinElevation, float srcImageMaxElevation);
 
     void updateVirtualCameras(int elapsedTimeMs);
-    void updateVirtualCamerasGoal(const std::vector<SphericalAngleRect>& goals);
+    void updateVirtualCamerasGoal(std::vector<SphericalAngleRect> goals);
     void clearVirtualCameras();
 
     std::vector<VirtualCamera> getVirtualCameras() override;
 
    private:
     float getElevationOverflow(float elevation, float elevationSpan);
-    std::vector<SphericalAngleRect> getUniqueRegions(const std::vector<SphericalAngleRect>& regions);
     void updateRegionsBounds(std::vector<SphericalAngleRect>& regions);
     std::multimap<float, std::pair<int, int>> getVcToGoalOrderedDistances(
         const std::vector<SphericalAngleRect>& targets);

@@ -7,6 +7,11 @@
 #include "model/stream/video/dewarping/dewarping_helper.h"
 #include "model/stream/video/detection/detection_dewarp_optimizer.h"
 
+namespace
+{
+const float DETECTION_DUPLICATE_AZIMUTH_RANGE = 0.4f; 
+}
+
 namespace Model
 {
 DetectionThread::DetectionThread(std::shared_ptr<LockTripleBuffer<RGBImage>> imageBuffer, std::unique_ptr<IDetector> detector,
@@ -78,6 +83,7 @@ void DetectionThread::run()
             const Image& image = imageBuffer_->getLocked();
 
             std::vector<int> nextDewarpingAreas = detectionDewarpingOptimizer.getNextDetectionAreas();
+            std::vector<float> viewsMiddleAzimuth;
 
             // Dewarp each view, detect on each view and concatenate the results
             for (int i : nextDewarpingAreas)
@@ -96,12 +102,14 @@ void DetectionThread::run()
                     float middleAngleDiff = (2.f * math::PI) / dewarpingConfig_->detectionDewarpingCount;
                     
                     SphericalAngleRect sphericalAngleRect = getAngleRectFromDewarpedImageRectangle(detection, dewarpingParams[i],
-                                                                                                detectionImage, fisheyeCenter,
-                                                                                                dewarpingConfig_->fisheyeAngle);
+                                                                                                   detectionImage, fisheyeCenter,
+                                                                                                   dewarpingConfig_->fisheyeAngle);
 
-                    if (!isInOverlappingZone(sphericalAngleRect, dewarpingConfig_->angleSpan, middleAngleDiff * i))
+                    float viewMiddleAzimuth = middleAngleDiff * i;
+                    if (!isInOverlappingZone(sphericalAngleRect, dewarpingConfig_->angleSpan, viewMiddleAzimuth))
                     {
                         detections.push_back(sphericalAngleRect);
+                        viewsMiddleAzimuth.push_back(viewMiddleAzimuth);
                     }
                 }
 
@@ -110,6 +118,8 @@ void DetectionThread::run()
                     detectionDewarpingOptimizer.incrementDetectionInArea(i);
                 }
             }
+
+            detections = getUniqueDetections(detections, viewsMiddleAzimuth);
 
             bool success = false;
 
@@ -197,5 +207,51 @@ std::vector<DewarpingMapping> DetectionThread::getDewarpingMappings(
     synchronizer_->sync();    // Wait for all the mappings to be filled
 
     return dewarpingMappings;
+}
+
+std::vector<SphericalAngleRect> DetectionThread::getUniqueDetections(const std::vector<SphericalAngleRect>& detections, 
+                                                                     const std::vector<float>& viewsMiddleAzimuth)
+{
+    std::vector<SphericalAngleRect> uniqueDetections;
+    std::vector<float> uniqueViewsMiddleAzimuth;
+    uniqueDetections.reserve(detections.size());
+
+    for (size_t i = 0; i < detections.size(); ++i)
+    {
+        const SphericalAngleRect& detection = detections[i];
+        bool isGoalDuplicate = false;
+
+        // Check if there is already a region within the angle thresholds
+        for (size_t j = 0; j < uniqueDetections.size(); ++j)
+        {
+            SphericalAngleRect& uniqueDetection = uniqueDetections[j];
+            
+            if (detection.azimuth > uniqueDetection.azimuth - DETECTION_DUPLICATE_AZIMUTH_RANGE &&
+                detection.azimuth < uniqueDetection.azimuth + DETECTION_DUPLICATE_AZIMUTH_RANGE &&
+                detection.elevation > uniqueDetection.elevation - DETECTION_DUPLICATE_AZIMUTH_RANGE &&
+                detection.elevation < uniqueDetection.elevation + DETECTION_DUPLICATE_AZIMUTH_RANGE)
+            {
+                float uniqueViewMiddleAzimuth = uniqueViewsMiddleAzimuth[j];
+                float viewMiddleAzimuth = viewsMiddleAzimuth[i];
+
+                if (std::abs(detection.azimuth - viewMiddleAzimuth) < std::abs(uniqueDetection.azimuth - uniqueViewMiddleAzimuth))
+                {
+                    uniqueDetection = detection;
+                }
+                
+                isGoalDuplicate = true;
+                break;
+            }
+        }
+
+        // If this region is not a duplicate, add it to the unique regions
+        if (!isGoalDuplicate)
+        {
+            uniqueDetections.emplace_back(detection.azimuth, detection.elevation, detection.azimuthSpan, detection.elevationSpan);
+            uniqueViewsMiddleAzimuth.push_back(viewsMiddleAzimuth[i]);
+        }
+    }
+
+    return uniqueDetections;
 }
 }    // namespace Model
